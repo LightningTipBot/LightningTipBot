@@ -40,6 +40,7 @@ func TipCheckSyntax(m *tb.Message) (bool, string) {
 }
 
 func (bot *TipBot) tipHandler(m *tb.Message) {
+	log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
 	// only if message is a reply
 	if !m.IsReply() {
 		NewMessage(m).Dispose(0, bot.telegram)
