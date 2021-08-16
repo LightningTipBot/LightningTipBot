@@ -35,6 +35,7 @@ func helpPayInvoiceUsage(errormsg string) string {
 
 // confirmPaymentHandler invoked on "/pay lnbc..." command
 func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
+	log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
 		NewMessage(m).Dispose(0, bot.telegram)
@@ -82,7 +83,7 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 	}
 	if amount > balance {
 		NewMessage(m).Dispose(0, bot.telegram)
-		bot.telegram.Send(m.Sender, helpPayInvoiceUsage(fmt.Sprintf(insufficiendFundsMessage, balance, amount)))
+		bot.telegram.Send(m.Sender, fmt.Sprintf(insufficiendFundsMessage, balance, amount))
 		return
 	}
 
@@ -90,20 +91,22 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 	user.StateKey = lnbits.UserStateConfirmPayment
 	user.StateData = payment_request
 	err = UpdateUserRecord(user, bot)
+	if err != nil {
+		log.Printf("[UpdateUserRecord] User: %s Error: %s", userStr, err.Error())
+	}
 
 	// // // create inline buttons
 	// paymentConfirmationMenu := &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	// btnPay := paymentConfirmationMenu.Data(fmt.Sprintf("✅ Pay %d sat", amount), "pay")
-	// btnCancel := paymentConfirmationMenu.Data("🚫 Cancel payment", "cancel")
+	// btnCancelPay := paymentConfirmationMenu.Data("🚫 Cancel payment", "cancel")
 
-	paymentConfirmationMenu.Inline(paymentConfirmationMenu.Row(btnPay, btnCancel))
+	paymentConfirmationMenu.Inline(paymentConfirmationMenu.Row(btnPay, btnCancelPay))
 	bot.telegram.Send(m.Sender,
 		// fmt.Sprintf("*Amount:* %d sat\n✉️ %s\n*Hash:* %s\nCreatedAt: %s\nPayee: %s\n", bolt11.MSatoshi/1000, bolt11.Description, bolt11.PaymentHash, time.Unix(int64(bolt11.CreatedAt), 0).String(), bolt11.Payee),
-		fmt.Sprintf(confirmPayInvoiceMessage, bolt11.MSatoshi/1000, bolt11.Description),
+		// todo: what if there is no invoice memo! fix
+		fmt.Sprintf(confirmPayInvoiceMessage, bolt11.MSatoshi/1000, MarkdownEscape(bolt11.Description)),
 		paymentConfirmationMenu)
-	if err != nil {
-		log.Printf("[UpdateUserRecord] User: %s Error: %s", userStr, err.Error())
-	}
+
 }
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation
@@ -113,7 +116,6 @@ func (bot TipBot) cancelPaymentHandler(c *tb.Callback) {
 	}()
 	user, err := GetUser(c.Sender, bot)
 	if err != nil {
-		log.Printf("[GetUser] User: %d: %s", c.Sender.ID, err.Error())
 		return
 	}
 	user.ResetState()
