@@ -25,8 +25,11 @@ type TipBot struct {
 
 var (
 	paymentConfirmationMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true, OneTimeKeyboard: true}
-	btnCancel               = paymentConfirmationMenu.Data("🚫 Cancel", "cancel")
+	btnCancelPay            = paymentConfirmationMenu.Data("🚫 Cancel", "cancel")
 	btnPay                  = paymentConfirmationMenu.Data("✅ Pay", "pay")
+	sendConfirmationMenu    = &tb.ReplyMarkup{ResizeReplyKeyboard: true, OneTimeKeyboard: true}
+	btnCancelSend           = sendConfirmationMenu.Data("🚫 Cancel", "cancel")
+	btnSend                 = sendConfirmationMenu.Data("✅ Pay", "pay")
 )
 
 // NewBot migrates data and creates a new bot
@@ -107,7 +110,7 @@ func (bot TipBot) registerTelegramHandlers() {
 			"/invoice": bot.invoiceHandler,
 			"/balance": bot.balanceHandler,
 			"/start":   bot.startHandler,
-			"/send":    bot.sendHandler,
+			"/send":    bot.confirmSendHandler,
 			"/help":    bot.helpHandler,
 			"/info":    bot.infoHandler,
 		}
@@ -120,13 +123,16 @@ func (bot TipBot) registerTelegramHandlers() {
 		}
 
 		// button handlers
+		// for /pay
 		bot.telegram.Handle(&btnPay, bot.payHandler)
-		bot.telegram.Handle(&btnCancel, bot.cancelPaymentHandler)
+		bot.telegram.Handle(&btnCancelPay, bot.cancelPaymentHandler)
+		// for /send
+		bot.telegram.Handle(&btnSend, bot.sendHandler)
+		bot.telegram.Handle(&btnCancelSend, bot.cancelSendHandler)
 
 		// basic handlers
 		bot.telegram.Handle(tb.OnText, func(m *tb.Message) {
-			userStr := GetUserStr(m.Sender)
-			log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, userStr, m.Sender.ID, m.Text)
+			log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
 			bot.anyTextHandler(m)
 		})
 	})
