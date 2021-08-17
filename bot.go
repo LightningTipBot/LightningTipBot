@@ -24,12 +24,12 @@ type TipBot struct {
 }
 
 var (
-	paymentConfirmationMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true, OneTimeKeyboard: true}
+	paymentConfirmationMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	btnCancelPay            = paymentConfirmationMenu.Data("🚫 Cancel", "cancel")
 	btnPay                  = paymentConfirmationMenu.Data("✅ Pay", "pay")
-	sendConfirmationMenu    = &tb.ReplyMarkup{ResizeReplyKeyboard: true, OneTimeKeyboard: true}
+	sendConfirmationMenu    = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	btnCancelSend           = sendConfirmationMenu.Data("🚫 Cancel", "cancel")
-	btnSend                 = sendConfirmationMenu.Data("✅ Pay", "pay")
+	btnSend                 = sendConfirmationMenu.Data("✅ Send", "send")
 )
 
 // NewBot migrates data and creates a new bot
