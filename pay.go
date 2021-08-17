@@ -19,7 +19,8 @@ const (
 	invoiceNoAmountMessage             = "🚫 Can't pay invoices without an amount."
 	insufficiendFundsMessage           = "🚫 Insufficient funds. You have %d sat but you need at least %d sat."
 	invoicePaymentFailedMessage        = "🚫 Failed to pay invoice: %s"
-	confirmPayInvoiceMessage           = "Do you want to pay this invoice?\n💸 Amount: %d sat\n✉️ %s"
+	confirmPayInvoiceMessage           = "Do you want to pay this invoice?\n💸 Amount: %d sat"
+	confirmPayAppendMemo               = "\n✉️ %s"
 	payHelpText                        = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/pay <invoice>`\n" +
 		"*Example:* `/pay lnbc20n1psscehd...`"
@@ -93,6 +94,7 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 	err = UpdateUserRecord(user, bot)
 	if err != nil {
 		log.Printf("[UpdateUserRecord] User: %s Error: %s", userStr, err.Error())
+		return
 	}
 
 	// // // create inline buttons
@@ -101,19 +103,22 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 	// btnCancelPay := paymentConfirmationMenu.Data("🚫 Cancel payment", "cancel")
 
 	paymentConfirmationMenu.Inline(paymentConfirmationMenu.Row(btnPay, btnCancelPay))
+	confirmText := fmt.Sprintf(confirmPayInvoiceMessage, amount)
+	if len(bolt11.Description) > 0 {
+		confirmText = confirmText + fmt.Sprintf(confirmPayAppendMemo, MarkdownEscape(bolt11.Description))
+	}
 	bot.telegram.Send(m.Sender,
 		// fmt.Sprintf("*Amount:* %d sat\n✉️ %s\n*Hash:* %s\nCreatedAt: %s\nPayee: %s\n", bolt11.MSatoshi/1000, bolt11.Description, bolt11.PaymentHash, time.Unix(int64(bolt11.CreatedAt), 0).String(), bolt11.Payee),
 		// todo: what if there is no invoice memo! fix
-		fmt.Sprintf(confirmPayInvoiceMessage, bolt11.MSatoshi/1000, MarkdownEscape(bolt11.Description)),
+		confirmText,
+		// fmt.Sprintf(confirmPayInvoiceMessage, bolt11.MSatoshi/1000, MarkdownEscape(bolt11.Description)),
 		paymentConfirmationMenu)
 
 }
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation
 func (bot TipBot) cancelPaymentHandler(c *tb.Callback) {
-	defer func() {
-		bot.telegram.Delete(c.Message)
-	}()
+	bot.telegram.Delete(c.Message)
 	user, err := GetUser(c.Sender, bot)
 	if err != nil {
 		return
@@ -130,9 +135,7 @@ func (bot TipBot) cancelPaymentHandler(c *tb.Callback) {
 
 // payHandler when user clicked pay "X" on payment confirmation
 func (bot TipBot) payHandler(c *tb.Callback) {
-	defer func() {
-		bot.telegram.Edit(c.Message, c.Message.Text, &tb.ReplyMarkup{})
-	}()
+	bot.telegram.Edit(c.Message, c.Message.Text, &tb.ReplyMarkup{})
 	user, err := GetUser(c.Sender, bot)
 	if err != nil {
 		log.Printf("[GetUser] User: %d: %s", c.Sender.ID, err.Error())
