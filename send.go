@@ -174,16 +174,12 @@ func (bot *TipBot) cancelSendHandler(c *tb.Callback) {
 
 // sendHandler invoked when user clicked send on payment confirmation
 func (bot *TipBot) sendHandler(c *tb.Callback) {
-	defer func() {
-		// remove buttons from confirmation message
-		_, err := bot.telegram.Edit(c.Message, MarkdownEscape(c.Message.Text), &tb.ReplyMarkup{})
-		//err := bot.telegram.Delete(c.Message)
-		if err != nil {
-			log.Errorln("[sendHandler] " + err.Error())
-		}
-
-	}()
-
+	// remove buttons from confirmation message
+	_, err := bot.telegram.Edit(c.Message, MarkdownEscape(c.Message.Text), &tb.ReplyMarkup{})
+	//err := bot.telegram.Delete(c.Message)
+	if err != nil {
+		log.Errorln("[sendHandler] " + err.Error())
+	}
 	// decode callback data
 	log.Debug("[sendHandler] Callback: %s", c.Data)
 	splits := strings.Split(c.Data, "|")
