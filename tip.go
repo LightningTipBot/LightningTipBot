@@ -106,14 +106,14 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	t := NewTransaction(bot, from, to, amount, TransactionType("tip"), TransactionChat(m.Chat))
 	t.Memo = transactionMemo
 	success, err := t.Send()
-	if !success {
+	if !success || err != nil {
 		NewMessage(m).Dispose(0, bot.telegram)
 		if len(err.Error()) > 0 {
 			bot.telegram.Send(m.Sender, fmt.Sprintf(tipErrorMessage, err))
 		} else {
 			bot.telegram.Send(m.Sender, fmt.Sprintf(tipErrorMessage, "please try again later"))
 		}
-		errMsg := fmt.Sprintf("[/tip] Error: Transaction failed: %s", err)
+		errMsg := fmt.Sprintf("[/tip] Transaction failed: %s", err)
 		log.Errorln(errMsg)
 		return
 	}
@@ -141,7 +141,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	bot.telegram.Send(to, fmt.Sprintf(tipReceivedMessage, amount, fromUserStrMd))
 
 	if len(tipMemo) > 0 {
-		bot.telegram.Send(to, fmt.Sprintf("✉️ %s", tipMemo))
+		bot.telegram.Send(to, fmt.Sprintf("✉️ %s", MarkdownEscape(tipMemo)))
 	}
 
 	return
