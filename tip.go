@@ -106,9 +106,9 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	t := NewTransaction(bot, from, to, amount, TransactionType("tip"), TransactionChat(m.Chat))
 	t.Memo = transactionMemo
 	success, err := t.Send()
-	if !success || err != nil {
+	if !success {
 		NewMessage(m).Dispose(0, bot.telegram)
-		if len(err.Error()) > 0 {
+		if err != nil {
 			bot.telegram.Send(m.Sender, fmt.Sprintf(tipErrorMessage, err))
 		} else {
 			bot.telegram.Send(m.Sender, fmt.Sprintf(tipErrorMessage, "please try again later"))
