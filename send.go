@@ -19,7 +19,7 @@ const (
 	sendSentMessage            = "💸 %d sat sent to %s."
 	sendReceivedMessage        = "🏅 %s has sent you %d sat."
 	sendErrorMessage           = "🚫 Transaction failed: %s"
-	confirmSendInvoiceMessage  = "Do you want to send this to %s?\n💸 Amount: %d sat"
+	confirmSendInvoiceMessage  = "Do you want to pay to %s?\n💸 Amount: %d sat"
 	confirmSendAppendMemo      = "\n✉️ %s"
 	sendCancelledMessage       = "🚫 Sending cancelled."
 	sendHelpText               = "📖 Oops, that didn't work. %s\n\n" +
@@ -134,7 +134,6 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 
 	// build callback data object
 	btnSend.Data = strconv.Itoa(toUserDb.Telegram.ID) + "|" +
-		// toUserStrWithoutAt + "|" +
 		strconv.Itoa(amount)
 	if len(sendMemo) > 0 {
 		btnSend.Data = btnSend.Data + "|" + sendMemo
@@ -176,18 +175,17 @@ func (bot *TipBot) cancelSendHandler(c *tb.Callback) {
 // sendHandler invoked when user clicked send on payment confirmation
 func (bot *TipBot) sendHandler(c *tb.Callback) {
 	defer func() {
-		// log.Info(c.Message.Text)
-		// todo / info: this Edit doesn't work because of an entitity inside c.Message
-		// _, err := bot.telegram.Edit(c.Message, c.Message.Text, &tb.ReplyMarkup{})
-		err := bot.telegram.Delete(c.Message)
+		// remove buttons from confirmation message
+		_, err := bot.telegram.Edit(c.Message, MarkdownEscape(c.Message.Text), &tb.ReplyMarkup{})
+		//err := bot.telegram.Delete(c.Message)
 		if err != nil {
 			log.Errorln("[sendHandler] " + err.Error())
 		}
 
 	}()
 
+	// decode callback data
 	log.Debug("[sendHandler] Callback: %s", c.Data)
-
 	splits := strings.Split(c.Data, "|")
 	if len(splits) < 2 {
 		log.Error("[sendHandler] Not enough arguments in callback data")
@@ -197,7 +195,6 @@ func (bot *TipBot) sendHandler(c *tb.Callback) {
 	if err != nil {
 		log.Errorln("[sendHandler] " + err.Error())
 	}
-	// toUserStrWithoutAt := splits[1]
 	amount, err := strconv.Atoi(splits[1])
 	if err != nil {
 		log.Errorln("[sendHandler] " + err.Error())
@@ -207,15 +204,7 @@ func (bot *TipBot) sendHandler(c *tb.Callback) {
 		sendMemo = strings.Join(splits[2:], "|")
 	}
 
-	// we can now get the wallets of both users
-	// to := &tb.User{ID: toId, Username: toUserStrWithoutAt}
-	// to := &tb.User{ID: toId}
-	// toUsrDb, err := GetUser(to, *bot)
-	// if err != nil {
-	// 	log.Error("[sendHandler] " + err.Error())
-	// }
-	// to = &tb.User{ID: toId, Username: toUsrDb.Telegram.Username}
-
+	// get telegram to-username from database because we have passed only the to-user id. this is ugly
 	toUserDb := &lnbits.User{}
 	tx := bot.database.Where("name = ?", toId).First(toUserDb)
 	if tx.Error != nil || toUserDb.Wallet == nil || toUserDb.Initialized == false {
@@ -223,8 +212,9 @@ func (bot *TipBot) sendHandler(c *tb.Callback) {
 		return
 	}
 	toUserStrWithoutAt := toUserDb.Telegram.Username
-	to := &tb.User{ID: toId, Username: toUserStrWithoutAt}
 
+	// we can now get the wallets of both users
+	to := &tb.User{ID: toId, Username: toUserStrWithoutAt}
 	from := c.Sender
 	toUserStrMd := GetUserStrMd(to)
 	fromUserStrMd := GetUserStrMd(from)
