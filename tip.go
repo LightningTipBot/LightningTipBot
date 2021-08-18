@@ -40,6 +40,7 @@ func TipCheckSyntax(m *tb.Message) (bool, string) {
 }
 
 func (bot *TipBot) tipHandler(m *tb.Message) {
+	log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
 	// only if message is a reply
 	if !m.IsReply() {
 		NewMessage(m).Dispose(0, bot.telegram)
@@ -107,12 +108,12 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	success, err := t.Send()
 	if !success {
 		NewMessage(m).Dispose(0, bot.telegram)
-		if len(err.Error()) > 0 {
+		if err != nil {
 			bot.telegram.Send(m.Sender, fmt.Sprintf(tipErrorMessage, err))
 		} else {
 			bot.telegram.Send(m.Sender, fmt.Sprintf(tipErrorMessage, "please try again later"))
 		}
-		errMsg := fmt.Sprintf("[/tip] Error: Transaction failed: %s", err)
+		errMsg := fmt.Sprintf("[/tip] Transaction failed: %s", err)
 		log.Errorln(errMsg)
 		return
 	}
@@ -140,7 +141,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	bot.telegram.Send(to, fmt.Sprintf(tipReceivedMessage, amount, fromUserStrMd))
 
 	if len(tipMemo) > 0 {
-		bot.telegram.Send(to, fmt.Sprintf("✉️ %s", tipMemo))
+		bot.telegram.Send(to, fmt.Sprintf("✉️ %s", MarkdownEscape(tipMemo)))
 	}
 
 	return

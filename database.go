@@ -14,15 +14,13 @@ import (
 
 func migration() (db *gorm.DB, txLogger *gorm.DB) {
 	txLogger, err := gorm.Open(sqlite.Open(Configuration.TransactionsPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
-
 	if err != nil {
-		panic("initialize orm failed")
+		panic("Initialize orm failed.")
 	}
 
 	orm, err := gorm.Open(sqlite.Open(Configuration.DbPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
-
 	if err != nil {
-		panic("initialize orm failed")
+		panic("Initialize orm failed.")
 	}
 
 	err = orm.AutoMigrate(&lnbits.User{})
@@ -59,6 +57,6 @@ func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
 		log.Errorln(errmsg)
 		return tx.Error
 	}
-	// log.Infof("[UpdateUserRecord] Records of user %s updated.", GetUserStr(user.Telegram))
+	log.Debugf("[UpdateUserRecord] Records of user %s updated.", GetUserStr(user.Telegram))
 	return nil
 }
