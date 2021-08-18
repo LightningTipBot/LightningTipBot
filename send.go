@@ -126,7 +126,7 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 	}
 
 	// string that holds all information about the send payment
-	sendData := strconv.Itoa(toUserDb.Telegram.ID) + "|" +
+	sendData := strconv.Itoa(toUserDb.Telegram.ID) + "|" + toUserStrWithoutAt + "|" +
 		strconv.Itoa(amount)
 	if len(sendMemo) > 0 {
 		sendData = sendData + "|" + sendMemo
@@ -206,7 +206,7 @@ func (bot *TipBot) sendHandler(c *tb.Callback) {
 
 	// decode StateData in which we have information about the send payment
 	splits := strings.Split(user.StateData, "|")
-	if len(splits) < 2 {
+	if len(splits) < 3 {
 		log.Error("[sendHandler] Not enough arguments in callback data")
 		log.Error("user.StateData: %s", user.StateData)
 		return
@@ -215,27 +215,19 @@ func (bot *TipBot) sendHandler(c *tb.Callback) {
 	if err != nil {
 		log.Errorln("[sendHandler] " + err.Error())
 	}
-	amount, err := strconv.Atoi(splits[1])
+	toUserStrWithoutAt := splits[1]
+	amount, err := strconv.Atoi(splits[2])
 	if err != nil {
 		log.Errorln("[sendHandler] " + err.Error())
 	}
 	sendMemo := ""
-	if len(splits) > 2 {
-		sendMemo = strings.Join(splits[2:], "|")
+	if len(splits) > 3 {
+		sendMemo = strings.Join(splits[3:], "|")
 	}
 
 	// reset state
 	user.ResetState()
 	err = UpdateUserRecord(user, *bot)
-
-	// get telegram to-username from database because we have passed only the to-user id. this is ugly
-	toUserDb := &lnbits.User{}
-	tx := bot.database.Where("name = ?", toId).First(toUserDb)
-	if tx.Error != nil || toUserDb.Wallet == nil || toUserDb.Initialized == false {
-		log.Errorln("[sendHandler] Error: " + tx.Error.Error())
-		return
-	}
-	toUserStrWithoutAt := toUserDb.Telegram.Username
 
 	// we can now get the wallets of both users
 	to := &tb.User{ID: toId, Username: toUserStrWithoutAt}
