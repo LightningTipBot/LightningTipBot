@@ -5,7 +5,7 @@
 
 # @LightningTipBot 🏅
 
-A tip bot for Telegram group chats that can send and receive Bitcoin via the Lightning Network ⚡️. 
+A tip bot for Telegram group chats that can send and receive Bitcoin via the Lightning Network ⚡️. It can also be used as a personal Lightning wallet by anyone who has a Telegram account. 
 
 This repository contains everything you need to set up and run your own tip bot. If you simply want to use this bot in your group chat without having to install anything just start a conversation with [@LightningTipBot](https://t.me/LightningTipBot) and invite it into your chat. 
 
