@@ -57,6 +57,6 @@ func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
 		log.Errorln(errmsg)
 		return tx.Error
 	}
-	log.Debug("[UpdateUserRecord] Records of user %s updated.", GetUserStr(user.Telegram))
+	log.Debugf("[UpdateUserRecord] Records of user %s updated.", GetUserStr(user.Telegram))
 	return nil
 }

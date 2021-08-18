@@ -125,17 +125,29 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 		return
 	}
 
-	// build callback data object
-	btnSend.Data = strconv.Itoa(toUserDb.Telegram.ID) + "|" +
+	// string that holds all information about the send payment
+	sendData := strconv.Itoa(toUserDb.Telegram.ID) + "|" +
 		strconv.Itoa(amount)
 	if len(sendMemo) > 0 {
-		btnSend.Data = btnSend.Data + "|" + sendMemo
+		sendData = sendData + "|" + sendMemo
 	}
 
-	// this is the maximum length of what the callback supports
-	buttonMaxDataLength := 58
-	if len(btnSend.Data) > buttonMaxDataLength {
-		btnSend.Data = btnSend.Data[:buttonMaxDataLength]
+	// old callback method
+	// // this is the maximum length of what the callback supports
+	// buttonMaxDataLength := 58
+	// if len(btnSend.Data) > buttonMaxDataLength {
+	// 	btnSend.Data = btnSend.Data[:buttonMaxDataLength]
+	// }
+
+	// save the send data to the database
+	log.Debug(sendData)
+	user, err := GetUser(m.Sender, *bot)
+	user.StateKey = lnbits.UserStateConfirmSend
+	user.StateData = sendData
+	err = UpdateUserRecord(user, *bot)
+	if err != nil {
+		log.Printf("[UpdateUserRecord] User: %s Error: %s", GetUserStr(m.Sender), err.Error())
+		return
 	}
 
 	sendConfirmationMenu.Inline(sendConfirmationMenu.Row(btnSend, btnCancelSend))
@@ -152,8 +164,16 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation
 func (bot *TipBot) cancelSendHandler(c *tb.Callback) {
+	// reset state immediately
+	user, err := GetUser(c.Sender, *bot)
+	if err != nil {
+		return
+	}
+	user.ResetState()
+	err = UpdateUserRecord(user, *bot)
+
 	// delete the confirmation message
-	err := bot.telegram.Delete(c.Message)
+	err = bot.telegram.Delete(c.Message)
 	if err != nil {
 		log.Errorln("[cancelSendHandler] " + err.Error())
 	}
@@ -173,10 +193,22 @@ func (bot *TipBot) sendHandler(c *tb.Callback) {
 		log.Errorln("[sendHandler] " + err.Error())
 	}
 	// decode callback data
-	log.Debug("[sendHandler] Callback: %s", c.Data)
-	splits := strings.Split(c.Data, "|")
+	// log.Debug("[sendHandler] Callback: %s", c.Data)
+	user, err := GetUser(c.Sender, *bot)
+	if err != nil {
+		log.Printf("[GetUser] User: %d: %s", c.Sender.ID, err.Error())
+		return
+	}
+	if user.StateKey != lnbits.UserStateConfirmSend {
+		log.Errorf("[sendHandler] User StateKey does not match! User: %d: StateKey: %d", c.Sender.ID, user.StateKey)
+		return
+	}
+
+	// decode StateData in which we have information about the send payment
+	splits := strings.Split(user.StateData, "|")
 	if len(splits) < 2 {
 		log.Error("[sendHandler] Not enough arguments in callback data")
+		log.Error("user.StateData: %s", user.StateData)
 		return
 	}
 	toId, err := strconv.Atoi(splits[0])
@@ -191,6 +223,10 @@ func (bot *TipBot) sendHandler(c *tb.Callback) {
 	if len(splits) > 2 {
 		sendMemo = strings.Join(splits[2:], "|")
 	}
+
+	// reset state
+	user.ResetState()
+	err = UpdateUserRecord(user, *bot)
 
 	// get telegram to-username from database because we have passed only the to-user id. this is ugly
 	toUserDb := &lnbits.User{}

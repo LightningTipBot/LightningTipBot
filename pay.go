@@ -98,33 +98,26 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 	}
 
 	// // // create inline buttons
-	// paymentConfirmationMenu := &tb.ReplyMarkup{ResizeReplyKeyboard: true}
-	// btnPay := paymentConfirmationMenu.Data(fmt.Sprintf("✅ Pay %d sat", amount), "pay")
-	// btnCancelPay := paymentConfirmationMenu.Data("🚫 Cancel payment", "cancel")
-
 	paymentConfirmationMenu.Inline(paymentConfirmationMenu.Row(btnPay, btnCancelPay))
 	confirmText := fmt.Sprintf(confirmPayInvoiceMessage, amount)
 	if len(bolt11.Description) > 0 {
 		confirmText = confirmText + fmt.Sprintf(confirmPayAppendMemo, MarkdownEscape(bolt11.Description))
 	}
-	bot.telegram.Send(m.Sender,
-		// fmt.Sprintf("*Amount:* %d sat\n✉️ %s\n*Hash:* %s\nCreatedAt: %s\nPayee: %s\n", bolt11.MSatoshi/1000, bolt11.Description, bolt11.PaymentHash, time.Unix(int64(bolt11.CreatedAt), 0).String(), bolt11.Payee),
-		// todo: what if there is no invoice memo! fix
-		confirmText,
-		// fmt.Sprintf(confirmPayInvoiceMessage, bolt11.MSatoshi/1000, MarkdownEscape(bolt11.Description)),
-		paymentConfirmationMenu)
+	bot.telegram.Send(m.Sender, confirmText, paymentConfirmationMenu)
 
 }
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation
 func (bot TipBot) cancelPaymentHandler(c *tb.Callback) {
-	bot.telegram.Delete(c.Message)
+	// reset state immediately
 	user, err := GetUser(c.Sender, bot)
 	if err != nil {
 		return
 	}
 	user.ResetState()
 	err = UpdateUserRecord(user, bot)
+
+	bot.telegram.Delete(c.Message)
 	_, err = bot.telegram.Send(c.Sender, paymentCancelledMessage)
 	if err != nil {
 		log.WithField("message", paymentCancelledMessage).WithField("user", c.Sender.ID).Printf("[Send] %s", err.Error())
@@ -142,9 +135,15 @@ func (bot TipBot) payHandler(c *tb.Callback) {
 		return
 	}
 	if user.StateKey == lnbits.UserStateConfirmPayment {
+		invoiceString := user.StateData
+
+		// reset state immediatelly
+		user.ResetState()
+		err = UpdateUserRecord(user, bot)
+
 		userStr := GetUserStr(c.Sender)
 		// pay invoice
-		invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: user.StateData}, *user.Wallet)
+		invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoiceString}, *user.Wallet)
 		if err != nil {
 			errmsg := fmt.Sprintf("[/pay] Could not pay invoice of user %s: %s", userStr, err)
 			bot.telegram.Send(c.Sender, fmt.Sprintf(invoicePaymentFailedMessage, err))
@@ -153,8 +152,6 @@ func (bot TipBot) payHandler(c *tb.Callback) {
 		}
 		bot.telegram.Send(c.Sender, invoicePaidMessage)
 		log.Printf("[/pay] User %s paid invoice %s", userStr, invoice.PaymentHash)
-		user.ResetState()
-		err = UpdateUserRecord(user, bot)
 		return
 	}
 
