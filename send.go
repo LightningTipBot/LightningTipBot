@@ -49,13 +49,6 @@ func SendCheckSyntax(m *tb.Message) (bool, string) {
 	return true, ""
 }
 
-type SendCallbackData struct {
-	ToID               int
-	ToUserStrWithoutAt string
-	Amount             int
-	Memo               string
-}
-
 // confirmPaymentHandler invoked on "/send 123 @user" command
 func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 	log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
@@ -139,11 +132,11 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 		btnSend.Data = btnSend.Data + "|" + sendMemo
 	}
 
+	// this is the maximum length of what the callback supports
 	buttonMaxDataLength := 58
 	if len(btnSend.Data) > buttonMaxDataLength {
 		btnSend.Data = btnSend.Data[:buttonMaxDataLength]
 	}
-	log.Debugf("Callback data: %s", btnSend.Data)
 
 	sendConfirmationMenu.Inline(sendConfirmationMenu.Row(btnSend, btnCancelSend))
 	confirmText := fmt.Sprintf(confirmSendInvoiceMessage, MarkdownEscape(toUserStrMention), amount)
@@ -159,7 +152,7 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation
 func (bot *TipBot) cancelSendHandler(c *tb.Callback) {
-	// delete the tooltip
+	// delete the confirmation message
 	err := bot.telegram.Delete(c.Message)
 	if err != nil {
 		log.Errorln("[cancelSendHandler] " + err.Error())
@@ -176,7 +169,6 @@ func (bot *TipBot) cancelSendHandler(c *tb.Callback) {
 func (bot *TipBot) sendHandler(c *tb.Callback) {
 	// remove buttons from confirmation message
 	_, err := bot.telegram.Edit(c.Message, MarkdownEscape(c.Message.Text), &tb.ReplyMarkup{})
-	//err := bot.telegram.Delete(c.Message)
 	if err != nil {
 		log.Errorln("[sendHandler] " + err.Error())
 	}
