@@ -26,7 +26,9 @@ const (
 		"📲 *Lightning Wallets*\n" +
 		"_Your funds on this bot can be sent to any other Lightning wallet and vice versa. If you don't have a Lightning wallet yet, check out_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), or_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(easy)_.\n\n" +
 		"📄 *Open Source*\n" +
-		"_This bot is free and_ [open source](https://github.com/LightningTipBot/LightningTipBot) _software. You can run it on your own computer and use it in your own community. That way you don't have to trust anyone to keep your funds safe._\n\n" +
+		"_This bot is free and_ [open source](https://github.com/LightningTipBot/LightningTipBot) _software. You can run it on your own computer and use it in your own community. You don't have to trust anyone to keep your funds safe._\n\n" +
+		// "🏛 *Terms*\n" +
+		// "_We are not custodian of your funds. Any amount you load onto your wallet will be legally considered a donation that belongs to us. We will act in your best interest but we're also aware that the situation without KYC is tricky until we figure something out. Do not give us all your money.  Be aware that this bot is in beta development. Use at your own risk._\n\n" +
 		"❤️ *Donate*\n" +
 		"_This bot charges no fees but generates costs. If you like to support this bot, please consider a donation. To donate, just tip @LightningTipBot or try_ `/send 1000 @LightningTipBot`"
 )

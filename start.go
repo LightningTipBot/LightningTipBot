@@ -15,7 +15,7 @@ import (
 const (
 	startSettingWalletMessage = "🧮 Setting up your wallet..."
 	startWalletReadyMessage   = "✅ *Your wallet is ready.*"
-	startNoUsernameMessage    = "☝️ It looks like you don't have a Telegram @username yet. You don't need one to use this bot. However, to make better use of your new wallet, please set up a username in the [Telegram settings](https://telegram.org/faq#q-what-are-usernames-how-do-i-get-one). Then, enter /balance so the bot can update its record of you."
+	startNoUsernameMessage    = "☝️ It looks like you don't have a Telegram @username yet. That's ok, you don't need one to use this bot. However, to make better use of your wallet, set up a username in the [Telegram settings](https://telegram.org/faq#q-what-are-usernames-how-do-i-get-one). Then, enter /balance so the bot can update its record of you."
 )
 
 func (bot TipBot) startHandler(m *tb.Message) {

@@ -18,8 +18,9 @@ const (
 	invalidInvoiceHelpMessage          = "Did you enter a valid Lightning invoice?"
 	invoiceNoAmountMessage             = "🚫 Can't pay invoices without an amount."
 	insufficiendFundsMessage           = "🚫 Insufficient funds. You have %d sat but you need at least %d sat."
+	feeReserveMessage                  = "⚠️ Sending your entire balance might fail because of network fees. If it fails, try sending a bit less."
 	invoicePaymentFailedMessage        = "🚫 Failed to pay invoice: %s"
-	confirmPayInvoiceMessage           = "Do you want to pay this invoice?\n💸 Amount: %d sat"
+	confirmPayInvoiceMessage           = "Do you want to pay this invoice?\n\n💸 Amount: %d sat"
 	confirmPayAppendMemo               = "\n✉️ %s"
 	payHelpText                        = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/pay <invoice>`\n" +
@@ -28,7 +29,7 @@ const (
 
 func helpPayInvoiceUsage(errormsg string) string {
 	if len(errormsg) > 0 {
-		return fmt.Sprintf(payHelpText, fmt.Sprintf("_%s_", errormsg))
+		return fmt.Sprintf(payHelpText, fmt.Sprintf("%s", errormsg))
 	} else {
 		return fmt.Sprintf(payHelpText, "")
 	}
@@ -71,8 +72,6 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 		log.Errorln(errmsg)
 		return
 	}
-	// description := bolt11.Description
-	// log.Printf("[Pay Invoice] Description: %s", description)
 
 	// check user balance first
 	balance, err := bot.GetUserBalance(m.Sender)
@@ -86,6 +85,10 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 		NewMessage(m).Dispose(0, bot.telegram)
 		bot.telegram.Send(m.Sender, fmt.Sprintf(insufficiendFundsMessage, balance, amount))
 		return
+	}
+	// send warning that the invoice might fail due to missing fee reserve
+	if float64(amount) > float64(balance)*0.99 {
+		bot.telegram.Send(m.Sender, feeReserveMessage)
 	}
 
 	log.Printf("[/pay] User: %s, amount: %d sat.", userStr, amount)
@@ -104,7 +107,6 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 		confirmText = confirmText + fmt.Sprintf(confirmPayAppendMemo, MarkdownEscape(bolt11.Description))
 	}
 	bot.telegram.Send(m.Sender, confirmText, paymentConfirmationMenu)
-
 }
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation

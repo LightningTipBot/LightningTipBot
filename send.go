@@ -14,12 +14,12 @@ import (
 const (
 	sendValidAmountMessage     = "Did you use a valid amount?"
 	sendUserNotFoundMessage    = "User %s could not be found. You can /send only to Telegram tags like @%s."
-	sendIsNotAUsser            = "%s is not a user"
+	sendIsNotAUsser            = "🚫 %s is not a username. You can /send only to Telegram tags like @%s."
 	sendUserHasNoWalletMessage = "🚫 User %s hasn't created a wallet yet."
 	sendSentMessage            = "💸 %d sat sent to %s."
 	sendReceivedMessage        = "🏅 %s has sent you %d sat."
 	sendErrorMessage           = "🚫 Transaction failed: %s"
-	confirmSendInvoiceMessage  = "Do you want to pay to %s?\n💸 Amount: %d sat"
+	confirmSendInvoiceMessage  = "Do you want to pay to %s?\n\n💸 Amount: %d sat"
 	confirmSendAppendMemo      = "\n✉️ %s"
 	sendCancelledMessage       = "🚫 Sending cancelled."
 	sendHelpText               = "📖 Oops, that didn't work. %s\n\n" +
@@ -29,7 +29,7 @@ const (
 
 func helpSendUsage(errormsg string) string {
 	if len(errormsg) > 0 {
-		return fmt.Sprintf(sendHelpText, fmt.Sprintf("_%s_", errormsg))
+		return fmt.Sprintf(sendHelpText, fmt.Sprintf("%s", errormsg))
 	} else {
 		return fmt.Sprintf(sendHelpText, "")
 	}
@@ -89,6 +89,7 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 
 	if len(m.Entities) < 2 {
 		arg, err := getArgumentFromCommand(m.Text, 2)
+		arg = MarkdownEscape(arg)
 		if err != nil {
 			return
 		}
@@ -101,13 +102,14 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 	}
 	if m.Entities[1].Type != "mention" {
 		arg, err := getArgumentFromCommand(m.Text, 2)
+		arg = MarkdownEscape(arg)
 		if err != nil {
 			NewMessage(m).Dispose(0, bot.telegram)
 			return
 		}
 		NewMessage(m).Dispose(0, bot.telegram)
 		errmsg := fmt.Sprintf("Error: %s is not a user", arg)
-		bot.telegram.Send(m.Sender, fmt.Sprintf(sendIsNotAUsser, arg))
+		bot.telegram.Send(m.Sender, fmt.Sprintf(sendIsNotAUsser, arg, arg))
 		log.Errorln(errmsg)
 		return
 	}

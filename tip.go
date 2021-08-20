@@ -25,7 +25,7 @@ const (
 
 func helpTipUsage(errormsg string) string {
 	if len(errormsg) > 0 {
-		return fmt.Sprintf(tipHelpText, fmt.Sprintf("_%s_", errormsg))
+		return fmt.Sprintf(tipHelpText, fmt.Sprintf("%s", errormsg))
 	} else {
 		return fmt.Sprintf(tipHelpText, "")
 	}
