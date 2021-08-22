@@ -37,7 +37,7 @@ func (bot TipBot) invoiceHandler(m *tb.Message) {
 
 	user, err := GetUser(m.Sender, bot)
 	userStr := GetUserStr(m.Sender)
-	amount, err := DecodeAmountFromCommand(m.Text)
+	amount, err := decodeAmountFromCommand(m.Text)
 	if err != nil {
 		return
 	}

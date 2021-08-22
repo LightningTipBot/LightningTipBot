@@ -84,7 +84,6 @@ To minimize the clutter all the heavy tipping can cause in a group chat, the bot
 ## Made with
 * [LNbits](https://github.com/lnbits/lnbits) – Free and open-source lightning-network wallet/accounts system.
 * [telebot](https://github.com/tucnak/telebot) – A Telegram bot framework in Go.
-* [lnpay-go](https://github.com/lnpay/lnpay-go) – A library that talks to the LNPay.co Golang API.
-* [go-qrcode](https://github.com/skip2/go-qrcode) – QR Code encoder in Go.
+* [gozxing](https://github.com/makiuchi-d/gozxing) – barcode image processing library in Go.
 * [ln-decodepay](https://github.com/fiatjaf/ln-decodepay) – Lightning Network BOLT11 invoice decoder.
 

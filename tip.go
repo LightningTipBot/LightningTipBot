@@ -55,7 +55,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	}
 
 	// get tip amount
-	amount, err := DecodeAmountFromCommand(m.Text)
+	amount, err := decodeAmountFromCommand(m.Text)
 	if err != nil || amount < 1 {
 		errmsg := fmt.Sprintf("[/tip] Error: Tip amount not valid.")
 		// immediately delete if the amount is bullshit

@@ -8,15 +8,13 @@ import (
 
 func getArgumentFromCommand(input string, which int) (output string, err error) {
 	if len(strings.Split(input, " ")) < which+1 {
-		errmsg := "Message doesn't contain enoough arguments"
-		// log.Errorln(errmsg)
-		return "None", errors.New(errmsg)
+		return "", errors.New("Message doesn't contain enough arguments")
 	}
 	output = strings.Split(input, " ")[which]
 	return output, nil
 }
 
-func DecodeAmountFromCommand(input string) (amount int, err error) {
+func decodeAmountFromCommand(input string) (amount int, err error) {
 	if len(strings.Split(input, " ")) < 2 {
 		errmsg := "Message doesn't contain any amount"
 		// log.Errorln(errmsg)

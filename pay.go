@@ -17,7 +17,7 @@ const (
 	invoicePrivateChatOnlyErrorMessage = "You can pay invoices only in the private chat with the bot."
 	invalidInvoiceHelpMessage          = "Did you enter a valid Lightning invoice?"
 	invoiceNoAmountMessage             = "🚫 Can't pay invoices without an amount."
-	insufficiendFundsMessage           = "🚫 Insufficient funds. You have %d sat but you need at least %d sat."
+	insufficientFundsMessage           = "🚫 Insufficient funds. You have %d sat but you need at least %d sat."
 	feeReserveMessage                  = "⚠️ Sending your entire balance might fail because of network fees. If it fails, try sending a bit less."
 	invoicePaymentFailedMessage        = "🚫 Failed to pay invoice: %s"
 	confirmPayInvoiceMessage           = "Do you want to pay this invoice?\n\n💸 Amount: %d sat"
@@ -50,14 +50,27 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 		return
 	}
 	user, err := GetUser(m.Sender, bot)
+	if err != nil {
+		NewMessage(m).Dispose(0, bot.telegram)
+		errmsg := fmt.Sprintf("[/pay] Error: Could not GetUser: %s", err)
+		log.Errorln(errmsg)
+		return
+	}
 	userStr := GetUserStr(m.Sender)
-	payment_request, err := getArgumentFromCommand(m.Text, 1)
-	payment_request = strings.ToLower(payment_request)
+	paymentRequest, err := getArgumentFromCommand(m.Text, 1)
+	if err != nil {
+		NewMessage(m).Dispose(0, bot.telegram)
+		bot.telegram.Send(m.Sender, helpPayInvoiceUsage(invalidInvoiceHelpMessage))
+		errmsg := fmt.Sprintf("[/pay] Error: Could not getArgumentFromCommand: %s", err)
+		log.Errorln(errmsg)
+		return
+	}
+	paymentRequest = strings.ToLower(paymentRequest)
 	// get rid of the URI prefix
-	payment_request = strings.TrimPrefix(payment_request, "lightning:")
+	paymentRequest = strings.TrimPrefix(paymentRequest, "lightning:")
 
 	// decode invoice
-	bolt11, err := decodepay.Decodepay(payment_request)
+	bolt11, err := decodepay.Decodepay(paymentRequest)
 	if err != nil {
 		bot.telegram.Send(m.Sender, helpPayInvoiceUsage(invalidInvoiceHelpMessage))
 		errmsg := fmt.Sprintf("[/pay] Error: Could not decode invoice: %s", err)
@@ -66,7 +79,7 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 	}
 	amount := int(bolt11.MSatoshi / 1000)
 
-	if !(amount > 0) {
+	if amount <= 0 {
 		bot.telegram.Send(m.Sender, invoiceNoAmountMessage)
 		errmsg := fmt.Sprint("[/pay] Error: invoice without amount")
 		log.Errorln(errmsg)
@@ -83,7 +96,7 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 	}
 	if amount > balance {
 		NewMessage(m).Dispose(0, bot.telegram)
-		bot.telegram.Send(m.Sender, fmt.Sprintf(insufficiendFundsMessage, balance, amount))
+		bot.telegram.Send(m.Sender, fmt.Sprintf(insufficientFundsMessage, balance, amount))
 		return
 	}
 	// send warning that the invoice might fail due to missing fee reserve
@@ -93,7 +106,7 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 
 	log.Printf("[/pay] User: %s, amount: %d sat.", userStr, amount)
 	user.StateKey = lnbits.UserStateConfirmPayment
-	user.StateData = payment_request
+	user.StateData = paymentRequest
 	err = UpdateUserRecord(user, bot)
 	if err != nil {
 		log.Printf("[UpdateUserRecord] User: %s Error: %s", userStr, err.Error())

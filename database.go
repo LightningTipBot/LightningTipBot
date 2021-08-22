@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
@@ -34,20 +35,30 @@ func migration() (db *gorm.DB, txLogger *gorm.DB) {
 	return orm, txLogger
 }
 
-// GetUser from telegram user
+// GetUser from telegram user. Update the user if user information changed.
 func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 	user := &lnbits.User{Name: strconv.Itoa(u.ID)}
 	tx := bot.database.First(user)
-	user.Telegram = u
 	if tx.Error != nil {
 		errmsg := fmt.Sprintf("[GetUser] Couldn't fetch %s's info from database.", GetUserStr(u))
 		log.Warnln(errmsg)
 		return user, tx.Error
 	}
-	user.Wallet.Client = bot.client
-
-	// update possibly changed user details in database
-	return user, UpdateUserRecord(user, bot)
+	defer func() {
+		user.Wallet.Client = bot.client
+	}()
+	var err error
+	go func() {
+		if !reflect.DeepEqual(u, user.Telegram) {
+			// update possibly changed user details in database
+			user.Telegram = u
+			err = UpdateUserRecord(user, bot)
+			if err != nil {
+				log.Warnln(fmt.Sprintf("[UpdateUserRecord] %s", err.Error()))
+			}
+		}
+	}()
+	return user, err
 }
 
 func UpdateUserRecord(user *lnbits.User, bot TipBot) error {

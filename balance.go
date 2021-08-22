@@ -15,16 +15,18 @@ func (bot TipBot) balanceHandler(m *tb.Message) {
 		// delete message
 		NewMessage(m).Dispose(0, bot.telegram)
 	}
-	// first check if the user is initialized
-	// note: this is another GetUser call that could be avoided
+	// first check whether the user is initialized
 	fromUser, err := GetUser(m.Sender, bot)
+	if err != nil {
+		log.Errorf("[/balance] Error: %s", err)
+		return
+	}
 	if !fromUser.Initialized {
 		bot.startHandler(m)
 		return
 	}
 
 	usrStr := GetUserStr(m.Sender)
-	// log.Infof("[/balance] Getting %s's balance", usrStr)
 	balance, err := bot.GetUserBalance(m.Sender)
 	if err != nil {
 		log.Errorf("[/balance] Error fetching %s's balance: %s", usrStr, err)

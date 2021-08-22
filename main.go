@@ -1,10 +1,21 @@
 package main
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
 )
 
+// setLogger will initialize the log format
+func setLogger() {
+	log.SetLevel(log.InfoLevel)
+	customFormatter := new(log.TextFormatter)
+	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
+	customFormatter.FullTimestamp = true
+	log.SetFormatter(customFormatter)
+}
+
 func main() {
+	// set logger
+	setLogger()
 	defer withRecovery()
 	bot := NewBot()
 	bot.Start()
@@ -12,6 +23,6 @@ func main() {
 
 func withRecovery() {
 	if r := recover(); r != nil {
-		fmt.Println("Recovered panic: ", r)
+		log.Errorln("Recovered panic: ", r)
 	}
 }

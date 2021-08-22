@@ -1,5 +1,63 @@
 package lnbits
 
+import (
+	"github.com/imroc/req"
+	tb "gopkg.in/tucnak/telebot.v2"
+)
+
+type Client struct {
+	header     req.Header
+	url        string
+	AdminKey   string
+	InvoiceKey string
+}
+
+type User struct {
+	ID          string       `json:"id"`
+	Name        string       `json:"name" gorm:"primaryKey"`
+	Initialized bool         `json:"initialized"`
+	Telegram    *tb.User     `gorm:"embedded;embeddedPrefix:telegram_"`
+	Wallet      *Wallet      `gorm:"embedded;embeddedPrefix:wallet_"`
+	StateKey    UserStateKey `json:"stateKey"`
+	StateData   string       `json:"stateData"`
+}
+type UserStateKey int
+
+const (
+	UserStateConfirmPayment = iota + 1
+	UserStateConfirmSend
+)
+
+func (u *User) ResetState() {
+	u.StateData = ""
+	u.StateKey = 0
+}
+
+type InvoiceParams struct {
+	Out     bool   `json:"out"`
+	Amount  int64  `json:"amount"`
+	Memo    string `json:"memo"` // the invoice description.
+	Webhook string `json:"webhook,omitempty"`
+}
+
+type PaymentParams struct {
+	Out    bool   `json:"out"`
+	Bolt11 string `json:"bolt11"`
+}
+type PayParams struct {
+	// the BOLT11 payment request you want to pay.
+	PaymentRequest string `json:"payment_request"`
+
+	// custom data you may want to associate with this invoice. optional.
+	PassThru map[string]interface{} `json:"passThru"`
+}
+
+type TransferParams struct {
+	Memo         string `json:"memo"`           // the transfer description.
+	NumSatoshis  int64  `json:"num_satoshis"`   // the transfer amount.
+	DestWalletId string `json:"dest_wallet_id"` // the key or id of the destination
+}
+
 type Error struct {
 	Name    string `json:"name"`
 	Message string `json:"message"`
