@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 
 	log "github.com/sirupsen/logrus"
 
@@ -13,7 +15,7 @@ const (
 	balanceErrorMessage = "🚫 Error fetching your balance. Please try again later."
 )
 
-func (bot TipBot) balanceHandler(m *tb.Message) {
+func (bot TipBot) balanceHandler(ctx context.Context,m *tb.Message) {
 	// check and print all commands
 	bot.anyTextHandler(m)
 	// reply only in private message
@@ -21,10 +23,10 @@ func (bot TipBot) balanceHandler(m *tb.Message) {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))
 	}
-	// first check whether the user is initialized
-	fromUser, err := GetUser(m.Sender, bot)
-	if err != nil {
-		log.Errorf("[/balance] Error: %s", err)
+	// try to load user form context
+	fromUser := ctx.Value("user").(*lnbits.User)
+	if fromUser == nil {
+		log.Errorf("[/balance] Error: %s", fmt.Sprintf("user not found"))
 		return
 	}
 	if !fromUser.Initialized {
@@ -33,7 +35,7 @@ func (bot TipBot) balanceHandler(m *tb.Message) {
 	}
 
 	usrStr := GetUserStr(m.Sender)
-	balance, err := bot.GetUserBalance(m.Sender)
+	balance, err := bot.GetUserBalance(fromUser)
 	if err != nil {
 		log.Errorf("[/balance] Error fetching %s's balance: %s", usrStr, err)
 		bot.trySendMessage(m.Sender, balanceErrorMessage)

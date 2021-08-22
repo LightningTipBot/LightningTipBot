@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/intercept"
 	"strings"
 	"sync"
 	"time"
@@ -66,7 +67,7 @@ func newTelegramBot() *tb.Bot {
 // todo -- may want to derive user wallets from this specific bot wallet (master wallet), since lnbits usermanager extension is able to do that.
 func (bot TipBot) initBotWallet() error {
 	botWalletInitialisation.Do(func() {
-		err := bot.initWallet(bot.telegram.Me)
+		_, err := bot.initWallet(bot.telegram.Me)
 		if err != nil {
 			log.Errorln(fmt.Sprintf("[initBotWallet] Could not initialize bot wallet: %s", err.Error()))
 			return
@@ -79,21 +80,23 @@ func (bot TipBot) initBotWallet() error {
 func (bot TipBot) registerTelegramHandlers() {
 	telegramHandlerRegistration.Do(func() {
 		// Set up handlers
+		beforeMessage := intercept.WithBeforeMessage(bot.loadUserInterceptor)
 		var endpointHandler = map[string]interface{}{
-			"/tip":                  bot.tipHandler,
-			"/pay":                  bot.confirmPaymentHandler,
-			"/invoice":              bot.invoiceHandler,
-			"/balance":              bot.balanceHandler,
-			"/start":                bot.startHandler,
-			"/send":                 bot.confirmSendHandler,
-			"/help":                 bot.helpHandler,
+			"/tip":     intercept.HandlerWithMessage(bot.tipHandler, beforeMessage),
+			"/pay":     intercept.HandlerWithMessage(bot.confirmPaymentHandler, beforeMessage),
+			"/invoice": intercept.HandlerWithMessage(bot.invoiceHandler, beforeMessage),
+			"/balance": intercept.HandlerWithMessage(bot.balanceHandler, beforeMessage),
+			"/start":   bot.startHandler,
+			"/send":    intercept.HandlerWithMessage(bot.confirmSendHandler, beforeMessage),
+			"/help":    bot.helpHandler,
+			"/info":    bot.infoHandler,
+			tb.OnPhoto: intercept.HandlerWithMessage(bot.privatePhotoHandler, beforeMessage),
+			tb.OnText:  intercept.HandlerWithMessage(bot.anyTextHandler, beforeMessage),
 			"/basics":               bot.basicsHandler,
 			"/donate":               bot.donationHandler,
 			"/advanced":             bot.advancedHelpHandler,
 			"/link":                 bot.lndhubHandler,
 			"/lnurl":                bot.lnurlHandler,
-			tb.OnPhoto:              bot.privatePhotoHandler,
-			tb.OnText:               bot.anyTextHandler,
 			tb.OnQuery:              bot.anyQueryHandler,
 			tb.OnChosenInlineResult: bot.anyChosenInlineHandler,
 		}
@@ -108,15 +111,15 @@ func (bot TipBot) registerTelegramHandlers() {
 				bot.telegram.Handle(strings.ToUpper(endpoint), handler)
 			}
 		}
+		beforeCallback := intercept.WithBeforeCallback(bot.loadUserCallbackInterceptor)
 
 		// button handlers
 		// for /pay
-		bot.telegram.Handle(&btnPay, bot.payHandler)
-		bot.telegram.Handle(&btnCancelPay, bot.cancelPaymentHandler)
+		bot.telegram.Handle(&btnPay, intercept.HandlerWithCallback(bot.payHandler, beforeCallback))
+		bot.telegram.Handle(&btnCancelPay, intercept.HandlerWithCallback(bot.cancelPaymentHandler, beforeCallback))
 		// for /send
-		bot.telegram.Handle(&btnSend, bot.sendHandler)
-		bot.telegram.Handle(&btnCancelSend, bot.cancelSendHandler)
-
+		bot.telegram.Handle(&btnSend, intercept.HandlerWithCallback(bot.sendHandler, beforeCallback))
+		bot.telegram.Handle(&btnCancelSend, intercept.HandlerWithCallback(bot.cancelSendHandler, beforeCallback))
 		// register inline button handlers
 		// button for inline send
 		bot.telegram.Handle(&btnSendInline, bot.sendInlineHandler)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -52,20 +53,26 @@ func (bot *TipBot) SendCheckSyntax(m *tb.Message) (bool, string) {
 }
 
 // confirmPaymentHandler invoked on "/send 123 @user" command
-func (bot *TipBot) confirmSendHandler(m *tb.Message) {
-	// reset state immediately
-	user, err := GetUser(m.Sender, *bot)
-	if err != nil {
+func (bot *TipBot) confirmSendHandler(ctx context.Context, m *tb.Message) {
+	log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
+	user := ctx.Value("user").(*lnbits.User)
+	if user == nil {
+		NewMessage(m).Dispose(0, bot.telegram)
+		log.Print("[/send] Error: user not found")
+		bot.telegram.Send(m.Sender, fmt.Sprint(errorTryLaterMessage))
 		return
 	}
 	user.ResetState()
-	err = UpdateUserRecord(user, *bot)
-
+	err := UpdateUserRecord(user, *bot)
+	if err != nil {
+		log.Printf("[/send] Error: %v",err)
+		return
+	}
 	// check and print all commands
-	bot.anyTextHandler(m)
+	bot.anyTextHandler(ctx,m)
 	// If the send is a reply, then trigger /tip handler
 	if m.IsReply() {
-		bot.tipHandler(m)
+		bot.tipHandler(ctx, m)
 		return
 	}
 
@@ -152,7 +159,7 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 	toUserStrMention := m.Text[m.Entities[1].Offset : m.Entities[1].Offset+m.Entities[1].Length]
 	toUserStrWithoutAt := strings.TrimPrefix(toUserStrMention, "@")
 
-	err = bot.parseCmdDonHandler(m)
+	err = bot.parseCmdDonHandler(ctx,m)
 	if err == nil {
 		return
 	}
@@ -176,13 +183,6 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 
 	// save the send data to the database
 	log.Debug(sendData)
-	user, err = GetUser(m.Sender, *bot)
-	if err != nil {
-		NewMessage(m, WithDuration(0, bot.telegram))
-		log.Printf("[/send] Error: %s\n", err.Error())
-		bot.trySendMessage(m.Sender, fmt.Sprint(errorTryLaterMessage))
-		return
-	}
 	user.StateKey = lnbits.UserStateConfirmSend
 	user.StateData = sendData
 	err = UpdateUserRecord(user, *bot)
@@ -204,15 +204,14 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 }
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation
-func (bot *TipBot) cancelSendHandler(c *tb.Callback) {
+func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	// reset state immediately
-	user, err := GetUser(c.Sender, *bot)
-	if err != nil {
-		log.Errorln(err.Error())
+	user := ctx.Value("user").(*lnbits.User)
+	if user == nil {
 		return
 	}
 	user.ResetState()
-	err = UpdateUserRecord(user, *bot)
+	err := UpdateUserRecord(user, *bot)
 	if err != nil {
 		log.Errorln(err.Error())
 		return
@@ -231,7 +230,7 @@ func (bot *TipBot) cancelSendHandler(c *tb.Callback) {
 }
 
 // sendHandler invoked when user clicked send on payment confirmation
-func (bot *TipBot) sendHandler(c *tb.Callback) {
+func (bot *TipBot) sendHandler(ctx context.Context, c *tb.Callback) {
 	// remove buttons from confirmation message
 	_, err := bot.telegram.Edit(c.Message, MarkdownEscape(c.Message.Text), &tb.ReplyMarkup{})
 	if err != nil {
@@ -239,9 +238,9 @@ func (bot *TipBot) sendHandler(c *tb.Callback) {
 	}
 	// decode callback data
 	// log.Debug("[sendHandler] Callback: %s", c.Data)
-	user, err := GetUser(c.Sender, *bot)
-	if err != nil {
-		log.Printf("[GetUser] User: %d: %s", c.Sender.ID, err.Error())
+	user := ctx.Value("user").(*lnbits.User)
+	if user == nil {
+		log.Printf("[GetUser] User not found", c.Sender.ID)
 		return
 	}
 	if user.StateKey != lnbits.UserStateConfirmSend {
@@ -278,15 +277,18 @@ func (bot *TipBot) sendHandler(c *tb.Callback) {
 		return
 	}
 	// we can now get the wallets of both users
-	to := &tb.User{ID: toId, Username: toUserStrWithoutAt}
-	from := c.Sender
-	toUserStrMd := GetUserStrMd(to)
-	fromUserStrMd := GetUserStrMd(from)
-	toUserStr := GetUserStr(to)
-	fromUserStr := GetUserStr(from)
+	to, err := GetUser(&tb.User{ID: toId, Username: toUserStrWithoutAt}, *bot)
+	if err != nil {
+		log.Errorln(err.Error())
+		return
+	}
+	toUserStrMd := GetUserStrMd(to.Telegram)
+	fromUserStrMd := GetUserStrMd(user.Telegram)
+	toUserStr := GetUserStr(to.Telegram)
+	fromUserStr := GetUserStr(user.Telegram)
 
 	transactionMemo := fmt.Sprintf("Send from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
-	t := NewTransaction(bot, from, to, amount, TransactionType("send"))
+	t := NewTransaction(bot, user, to, amount, TransactionType("send"))
 	t.Memo = transactionMemo
 
 	success, err := t.Send()
@@ -298,11 +300,11 @@ func (bot *TipBot) sendHandler(c *tb.Callback) {
 		return
 	}
 
-	bot.trySendMessage(from, fmt.Sprintf(sendSentMessage, amount, toUserStrMd))
-	bot.trySendMessage(to, fmt.Sprintf(sendReceivedMessage, fromUserStrMd, amount))
+	bot.trySendMessage(user.Telegram, fmt.Sprintf(sendSentMessage, amount, toUserStrMd))
+	bot.trySendMessage(to.Telegram, fmt.Sprintf(sendReceivedMessage, fromUserStrMd, amount))
 	// send memo if it was present
 	if len(sendMemo) > 0 {
-		bot.trySendMessage(to, fmt.Sprintf("✉️ %s", MarkdownEscape(sendMemo)))
+		bot.trySendMessage(to.Telegram, fmt.Sprintf("✉️ %s", MarkdownEscape(sendMemo)))
 	}
 
 	return

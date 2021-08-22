@@ -3,13 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
+	"gorm.io/gorm"
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	log "github.com/sirupsen/logrus"
 
 	tb "gopkg.in/tucnak/telebot.v2"
-	"gorm.io/gorm"
 )
 
 var markdownV2Escapes = []string{"_", "[", "]", "(", ")", "~", "`", ">", "#", "+", "-", "=", "|", "{", "}", ".", "!"}
@@ -64,23 +64,11 @@ func appendUinqueUsersToSlice(slice []*tb.User, i *tb.User) []*tb.User {
 	return append(slice, i)
 }
 
-func (bot *TipBot) UserInitializedWallet(user *tb.User) bool {
-	toUser, err := GetUser(user, *bot)
-	if err != nil {
-		return false
-	}
-	return toUser.Initialized
-}
-
-func (bot *TipBot) GetUserBalance(user *tb.User) (amount int, err error) {
+func (bot *TipBot) GetUserBalance(fromUser *lnbits.User) (amount int, err error) {
 	// get user
-	fromUser, err := GetUser(user, *bot)
-	if err != nil {
-		return
-	}
 	wallet, err := fromUser.Wallet.Info(*fromUser.Wallet)
 	if err != nil {
-		errmsg := fmt.Sprintf("[GetUserBalance] Error: Couldn't fetch user %s's info from LNbits: %s", GetUserStr(user), err)
+		errmsg := fmt.Sprintf("[GetUserBalance] Error: Couldn't fetch user %s's info from LNbits: %s", GetUserStr(fromUser.Telegram), err)
 		log.Errorln(errmsg)
 		return
 	}
@@ -91,34 +79,35 @@ func (bot *TipBot) GetUserBalance(user *tb.User) (amount int, err error) {
 	}
 	// msat to sat
 	amount = int(wallet.Balance) / 1000
-	log.Infof("[GetUserBalance] %s's balance: %d sat\n", GetUserStr(user), amount)
+	log.Infof("[GetUserBalance] %s's balance: %d sat\n", GetUserStr(fromUser.Telegram), amount)
 	return
 }
 
-// copyLowercaseUser will create a coy user and cast username to lowercase.
+
 func (bot *TipBot) copyLowercaseUser(u *tb.User) *tb.User {
 	userCopy := *u
 	userCopy.Username = strings.ToLower(u.Username)
 	return &userCopy
 }
 
-func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) error {
+func (bot *TipBot) CreateWalletForUser(tbUser *tb.User) (*lnbits.User, error) {
+	// copyLowercaseUser will create a coy user and cast username to lowercase.
 	userCopy := bot.copyLowercaseUser(tbUser)
 	user := &lnbits.User{Telegram: userCopy}
 	userStr := GetUserStr(tbUser)
-	log.Printf("[CreateWalletForTelegramUser] Creating wallet for user %s ... ", userStr)
+	log.Printf("[CreateWalletForUser] Creating wallet for user %s ... ", userStr)
 	err := bot.createWallet(user)
 	if err != nil {
-		errmsg := fmt.Sprintf("[CreateWalletForTelegramUser] Error: Could not create wallet for user %s", userStr)
+		errmsg := fmt.Sprintf("[CreateWalletForUser] Error: Could not create wallet for user %s", userStr)
 		log.Errorln(errmsg)
-		return err
+		return nil, err
 	}
 	tx := bot.database.Save(user)
 	if tx.Error != nil {
-		return tx.Error
+		return nil, tx.Error
 	}
-	log.Printf("[CreateWalletForTelegramUser] Wallet created for user %s. ", userStr)
-	return nil
+	log.Printf("[CreateWalletForUser] Wallet created for user %s. ", userStr)
+	return user, nil
 }
 
 func (bot *TipBot) UserExists(user *tb.User) (*lnbits.User, bool) {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -29,7 +30,7 @@ func (bot TipBot) startHandler(m *tb.Message) {
 	// bot.helpHandler(m)
 	log.Printf("[/start] User: %s (%d)\n", m.Sender.Username, m.Sender.ID)
 	walletCreationMsg, err := bot.telegram.Send(m.Sender, startSettingWalletMessage)
-	err = bot.initWallet(m.Sender)
+	user, err := bot.initWallet(m.Sender)
 	if err != nil {
 		log.Errorln(fmt.Sprintf("[startHandler] Error with initWallet: %s", err.Error()))
 		bot.tryEditMessage(walletCreationMsg, startWalletErrorMessage)
@@ -39,7 +40,7 @@ func (bot TipBot) startHandler(m *tb.Message) {
 
 	bot.helpHandler(m)
 	bot.trySendMessage(m.Sender, startWalletReadyMessage)
-	bot.balanceHandler(m)
+	bot.balanceHandler(context.WithValue(context.Background(), "user", user), m)
 
 	// send the user a warning about the fact that they need to set a username
 	if len(m.Sender.Username) == 0 {
@@ -48,19 +49,19 @@ func (bot TipBot) startHandler(m *tb.Message) {
 	return
 }
 
-func (bot TipBot) initWallet(tguser *tb.User) error {
+func (bot TipBot) initWallet(tguser *tb.User) (*lnbits.User, error) {
 	user, err := GetUser(tguser, bot)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		u := &lnbits.User{Telegram: tguser}
 		err = bot.createWallet(u)
 		if err != nil {
-			return err
+			return u, err
 		}
 		u.Initialized = true
 		err = UpdateUserRecord(u, bot)
 		if err != nil {
 			log.Errorln(fmt.Sprintf("[initWallet] error updating user: %s", err.Error()))
-			return err
+			return u, err
 		}
 	} else if !user.Initialized {
 		// update all tip tooltips (with the "initialize me" message) that this user might have received before
@@ -69,16 +70,16 @@ func (bot TipBot) initWallet(tguser *tb.User) error {
 		err = UpdateUserRecord(user, bot)
 		if err != nil {
 			log.Errorln(fmt.Sprintf("[initWallet] error updating user: %s", err.Error()))
-			return err
+			return user, err
 		}
 	} else if user.Initialized {
 		// wallet is already initialized
-		return nil
+		return user,nil
 	} else {
 		err = fmt.Errorf("could not initialize wallet")
-		return err
+		return user,err
 	}
-	return nil
+	return user, nil
 }
 
 func (bot TipBot) createWallet(user *lnbits.User) error {

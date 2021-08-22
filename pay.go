@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -36,7 +37,7 @@ func helpPayInvoiceUsage(errormsg string) string {
 }
 
 // confirmPaymentHandler invoked on "/pay lnbc..." command
-func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
+func (bot TipBot) confirmPaymentHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
 	bot.anyTextHandler(m)
 	if m.Chat.Type != tb.ChatPrivate {
@@ -50,10 +51,10 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(""))
 		return
 	}
-	user, err := GetUser(m.Sender, bot)
-	if err != nil {
+	user := ctx.Value("user").(*lnbits.User)
+	if user == nil {
 		NewMessage(m, WithDuration(0, bot.telegram))
-		errmsg := fmt.Sprintf("[/pay] Error: Could not GetUser: %s", err)
+		errmsg := fmt.Sprintf("[/pay] Error: Could not load user")
 		log.Errorln(errmsg)
 		return
 	}
@@ -88,7 +89,7 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 	}
 
 	// check user balance first
-	balance, err := bot.GetUserBalance(m.Sender)
+	balance, err := bot.GetUserBalance(user)
 	if err != nil {
 		NewMessage(m, WithDuration(0, bot.telegram))
 		errmsg := fmt.Sprintf("[/pay] Error: Could not get user balance: %s", err)
@@ -124,14 +125,14 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 }
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation
-func (bot TipBot) cancelPaymentHandler(c *tb.Callback) {
+func (bot TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 	// reset state immediately
-	user, err := GetUser(c.Sender, bot)
-	if err != nil {
+	user := ctx.Value("user").(*lnbits.User)
+	if user == nil {
 		return
 	}
 	user.ResetState()
-	err = UpdateUserRecord(user, bot)
+	err := UpdateUserRecord(user, bot)
 
 	bot.tryDeleteMessage(c.Message)
 	_, err = bot.telegram.Send(c.Sender, paymentCancelledMessage)
@@ -143,11 +144,11 @@ func (bot TipBot) cancelPaymentHandler(c *tb.Callback) {
 }
 
 // payHandler when user clicked pay "X" on payment confirmation
-func (bot TipBot) payHandler(c *tb.Callback) {
+func (bot TipBot) payHandler(ctx context.Context, c *tb.Callback) {
 	bot.tryEditMessage(c.Message, c.Message.Text, &tb.ReplyMarkup{})
-	user, err := GetUser(c.Sender, bot)
-	if err != nil {
-		log.Printf("[GetUser] User: %d: %s", c.Sender.ID, err.Error())
+	user := ctx.Value("user").(*lnbits.User)
+	if user == nil {
+		log.Printf("[GetUser] could not load user", c.Sender.ID)
 		return
 	}
 	if user.StateKey == lnbits.UserStateConfirmPayment {
@@ -155,7 +156,7 @@ func (bot TipBot) payHandler(c *tb.Callback) {
 
 		// reset state immediatelly
 		user.ResetState()
-		err = UpdateUserRecord(user, bot)
+		err := UpdateUserRecord(user, bot)
 
 		userStr := GetUserStr(c.Sender)
 		// pay invoice

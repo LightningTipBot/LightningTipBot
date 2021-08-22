@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -15,7 +16,7 @@ const (
 	initWalletMessage = "You don't have a wallet yet. Enter */start*"
 )
 
-func (bot TipBot) anyTextHandler(m *tb.Message) {
+func (bot TipBot) anyTextHandler(ctx context.Context, m *tb.Message) {
 	log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
 	if m.Chat.Type != tb.ChatPrivate {
 		return
@@ -29,11 +30,10 @@ func (bot TipBot) anyTextHandler(m *tb.Message) {
 	}
 
 	// could be an invoice
-	anyText := strings.ToLower(m.Text)
-	if lightning.IsInvoice(anyText) {
-		m.Text = "/pay " + anyText
-		bot.confirmPaymentHandler(m)
-		return
+	invoiceString := strings.ToLower(m.Text)
+	if lightning.IsInvoice(invoiceString) {
+		m.Text = "/pay " + invoiceString
+		bot.confirmPaymentHandler(ctx, m)
 	}
 
 	// could be a LNURL

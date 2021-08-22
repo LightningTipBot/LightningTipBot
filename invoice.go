@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"strings"
 
@@ -28,7 +29,7 @@ func helpInvoiceUsage(errormsg string) string {
 	}
 }
 
-func (bot TipBot) invoiceHandler(m *tb.Message) {
+func (bot TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
 	bot.anyTextHandler(m)
 	if m.Chat.Type != tb.ChatPrivate {
@@ -41,7 +42,10 @@ func (bot TipBot) invoiceHandler(m *tb.Message) {
 		return
 	}
 
-	user, err := GetUser(m.Sender, bot)
+	user := ctx.Value("user").(*lnbits.User)
+	if user == nil {
+		return
+	}
 	userStr := GetUserStr(m.Sender)
 	amount, err := decodeAmountFromCommand(m.Text)
 	if err != nil {

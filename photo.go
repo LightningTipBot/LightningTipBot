@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"image"
 	"image/jpeg"
@@ -38,7 +39,7 @@ func TryRecognizeInvoiceFromQrCode(img image.Image) (*gozxing.Result, error) {
 }
 
 // privatePhotoHandler is the handler function for every photo from a private chat that the bot receives
-func (bot TipBot) privatePhotoHandler(m *tb.Message) {
+func (bot TipBot) privatePhotoHandler(ctx context.Context, m *tb.Message) {
 	if m.Chat.Type != tb.ChatPrivate {
 		return
 	}
@@ -69,5 +70,5 @@ func (bot TipBot) privatePhotoHandler(m *tb.Message) {
 
 	// invoke payment handler
 	m.Text = fmt.Sprintf("/pay %s", data.String())
-	bot.confirmPaymentHandler(m)
+	bot.confirmPaymentHandler(ctx, m)
 }
