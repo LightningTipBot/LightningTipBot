@@ -95,7 +95,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	user := ctx.Value("to_user").(*lnbits.User)
 	if user == nil {
 		log.Infof("[/tip] User %s has no wallet.", toUserStr)
-		user, err = bot.CreateWalletForUser(to.Telegram)
+		user, err = bot.CreateWalletForTelegramUser(to.Telegram)
 		if err != nil {
 			errmsg := fmt.Errorf("[/tip] Error: Could not create wallet for %s", toUserStr)
 			log.Errorln(errmsg)

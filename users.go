@@ -90,15 +90,14 @@ func (bot *TipBot) copyLowercaseUser(u *tb.User) *tb.User {
 	return &userCopy
 }
 
-func (bot *TipBot) CreateWalletForUser(tbUser *tb.User) (*lnbits.User, error) {
-	// copyLowercaseUser will create a coy user and cast username to lowercase.
+func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) (*lnbits.User, error) {
 	userCopy := bot.copyLowercaseUser(tbUser)
 	user := &lnbits.User{Telegram: userCopy}
 	userStr := GetUserStr(tbUser)
-	log.Printf("[CreateWalletForUser] Creating wallet for user %s ... ", userStr)
+	log.Printf("[CreateWalletForTelegramUser] Creating wallet for user %s ... ", userStr)
 	err := bot.createWallet(user)
 	if err != nil {
-		errmsg := fmt.Sprintf("[CreateWalletForUser] Error: Could not create wallet for user %s", userStr)
+		errmsg := fmt.Sprintf("[CreateWalletForTelegramUser] Error: Could not create wallet for user %s", userStr)
 		log.Errorln(errmsg)
 		return nil, err
 	}
@@ -106,7 +105,7 @@ func (bot *TipBot) CreateWalletForUser(tbUser *tb.User) (*lnbits.User, error) {
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	log.Printf("[CreateWalletForUser] Wallet created for user %s. ", userStr)
+	log.Printf("[CreateWalletForTelegramUser] Wallet created for user %s. ", userStr)
 	return user, nil
 }
 
