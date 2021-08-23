@@ -95,10 +95,11 @@ func (bot *TipBot) GetUserBalance(user *tb.User) (amount int, err error) {
 }
 
 func (bot *TipBot) CreateWalletForUser(tbUser *tb.User) error {
-	user, err := GetUser(tbUser, *bot)
+	user, _ := GetUser(tbUser, *bot)
 	userStr := GetUserStr(tbUser)
 	log.Printf("[CreateWalletForUser] Creating wallet for user %s ... ", userStr)
-	err = bot.createWallet(user)
+	user.Telegram = tbUser
+	err := bot.createWallet(user)
 	if err != nil {
 		errmsg := fmt.Sprintf("[CreateWalletForUser] Error: Could not create wallet for user %s", userStr)
 		log.Errorln(errmsg)
