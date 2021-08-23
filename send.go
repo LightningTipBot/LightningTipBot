@@ -19,9 +19,9 @@ const (
 	sendSentMessage            = "💸 %d sat sent to %s."
 	sendReceivedMessage        = "🏅 %s has sent you %d sat."
 	sendErrorMessage           = "🚫 Transaction failed: %s"
-	confirmSendInvoiceMessage  = "Do you want to pay to %s?\n\n🏅 Amount: %d sat"
+	confirmSendInvoiceMessage  = "Do you want to pay to %s?\n\n💸 Amount: %d sat"
 	confirmSendAppendMemo      = "\n✉️ %s"
-	sendCancelledMessage       = "🚫 Sending cancelled."
+	sendCancelledMessage       = "🚫 Send cancelled."
 	errorTryLaterMessage       = "🚫 Internal error. Please try again later.."
 	sendHelpText               = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/send <amount> <user> [<memo>]`\n" +

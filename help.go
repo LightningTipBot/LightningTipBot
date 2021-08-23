@@ -6,13 +6,13 @@ import (
 )
 
 const (
-	helpMessage = "ℹ️ *Info*\n_This bot is a Bitcoin Lightning ⚡️ wallet and can sends tips on Telegram. Simply add it to your group. The basic unit of tips are Satoshis (sat). 100,000,000 sat = 1 Bitcoin. There will only ever be 21 Million Bitcoin. Type /info for more._\n\n" +
+	helpMessage = "ℹ️ *Info*\n_This bot is a Bitcoin Lightning ⚡️ wallet that can sends tips on Telegram. To tip, add the bot to a group chat. The basic unit of tips are Satoshis (sat). 100,000,000 sat = 1 Bitcoin. There will only ever be 21 Million Bitcoin. Type /info for more._\n\n" +
 		"❤️ *Donate*\n" +
-		"_This bot charges no fees but generates costs. If you like to support this bot, please consider a donation. To donate, just tip @LightningTipBot or try_ `/send 1000 @LightningTipBot`\n\n" +
+		"_This bot charges no fees but has running costs. If you like the bot, please consider supporting it with a donation. To donate, just tip @LightningTipBot or try_ `/send 1000 @LightningTipBot`\n\n" +
 		"⚙️ *Commands*\n" +
-		"*/tip* 🏅 Reply to a message to tip it: `/tip <amount> [<memo>]`\n" +
-		"*/balance* 👑 Check your balance: `/balance`\n" +
-		"*/send* 💸 Send funds to a user: `/send <amount> <@username> [<memo>]`\n" +
+		"*/tip* 🏅 Reply to a message to tip: `/tip <amount> [<memo>]`\n" +
+		"*/balance* 👑 Check balance: `/balance`\n" +
+		"*/send* 💸 Send funds to a Telegram user: `/send <amount> <@username> [<memo>]`\n" +
 		"*/invoice* ⚡️ Receive over Lightning: `/invoice <amount> [<memo>]`\n" +
 		"*/pay* ⚡️ Pay over Lightning: `/pay <invoice>`\n" +
 		"*/help* 📖 Read this help.\n"
@@ -32,7 +32,7 @@ const (
 		// "🏛 *Terms*\n" +
 		// "_We are not custodian of your funds. Any amount you load onto your wallet will be legally considered a donation that belongs to us. We will act in your best interest but we're also aware that the situation without KYC is tricky until we figure something out. Do not give us all your money.  Be aware that this bot is in beta development. Use at your own risk._\n\n" +
 		"❤️ *Donate*\n" +
-		"_This bot charges no fees but generates costs. If you like to support this bot, please consider a donation. To donate, just tip @LightningTipBot or try_ `/send 1000 @LightningTipBot`"
+		"_This bot charges no fees but has running costs. If you like the bot, please consider supporting it with a donation. To donate, just tip @LightningTipBot or try_ `/send 1000 @LightningTipBot`"
 )
 
 func (bot TipBot) helpHandler(m *tb.Message) {

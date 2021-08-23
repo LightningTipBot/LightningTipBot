@@ -11,12 +11,12 @@ import (
 )
 
 const (
-	tipDidYouReplyMessage = "Did you reply to a message to tip? To reply to a message, right-click -> Reply on your computer or swipe the message on your phone. If you want to send directly to another Telegram user, use the /send command."
+	tipDidYouReplyMessage = "Did you reply to a message to tip? To reply to any message, right-click -> Reply on your computer or swipe the message on your phone. If you want to send directly to another Telegram user's wallet, use the /send command."
 	tipEnterAmountMessage = "Did you enter an amount?"
 	tipValidAmountMessage = "Did you enter a valid amount?"
 	tipYourselfMessage    = "📖 You can't tip yourself."
 	tipSentMessage        = "💸 %d sat sent to %s."
-	tipReceivedMessage    = "🏅 You've received a %d sat tip from %s."
+	tipReceivedMessage    = "🏅 %s has tipped you %d sat."
 	tipErrorMessage       = "🚫 Transaction failed: %s"
 	tipHelpText           = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/tip <amount> [<memo>]`\n" +
@@ -138,7 +138,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	if !messageHasTip {
 		bot.telegram.Forward(to, m.ReplyTo, tb.Silent)
 	}
-	bot.telegram.Send(to, fmt.Sprintf(tipReceivedMessage, amount, fromUserStrMd))
+	bot.telegram.Send(to, fmt.Sprintf(tipReceivedMessage, fromUserStrMd, amount))
 
 	if len(tipMemo) > 0 {
 		bot.telegram.Send(to, fmt.Sprintf("✉️ %s", MarkdownEscape(tipMemo)))
