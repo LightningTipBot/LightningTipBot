@@ -12,14 +12,14 @@ import (
 )
 
 const (
-	sendValidAmountMessage     = "Did you use a valid amount?"
+	sendValidAmountMessage     = "Did you enter a valid amount?"
 	sendUserNotFoundMessage    = "User %s could not be found. You can /send only to Telegram tags like @%s."
 	sendIsNotAUsser            = "🚫 %s is not a username. You can /send only to Telegram tags like @%s."
 	sendUserHasNoWalletMessage = "🚫 User %s hasn't created a wallet yet."
 	sendSentMessage            = "💸 %d sat sent to %s."
 	sendReceivedMessage        = "🏅 %s has sent you %d sat."
 	sendErrorMessage           = "🚫 Transaction failed: %s"
-	confirmSendInvoiceMessage  = "Do you want to pay to %s?\n\n💸 Amount: %d sat"
+	confirmSendInvoiceMessage  = "Do you want to pay to %s?\n\n🏅 Amount: %d sat"
 	confirmSendAppendMemo      = "\n✉️ %s"
 	sendCancelledMessage       = "🚫 Sending cancelled."
 	errorTryLaterMessage       = "🚫 Internal error. Please try again later.."

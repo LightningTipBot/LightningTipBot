@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	tipDidYouReplyMessage = "Did you reply to a message to tip? To reply to a message, right-click -> Reply on your computer or swipe the message on your phone."
+	tipDidYouReplyMessage = "Did you reply to a message to tip? To reply to a message, right-click -> Reply on your computer or swipe the message on your phone. If you want to send directly to another Telegram user, use the /send command."
 	tipEnterAmountMessage = "Did you enter an amount?"
-	tipValidAmountMessage = "Did you use a valid amount?"
+	tipValidAmountMessage = "Did you enter a valid amount?"
 	tipYourselfMessage    = "📖 You can't tip yourself."
 	tipSentMessage        = "💸 %d sat sent to %s."
 	tipReceivedMessage    = "🏅 You've received a %d sat tip from %s."
