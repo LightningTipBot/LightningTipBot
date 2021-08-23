@@ -20,7 +20,7 @@ const (
 	insufficientFundsMessage           = "🚫 Insufficient funds. You have %d sat but you need at least %d sat."
 	feeReserveMessage                  = "⚠️ Sending your entire balance might fail because of network fees. If it fails, try sending a bit less."
 	invoicePaymentFailedMessage        = "🚫 Failed to pay invoice: %s"
-	confirmPayInvoiceMessage           = "Do you want to pay this invoice?\n\n💸 Amount: %d sat"
+	confirmPayInvoiceMessage           = "Do you want to pay this invoice?\n\n🏅 Amount: %d sat"
 	confirmPayAppendMemo               = "\n✉️ %s"
 	payHelpText                        = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/pay <invoice>`\n" +

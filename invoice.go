@@ -12,17 +12,33 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-func helpInvoiceUsage(errormsg string) string {
-	helpstr := "📖 Oops, that didn't work. %s\n\n" +
+const (
+	invoiceEnterAmountMessage = "Did you enter an amount?"
+	invoiceValidAmountMessage = "Did you enter a valid amount?"
+	invoiceHelpText           = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/invoice <amount> [<memo>]`\n" +
 		"*Example:* `/invoice 1000 Take this! 💸`"
+)
+
+func helpInvoiceUsage(errormsg string) string {
 	if len(errormsg) > 0 {
-		helpstr = fmt.Sprintf(helpstr, fmt.Sprintf("_%s_", errormsg))
+		return fmt.Sprintf(invoiceHelpText, fmt.Sprintf("%s", errormsg))
 	} else {
-		helpstr = fmt.Sprintf(helpstr, "")
+		return fmt.Sprintf(invoiceHelpText, "")
 	}
-	return helpstr
 }
+
+// func helpInvoiceUsage(errormsg string) string {
+// 	helpstr := "📖 Oops, that didn't work. %s\n\n" +
+// 		"*Usage:* `/invoice <amount> [<memo>]`\n" +
+// 		"*Example:* `/invoice 1000 Take this! 💸`"
+// 	if len(errormsg) > 0 {
+// 		helpstr = fmt.Sprintf(helpstr, fmt.Sprintf("%s", errormsg))
+// 	} else {
+// 		helpstr = fmt.Sprintf(helpstr, "")
+// 	}
+// 	return helpstr
+// }
 
 func (bot TipBot) invoiceHandler(m *tb.Message) {
 	log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
@@ -32,7 +48,7 @@ func (bot TipBot) invoiceHandler(m *tb.Message) {
 		return
 	}
 	if len(strings.Split(m.Text, " ")) < 2 {
-		bot.telegram.Send(m.Sender, helpInvoiceUsage(""))
+		bot.telegram.Send(m.Sender, helpInvoiceUsage(invoiceEnterAmountMessage))
 		return
 	}
 
@@ -44,7 +60,7 @@ func (bot TipBot) invoiceHandler(m *tb.Message) {
 	}
 	if amount > 0 {
 	} else {
-		bot.telegram.Send(m.Sender, helpInvoiceUsage("Did you use a valid amount?"))
+		bot.telegram.Send(m.Sender, helpInvoiceUsage(invoiceValidAmountMessage))
 		return
 	}
 
