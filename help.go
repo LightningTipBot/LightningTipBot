@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	helpMessage = "ℹ️ *Info*\n_This bot is a Lightning Bitcoin wallet and can sends tips on Telegram. Simply add it to your group. The basic unit of tips are Satoshis (sat). 100,000,000 sat = 1 Bitcoin. There will only ever be 21 Million Bitcoin. Type /info for more._\n\n" +
+	helpMessage = "ℹ️ *Info*\n_This bot is a Bitcoin Lightning ⚡️ wallet and can sends tips on Telegram. Simply add it to your group. The basic unit of tips are Satoshis (sat). 100,000,000 sat = 1 Bitcoin. There will only ever be 21 Million Bitcoin. Type /info for more._\n\n" +
 		"❤️ *Donate*\n" +
 		"_This bot charges no fees but generates costs. If you like to support this bot, please consider a donation. To donate, just tip @LightningTipBot or try_ `/send 1000 @LightningTipBot`\n\n" +
 		"⚙️ *Commands*\n" +
