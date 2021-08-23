@@ -25,6 +25,7 @@ func helpInvoiceUsage(errormsg string) string {
 }
 
 func (bot TipBot) invoiceHandler(m *tb.Message) {
+	log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
 		NewMessage(m).Dispose(0, bot.telegram)
