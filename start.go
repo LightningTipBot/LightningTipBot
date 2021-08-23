@@ -55,6 +55,7 @@ func (bot TipBot) initWallet(tguser *tb.User) error {
 			return err
 		}
 	} else if !user.Initialized {
+		// update all tip tooltips (with the "initialize me" message) that this user might have received before
 		tipTooltipInitializedHandler(user.Telegram, bot)
 		user.Initialized = true
 		err = UpdateUserRecord(user, bot)
