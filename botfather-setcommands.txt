@@ -7,7 +7,7 @@
 
 help - Read the help.
 balance - Check your balance. 
-tip - Reply to a message to tip it.
-send - Send funds to a user. 
-invoice - Create a Lightning invoice to receive payments. 
-pay - Pay a Lightning invoice.
+tip - Reply to a message to tip. Example: /tip 50
+send - Send funds to a Telegram user. Example: /send 100 @LightningTipBot
+invoice - Create a Lightning invoice to receive payments. Example: /invoice 1000
+pay - Pay a Lightning invoice. Example: /pay lnbc10n1ps...
