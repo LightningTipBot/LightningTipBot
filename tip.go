@@ -83,7 +83,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 
 	if !bot.UserHasWallet(to) {
 		log.Infof("[/tip] User %s has no wallet.", toUserStr)
-		err = bot.CreateWalletForUser(to)
+		err = bot.CreateWalletForTelegramUser(to)
 		if err != nil {
 			errmsg := fmt.Errorf("[/tip] Error: Could not create wallet for %s", toUserStr)
 			log.Errorln(errmsg)

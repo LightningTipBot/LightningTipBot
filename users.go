@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	log "github.com/sirupsen/logrus"
 
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -94,13 +95,13 @@ func (bot *TipBot) GetUserBalance(user *tb.User) (amount int, err error) {
 	return
 }
 
-func (bot *TipBot) CreateWalletForUser(tbUser *tb.User) error {
-	user, err := GetUser(tbUser, *bot)
+func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) error {
+	user := &lnbits.User{Telegram: tbUser}
 	userStr := GetUserStr(tbUser)
-	log.Printf("[CreateWalletForUser] Creating wallet for user %s ... ", userStr)
-	err = bot.createWallet(user)
+	log.Printf("[CreateWalletForTelegramUser] Creating wallet for user %s ... ", userStr)
+	err := bot.createWallet(user)
 	if err != nil {
-		errmsg := fmt.Sprintf("[CreateWalletForUser] Error: Could not create wallet for user %s", userStr)
+		errmsg := fmt.Sprintf("[CreateWalletForTelegramUser] Error: Could not create wallet for user %s", userStr)
 		log.Errorln(errmsg)
 		return err
 	}
@@ -108,7 +109,7 @@ func (bot *TipBot) CreateWalletForUser(tbUser *tb.User) error {
 	if tx.Error != nil {
 		return tx.Error
 	}
-	log.Printf("[CreateWalletForUser] Wallet created for user %s. ", userStr)
+	log.Printf("[CreateWalletForTelegramUser] Wallet created for user %s. ", userStr)
 	return nil
 }
 
