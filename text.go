@@ -19,6 +19,7 @@ func (bot TipBot) anyTextHandler(m *tb.Message) {
 		if !bot.UserHasWallet(m.Sender) {
 			log.Infof("User %s has no wallet, force-initializing", GetUserStr(m.Sender))
 			bot.startHandler(m)
+			return
 		}
 	}
 
@@ -27,5 +28,6 @@ func (bot TipBot) anyTextHandler(m *tb.Message) {
 	if lightning.IsInvoice(invoiceString) {
 		m.Text = "/pay " + invoiceString
 		bot.confirmPaymentHandler(m)
+		return
 	}
 }
