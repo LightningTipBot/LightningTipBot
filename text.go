@@ -1,8 +1,9 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -13,6 +14,12 @@ func (bot TipBot) anyTextHandler(m *tb.Message) {
 	if m.Chat.Type != tb.ChatPrivate {
 		return
 	}
+	// check if user is in database, if not, initialize wallet
+	if !bot.UserHasWallet(m.Sender) {
+		log.Infof("User %s has no wallet, force-initializing", GetUserStr(m.Sender))
+		bot.startHandler(m)
+	}
+
 	// could be an invoice
 	invoiceString := strings.ToLower(m.Text)
 	if lightning.IsInvoice(invoiceString) {

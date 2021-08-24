@@ -26,7 +26,7 @@ const (
 		"📲 *Lightning Wallets*\n" +
 		"_Your funds on this bot can be sent to any other Lightning wallet and vice versa. Recommended Lightning wallets for your phone are_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), or_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(easy)_.\n\n" +
 		"📄 *Open Source*\n" +
-		"_This bot is free and_ [open source](https://github.com/LightningTipBot/LightningTipBot) _software. You can run it on your own computer and use it in your own community. You don't have to trust anyone to keep your funds safe._\n\n" +
+		"_This bot is free and_ [open source](https://github.com/LightningTipBot/LightningTipBot) _software. You can run it on your own computer and use it in your own community._\n\n" +
 		"✈️ *Telegram*\n" +
 		"_Add this bot to your Telegram group chat to /tip posts. If you make the bot admin of the group it will also clean up commands to keep the chat tidy._\n\n" +
 		// "🏛 *Terms*\n" +
