@@ -23,6 +23,8 @@ func (bot TipBot) startHandler(m *tb.Message) {
 	if !m.Private() {
 		return
 	}
+	// ATTENTION: DO NOT CALL ANY HANDLER BEFORE THE WALLET IS CREATED
+	// WILL RESULT IN AN ENDLESS LOOP OTHERWISE
 	// bot.helpHandler(m)
 	bot.telegram.Send(m.Sender, helpMessage, tb.NoPreview)
 	log.Printf("[/start] User: %s (%d)\n", m.Sender.Username, m.Sender.ID)
