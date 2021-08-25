@@ -19,6 +19,7 @@ func (bot TipBot) anyTextHandler(m *tb.Message) {
 		return
 	}
 
+	// check if user is in database, if not, initialize wallet
 	if !bot.UserHasWallet(m.Sender) {
 		bot.startHandler(m)
 		return
