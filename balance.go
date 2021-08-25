@@ -9,7 +9,8 @@ import (
 )
 
 func (bot TipBot) balanceHandler(m *tb.Message) {
-	log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
+	// check and print all commands
+	bot.anyTextHandler(m)
 	// reply only in private message
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message

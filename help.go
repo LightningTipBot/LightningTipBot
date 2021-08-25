@@ -1,7 +1,6 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -36,7 +35,8 @@ const (
 )
 
 func (bot TipBot) helpHandler(m *tb.Message) {
-	log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
+	// check and print all commands
+	bot.anyTextHandler(m)
 	if !m.Private() {
 		// delete message
 		NewMessage(m).Dispose(0, bot.telegram)
@@ -46,7 +46,8 @@ func (bot TipBot) helpHandler(m *tb.Message) {
 }
 
 func (bot TipBot) infoHandler(m *tb.Message) {
-	log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
+	// check and print all commands
+	bot.anyTextHandler(m)
 	if !m.Private() {
 		// delete message
 		NewMessage(m).Dispose(0, bot.telegram)

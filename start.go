@@ -15,6 +15,7 @@ import (
 const (
 	startSettingWalletMessage = "🧮 Setting up your wallet..."
 	startWalletReadyMessage   = "✅ *Your wallet is ready.*"
+	startWalletErrorMessage   = "🚫 Error initializing your wallet. Try again later."
 	startNoUsernameMessage    = "☝️ It looks like you don't have a Telegram @username yet. That's ok, you don't need one to use this bot. However, to make better use of your wallet, set up a username in the [Telegram settings](https://telegram.org/faq#q-what-are-usernames-how-do-i-get-one). Then, enter /balance so the bot can update its record of you."
 )
 
@@ -22,18 +23,20 @@ func (bot TipBot) startHandler(m *tb.Message) {
 	if !m.Private() {
 		return
 	}
-	bot.helpHandler(m)
+	// bot.helpHandler(m)
+	bot.telegram.Send(m.Sender, helpMessage, tb.NoPreview)
 	log.Printf("[/start] User: %s (%d)\n", m.Sender.Username, m.Sender.ID)
-
 	walletCreationMsg, err := bot.telegram.Send(m.Sender, startSettingWalletMessage)
 	err = bot.initWallet(m.Sender)
 	if err != nil {
 		log.Errorln(fmt.Sprintf("[startHandler] Error with initWallet: %s", err.Error()))
+		bot.telegram.Edit(walletCreationMsg, startWalletErrorMessage)
 		return
 	}
 	bot.telegram.Edit(walletCreationMsg, startWalletReadyMessage)
 	bot.balanceHandler(m)
 
+	// send the user a warning about the fact that they need to set a username
 	if len(m.Sender.Username) == 0 {
 		bot.telegram.Send(m.Sender, startNoUsernameMessage, tb.NoPreview)
 	}
@@ -63,6 +66,9 @@ func (bot TipBot) initWallet(tguser *tb.User) error {
 			log.Errorln(fmt.Sprintf("[initWallet] error updating user: %s", err.Error()))
 			return err
 		}
+	} else {
+		err = fmt.Errorf("could not initialize wallet")
+		return err
 	}
 	return nil
 }

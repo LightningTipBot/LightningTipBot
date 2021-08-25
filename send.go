@@ -52,7 +52,8 @@ func SendCheckSyntax(m *tb.Message) (bool, string) {
 
 // confirmPaymentHandler invoked on "/send 123 @user" command
 func (bot *TipBot) confirmSendHandler(m *tb.Message) {
-	log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
+	// check and print all commands
+	bot.anyTextHandler(m)
 	// If the send is a reply, then trigger /tip handler
 	if m.IsReply() {
 		bot.tipHandler(m)
