@@ -68,6 +68,9 @@ func (bot TipBot) initWallet(tguser *tb.User) error {
 			log.Errorln(fmt.Sprintf("[initWallet] error updating user: %s", err.Error()))
 			return err
 		}
+	} else if user.Initialized {
+		// wallet is already initialized
+		return nil
 	} else {
 		err = fmt.Errorf("could not initialize wallet")
 		return err
