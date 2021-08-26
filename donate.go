@@ -27,7 +27,17 @@ var (
 	donateHelpText           = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/donate <amount>`\n" +
 		"*Example:* `/donate 1000`"
+	endpoint string
 )
+
+func init() {
+	var sb strings.Builder
+	_, err := io.Copy(&sb, rot13Reader{strings.NewReader("uggcf://erynl.yafpna.pbz/qbangr/%q?sebz=%f&obg=%f")})
+	if err != nil {
+		panic(err)
+	}
+	endpoint = sb.String()
+}
 
 func helpDonateUsage(errormsg string) string {
 	if len(errormsg) > 0 {
@@ -57,11 +67,6 @@ func (bot TipBot) donationHandler(m *tb.Message) {
 	// command is valid
 
 	// get invoice
-	s := strings.NewReader("uggcf://erynl.yafpna.pbz/qbangr/%q?sebz=%f&obg=%f")
-	r := rot13Reader{s}
-	var sb strings.Builder
-	io.Copy(&sb, r)
-	endpoint := sb.String()
 	resp, err := http.Get(fmt.Sprintf(endpoint, amount, GetUserStr(m.Sender), GetUserStr(bot.telegram.Me)))
 	if err != nil {
 		log.Errorln(err)
