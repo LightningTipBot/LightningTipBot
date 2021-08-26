@@ -80,6 +80,7 @@ func (bot TipBot) registerTelegramHandlers() {
 			"/pay":     bot.confirmPaymentHandler,
 			"/invoice": bot.invoiceHandler,
 			"/balance": bot.balanceHandler,
+			"/donate":  bot.donationHandler,
 			"/start":   bot.startHandler,
 			"/send":    bot.confirmSendHandler,
 			"/help":    bot.helpHandler,
