@@ -66,6 +66,10 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 		return
 	}
 
+	err = bot.parseCmdDonHandler(m)
+	if err == nil {
+		return
+	}
 	// TIP COMMAND IS VALID
 
 	to := m.ReplyTo.Sender

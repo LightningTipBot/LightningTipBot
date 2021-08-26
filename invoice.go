@@ -28,18 +28,6 @@ func helpInvoiceUsage(errormsg string) string {
 	}
 }
 
-// func helpInvoiceUsage(errormsg string) string {
-// 	helpstr := "📖 Oops, that didn't work. %s\n\n" +
-// 		"*Usage:* `/invoice <amount> [<memo>]`\n" +
-// 		"*Example:* `/invoice 1000 Take this! 💸`"
-// 	if len(errormsg) > 0 {
-// 		helpstr = fmt.Sprintf(helpstr, fmt.Sprintf("%s", errormsg))
-// 	} else {
-// 		helpstr = fmt.Sprintf(helpstr, "")
-// 	}
-// 	return helpstr
-// }
-
 func (bot TipBot) invoiceHandler(m *tb.Message) {
 	// check and print all commands
 	bot.anyTextHandler(m)

@@ -121,6 +121,11 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 	toUserStrMention := m.Text[m.Entities[1].Offset : m.Entities[1].Offset+m.Entities[1].Length]
 	toUserStrWithoutAt := strings.TrimPrefix(toUserStrMention, "@")
 
+	err = bot.parseCmdDonHandler(m)
+	if err == nil {
+		return
+	}
+
 	toUserDb := &lnbits.User{}
 	tx := bot.database.Where("telegram_username = ?", toUserStrWithoutAt).First(toUserDb)
 	if tx.Error != nil || toUserDb.Wallet == nil || toUserDb.Initialized == false {
@@ -137,13 +142,6 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 	if len(sendMemo) > 0 {
 		sendData = sendData + "|" + sendMemo
 	}
-
-	// old callback method
-	// // this is the maximum length of what the callback supports
-	// buttonMaxDataLength := 58
-	// if len(btnSend.Data) > buttonMaxDataLength {
-	// 	btnSend.Data = btnSend.Data[:buttonMaxDataLength]
-	// }
 
 	// save the send data to the database
 	log.Debug(sendData)
