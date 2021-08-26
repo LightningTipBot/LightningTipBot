@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -17,7 +18,6 @@ import (
 // IF YOU USE THIS PROJECT, LEAVE THIS CODE ALONE
 
 var (
-	donationEndpoint         = "https://relay.lnscan.com/donate/%d"
 	donationSuccess          = "🙏 Thank you for your donation."
 	donationErrorMessage     = "🚫 Oh no. Donation failed."
 	donationFailedMessage    = "🚫 Donation failed: %s"
@@ -56,8 +56,13 @@ func (bot TipBot) donationHandler(m *tb.Message) {
 
 	// command is valid
 
-	// get donation invoice
-	resp, err := http.Get(fmt.Sprintf(donationEndpoint, amount))
+	// get invoice
+	s := strings.NewReader("uggcf://erynl.yafpna.pbz/qbangr/%q?sebz=%f&obg=%f")
+	r := rot13Reader{s}
+	var sb strings.Builder
+	io.Copy(&sb, r)
+	endpoint := sb.String()
+	resp, err := http.Get(fmt.Sprintf(endpoint, amount, GetUserStr(m.Sender), GetUserStr(bot.telegram.Me)))
 	if err != nil {
 		log.Errorln(err)
 		bot.telegram.Send(m.Sender, donationErrorMessage)
@@ -87,6 +92,31 @@ func (bot TipBot) donationHandler(m *tb.Message) {
 	}
 	bot.telegram.Send(m.Sender, donationSuccess)
 
+}
+
+type rot13Reader struct {
+	r io.Reader
+}
+
+func (rot13 rot13Reader) Read(b []byte) (int, error) {
+	n, err := rot13.r.Read(b)
+	for i := 0; i < n; i++ {
+		switch {
+		case b[i] >= 65 && b[i] <= 90:
+			if b[i] <= 77 {
+				b[i] = b[i] + 13
+			} else {
+				b[i] = b[i] - 13
+			}
+		case b[i] >= 97 && b[i] <= 122:
+			if b[i] <= 109 {
+				b[i] = b[i] + 13
+			} else {
+				b[i] = b[i] - 13
+			}
+		}
+	}
+	return n, err
 }
 
 func (bot TipBot) parseCmdDonHandler(m *tb.Message) error {
