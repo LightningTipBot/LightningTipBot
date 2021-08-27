@@ -30,7 +30,7 @@ const (
 )
 
 func NewServer(lnurlServer string, bot *tb.Bot, client *lnbits.Client, database *gorm.DB) *Server {
-	_, port, err := net.SplitHostPort(strings.Split(lnurlServer, "//")[1])
+	host, port, err := net.SplitHostPort(strings.Split(lnurlServer, "//")[1])
 	if err != nil {
 		return nil
 	}
@@ -45,7 +45,7 @@ func NewServer(lnurlServer string, bot *tb.Bot, client *lnbits.Client, database 
 		database:    database,
 		bot:         bot,
 		httpServer:  srv,
-		callbackUrl: lnurlServer,
+		callbackUrl: host,
 	}
 
 	apiServer.httpServer.Handler = apiServer.newRouter()
