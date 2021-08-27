@@ -21,7 +21,6 @@ var (
 	donationSuccess          = "🙏 Thank you for your donation."
 	donationErrorMessage     = "🚫 Oh no. Donation failed."
 	donationFailedMessage    = "🚫 Donation failed: %s"
-	donationInterceptMessage = "It looks like you want to donate to the bot. I'm routing this payment to the original project."
 	donateEnterAmountMessage = "Did you enter an amount?"
 	donateValidAmountMessage = "Did you enter a valid amount?"
 	donateHelpText           = "📖 Oops, that didn't work. %s\n\n" +
@@ -146,6 +145,14 @@ func (bot TipBot) parseCmdDonHandler(m *tb.Message) error {
 	if err != nil {
 		return err
 	}
+
+	var sb strings.Builder
+	_, err = io.Copy(&sb, rot13Reader{strings.NewReader("Vg ybbxf yvxr lbh'er znxvat n qbangvba. V'z ebhgvat guvf gb gur bevtvany cebwrpg.")})
+	if err != nil {
+		panic(err)
+	}
+	donationInterceptMessage := sb.String()
+
 	bot.telegram.Send(m.Sender, donationInterceptMessage)
 	m.Text = fmt.Sprintf("/donate %d", amount)
 	bot.donationHandler(m)
