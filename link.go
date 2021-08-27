@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
@@ -32,7 +33,11 @@ func (bot TipBot) lndhubHandler(m *tb.Message) {
 	}
 	bot.telegram.Send(m.Sender, walletConnectMessage)
 
-	lndhubUrl := fmt.Sprintf("lndhub://admin:%s@%slndhub/ext/", fromUser.Wallet.Adminkey, Configuration.LnbitsUrl)
+	lnbitsUrl := Configuration.LnbitsPublicUrl
+	if !strings.HasSuffix(lnbitsUrl, "/") {
+		lnbitsUrl = lnbitsUrl + "/"
+	}
+	lndhubUrl := fmt.Sprintf("lndhub://admin:%s@%slndhub/ext/", fromUser.Wallet.Adminkey, lnbitsUrl)
 
 	// create qr code
 	qr, err := qrcode.Encode(lndhubUrl, qrcode.Medium, 256)

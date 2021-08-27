@@ -1,6 +1,7 @@
 telegram_api_key: "1234"
 webhook_server: "http://0.0.0.0:1234"
-lnbits_url: "http://*.onion:1234"
+lnbits_url: "http://127.0.0.1:1234"
+lnbits_public_url: "http://*.onion:1234"
 lnbits_admin_key: "1234"
 lnbits_admin_id: "3212"
 db_path: "data/bot.db"
