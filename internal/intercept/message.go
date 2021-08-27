@@ -10,24 +10,24 @@ type interceptMessageFunc func(ctx context.Context, message *tb.Message) context
 
 type handlerMessageInterceptor struct {
 	handler handlerMessageFunc
-	before  InterceptChain
-	after   InterceptChain
+	before  MessageChain
+	after   MessageChain
 }
-type InterceptChain []interceptMessageFunc
-type InterceptOption func(*handlerMessageInterceptor)
+type MessageChain []interceptMessageFunc
+type MessageInterceptOption func(*handlerMessageInterceptor)
 
-func WithBeforeMessage(chain ...interceptMessageFunc) InterceptOption {
+func WithBeforeMessage(chain ...interceptMessageFunc) MessageInterceptOption {
 	return func(a *handlerMessageInterceptor) {
 		a.before = chain
 	}
 }
-func WithAfterMessage(chain ...interceptMessageFunc) InterceptOption {
+func WithAfterMessage(chain ...interceptMessageFunc) MessageInterceptOption {
 	return func(a *handlerMessageInterceptor) {
 		a.after = chain
 	}
 }
 
-func interceptMessage(ctx context.Context, message *tb.Message, hm InterceptChain) context.Context {
+func interceptMessage(ctx context.Context, message *tb.Message, hm MessageChain) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -39,7 +39,7 @@ func interceptMessage(ctx context.Context, message *tb.Message, hm InterceptChai
 	return ctx
 }
 
-func HandlerWithMessage(handler handlerMessageFunc, option ...InterceptOption) func(message *tb.Message) {
+func HandlerWithMessage(handler handlerMessageFunc, option ...MessageInterceptOption) func(message *tb.Message) {
 	hm := &handlerMessageInterceptor{handler: handler}
 	for _, opt := range option {
 		opt(hm)

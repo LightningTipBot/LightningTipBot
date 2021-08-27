@@ -10,24 +10,24 @@ type interceptCallbackFunc func(ctx context.Context, message *tb.Callback) conte
 
 type handlerCallbackInterceptor struct {
 	handler handlerCallbackFunc
-	before  InterceptCallbackChain
-	after   InterceptCallbackChain
+	before  CallbackChain
+	after   CallbackChain
 }
-type InterceptCallbackChain []interceptCallbackFunc
-type InterceptCallbackOption func(*handlerCallbackInterceptor)
+type CallbackChain []interceptCallbackFunc
+type CallbackInterceptOption func(*handlerCallbackInterceptor)
 
-func WithBeforeCallback(chain ...interceptCallbackFunc) InterceptCallbackOption {
+func WithBeforeCallback(chain ...interceptCallbackFunc) CallbackInterceptOption {
 	return func(a *handlerCallbackInterceptor) {
 		a.before = chain
 	}
 }
-func WithAfterCallback(chain ...interceptCallbackFunc) InterceptCallbackOption {
+func WithAfterCallback(chain ...interceptCallbackFunc) CallbackInterceptOption {
 	return func(a *handlerCallbackInterceptor) {
 		a.after = chain
 	}
 }
 
-func interceptCallback(ctx context.Context, message *tb.Callback, hm InterceptCallbackChain) context.Context {
+func interceptCallback(ctx context.Context, message *tb.Callback, hm CallbackChain) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -39,7 +39,7 @@ func interceptCallback(ctx context.Context, message *tb.Callback, hm InterceptCa
 	return ctx
 }
 
-func HandlerWithCallback(handler handlerCallbackFunc, option ...InterceptCallbackOption) func(Callback *tb.Callback) {
+func HandlerWithCallback(handler handlerCallbackFunc, option ...CallbackInterceptOption) func(Callback *tb.Callback) {
 	hm := &handlerCallbackInterceptor{handler: handler}
 	for _, opt := range option {
 		opt(hm)
