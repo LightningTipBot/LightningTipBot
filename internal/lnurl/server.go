@@ -3,8 +3,10 @@ package lnurl
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -27,7 +29,11 @@ const (
 	lnurlEndpoint = "/.well-known/lnurlp"
 )
 
-func NewServer(lnurlServer, port string, bot *tb.Bot, client *lnbits.Client, database *gorm.DB) *Server {
+func NewServer(lnurlServer string, bot *tb.Bot, client *lnbits.Client, database *gorm.DB) *Server {
+	_, port, err := net.SplitHostPort(strings.Split(lnurlServer, "//")[1])
+	if err != nil {
+		return nil
+	}
 	srv := &http.Server{
 		Addr: fmt.Sprintf("0.0.0.0:%s", port),
 		// Good practice: enforce timeouts for servers you create!
