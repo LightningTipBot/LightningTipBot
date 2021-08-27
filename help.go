@@ -36,7 +36,7 @@ const (
 		"_This bot charges no fees but costs satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, To donate, use_ `/donate 1000`"
 
 	advancedMessage = "🤖 *Advanced commands*\n\n" +
-		"*/link* 🔗 Link your wallet to [Bluewallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)\n"
+		"*/link* 🔗 Link your wallet to [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)\n"
 )
 
 func (bot TipBot) helpHandler(m *tb.Message) {

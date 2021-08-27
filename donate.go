@@ -31,7 +31,7 @@ var (
 
 func init() {
 	var sb strings.Builder
-	_, err := io.Copy(&sb, rot13Reader{strings.NewReader("uggcf://erynl.yafpna.pbz/qbangr/%q?sebz=%f&obg=%f")})
+	_, err := io.Copy(&sb, rot13Reader{strings.NewReader("uggcf://ya.gvcf/qbangr/%q?sebz=%f&obg=%f")})
 	if err != nil {
 		panic(err)
 	}
