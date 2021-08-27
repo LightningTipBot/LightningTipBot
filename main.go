@@ -2,6 +2,7 @@ package main
 
 import (
 	log "github.com/sirupsen/logrus"
+	"runtime/debug"
 )
 
 // setLogger will initialize the log format
@@ -24,5 +25,6 @@ func main() {
 func withRecovery() {
 	if r := recover(); r != nil {
 		log.Errorln("Recovered panic: ", r)
+		debug.PrintStack()
 	}
 }
