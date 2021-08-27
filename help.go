@@ -14,7 +14,9 @@ const (
 		"*/send* 💸 Send funds to a Telegram user: `/send <amount> <@user> [<memo>]`\n" +
 		"*/invoice* ⚡️ Receive over Lightning: `/invoice <amount> [<memo>]`\n" +
 		"*/pay* ⚡️ Pay over Lightning: `/pay <invoice>`\n" +
-		"*/help* 📖 Read this help.\n"
+		"*/donate* ❤️ Donate to the project: `/donate 1000`\n" +
+		"*/advanced* 🤖 Read the advanced help.\n" +
+		"*/help* 📖 Read this help."
 
 	infoMessage = "🧡 *Bitcoin*\n" +
 		"_Bitcoin is the currency of the internet. It is permissionless and decentralized and has no masters and no controling authority. Bitcoin is sound money that is faster, more secure, and more inclusive than the legacy financial system._\n\n" +
@@ -32,6 +34,9 @@ const (
 		// "_We are not custodian of your funds. Any amount you load onto your wallet will be legally considered a donation that belongs to us. We will act in your best interest but we're also aware that the situation without KYC is tricky until we figure something out. Do not give us all your money.  Be aware that this bot is in beta development. Use at your own risk._\n\n" +
 		"❤️ *Donate*\n" +
 		"_This bot charges no fees but costs satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, To donate, use_ `/donate 1000`"
+
+	advancedMessage = "🤖 *Advanced commands*\n\n" +
+		"*/link* 🔗 Link your wallet to [Bluewallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)\n"
 )
 
 func (bot TipBot) helpHandler(m *tb.Message) {
@@ -53,5 +58,16 @@ func (bot TipBot) infoHandler(m *tb.Message) {
 		NewMessage(m).Dispose(0, bot.telegram)
 	}
 	bot.telegram.Send(m.Sender, infoMessage, tb.NoPreview)
+	return
+}
+
+func (bot TipBot) advancedHelpHandler(m *tb.Message) {
+	// check and print all commands
+	bot.anyTextHandler(m)
+	if !m.Private() {
+		// delete message
+		NewMessage(m).Dispose(0, bot.telegram)
+	}
+	bot.telegram.Send(m.Sender, advancedMessage, tb.NoPreview)
 	return
 }

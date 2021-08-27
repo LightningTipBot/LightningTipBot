@@ -76,17 +76,19 @@ func (bot TipBot) registerTelegramHandlers() {
 	telegramHandlerRegistration.Do(func() {
 		// Set up handlers
 		var endpointHandler = map[string]interface{}{
-			"/tip":     bot.tipHandler,
-			"/pay":     bot.confirmPaymentHandler,
-			"/invoice": bot.invoiceHandler,
-			"/balance": bot.balanceHandler,
-			"/start":   bot.startHandler,
-			"/send":    bot.confirmSendHandler,
-			"/help":    bot.helpHandler,
-			"/info":    bot.infoHandler,
-			"/donate":  bot.donationHandler,
-			tb.OnPhoto: bot.privatePhotoHandler,
-			tb.OnText:  bot.anyTextHandler,
+			"/tip":      bot.tipHandler,
+			"/pay":      bot.confirmPaymentHandler,
+			"/invoice":  bot.invoiceHandler,
+			"/balance":  bot.balanceHandler,
+			"/start":    bot.startHandler,
+			"/send":     bot.confirmSendHandler,
+			"/help":     bot.helpHandler,
+			"/info":     bot.infoHandler,
+			"/donate":   bot.donationHandler,
+			"/advanced": bot.advancedHelpHandler,
+			"/link":     bot.lndhubHandler,
+			tb.OnPhoto:  bot.privatePhotoHandler,
+			tb.OnText:   bot.anyTextHandler,
 		}
 		// assign handler to endpoint
 		for endpoint, handler := range endpointHandler {
