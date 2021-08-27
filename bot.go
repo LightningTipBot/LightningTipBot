@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
 	"strings"
 	"sync"
 	"time"
@@ -126,5 +127,7 @@ func (bot TipBot) Start() {
 	}
 	bot.registerTelegramHandlers()
 	lnbits.NewWebhook(Configuration.WebhookServer, bot.telegram, bot.client, bot.database)
+	lnurl.NewServer(Configuration.WebhookServer, "8080", bot.telegram, bot.client, bot.database)
+
 	bot.telegram.Start()
 }

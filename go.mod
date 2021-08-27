@@ -3,6 +3,7 @@ module github.com/LightningTipBot/LightningTipBot
 go 1.15
 
 require (
+	github.com/fiatjaf/go-lnurl v1.4.0
 	github.com/fiatjaf/ln-decodepay v1.1.0
 	github.com/gorilla/mux v1.8.0
 	github.com/imroc/req v0.3.0
