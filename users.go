@@ -3,10 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"gorm.io/gorm"
 	"strings"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	log "github.com/sirupsen/logrus"
 
 	tb "gopkg.in/tucnak/telebot.v2"
