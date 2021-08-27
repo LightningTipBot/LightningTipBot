@@ -105,7 +105,8 @@ func (w Server) createLNURLPayResponse(writer http.ResponseWriter, request *http
 			lnbits.InvoiceParams{
 				Amount: int64(amount / 1000),
 				Out:    false,
-				Memo:   fmt.Sprintf("Pay to @%s", vars["username"])},
+				Memo:   fmt.Sprintf("Pay to @%s", vars["username"]),
+				Webhook: Configuration.WebhookServer},
 			*user.Wallet)
 		if err != nil {
 			errmsg := fmt.Sprintf("[createLNURLPayResponse] Couldn't create invoice: %s", err.Error())
