@@ -27,6 +27,8 @@ type Server struct {
 
 const (
 	lnurlEndpoint = "/.well-known/lnurlp"
+	minSendable   = 1000 // mSat
+	MaxSendable   = 100000000
 )
 
 func NewServer(lnurlServer string, bot *tb.Bot, client *lnbits.Client, database *gorm.DB) *Server {
@@ -83,28 +85,39 @@ func (w Server) createLNURLPayResponse(writer http.ResponseWriter, request *http
 	stringAmount := request.FormValue("amount")
 	amount, err := strconv.Atoi(stringAmount)
 	if err != nil {
-		errmsg := fmt.Sprintf("[Atio] Couldn't cast amount to int")
+		errmsg := fmt.Sprintf("[createLNURLPayResponse] Couldn't cast amount to int")
 		log.Warnln(errmsg)
 		return
 	}
 
-	invoice, err := user.Wallet.Invoice(
-		lnbits.InvoiceParams{
-			Amount: int64(amount / 1000),
-			Out:    false,
-			Memo:   fmt.Sprintf("Pay to @%s", vars["username"])},
-		*user.Wallet)
 	var resp lnurl.LNURLPayResponse2
-	if err != nil {
-		errmsg := fmt.Sprintf("[Invoice] Couldn't create invoice: %s", err.Error())
+
+	if amount < minSendable || amount > MaxSendable {
+		// amount is not ok
+		errmsg := fmt.Sprintf("[createLNURLPayResponse] Amount out of bounds")
 		log.Warnln(errmsg)
 		resp = lnurl.LNURLPayResponse2{
-			LNURLResponse: lnurl.LNURLResponse{Status: "ERROR", Reason: "Couldn't create invoice."},
+			LNURLResponse: lnurl.LNURLResponse{Status: "ERROR", Reason: fmt.Sprintf("Amount out of bounds (min: %d mSat, max: %d mSat).", minSendable, MaxSendable)},
 		}
 	} else {
-		resp = lnurl.LNURLPayResponse2{
-			LNURLResponse: lnurl.LNURLResponse{Status: "OK"},
-			PR:            invoice.PaymentRequest,
+		// amount is ok
+		invoice, err := user.Wallet.Invoice(
+			lnbits.InvoiceParams{
+				Amount: int64(amount / 1000),
+				Out:    false,
+				Memo:   fmt.Sprintf("Pay to @%s", vars["username"])},
+			*user.Wallet)
+		if err != nil {
+			errmsg := fmt.Sprintf("[createLNURLPayResponse] Couldn't create invoice: %s", err.Error())
+			log.Warnln(errmsg)
+			resp = lnurl.LNURLPayResponse2{
+				LNURLResponse: lnurl.LNURLResponse{Status: "ERROR", Reason: "Couldn't create invoice."},
+			}
+		} else {
+			resp = lnurl.LNURLPayResponse2{
+				LNURLResponse: lnurl.LNURLResponse{Status: "OK"},
+				PR:            invoice.PaymentRequest,
+			}
 		}
 	}
 
@@ -122,8 +135,8 @@ func (w Server) createInitialLNURLPayResponse(writer http.ResponseWriter, reques
 	callback := fmt.Sprintf("%s%s/%s", w.callbackUrl, lnurlEndpoint, vars["username"])
 
 	resp := lnurl.LNURLPayResponse1{Callback: callback,
-		MinSendable:    1000,
-		MaxSendable:    100000000,
+		MinSendable:    minSendable,
+		MaxSendable:    MaxSendable,
 		CommentAllowed: 422}
 
 	jsonResponse, err := json.Marshal(resp)
