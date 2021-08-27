@@ -1,6 +1,5 @@
 telegram_api_key: "1234"
 webhook_server: "http://0.0.0.0:5588"
-lnurl_public_server: "http://0.0.0.0:5588"
 lnbits_url: "http://127.0.0.1:5000"
 lnbits_public_url: "http://url.com:5000"
 lnurl_public_server: "http://url.com:80"
