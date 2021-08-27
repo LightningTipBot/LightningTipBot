@@ -80,6 +80,14 @@ The bot replies to a tipped message to indicate to all participants how many and
   	<img alt="How to set up a lnbits wallet and the User Manager extension." src="resources/tooltips.png" >
 </p>
 
+### Link to BlueWallet or Zap
+
+Every user can link their wallet to an external app like [Bluewallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/) by using the command `/link`. If you host the bot, you will have to enable the LndHub extension in LNbits.
+
+<p align="center">
+  	<img alt="QR code payment example." src="resources/lndhub.png" >
+</p>
+
 ### Pay invoices by sending QR codes
 
 To pay a Lightning invoice, you can snap a photo of a QR code and send it directly to the bot. Note that you might need to zoom in, center the QR code, or crop the image if the bot fails to decode the QR code from the photo. By the way, you can also just send an the invoice as a string, the bot will automatically detect it and initiate a payment.
