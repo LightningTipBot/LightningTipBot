@@ -69,7 +69,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 	// check and print all commands
-	bot.anyTextHandler(ctx,m)
+	bot.anyTextHandler(ctx, m)
 	// If the send is a reply, then trigger /tip handler
 	if m.IsReply() {
 		bot.tipHandler(ctx, m)

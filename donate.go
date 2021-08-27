@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -38,9 +39,9 @@ func helpDonateUsage(errormsg string) string {
 	}
 }
 
-func (bot TipBot) donationHandler(m *tb.Message) {
+func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
-	bot.anyTextHandler(m)
+	bot.anyTextHandler(ctx, m)
 
 	if len(strings.Split(m.Text, " ")) < 2 {
 		bot.trySendMessage(m.Sender, helpDonateUsage(donateEnterAmountMessage))
@@ -124,7 +125,7 @@ func (rot13 rot13Reader) Read(b []byte) (int, error) {
 	return n, err
 }
 
-func (bot TipBot) parseCmdDonHandler(m *tb.Message) error {
+func (bot TipBot) parseCmdDonHandler(ctx context.Context, m *tb.Message) error {
 	arg := ""
 	if strings.HasPrefix(strings.ToLower(m.Text), "/send") {
 		arg, _ = getArgumentFromCommand(m.Text, 2)
@@ -156,7 +157,7 @@ func (bot TipBot) parseCmdDonHandler(m *tb.Message) error {
 
   bot.trySendMessage(m.Sender, MarkdownEscape(donationInterceptMessage))
 	m.Text = fmt.Sprintf("/donate %d", amount)
-	bot.donationHandler(m)
+	bot.donationHandler(ctx, m)
 	// returning nil here will abort the parent handler (/pay or /tip)
 	return nil
 }
