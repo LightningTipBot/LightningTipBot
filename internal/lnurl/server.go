@@ -3,15 +3,16 @@ package lnurl
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/fiatjaf/go-lnurl"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"gorm.io/gorm"
-	"net/http"
-	"strconv"
-	"time"
 )
 
 type Server struct {
@@ -63,14 +64,14 @@ func (w Server) handleLnUrl(writer http.ResponseWriter, request *http.Request) {
 
 func (w Server) createLNURLPayResponse(writer http.ResponseWriter, request *http.Request) {
 	vars := mux.Vars(request)
-
-	user := &lnbits.User{Telegram: &tb.User{Username: vars["username"]}}
-	tx := w.database.First(user)
-	if tx.Error != nil {
+	user := &lnbits.User{}
+	tx := w.database.Where("telegram_username = ?", vars["username"]).First(user)
+	if tx.Error != nil || user.Wallet == nil || user.Initialized == false {
 		errmsg := fmt.Sprintf("[GetUser] Couldn't fetch user info from database.")
 		log.Warnln(errmsg)
 		return
 	}
+
 	// set wallet lnbits client
 	user.Wallet.Client = w.c
 	stringAmount := request.FormValue("amount")
@@ -83,7 +84,7 @@ func (w Server) createLNURLPayResponse(writer http.ResponseWriter, request *http
 
 	invoice, err := user.Wallet.Invoice(
 		lnbits.InvoiceParams{
-			Amount: int64(amount),
+			Amount: int64(amount / 1000),
 			Out:    false,
 			Memo:   fmt.Sprintf("Pay to @%s", vars["username"])},
 		*user.Wallet)
