@@ -143,19 +143,27 @@ func (w Server) createInitialLNURLPayResponse(writer http.ResponseWriter, reques
 		writer.WriteHeader(400)
 		return
 	}
-
+	metadata := lnurl.Metadata{{"text/identifier", fmt.Sprintf("%s@ln.tips", vars["username"])}, {"text/plain", fmt.Sprintf("Satoshis to %s@%s", vars["username"], w.callbackUrl)}}
+	jsonMeta, err := json.Marshal(metadata)
+	if err != nil {
+		writer.WriteHeader(400)
+		return
+	}
 	resp := lnurl.LNURLPayResponse1{
-		Tag:            "payRequest",
-		Callback:       callback,
-		CallbackURL:    callbackURL,
-		MinSendable:    minSendable,
-		MaxSendable:    MaxSendable,
-		CommentAllowed: 512}
-
+		LNURLResponse:   lnurl.LNURLResponse{Status: "OK"},
+		Tag:             "payRequest",
+		Callback:        fmt.Sprintf("https://%s", callback),
+		CallbackURL:     callbackURL,
+		MinSendable:     minSendable,
+		MaxSendable:     MaxSendable,
+		CommentAllowed:  512,
+		EncodedMetadata: string(jsonMeta),
+	}
 	jsonResponse, err := json.Marshal(resp)
 	if err != nil {
 		writer.WriteHeader(400)
 		return
 	}
+	writer.WriteHeader(200)
 	writer.Write(jsonResponse)
 }
