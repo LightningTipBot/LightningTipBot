@@ -108,7 +108,7 @@ func (w Server) createLNURLPayResponse(writer http.ResponseWriter, request *http
 			lnbits.InvoiceParams{
 				Amount:  int64(amount / 1000),
 				Out:     false,
-				Memo:    fmt.Sprintf("Pay to @%s", vars["username"]),
+				Memo:    fmt.Sprintf("Pay to %s@%s", vars["username"], w.callbackUrl),
 				Webhook: w.WebhookServer},
 			*user.Wallet)
 		if err != nil {
@@ -145,7 +145,7 @@ func (w Server) createInitialLNURLPayResponse(writer http.ResponseWriter, reques
 		writer.WriteHeader(400)
 		return
 	}
-	metadata := lnurl.Metadata{{"text/identifier", fmt.Sprintf("%s@ln.tips", vars["username"])}, {"text/plain", fmt.Sprintf("Satoshis to %s@%s", vars["username"], w.callbackUrl)}}
+	metadata := lnurl.Metadata{{"text/identifier", fmt.Sprintf("%s@ln.tips", vars["username"])}, {"text/plain", fmt.Sprintf("Pay to %s@%s", vars["username"], w.callbackUrl)}}
 	jsonMeta, err := json.Marshal(metadata)
 	if err != nil {
 		writer.WriteHeader(400)
