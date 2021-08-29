@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -18,11 +19,11 @@ import (
 )
 
 type Server struct {
-	httpServer  *http.Server
-	bot         *tb.Bot
-	c           *lnbits.Client
-	database    *gorm.DB
-	callbackUrl string
+	httpServer    *http.Server
+	bot           *tb.Bot
+	c             *lnbits.Client
+	database      *gorm.DB
+	callbackUrl   string
 	WebhookServer string
 }
 
@@ -44,11 +45,11 @@ func NewServer(lnurlserver string, webhookserver string, bot *tb.Bot, client *ln
 		ReadTimeout:  15 * time.Second,
 	}
 	apiServer := &Server{
-		c:           client,
-		database:    database,
-		bot:         bot,
-		httpServer:  srv,
-		callbackUrl: host,
+		c:             client,
+		database:      database,
+		bot:           bot,
+		httpServer:    srv,
+		callbackUrl:   host,
 		WebhookServer: webhookserver,
 	}
 
@@ -105,9 +106,9 @@ func (w Server) createLNURLPayResponse(writer http.ResponseWriter, request *http
 		// amount is ok
 		invoice, err := user.Wallet.Invoice(
 			lnbits.InvoiceParams{
-				Amount: int64(amount / 1000),
-				Out:    false,
-				Memo:   fmt.Sprintf("Pay to @%s", vars["username"]),
+				Amount:  int64(amount / 1000),
+				Out:     false,
+				Memo:    fmt.Sprintf("Pay to @%s", vars["username"]),
 				Webhook: w.WebhookServer},
 			*user.Wallet)
 		if err != nil {
@@ -136,11 +137,20 @@ func (w Server) createInitialLNURLPayResponse(writer http.ResponseWriter, reques
 	vars := mux.Vars(request)
 
 	callback := fmt.Sprintf("%s%s/%s", w.callbackUrl, lnurlEndpoint, vars["username"])
+	callbackURL, err := url.Parse(callback)
+	if err != nil {
+		log.Errorln("callback is not a valid URL")
+		writer.WriteHeader(400)
+		return
+	}
 
-	resp := lnurl.LNURLPayResponse1{Callback: callback,
+	resp := lnurl.LNURLPayResponse1{
+		Tag:            "payRequest",
+		Callback:       callback,
+		CallbackURL:    callbackURL,
 		MinSendable:    minSendable,
 		MaxSendable:    MaxSendable,
-		CommentAllowed: 422}
+		CommentAllowed: 512}
 
 	jsonResponse, err := json.Marshal(resp)
 	if err != nil {
