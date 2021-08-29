@@ -23,6 +23,7 @@ type Server struct {
 	c           *lnbits.Client
 	database    *gorm.DB
 	callbackUrl string
+	WebhookServer string
 }
 
 const (
@@ -31,8 +32,8 @@ const (
 	MaxSendable   = 100000000
 )
 
-func NewServer(lnurlServer string, bot *tb.Bot, client *lnbits.Client, database *gorm.DB) *Server {
-	host, port, err := net.SplitHostPort(strings.Split(lnurlServer, "//")[1])
+func NewServer(lnurlserver string, webhookserver string, bot *tb.Bot, client *lnbits.Client, database *gorm.DB) *Server {
+	host, port, err := net.SplitHostPort(strings.Split(lnurlserver, "//")[1])
 	if err != nil {
 		return nil
 	}
@@ -48,6 +49,7 @@ func NewServer(lnurlServer string, bot *tb.Bot, client *lnbits.Client, database 
 		bot:         bot,
 		httpServer:  srv,
 		callbackUrl: host,
+		WebhookServer: webhookserver,
 	}
 
 	apiServer.httpServer.Handler = apiServer.newRouter()
@@ -106,7 +108,7 @@ func (w Server) createLNURLPayResponse(writer http.ResponseWriter, request *http
 				Amount: int64(amount / 1000),
 				Out:    false,
 				Memo:   fmt.Sprintf("Pay to @%s", vars["username"]),
-				Webhook: Configuration.WebhookServer},
+				Webhook: w.WebhookServer},
 			*user.Wallet)
 		if err != nil {
 			errmsg := fmt.Sprintf("[createLNURLPayResponse] Couldn't create invoice: %s", err.Error())

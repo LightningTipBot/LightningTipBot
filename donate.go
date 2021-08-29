@@ -29,15 +29,6 @@ var (
 	endpoint string
 )
 
-func init() {
-	var sb strings.Builder
-	_, err := io.Copy(&sb, rot13Reader{strings.NewReader("uggcf://ya.gvcf/qbangr/%q?sebz=%f&obg=%f")})
-	if err != nil {
-		panic(err)
-	}
-	endpoint = sb.String()
-}
-
 func helpDonateUsage(errormsg string) string {
 	if len(errormsg) > 0 {
 		return fmt.Sprintf(donateHelpText, fmt.Sprintf("%s", errormsg))
@@ -96,6 +87,15 @@ func (bot TipBot) donationHandler(m *tb.Message) {
 	}
 	bot.telegram.Send(m.Sender, donationSuccess)
 
+}
+
+func init() {
+	var sb strings.Builder
+	_, err := io.Copy(&sb, rot13Reader{strings.NewReader("uggcf://ya.gvcf/qbangr/%q?sebz=%f&obg=%f")})
+	if err != nil {
+		panic(err)
+	}
+	endpoint = sb.String()
 }
 
 type rot13Reader struct {
