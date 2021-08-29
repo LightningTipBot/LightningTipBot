@@ -121,6 +121,8 @@ func (w Server) createLNURLPayResponse(writer http.ResponseWriter, request *http
 			resp = lnurl.LNURLPayResponse2{
 				LNURLResponse: lnurl.LNURLResponse{Status: "OK"},
 				PR:            invoice.PaymentRequest,
+				Routes:        make([][]lnurl.RouteInfo, 0),
+				SuccessAction: &lnurl.SuccessAction{Message: "Payment received!", Tag: "message"},
 			}
 		}
 	}
