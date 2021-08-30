@@ -15,11 +15,11 @@ const (
 	paymentCancelledMessage            = "🚫 Payment cancelled."
 	invoicePaidMessage                 = "⚡️ Payment sent."
 	invoicePrivateChatOnlyErrorMessage = "You can pay invoices only in the private chat with the bot."
-	invalidInvoiceHelpMessage          = "Did you enter a valid Lightning invoice?"
+	invalidInvoiceHelpMessage          = "Did you enter a valid Lightning invoice? Try /send if you want to send to a Telegram user or Lightning address."
 	invoiceNoAmountMessage             = "🚫 Can't pay invoices without an amount."
 	insufficientFundsMessage           = "🚫 Insufficient funds. You have %d sat but you need at least %d sat."
 	feeReserveMessage                  = "⚠️ Sending your entire balance might fail because of network fees. If it fails, try sending a bit less."
-	invoicePaymentFailedMessage        = "🚫 Failed to pay invoice: %s"
+	invoicePaymentFailedMessage        = "🚫 Payment failed: %s"
 	confirmPayInvoiceMessage           = "Do you want to send this payment?\n\n💸 Amount: %d sat"
 	confirmPayAppendMemo               = "\n✉️ %s"
 	payHelpText                        = "📖 Oops, that didn't work. %s\n\n" +
