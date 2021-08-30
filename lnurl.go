@@ -93,11 +93,15 @@ func HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error) {
 			return rawurl, value, nil
 		}
 	}
-	proxyUrl, err := url.Parse(Configuration.HttpProxy)
-	if err != nil {
-		return "", nil, err
+	client := http.Client{}
+	if Configuration.HttpProxy != "" {
+		proxyUrl, err := url.Parse(Configuration.HttpProxy)
+		if err != nil {
+			return "", nil, err
+		}
+		client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
 	}
-	client := http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
+
 	resp, err := client.Get(rawurl)
 	if err != nil {
 		return rawurl, nil, err
