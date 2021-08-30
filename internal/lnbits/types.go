@@ -34,10 +34,11 @@ func (u *User) ResetState() {
 }
 
 type InvoiceParams struct {
-	Out     bool   `json:"out"`
-	Amount  int64  `json:"amount"`
-	Memo    string `json:"memo"` // the invoice description.
-	Webhook string `json:"webhook,omitempty"`
+	Out             bool   `json:"out"`                        // must be True if invoice is payed, False if invoice is received
+	Amount          int64  `json:"amount"`                     // amount in MilliSatoshi
+	Memo            string `json:"memo,omitempty"`             // the invoice memo.
+	Webhook         string `json:"webhook,omitempty"`          // the webhook to fire back to when payment is received.
+	DescriptionHash string `json:"description_hash,omitempty"` // the invoice description hash.
 }
 
 type PaymentParams struct {
