@@ -95,8 +95,15 @@ func (bot *TipBot) GetUserBalance(user *tb.User) (amount int, err error) {
 	return
 }
 
+func (bot *TipBot) copyLowercaseUser(u *tb.User) *tb.User {
+	u_cp := *u
+	u_cp.Username = strings.ToLower(u.Username)
+	return &u_cp
+}
+
 func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) error {
-	user := &lnbits.User{Telegram: tbUser}
+	u_cp := bot.copyLowercaseUser(tbUser)
+	user := &lnbits.User{Telegram: u_cp}
 	userStr := GetUserStr(tbUser)
 	log.Printf("[CreateWalletForTelegramUser] Creating wallet for user %s ... ", userStr)
 	err := bot.createWallet(user)

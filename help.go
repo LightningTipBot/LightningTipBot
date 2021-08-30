@@ -56,7 +56,7 @@ func (bot TipBot) makeHelpMessage(m *tb.Message) string {
 	if err != nil || len(m.Sender.Username) == 0 {
 		return fmt.Sprintf(helpMessage, fmt.Sprintf("%s\n\n", helpNoUsernameMessage))
 	}
-	return fmt.Sprintf(helpMessage, fmt.Sprintf("ℹ️ *Info*\nYour Lightning Address is `%s@%s`\n\n", m.Sender.Username, host))
+	return fmt.Sprintf(helpMessage, fmt.Sprintf("ℹ️ *Info*\nYour Lightning Address is `%s@%s`\n\n", strings.ToLower(m.Sender.Username), host))
 }
 
 func (bot TipBot) helpHandler(m *tb.Message) {
