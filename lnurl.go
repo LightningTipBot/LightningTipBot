@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	lnurl2 "github.com/fiatjaf/go-lnurl"
+	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -20,10 +20,10 @@ func (bot TipBot) lnurlPayHandler(m *tb.Message) {
 	if err != nil {
 		return
 	}
-	var payParams lnurl2.LNURLPayResponse1
+	var payParams lnurl.LNURLPayResponse1
 	switch params.(type) {
-	case lnurl2.LNURLPayResponse1:
-		payParams = params.(lnurl2.LNURLPayResponse1)
+	case lnurl.LNURLPayResponse1:
+		payParams = params.(lnurl.LNURLPayResponse1)
 		fmt.Println(payParams.Callback)
 	default:
 		err := fmt.Errorf("invalid lnurl type")
@@ -51,11 +51,11 @@ func (bot TipBot) lnurlPayHandler(m *tb.Message) {
 
 }
 
-func HandleLNURL(rawlnurl string) (string, lnurl2.LNURLParams, error) {
+func HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error) {
 	var err error
 	var rawurl string
 
-	if name, domain, ok := lnurl2.ParseInternetIdentifier(rawlnurl); ok {
+	if name, domain, ok := lnurl.ParseInternetIdentifier(rawlnurl); ok {
 		isOnion := strings.Index(domain, ".onion") == len(domain)-6
 		rawurl = domain + "/.well-known/lnurlp/" + name
 		if isOnion {
@@ -66,12 +66,12 @@ func HandleLNURL(rawlnurl string) (string, lnurl2.LNURLParams, error) {
 	} else if strings.HasPrefix(rawlnurl, "http") {
 		rawurl = rawlnurl
 	} else {
-		lnurl, ok := lnurl2.FindLNURLInText(rawlnurl)
+		foundUrl, ok := lnurl.FindLNURLInText(rawlnurl)
 		if !ok {
 			return "", nil,
 				errors.New("invalid bech32-encoded lnurl: " + rawlnurl)
 		}
-		rawurl, err = lnurl2.LNURLDecode(lnurl)
+		rawurl, err = lnurl.LNURLDecode(foundUrl)
 		if err != nil {
 			return "", nil, err
 		}
@@ -86,10 +86,10 @@ func HandleLNURL(rawlnurl string) (string, lnurl2.LNURLParams, error) {
 
 	switch query.Get("tag") {
 	case "login":
-		value, err := lnurl2.HandleAuth(rawurl, parsed, query)
+		value, err := lnurl.HandleAuth(rawurl, parsed, query)
 		return rawurl, value, err
 	case "withdrawRequest":
-		if value, ok := lnurl2.HandleFastWithdraw(query); ok {
+		if value, ok := lnurl.HandleFastWithdraw(query); ok {
 			return rawurl, value, nil
 		}
 	}
@@ -110,7 +110,7 @@ func HandleLNURL(rawlnurl string) (string, lnurl2.LNURLParams, error) {
 
 	j := gjson.ParseBytes(b)
 	if j.Get("status").String() == "ERROR" {
-		return rawurl, nil, lnurl2.LNURLErrorResponse{
+		return rawurl, nil, lnurl.LNURLErrorResponse{
 			URL:    parsed,
 			Reason: j.Get("reason").String(),
 			Status: "ERROR",
@@ -119,13 +119,13 @@ func HandleLNURL(rawlnurl string) (string, lnurl2.LNURLParams, error) {
 
 	switch j.Get("tag").String() {
 	case "withdrawRequest":
-		value, err := lnurl2.HandleWithdraw(j)
+		value, err := lnurl.HandleWithdraw(j)
 		return rawurl, value, err
 	case "payRequest":
-		value, err := lnurl2.HandlePay(j)
+		value, err := lnurl.HandlePay(j)
 		return rawurl, value, err
 	case "channelRequest":
-		value, err := lnurl2.HandleChannel(j)
+		value, err := lnurl.HandleChannel(j)
 		return rawurl, value, err
 	default:
 		return rawurl, nil, errors.New("unknown response tag " + j.String())
