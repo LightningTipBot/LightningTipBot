@@ -144,7 +144,7 @@ func (w Server) serveLNURLpFirst(writer http.ResponseWriter, request *http.Reque
 func (w Server) serveLNURLpSecond(writer http.ResponseWriter, request *http.Request) {
 	vars := mux.Vars(request)
 	user := &lnbits.User{}
-	tx := w.database.Where("telegram_username = ?", vars["username"]).First(user)
+	tx := w.database.Where("telegram_username = ?", strings.ToLower(vars["username"])).First(user)
 	if tx.Error != nil || user.Wallet == nil || user.Initialized == false {
 		errmsg := fmt.Sprintf("[GetUser] Couldn't fetch user info from database.")
 		log.Warnln(errmsg)
