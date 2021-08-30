@@ -26,6 +26,8 @@ var (
 func (bot TipBot) lnurlPayHandler(m *tb.Message) {
 	_, params, err := HandleLNURL(m.Text)
 	if err != nil {
+		bot.telegram.Send(m.Sender, "invalid lnurl")
+		log.Println(err)
 		return
 	}
 	var payParams LnurlStateResponse
