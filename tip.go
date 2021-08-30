@@ -86,7 +86,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	toUserStr := GetUserStr(m.ReplyTo.Sender)
 	fromUserStr := GetUserStr(from)
 
-	if !bot.UserHasWallet(to) {
+	if _, exists := bot.UserExists(to); !exists {
 		log.Infof("[/tip] User %s has no wallet.", toUserStr)
 		err = bot.CreateWalletForTelegramUser(to)
 		if err != nil {

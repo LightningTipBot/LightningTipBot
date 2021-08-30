@@ -112,6 +112,9 @@ func (bot TipBot) registerTelegramHandlers() {
 		// for /send
 		bot.telegram.Handle(&btnSend, bot.sendHandler)
 		bot.telegram.Handle(&btnCancelSend, bot.cancelSendHandler)
+		bot.telegram.Handle(&cancelLnUrl, bot.cancelLnUrlHandler)
+		bot.telegram.Handle(&confirmLnUrl, bot.payLnUrlHandler)
+
 	})
 }
 

@@ -120,10 +120,10 @@ func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) error {
 	return nil
 }
 
-func (bot *TipBot) UserHasWallet(user *tb.User) bool {
-	_, err := GetUser(user, *bot)
+func (bot *TipBot) UserExists(user *tb.User) (*lnbits.User, bool) {
+	lnbitUser, err := GetUser(user, *bot)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		return false
+		return nil, false
 	}
-	return true
+	return lnbitUser, true
 }

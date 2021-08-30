@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -20,16 +21,21 @@ func (bot TipBot) anyTextHandler(m *tb.Message) {
 	}
 
 	// check if user is in database, if not, initialize wallet
-	if !bot.UserHasWallet(m.Sender) {
+	user, exists := bot.UserExists(m.Sender)
+	if !exists {
 		bot.startHandler(m)
 		return
 	}
 
 	// could be an invoice
-	invoiceString := strings.ToLower(m.Text)
-	if lightning.IsInvoice(invoiceString) {
-		m.Text = "/pay " + invoiceString
+	anyText := strings.ToLower(m.Text)
+	if lightning.IsInvoice(anyText) {
+		m.Text = "/pay " + anyText
 		bot.confirmPaymentHandler(m)
 		return
 	}
+	if user.StateKey == lnbits.UserStateLNURLEnterAmount {
+		bot.confirmLnurlPayHandler(m)
+	}
+
 }

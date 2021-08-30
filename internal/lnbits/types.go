@@ -26,6 +26,8 @@ type UserStateKey int
 const (
 	UserStateConfirmPayment = iota + 1
 	UserStateConfirmSend
+	UserStateLNURLEnterAmount
+	UserStateConfirmLNURLPay
 )
 
 func (u *User) ResetState() {
