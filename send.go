@@ -25,7 +25,8 @@ const (
 	errorTryLaterMessage       = "🚫 Internal error. Please try again later.."
 	sendHelpText               = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/send <amount> <user> [<memo>]`\n" +
-		"*Example:* `/send 1000 @LightningTipBot I just like the bot ❤️`"
+		"*Example:* `/send 1000 @LightningTipBot I just like the bot ❤️`\n" +
+		"*Example:* `/send 1234 LightningTipBot@ln.tips`"
 )
 
 func helpSendUsage(errormsg string) string {

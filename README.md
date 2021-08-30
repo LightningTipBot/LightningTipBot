@@ -64,19 +64,18 @@ You can either use your own LNbits instance (recommended) or create an account a
 ```
 /tip 🏅 Reply to a message to tip it: /tip <amount> [<memo>]
 /balance 👑 Check your balance: /balance
-/send 💸 Send funds to a user: /send <amount> <@username> [<memo>]
-/invoice ⚡️ Create a Lightning invoice to receive payments: /invoice <amount> [<memo>]
-/pay ⚡️ Pay a Lightning invoice: /pay <invoice>
+/send 💸 Send funds to a user: /send <amount> <@user> or <user@domain.com> [<memo>]
+/invoice ⚡️ Receive over Lightning: /invoice <amount> [<memo>]
+/pay ⚡️ Pay over Lightning: /pay <invoice>
 /help 📖 Read this help.
 /advanced 🤖 Read the advanced help.
 /info 📚 More info.
-/donate 🙏 Donate to @LightningTipBot: /donate <amount>
+/donate ❤️ Donate to the project: /donate <amount>
 ```
 #### Advanced commands
 ```
 /link 🔗 Link your wallet to BlueWallet or Zeus
 /lnurl ⚡️ Lnurl receive or pay: /lnurl or /lnurl <lnurl>
-/send ⚡️ Send to a Lightning address: /send <amount> <user@domain.com>
 ```
 
 ### Live tooltips
@@ -89,7 +88,7 @@ The bot replies to a tipped message to indicate to all participants how many and
 
 ### LNURL server
 
-Users can send and receive via . For this to work, you need to set the `lnurl_public_server` in `config.yaml`. The bot will then host a LNURL endpoint at `.well-known/lnurlp/username` which handles the data exchange with other wallets.
+Users can send and receive via . For this to work, you need to set the `lnurl_public_server` in `config.yaml`. The bot will then host a LNURL endpoint at `.well-known/lnurlp/username` which handles the data exchange with other wallets. You can set `http_proxy` in `config.yaml` to send outbound requests only via an HTTP proxy.
 
 ### Send and receive via Lightning Address
 
