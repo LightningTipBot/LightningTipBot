@@ -279,7 +279,7 @@ func (bot *TipBot) sendToLightningAddress(m *tb.Message, address string, amount 
 	// convert address scheme into LNURL Bech32 format
 	callback := fmt.Sprintf("https://%s/.well-known/lnurlp/%s", host, name)
 
-	log.Infoln("[sendToLightningAddress] %s: callback: %s", GetUserStr(m.Sender), callback)
+	log.Infof("[sendToLightningAddress] %s: callback: %s", GetUserStr(m.Sender), callback)
 
 	lnurl, err := lnurl.LNURLEncode(callback)
 	if err != nil {
