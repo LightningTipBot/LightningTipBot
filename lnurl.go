@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	lnurl "github.com/fiatjaf/go-lnurl"
-	log "github.com/sirupsen/logrus"
-	"github.com/tidwall/gjson"
-	tb "gopkg.in/tucnak/telebot.v2"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	lnurl "github.com/fiatjaf/go-lnurl"
+	log "github.com/sirupsen/logrus"
+	"github.com/tidwall/gjson"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 var (
@@ -183,6 +184,7 @@ func (bot TipBot) cancelLnUrlHandler(c *tb.Callback) {
 
 }
 
+// from https://github.com/fiatjaf/go-lnurl
 func HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error) {
 	var err error
 	var rawurl string
@@ -262,4 +264,26 @@ func HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error) {
 	default:
 		return rawurl, nil, errors.New("unknown response tag " + j.String())
 	}
+}
+
+func (bot *TipBot) sendToLightningAddress(m *tb.Message, address string, amount int) error {
+	split := strings.Split(address, "@")
+	if len(split) != 2 {
+		return fmt.Errorf("lightning address format wrong")
+	}
+	host := strings.ToLower(split[1])
+	name := strings.ToLower(split[0])
+
+	// convert address scheme into LNURL Bech32 format
+	callback := fmt.Sprintf("https://%s/.well-known/lnurlp/%s", host, name)
+
+	log.Infoln("[sendToLightningAddress] %s: callback: %s", GetUserStr(m.Sender), callback)
+
+	lnurl, err := lnurl.LNURLEncode(callback)
+	if err != nil {
+		return err
+	}
+	m.Text = fmt.Sprintf("/lnurl %s", lnurl)
+	bot.lnurlPayHandler(m)
+	return nil
 }

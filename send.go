@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
+	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -78,6 +78,22 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 	}
 
 	// SEND COMMAND IS VALID
+
+	// check whether second argument is a LIGHTNING ADDRESS
+	if arg, err := getArgumentFromCommand(m.Text, 2); err == nil {
+		if lightning.IsLightningAddress(arg) {
+			// if the second argument is a lightning address, then send to that address
+			err = bot.sendToLightningAddress(m, arg, amount)
+			if err != nil {
+				log.Errorln(err.Error())
+				bot.telegram.Send(m.Sender, helpSendUsage(err.Error()))
+				return
+			}
+			return
+		}
+	}
+
+	// ASSUME INTERNAL SEND TO TELEGRAM USER
 
 	// check for memo in command
 	sendMemo := ""

@@ -1,6 +1,7 @@
 package lightning
 
 import (
+	"net/mail"
 	"strings"
 )
 
@@ -15,4 +16,9 @@ func IsInvoice(invoice string) bool {
 		}
 	}
 	return false
+}
+
+func IsLightningAddress(address string) bool {
+	_, err := mail.ParseAddress(address)
+	return err == nil
 }
