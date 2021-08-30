@@ -127,7 +127,6 @@ func (w Server) serveLNURLpFirst(writer http.ResponseWriter, request *http.Reque
 		CallbackURL:     callbackURL,
 		MinSendable:     minSendable,
 		MaxSendable:     MaxSendable,
-		CommentAllowed:  512,
 		EncodedMetadata: string(jsonMeta),
 	}
 	jsonResponse, err := json.Marshal(resp)
