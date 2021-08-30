@@ -57,6 +57,7 @@ func NewServer(lnurlserver string, webhookserver string, bot *tb.Bot, client *ln
 
 	apiServer.httpServer.Handler = apiServer.newRouter()
 	go apiServer.httpServer.ListenAndServe()
+	log.Infof("[LNURL] Server started at %s port %s", host, port)
 	return apiServer
 }
 

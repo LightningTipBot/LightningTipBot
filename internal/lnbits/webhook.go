@@ -32,7 +32,7 @@ func NewWebhook(webhookServer string, bot *tb.Bot, client *Client, database *gor
 	if !strings.Contains(webhookServer, "://") {
 		log.Fatal("invalid webhook server configuration. please add a scheme.")
 	}
-	_, port, err := net.SplitHostPort(strings.Split(webhookServer, "//")[1])
+	host, port, err := net.SplitHostPort(strings.Split(webhookServer, "//")[1])
 	if err != nil {
 		return nil
 	}
@@ -50,6 +50,7 @@ func NewWebhook(webhookServer string, bot *tb.Bot, client *Client, database *gor
 	}
 	apiServer.httpServer.Handler = apiServer.newRouter()
 	go apiServer.httpServer.ListenAndServe()
+	log.Infof("[Webhook] Server started at %s port %s", host, port)
 	return apiServer
 }
 
