@@ -93,7 +93,7 @@ func HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error) {
 			return rawurl, value, nil
 		}
 	}
-	proxyUrl, err := url.Parse("proxy:port")
+	proxyUrl, err := url.Parse(Configuration.HttpProxy)
 	if err != nil {
 		return "", nil, err
 	}
