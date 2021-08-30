@@ -17,12 +17,6 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-var (
-	lnUrlConfirmMenu = &tb.ReplyMarkup{}
-	cancelLnUrl      = lnUrlConfirmMenu.Data("🚫 Cancel", "cancel_lnurl")
-	confirmLnUrl     = lnUrlConfirmMenu.Data("✅ Pay", "confirm_lnurl")
-)
-
 func (bot TipBot) lnurlPayHandler(m *tb.Message) {
 	_, params, err := HandleLNURL(m.Text)
 	if err != nil {
@@ -109,9 +103,8 @@ func (bot TipBot) confirmLnurlPayHandler(m *tb.Message) {
 			bot.telegram.Send(m.Sender, err.Error())
 			return
 		}
-		lnUrlConfirmMenu.Inline(lnUrlConfirmMenu.Row(confirmLnUrl, cancelLnUrl))
 
-		bot.telegram.Send(m.Sender, "plz confirm", lnUrlConfirmMenu)
+		bot.payLnUrlHandler(m)
 	}
 }
 
@@ -120,7 +113,7 @@ type LnurlStateResponse struct {
 	Amount int `json:"amount"`
 }
 
-func (bot TipBot) payLnUrlHandler(c *tb.Callback) {
+func (bot TipBot) payLnUrlHandler(c *tb.Message) {
 	user, err := GetUser(c.Sender, bot)
 	if err != nil {
 		log.Println(err)
@@ -165,8 +158,8 @@ func (bot TipBot) payLnUrlHandler(c *tb.Callback) {
 			return
 		}
 		json.Unmarshal(body, &response2)
-
-		bot.telegram.Send(c.Sender, response2.PR)
+		c.Text = fmt.Sprintf("/lnurl %s", response2.PR)
+		bot.confirmPaymentHandler(c)
 	}
 }
 
