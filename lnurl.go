@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -13,14 +15,37 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"
+	"github.com/skip2/go-qrcode"
 	"github.com/tidwall/gjson"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-func (bot TipBot) lnurlPayHandler(m *tb.Message) {
+const (
+	lnurlReceiveInfoText    = "👇 You can use this LNURL to receive payments."
+	lnurlInvalidMessage     = "🚫 Invalid LNURL"
+	lnurlEnterAmountMessage = "Please enter an amount."
+	lnurlHelpText           = "📖 Oops, that didn't work. %s\n\n" +
+		"*Usage:* `/lnurl [amount] <lnurl>`\n" +
+		"*Example:* `/lnurl LNURL1DP68GUR...`"
+)
+
+func (bot TipBot) lnurlHandler(m *tb.Message) {
+	// commands:
+	// /lnurl
+	// /lnurl <LNURL>
+	// or /lnurl <amount> <LNURL>
+	log.Infof("[lnurlHandler] %s", m.Text)
+
+	// if only /lnurl is entered, show the lnurl of the user
+	if m.Text == "/lnurl" {
+		bot.lnurlReceiveHandler(m)
+		return
+	}
+
+	// assume payment
 	_, params, err := HandleLNURL(m.Text)
 	if err != nil {
-		bot.telegram.Send(m.Sender, "invalid lnurl")
+		bot.telegram.Send(m.Sender, lnurlInvalidMessage)
 		log.Println(err)
 		return
 	}
@@ -28,39 +53,92 @@ func (bot TipBot) lnurlPayHandler(m *tb.Message) {
 	switch params.(type) {
 	case lnurl.LNURLPayResponse1:
 		payParams = LnurlStateResponse{LNURLPayResponse1: params.(lnurl.LNURLPayResponse1)}
-		fmt.Println(payParams.Callback)
+		log.Infof("[lnurlHandler] %s", payParams.Callback)
 	default:
 		err := fmt.Errorf("invalid lnurl type")
 		log.Println(err)
-		bot.telegram.Send(m.Sender, err.Error())
+		bot.telegram.Send(m.Sender, lnurlInvalidMessage)
+		// bot.telegram.Send(m.Sender, err.Error())
 		return
 	}
 	user, err := GetUser(m.Sender, bot)
 	if err != nil {
 		log.Println(err)
-		bot.telegram.Send(m.Sender, err.Error())
-		return
-	}
-	paramsJson, err := json.Marshal(payParams)
-	if err != nil {
-		log.Println(err)
-		bot.telegram.Send(m.Sender, err.Error())
+		// bot.telegram.Send(m.Sender, err.Error())
 		return
 	}
 
-	user.StateData = string(paramsJson)
-	user.StateKey = lnbits.UserStateLNURLEnterAmount
-	err = UpdateUserRecord(user, bot)
-	if err != nil {
-		log.Println(err)
-		bot.telegram.Send(m.Sender, err.Error())
-		return
+	// if no amount is in the command, ask for it
+	amount, err := decodeAmountFromCommand(m.Text)
+	if err != nil || amount < 1 {
+		// set LNURLPayResponse1 in the state of the user
+		paramsJson, err := json.Marshal(payParams)
+		if err != nil {
+			log.Println(err)
+			// bot.telegram.Send(m.Sender, err.Error())
+			return
+		}
+		user.StateData = string(paramsJson)
+		user.StateKey = lnbits.UserStateLNURLEnterAmount
+		err = UpdateUserRecord(user, bot)
+		if err != nil {
+			log.Println(err)
+			// bot.telegram.Send(m.Sender, err.Error())
+			return
+		}
+		// Let the user enter an amount and return
+		bot.telegram.Send(m.Sender, fmt.Sprintf(lnurlEnterAmountMessage), tb.ForceReply)
+	} else {
+		// amount is already present in the command
+		// set also amount in the state of the user
+		// todo: this is repeated code, could be shorter
+		payParams.Amount = amount
+		paramsJson, err := json.Marshal(payParams)
+		if err != nil {
+			log.Println(err)
+			// bot.telegram.Send(m.Sender, err.Error())
+			return
+		}
+		user.StateData = string(paramsJson)
+		user.StateKey = lnbits.UserStateConfirmLNURLPay
+		err = UpdateUserRecord(user, bot)
+		if err != nil {
+			log.Println(err)
+			// bot.telegram.Send(m.Sender, err.Error())
+			return
+		}
+		bot.lnurlPayHandler(m)
 	}
-	bot.telegram.Send(m.Sender, fmt.Sprintf("reply with amount"), tb.ForceReply)
-
 }
 
-func (bot TipBot) confirmLnurlPayHandler(m *tb.Message) {
+// lnurlReceiveHandler outputs the LNURL of the user
+func (bot TipBot) lnurlReceiveHandler(m *tb.Message) {
+	host, _, err := net.SplitHostPort(strings.Split(Configuration.LNURLServer, "//")[1])
+	name := strings.ToLower(strings.ToLower(m.Sender.Username))
+
+	// convert address scheme into LNURL Bech32 format
+	callback := fmt.Sprintf("https://%s/.well-known/lnurlp/%s", host, name)
+
+	log.Infof("[lnurlReceiveHandler] %s's LNURL: %s", GetUserStr(m.Sender), callback)
+
+	lnurl, err := lnurl.LNURLEncode(callback)
+	if err != nil {
+		return
+	}
+	// create qr code
+	qr, err := qrcode.Encode(lnurl, qrcode.Medium, 256)
+	if err != nil {
+		errmsg := fmt.Sprintf("[lnurlReceiveHandler] Failed to create QR code for LNURL: %s", err)
+		log.Errorln(errmsg)
+		return
+	}
+
+	bot.telegram.Send(m.Sender, lnurlReceiveInfoText)
+	// send the lnurl data to user
+	bot.telegram.Send(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lnurl)})
+}
+
+func (bot TipBot) lnurlEnterAmountHandler(m *tb.Message) {
 	user, err := GetUser(m.Sender, bot)
 	if err != nil {
 		log.Println(err)
@@ -104,7 +182,7 @@ func (bot TipBot) confirmLnurlPayHandler(m *tb.Message) {
 			return
 		}
 
-		bot.payLnUrlHandler(m)
+		bot.lnurlPayHandler(m)
 	}
 }
 
@@ -113,7 +191,7 @@ type LnurlStateResponse struct {
 	Amount int `json:"amount"`
 }
 
-func (bot TipBot) payLnUrlHandler(c *tb.Message) {
+func (bot TipBot) lnurlPayHandler(c *tb.Message) {
 	user, err := GetUser(c.Sender, bot)
 	if err != nil {
 		log.Println(err)
@@ -278,7 +356,12 @@ func (bot *TipBot) sendToLightningAddress(m *tb.Message, address string, amount 
 	if err != nil {
 		return err
 	}
-	m.Text = fmt.Sprintf("/lnurl %s", lnurl)
-	bot.lnurlPayHandler(m)
+
+	if amount > 0 {
+		m.Text = fmt.Sprintf("/lnurl %d %s", amount, lnurl)
+	} else {
+		m.Text = fmt.Sprintf("/lnurl %s", lnurl)
+	}
+	bot.lnurlHandler(m)
 	return nil
 }

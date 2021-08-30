@@ -89,7 +89,7 @@ func (bot TipBot) registerTelegramHandlers() {
 			"/donate":   bot.donationHandler,
 			"/advanced": bot.advancedHelpHandler,
 			"/link":     bot.lndhubHandler,
-			"/lnurl":    bot.lnurlPayHandler,
+			"/lnurl":    bot.lnurlHandler,
 			tb.OnPhoto:  bot.privatePhotoHandler,
 			tb.OnText:   bot.anyTextHandler,
 		}

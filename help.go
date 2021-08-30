@@ -17,7 +17,7 @@ const (
 		"⚙️ *Commands*\n" +
 		"*/tip* 🏅 Reply to a message to tip: `/tip <amount> [<memo>]`\n" +
 		"*/balance* 👑 Check balance: `/balance`\n" +
-		"*/send* 💸 Send funds to a Telegram user: `/send <amount> <@user> [<memo>]`\n" +
+		"*/send* 💸 Send funds to a user: `/send <amount> <@user or user@ln.tips> [<memo>]`\n" +
 		"*/invoice* ⚡️ Receive over Lightning: `/invoice <amount> [<memo>]`\n" +
 		"*/pay* ⚡️ Pay over Lightning: `/pay <invoice>`\n" +
 		"*/donate* ❤️ Donate to the project: `/donate 1000`\n" +
@@ -44,7 +44,8 @@ const (
 	helpNoUsernameMessage = "ℹ️ You don't have a Telegram username yet."
 
 	advancedMessage = "🤖 *Advanced commands*\n\n" +
-		"*/link* 🔗 Link your wallet to [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)\n"
+		"*/link* 🔗 Link your wallet to [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)\n" +
+		"*/lnurl* ⚡️ Lnurl receive or pay: `/lnurl` or `/lnurl <lnurl>`\n"
 )
 
 func (bot TipBot) makeHelpMessage(m *tb.Message) string {
