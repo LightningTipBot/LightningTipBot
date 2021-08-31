@@ -58,7 +58,7 @@ func (x *Message) updateTooltip(bot *TipBot, user *tb.User, amount int, notIniti
 func LoadTipToolTips(bot *TipBot) {
 	runtime.IgnoreError(bot.bunt.View(func(tx *buntdb.Tx) error {
 		err := tx.Ascend("messages", func(key, value string) bool {
-			log.Infoln("loading persisted feed items")
+			log.Infoln("loading persisted tip tool tip messages")
 			message := &Message{}
 			err := json.Unmarshal([]byte(value), message)
 			if err != nil {
