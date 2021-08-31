@@ -32,7 +32,7 @@ type Server struct {
 const (
 	lnurlEndpoint = "/.well-known/lnurlp"
 	minSendable   = 1000 // mSat
-	MaxSendable   = 100000000
+	MaxSendable   = 1000000000
 )
 
 func NewServer(lnurlserver string, webhookserver string, bot *tb.Bot, client *lnbits.Client, database *gorm.DB) *Server {
