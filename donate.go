@@ -154,7 +154,7 @@ func (bot TipBot) parseCmdDonHandler(m *tb.Message) error {
 	}
 	donationInterceptMessage := sb.String()
 
-	bot.telegram.Send(m.Sender, donationInterceptMessage)
+	bot.telegram.Send(m.Sender, MarkdownEscape(donationInterceptMessage))
 	m.Text = fmt.Sprintf("/donate %d", amount)
 	bot.donationHandler(m)
 	// returning nil here will abort the parent handler (/pay or /tip)

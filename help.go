@@ -38,7 +38,7 @@ const (
 		"❤️ *Donate*\n" +
 		"_This bot charges no fees but costs satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/donate 1000`"
 
-	helpNoUsernameMessage = "ℹ️ You don't have a Telegram username yet."
+	helpNoUsernameMessage = "ℹ️ Please set a Telegram username."
 
 	advancedMessage = "%s\n\n" + "⚙️ *Advanced commands*\n" +
 		"*/link* 🔗 Link your wallet to [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)\n" +
@@ -50,7 +50,7 @@ func (bot TipBot) makeHelpMessage(m *tb.Message) string {
 	// user has no username set
 	if len(m.Sender.Username) == 0 {
 		// return fmt.Sprintf(helpMessage, fmt.Sprintf("%s\n\n", helpNoUsernameMessage))
-		dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("%s", helpNoUsernameMessage)
+		dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("%s\n", helpNoUsernameMessage)
 	} else {
 		dynamicHelpMessage = "ℹ️ *Info*\n"
 		lnaddr, err := bot.UserGetLightningAddress(m.Sender)
