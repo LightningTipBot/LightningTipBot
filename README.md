@@ -72,10 +72,12 @@ You can either use your own LNbits instance (recommended) or create an account a
 /pay ⚡️ Pay over Lightning: /pay <invoice>
 /help 📖 Read this help.
 /advanced 🤖 Read the advanced help.
-/info 📚 More info.
+/basics 📚 More info.
 /donate ❤️ Donate to the project: /donate <amount>
 ```
+
 #### Advanced commands
+
 ```
 /link 🔗 Link your wallet to BlueWallet or Zeus
 /lnurl ⚡️ Lnurl receive or pay: /lnurl or /lnurl <lnurl>
@@ -95,7 +97,7 @@ Users can send and receive via . For this to work, you need to set the `lnurl_pu
 
 ### Send and receive via Lightning Address
 
-Every user has a [Lightning Address](https://lightningaddress.com/) a la `username@host.com` with which they can send to via `/send <amount> <user@domain.com>` and receive from other wallets. 
+Every user has a [Lightning Address](https://lightningaddress.com/) a la `username@host.com` with which they can send to via `/send <amount> <user@domain.com>` and receive from other wallets.
 
 ### Link to BlueWallet or Zap
 

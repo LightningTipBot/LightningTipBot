@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	tipDidYouReplyMessage = "Did you reply to a message to tip? To reply to any message, right-click -> Reply on your computer or swipe the message on your phone. If you want to send directly to another Telegram user's wallet, use the /send command."
+	tipDidYouReplyMessage = "Did you reply to a message to tip? To reply to any message, right-click -> Reply on your computer or swipe the message on your phone. If you want to send directly to another user, use the /send command."
+	tipInviteGroupMessage = "ℹ️ By the way, you can invite this bot to any group to start tipping there."
 	tipEnterAmountMessage = "Did you enter an amount?"
 	tipValidAmountMessage = "Did you enter a valid amount?"
 	tipYourselfMessage    = "📖 You can't tip yourself."
@@ -46,6 +47,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	if !m.IsReply() {
 		NewMessage(m).Dispose(0, bot.telegram)
 		bot.telegram.Send(m.Sender, helpTipUsage(fmt.Sprintf(tipDidYouReplyMessage)))
+		bot.telegram.Send(m.Sender, tipInviteGroupMessage)
 		return
 	}
 
@@ -148,6 +150,5 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	if len(tipMemo) > 0 {
 		bot.telegram.Send(to, fmt.Sprintf("✉️ %s", MarkdownEscape(tipMemo)))
 	}
-
 	return
 }

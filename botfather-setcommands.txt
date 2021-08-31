@@ -6,10 +6,10 @@
 4 - Paste this:
 
 help - Read the help.
-balance - Check your balance. 
+balance - Check balance. 
 tip - Reply to a message to tip. Example: /tip 50
-send - Send funds to a Telegram user. Example: /send 100 @LightningTipBot
-invoice - Create a Lightning invoice to receive payments. Example: /invoice 1000
-pay - Pay a Lightning invoice. Example: /pay lnbc10n1ps...
-donate - Donate to the project: Example: /donate 1000
+send - Send funds to a user. Example: /send 100 @LightningTipBot
+invoice - Receive with Lightning. Example: /invoice 1000
+pay - Pay with Lightning. Example: /pay lnbc10n1ps...
+donate - Donate: Example: /donate 1000
 advanced - Advanced help
