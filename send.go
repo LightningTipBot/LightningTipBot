@@ -17,7 +17,7 @@ const (
 	sendIsNotAUsser            = "🚫 %s is not a username. You can /send only to Telegram tags like @%s."
 	sendUserHasNoWalletMessage = "🚫 User %s hasn't created a wallet yet."
 	sendSentMessage            = "💸 %d sat sent to %s."
-	sendReceivedMessage        = "🏅 %s has sent you %d sat."
+	sendReceivedMessage        = "🏅 %s sent you %d sat."
 	sendErrorMessage           = "🚫 Transaction failed: %s"
 	confirmSendInvoiceMessage  = "Do you want to pay to %s?\n\n💸 Amount: %d sat"
 	confirmSendAppendMemo      = "\n✉️ %s"

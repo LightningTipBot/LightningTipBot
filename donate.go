@@ -20,6 +20,7 @@ import (
 var (
 	donationSuccess          = "🙏 Thank you for your donation."
 	donationErrorMessage     = "🚫 Oh no. Donation failed."
+	donationProgressMessage  = "🧮 Preparing your donation..."
 	donationFailedMessage    = "🚫 Donation failed: %s"
 	donateEnterAmountMessage = "Did you enter an amount?"
 	donateValidAmountMessage = "Did you enter a valid amount?"
@@ -55,18 +56,18 @@ func (bot TipBot) donationHandler(m *tb.Message) {
 	}
 
 	// command is valid
-
+	msg, _ := bot.telegram.Send(m.Sender, donationProgressMessage)
 	// get invoice
 	resp, err := http.Get(fmt.Sprintf(endpoint, amount, GetUserStr(m.Sender), GetUserStr(bot.telegram.Me)))
 	if err != nil {
 		log.Errorln(err)
-		bot.telegram.Send(m.Sender, donationErrorMessage)
+		bot.telegram.Edit(msg, donationErrorMessage)
 		return
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Errorln(err)
-		bot.telegram.Send(m.Sender, donationErrorMessage)
+		bot.telegram.Edit(msg, donationErrorMessage)
 		return
 	}
 
@@ -82,10 +83,10 @@ func (bot TipBot) donationHandler(m *tb.Message) {
 		userStr := GetUserStr(m.Sender)
 		errmsg := fmt.Sprintf("[/donate] Donation failed for user %s: %s", userStr, err)
 		log.Errorln(errmsg)
-		bot.telegram.Send(m.Sender, fmt.Sprintf(donationFailedMessage, err))
+		bot.telegram.Edit(msg, fmt.Sprintf(donationFailedMessage, err))
 		return
 	}
-	bot.telegram.Send(m.Sender, donationSuccess)
+	bot.telegram.Edit(msg, donationSuccess)
 
 }
 

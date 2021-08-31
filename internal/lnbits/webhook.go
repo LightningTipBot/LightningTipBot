@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	invoiceReceivedMessage = "⚡️ You've received %d sat."
+	invoiceReceivedMessage = "⚡️ You received %d sat."
 )
 
 type WebhookServer struct {
