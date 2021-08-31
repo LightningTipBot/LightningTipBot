@@ -7,5 +7,6 @@ lnurl_public_server: "http://url.com:80"
 lnbits_admin_key: "1234"
 lnbits_admin_id: "3212"
 db_path: "data/bot.db"
+buntdb_path: "data/bunt.db"
 transactions_path: "data/transactions.db"
 message_dispose_duration: 10

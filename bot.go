@@ -45,7 +45,7 @@ func NewBot() TipBot {
 	return TipBot{
 		database: db,
 		logger:   txLogger,
-		bunt:     storage.NewBunt(),
+		bunt:     storage.NewBunt(Configuration.BuntDbPath),
 		tips:     make(map[int][]*Message, 0),
 	}
 }
@@ -81,6 +81,7 @@ func (bot TipBot) registerTelegramHandlers() {
 	telegramHandlerRegistration.Do(func() {
 		// Set up handlers
 		var endpointHandler = map[string]interface{}{
+			tb.OnText:   bot.anyTextHandler,
 			"/tip":      bot.tipHandler,
 			"/pay":      bot.confirmPaymentHandler,
 			"/invoice":  bot.invoiceHandler,
@@ -94,7 +95,6 @@ func (bot TipBot) registerTelegramHandlers() {
 			"/link":     bot.lndhubHandler,
 			"/lnurl":    bot.lnurlHandler,
 			tb.OnPhoto:  bot.privatePhotoHandler,
-			tb.OnText:   bot.anyTextHandler,
 		}
 		// assign handler to endpoint
 		for endpoint, handler := range endpointHandler {

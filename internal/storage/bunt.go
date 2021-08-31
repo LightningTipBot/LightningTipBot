@@ -17,8 +17,8 @@ type DB struct {
 	*buntdb.DB
 }
 
-func NewBunt() *DB {
-	db, err := buntdb.Open("data/bunt.db")
+func NewBunt(filePath string) *DB {
+	db, err := buntdb.Open(filePath)
 	if err != nil {
 		log.Fatal(err)
 	}
