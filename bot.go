@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	"strings"
 	"sync"
 	"time"
@@ -19,6 +20,7 @@ import (
 
 type TipBot struct {
 	database *gorm.DB
+	bunt     *storage.DB
 	logger   *gorm.DB
 	telegram *telebot.Bot
 	client   *lnbits.Client
@@ -43,6 +45,7 @@ func NewBot() TipBot {
 	return TipBot{
 		database: db,
 		logger:   txLogger,
+		bunt:     storage.NewBunt(),
 		tips:     make(map[int][]*Message, 0),
 	}
 }
@@ -118,6 +121,7 @@ func (bot TipBot) registerTelegramHandlers() {
 
 // Start will initialize the telegram bot and lnbits.
 func (bot TipBot) Start() {
+	LoadTipToolTips(&bot)
 	// set up lnbits api
 	bot.client = lnbits.NewClient(Configuration.LnbitsKey, Configuration.LnbitsUrl)
 	// set up telebot

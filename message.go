@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -14,6 +15,13 @@ type Message struct {
 	Ntips     int
 	LastTip   time.Time
 	Tippers   []*tb.User
+}
+
+func (m Message) Index() string {
+	return "messages"
+}
+func (m Message) Key() string {
+	return strconv.Itoa(m.Message.ID)
 }
 
 const maxNamesInTipperMessage = 5

@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
+	"github.com/tidwall/buntdb"
 	"strings"
 	"time"
 
@@ -50,6 +53,24 @@ func (x *Message) updateTooltip(bot *TipBot, user *tb.User, amount int, notIniti
 		}
 	}
 	bot.tips[x.Message.ReplyTo.Sender.ID] = userTips
+	runtime.IgnoreError(bot.bunt.Set(x))
+}
+func LoadTipToolTips(bot *TipBot) {
+	runtime.IgnoreError(bot.bunt.View(func(tx *buntdb.Tx) error {
+		err := tx.Ascend("messages", func(key, value string) bool {
+			log.Infoln("loading persisted feed items")
+			message := &Message{}
+			err := json.Unmarshal([]byte(value), message)
+			if err != nil {
+				return true
+			}
+			if time.Now().Sub(message.LastTip) < (time.Hour*24)*7 {
+				bot.tips[message.Message.ReplyTo.Sender.ID] = append(bot.tips[message.Message.ReplyTo.Sender.ID], message)
+			}
+			return true
+		})
+		return err
+	}))
 }
 func (x *Message) editTooltip(bot *TipBot, notInitializedWallet bool) error {
 	tipToolTip := x.getTooltipMessage(GetUserStrMd(bot.telegram.Me), notInitializedWallet)
@@ -143,6 +164,7 @@ func tipTooltipHandler(m *tb.Message, user *tb.User, bot *TipBot, amount int, no
 		message := NewMessage(msg, TipAmount(amount), Tips(1))
 		message.Tippers = appendUinqueUsersToSlice(message.Tippers, user)
 		bot.tips[m.ReplyTo.Sender.ID] = append(bot.tips[m.ReplyTo.Sender.ID], message)
+		runtime.IgnoreError(bot.bunt.Set(message))
 	}
 	// first call will return false, every following call will return true
 	return ok
