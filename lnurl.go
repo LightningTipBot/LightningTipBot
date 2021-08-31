@@ -23,7 +23,7 @@ import (
 const (
 	lnurlReceiveInfoText           = "👇 You can use this LNURL to receive payments."
 	lnurlResolvingUrlMessage       = "🧮 Resolving address..."
-	lnurlGettingUserMessage        = "🧮 Resolving user..."
+	lnurlGettingUserMessage        = "🧮 Preparing payment..."
 	lnurlPaymentFailed             = "🚫 Payment failed: %s"
 	lnurlInvalidAmountMessage      = "🚫 Invalid amount."
 	lnurlInvalidAmountRangeMessage = "🚫 Amount must be between %d and %d sat."
