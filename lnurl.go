@@ -22,6 +22,8 @@ import (
 
 const (
 	lnurlReceiveInfoText           = "👇 You can use this LNURL to receive payments."
+	lnurlResolvingUrlMessage       = "🧮 Resolving address..."
+	lnurlGettingUserMessage        = "🧮 Resolving user..."
 	lnurlPaymentFailed             = "🚫 Payment failed: %s"
 	lnurlInvalidAmountMessage      = "🚫 Invalid amount."
 	lnurlInvalidAmountRangeMessage = "🚫 Amount must be between %d and %d sat."
@@ -47,9 +49,10 @@ func (bot TipBot) lnurlHandler(m *tb.Message) {
 
 	// assume payment
 	// HandleLNURL by fiatjaf/go-lnurl
+	msg, _ := bot.telegram.Send(m.Sender, lnurlResolvingUrlMessage)
 	_, params, err := HandleLNURL(m.Text)
 	if err != nil {
-		bot.telegram.Send(m.Sender, fmt.Sprintf(lnurlPaymentFailed, "could not resolve LNURL."))
+		bot.telegram.Edit(msg, fmt.Sprintf(lnurlPaymentFailed, "could not resolve LNURL."))
 		log.Errorln(err)
 		return
 	}
@@ -61,14 +64,14 @@ func (bot TipBot) lnurlHandler(m *tb.Message) {
 	default:
 		err := fmt.Errorf("invalid LNURL type.")
 		log.Errorln(err)
-		bot.telegram.Send(m.Sender, fmt.Sprintf(lnurlPaymentFailed, err))
+		bot.telegram.Edit(msg, fmt.Sprintf(lnurlPaymentFailed, err))
 		// bot.telegram.Send(m.Sender, err.Error())
 		return
 	}
 	user, err := GetUser(m.Sender, bot)
 	if err != nil {
 		log.Errorln(err)
-		// bot.telegram.Send(m.Sender, err.Error())
+		bot.telegram.Edit(msg, fmt.Sprintf(lnurlPaymentFailed, "database error."))
 		return
 	}
 
@@ -88,6 +91,7 @@ func (bot TipBot) lnurlHandler(m *tb.Message) {
 			log.Errorln(err)
 			return
 		}
+		bot.telegram.Delete(msg)
 		// Let the user enter an amount and return
 		bot.telegram.Send(m.Sender, fmt.Sprintf(lnurlEnterAmountMessage), tb.ForceReply)
 	} else {
@@ -109,6 +113,7 @@ func (bot TipBot) lnurlHandler(m *tb.Message) {
 			// bot.telegram.Send(m.Sender, err.Error())
 			return
 		}
+		bot.telegram.Delete(msg)
 		// directly go to confirm
 		bot.lnurlPayHandler(m)
 	}
@@ -194,10 +199,13 @@ type LnurlStateResponse struct {
 
 // lnurlPayHandler is invoked when the user has delivered an amount and is ready to pay
 func (bot TipBot) lnurlPayHandler(c *tb.Message) {
+	msg, _ := bot.telegram.Send(c.Sender, lnurlGettingUserMessage)
+
 	user, err := GetUser(c.Sender, bot)
 	if err != nil {
 		log.Errorln(err)
-		bot.telegram.Send(c.Sender, err.Error())
+		// bot.telegram.Send(c.Sender, err.Error())
+		bot.telegram.Edit(msg, fmt.Sprintf(lnurlPaymentFailed, "database error."))
 		return
 	}
 	if user.StateKey == lnbits.UserStateConfirmLNURLPay {
@@ -205,7 +213,7 @@ func (bot TipBot) lnurlPayHandler(c *tb.Message) {
 		if err != nil {
 			log.Errorln(err)
 			// bot.telegram.Send(c.Sender, err.Error())
-			bot.telegram.Send(c.Sender, fmt.Sprintf(lnurlPaymentFailed, err))
+			bot.telegram.Edit(msg, fmt.Sprintf(lnurlPaymentFailed, err))
 			return
 		}
 		var stateResponse LnurlStateResponse
@@ -213,14 +221,14 @@ func (bot TipBot) lnurlPayHandler(c *tb.Message) {
 		if err != nil {
 			log.Errorln(err)
 			// bot.telegram.Send(c.Sender, err.Error())
-			bot.telegram.Send(c.Sender, fmt.Sprintf(lnurlPaymentFailed, err))
+			bot.telegram.Edit(msg, fmt.Sprintf(lnurlPaymentFailed, err))
 			return
 		}
 		callbackUrl, err := url.Parse(stateResponse.Callback)
 		if err != nil {
 			log.Errorln(err)
 			// bot.telegram.Send(c.Sender, err.Error())
-			bot.telegram.Send(c.Sender, fmt.Sprintf(lnurlPaymentFailed, err))
+			bot.telegram.Edit(msg, fmt.Sprintf(lnurlPaymentFailed, err))
 			return
 		}
 		qs := callbackUrl.Query()
@@ -231,7 +239,7 @@ func (bot TipBot) lnurlPayHandler(c *tb.Message) {
 		if err != nil {
 			log.Errorln(err)
 			// bot.telegram.Send(c.Sender, err.Error())
-			bot.telegram.Send(c.Sender, fmt.Sprintf(lnurlPaymentFailed, err))
+			bot.telegram.Edit(msg, fmt.Sprintf(lnurlPaymentFailed, err))
 			return
 		}
 		var response2 lnurl.LNURLPayResponse2
@@ -239,16 +247,16 @@ func (bot TipBot) lnurlPayHandler(c *tb.Message) {
 		if err != nil {
 			log.Errorln(err)
 			// bot.telegram.Send(c.Sender, err.Error())
-			bot.telegram.Send(c.Sender, fmt.Sprintf(lnurlPaymentFailed, err))
+			bot.telegram.Edit(msg, fmt.Sprintf(lnurlPaymentFailed, err))
 			return
 		}
 		json.Unmarshal(body, &response2)
 
 		if len(response2.PR) < 1 {
-			bot.telegram.Send(c.Sender, fmt.Sprintf(lnurlPaymentFailed, "could not receive invoice (wrong address?)."))
+			bot.telegram.Edit(msg, fmt.Sprintf(lnurlPaymentFailed, "could not receive invoice (wrong address?)."))
 			return
 		}
-
+		bot.telegram.Delete(msg)
 		c.Text = fmt.Sprintf("/pay %s", response2.PR)
 		bot.confirmPaymentHandler(c)
 	}
