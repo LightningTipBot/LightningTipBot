@@ -27,6 +27,7 @@ const (
 	lnurlPaymentFailed             = "🚫 Payment failed: %s"
 	lnurlInvalidAmountMessage      = "🚫 Invalid amount."
 	lnurlInvalidAmountRangeMessage = "🚫 Amount must be between %d and %d sat."
+	lnurlNoUsernameMessage         = "🚫 You need to set a Telegram username to receive via LNURL."
 	lnurlEnterAmountMessage        = "Please enter an amount."
 	lnurlHelpText                  = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/lnurl [amount] <lnurl>`\n" +
@@ -119,19 +120,42 @@ func (bot TipBot) lnurlHandler(m *tb.Message) {
 	}
 }
 
-// lnurlReceiveHandler outputs the LNURL of the user
-func (bot TipBot) lnurlReceiveHandler(m *tb.Message) {
+func (bot *TipBot) UserGetLightningAddress(user *tb.User) (string, error) {
 	host, _, err := net.SplitHostPort(strings.Split(Configuration.LNURLServer, "//")[1])
-	name := strings.ToLower(strings.ToLower(m.Sender.Username))
+	if err != nil {
+		log.Errorf("[UserGetLightningAddress] Error: %s", err)
+		return "", err
+	}
+	if len(user.Username) > 0 {
+		return fmt.Sprintf("%s@%s", strings.ToLower(user.Username), strings.ToLower(host)), nil
+	} else {
+		return "", fmt.Errorf("user has no username.")
+	}
+}
 
-	// convert address scheme into LNURL Bech32 format
+func (bot *TipBot) UserGetLNURL(user *tb.User) (string, error) {
+	name := strings.ToLower(strings.ToLower(user.Username))
+	if len(name) == 0 {
+		return "", fmt.Errorf("user has no username.")
+	}
+	host, _, err := net.SplitHostPort(strings.Split(Configuration.LNURLServer, "//")[1])
 	callback := fmt.Sprintf("https://%s/.well-known/lnurlp/%s", host, name)
-
-	log.Infof("[lnurlReceiveHandler] %s's LNURL: %s", GetUserStr(m.Sender), callback)
+	log.Infof("[lnurlReceiveHandler] %s's LNURL: %s", GetUserStr(user), callback)
 
 	lnurl, err := lnurl.LNURLEncode(callback)
 	if err != nil {
-		return
+		return "", err
+	}
+	return lnurl, nil
+}
+
+// lnurlReceiveHandler outputs the LNURL of the user
+func (bot TipBot) lnurlReceiveHandler(m *tb.Message) {
+	lnurl, err := bot.UserGetLNURL(m.Sender)
+	if err != nil {
+		errmsg := fmt.Sprintf("[lnurlReceiveHandler] Failed to get LNURL: %s", err)
+		log.Errorln(errmsg)
+		bot.telegram.Send(m.Sender, lnurlNoUsernameMessage)
 	}
 	// create qr code
 	qr, err := qrcode.Encode(lnurl, qrcode.Medium, 256)
