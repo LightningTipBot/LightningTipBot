@@ -10,19 +10,27 @@ import (
 // Storable items must provide a function to retrieve the database key
 type Storable interface {
 	Key() string
-	Index() string
 }
 
 type DB struct {
 	*buntdb.DB
 }
 
+const (
+	MessageOrderedByReplyToFrom = "message.reply_to_message.from.id"
+	MessageOrderedByReplyTo     = "message.reply_to_message.id"
+)
+
 func NewBunt(filePath string) *DB {
 	db, err := buntdb.Open(filePath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = db.CreateIndex("messages", "*", buntdb.IndexJSON("Message.message_id"))
+	err = db.CreateIndex(MessageOrderedByReplyToFrom, "*", buntdb.IndexJSON(MessageOrderedByReplyToFrom))
+	if err != nil {
+		panic(err)
+	}
+	err = db.CreateIndex(MessageOrderedByReplyTo, "*", buntdb.IndexJSON(MessageOrderedByReplyTo))
 	if err != nil {
 		panic(err)
 	}
@@ -84,11 +92,11 @@ func (db *DB) Set(object Storable) error {
 
 // Delete a storable item.
 // todo -- not ascend users index
-func (db *DB) Delete(object Storable) error {
+func (db *DB) Delete(index string, object Storable) error {
 	return db.Update(func(tx *buntdb.Tx) error {
 		var delkeys []string
 		runtime.IgnoreError(
-			tx.Ascend(object.Index(), func(key, value string) bool {
+			tx.Ascend(index, func(key, value string) bool {
 				if key == object.Key() {
 					delkeys = append(delkeys, key)
 				}

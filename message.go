@@ -10,18 +10,11 @@ import (
 )
 
 type Message struct {
-	Message   *tb.Message
-	TipAmount int
-	Ntips     int
-	LastTip   time.Time
-	Tippers   []*tb.User
-}
-
-func (m Message) Index() string {
-	return "messages"
-}
-func (m Message) Key() string {
-	return strconv.Itoa(m.Message.ID)
+	Message   *tb.Message `json:"message"`
+	TipAmount int         `json:"tip_amount"`
+	Ntips     int         `json:"ntips"`
+	LastTip   time.Time   `json:"last_tip"`
+	Tippers   []*tb.User  `json:"tippers"`
 }
 
 const maxNamesInTipperMessage = 5
@@ -50,6 +43,12 @@ func NewMessage(m *tb.Message, opts ...messageOption) *Message {
 	}
 	return msg
 
+}
+func (m Message) Key() string {
+	if m.Message.ReplyTo != nil {
+		return strconv.Itoa(m.Message.ReplyTo.ID)
+	}
+	return strconv.Itoa(m.Message.ID)
 }
 
 func (x Message) Dispose(duration time.Duration, telegram *tb.Bot) {

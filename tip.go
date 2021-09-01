@@ -127,7 +127,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	NewMessage(m).Dispose(time.Second*time.Duration(Configuration.MessageDisposeDuration), bot.telegram)
 
 	// update tooltip if necessary
-	messageHasTip := tipTooltipHandler(m, from, bot, amount, bot.UserInitializedWallet(to))
+	messageHasTip := tipTooltipHandler(m, bot, amount, bot.UserInitializedWallet(to))
 
 	log.Infof("[tip] %d sat from %s to %s", amount, fromUserStr, toUserStr)
 
