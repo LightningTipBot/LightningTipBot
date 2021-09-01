@@ -17,7 +17,7 @@ const (
 	invoiceValidAmountMessage = "Did you enter a valid amount?"
 	invoiceHelpText           = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/invoice <amount> [<memo>]`\n" +
-		"*Example:* `/invoice 1000 Take this! 💸`"
+		"*Example:* `/invoice 1000 Thank you!`"
 )
 
 func helpInvoiceUsage(errormsg string) string {
