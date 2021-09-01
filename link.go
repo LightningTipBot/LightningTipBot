@@ -31,7 +31,7 @@ func (bot TipBot) lndhubHandler(m *tb.Message) {
 		log.Errorf("[/balance] Error: %s", err)
 		return
 	}
-	bot.telegram.Send(m.Sender, walletConnectMessage)
+	bot.trySendMessage(m.Sender, walletConnectMessage)
 
 	lnbitsUrl := Configuration.LnbitsPublicUrl
 	if !strings.HasSuffix(lnbitsUrl, "/") {
@@ -48,5 +48,5 @@ func (bot TipBot) lndhubHandler(m *tb.Message) {
 	}
 
 	// send the invoice data to user
-	bot.telegram.Send(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lndhubUrl)})
+	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lndhubUrl)})
 }

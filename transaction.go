@@ -32,22 +32,22 @@ type Transaction struct {
 	ToLNbitsID   string    `json:"to_lnbits"`
 }
 
-type transactionOption func(t *Transaction)
+type TransactionOption func(t *Transaction)
 
-func TransactionChat(chat *tb.Chat) transactionOption {
+func TransactionChat(chat *tb.Chat) TransactionOption {
 	return func(t *Transaction) {
 		t.ChatID = chat.ID
 		t.ChatName = chat.Title
 	}
 }
 
-func TransactionType(transactionType string) transactionOption {
+func TransactionType(transactionType string) TransactionOption {
 	return func(t *Transaction) {
 		t.Type = transactionType
 	}
 }
 
-func NewTransaction(bot *TipBot, from *tb.User, to *tb.User, amount int, opts ...transactionOption) *Transaction {
+func NewTransaction(bot *TipBot, from *tb.User, to *tb.User, amount int, opts ...TransactionOption) *Transaction {
 	t := &Transaction{
 		Bot:      bot,
 		From:     from,
@@ -116,7 +116,7 @@ func (t *Transaction) SendTransaction(bot *TipBot, from *tb.User, to *tb.User, a
 	// check if fromUser has balance
 	if balance < amount {
 		errmsg := fmt.Sprintf("[SendTransaction] Error: User %s has not enough balance", fromUserStr)
-		bot.telegram.Send(from, fmt.Sprintf("🚫 Your balance is too low for that."))
+		bot.trySendMessage(from, fmt.Sprintf("🚫 Your balance is too low for that."))
 		log.Errorln(errmsg)
 		return false, fmt.Errorf(errmsg)
 	}

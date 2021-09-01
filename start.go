@@ -32,18 +32,18 @@ func (bot TipBot) startHandler(m *tb.Message) {
 	err = bot.initWallet(m.Sender)
 	if err != nil {
 		log.Errorln(fmt.Sprintf("[startHandler] Error with initWallet: %s", err.Error()))
-		bot.telegram.Edit(walletCreationMsg, startWalletErrorMessage)
+		bot.tryEditMessage(walletCreationMsg, startWalletErrorMessage)
 		return
 	}
-	bot.telegram.Delete(walletCreationMsg)
+	bot.tryDeleteMessage(walletCreationMsg)
 
 	bot.helpHandler(m)
-	bot.telegram.Send(m.Sender, startWalletReadyMessage)
+	bot.trySendMessage(m.Sender, startWalletReadyMessage)
 	bot.balanceHandler(m)
 
 	// send the user a warning about the fact that they need to set a username
 	if len(m.Sender.Username) == 0 {
-		bot.telegram.Send(m.Sender, startNoUsernameMessage, tb.NoPreview)
+		bot.trySendMessage(m.Sender, startNoUsernameMessage, tb.NoPreview)
 	}
 	return
 }

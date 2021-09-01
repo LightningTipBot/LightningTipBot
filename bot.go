@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -132,6 +133,39 @@ func (bot TipBot) Start() {
 	bot.registerTelegramHandlers()
 	lnbits.NewWebhook(Configuration.WebhookServer, bot.telegram, bot.client, bot.database)
 	lnurl.NewServer(Configuration.LNURLServer, Configuration.WebhookServer, bot.telegram, bot.client, bot.database)
-
 	bot.telegram.Start()
+}
+
+func (bot TipBot) tryForwardMessage(to tb.Recipient, what tb.Editable, options ...interface{}) (msg *tb.Message) {
+	msg, err := bot.telegram.Forward(to, what, options...)
+	if err != nil {
+		log.Errorln(err.Error())
+		debug.PrintStack()
+	}
+	return
+}
+func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...interface{}) (msg *tb.Message) {
+	msg, err := bot.telegram.Send(to, what, options...)
+	if err != nil {
+		log.Errorln(err.Error())
+		debug.PrintStack()
+	}
+	return
+}
+
+func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...interface{}) (msg *tb.Message) {
+	msg, err := bot.telegram.Edit(to, what, options...)
+	if err != nil {
+		log.Errorln(err.Error())
+		debug.PrintStack()
+	}
+	return
+}
+
+func (bot TipBot) tryDeleteMessage(msg tb.Editable) {
+	err := bot.telegram.Delete(msg)
+	if err != nil {
+		log.Errorln(err.Error())
+		debug.PrintStack()
+	}
 }

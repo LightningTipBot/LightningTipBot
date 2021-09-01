@@ -44,12 +44,12 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	// only if message is a reply
 	if !m.IsReply() {
 		NewMessage(m, WithDuration(0, bot.telegram))
-		bot.telegram.Send(m.Sender, helpTipUsage(fmt.Sprintf(tipDidYouReplyMessage)))
+		bot.trySendMessage(m.Sender, helpTipUsage(fmt.Sprintf(tipDidYouReplyMessage)))
 		return
 	}
 
 	if ok, err := TipCheckSyntax(m); !ok {
-		bot.telegram.Send(m.Sender, helpTipUsage(err))
+		bot.trySendMessage(m.Sender, helpTipUsage(err))
 		NewMessage(m, WithDuration(0, bot.telegram))
 		return
 	}
@@ -60,7 +60,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 		errmsg := fmt.Sprintf("[/tip] Error: Tip amount not valid.")
 		// immediately delete if the amount is bullshit
 		NewMessage(m, WithDuration(0, bot.telegram))
-		bot.telegram.Send(m.Sender, helpTipUsage(tipValidAmountMessage))
+		bot.trySendMessage(m.Sender, helpTipUsage(tipValidAmountMessage))
 		log.Errorln(errmsg)
 		return
 	}
@@ -76,7 +76,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 
 	if from.ID == to.ID {
 		NewMessage(m, WithDuration(0, bot.telegram))
-		bot.telegram.Send(m.Sender, tipYourselfMessage)
+		bot.trySendMessage(m.Sender, tipYourselfMessage)
 		return
 	}
 
@@ -113,9 +113,9 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	if !success {
 		NewMessage(m, WithDuration(0, bot.telegram))
 		if err != nil {
-			bot.telegram.Send(m.Sender, fmt.Sprintf(tipErrorMessage, err))
+			bot.trySendMessage(m.Sender, fmt.Sprintf(tipErrorMessage, err))
 		} else {
-			bot.telegram.Send(m.Sender, fmt.Sprintf(tipErrorMessage, "please try again later"))
+			bot.trySendMessage(m.Sender, fmt.Sprintf(tipErrorMessage, "please try again later"))
 		}
 		errMsg := fmt.Sprintf("[/tip] Transaction failed: %s", err)
 		log.Errorln(errMsg)
@@ -140,12 +140,12 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 
 	// forward tipped message to user once
 	if !messageHasTip {
-		bot.telegram.Forward(to, m.ReplyTo, tb.Silent)
+		bot.tryForwardMessage(to, m.ReplyTo, tb.Silent)
 	}
-	bot.telegram.Send(to, fmt.Sprintf(tipReceivedMessage, fromUserStrMd, amount))
+	bot.trySendMessage(to, fmt.Sprintf(tipReceivedMessage, fromUserStrMd, amount))
 
 	if len(tipMemo) > 0 {
-		bot.telegram.Send(to, fmt.Sprintf("✉️ %s", MarkdownEscape(tipMemo)))
+		bot.trySendMessage(to, fmt.Sprintf("✉️ %s", MarkdownEscape(tipMemo)))
 	}
 
 	return

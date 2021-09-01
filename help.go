@@ -67,7 +67,7 @@ func (bot TipBot) helpHandler(m *tb.Message) {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))
 	}
-	bot.telegram.Send(m.Sender, bot.makeHelpMessage(m), tb.NoPreview)
+	bot.trySendMessage(m.Sender, bot.makeHelpMessage(m), tb.NoPreview)
 	return
 }
 
@@ -78,7 +78,7 @@ func (bot TipBot) infoHandler(m *tb.Message) {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))
 	}
-	bot.telegram.Send(m.Sender, infoMessage, tb.NoPreview)
+	bot.trySendMessage(m.Sender, infoMessage, tb.NoPreview)
 	return
 }
 
@@ -89,6 +89,6 @@ func (bot TipBot) advancedHelpHandler(m *tb.Message) {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))
 	}
-	bot.telegram.Send(m.Sender, advancedMessage, tb.NoPreview)
+	bot.trySendMessage(m.Sender, advancedMessage, tb.NoPreview)
 	return
 }

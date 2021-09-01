@@ -31,11 +31,11 @@ func (bot TipBot) balanceHandler(m *tb.Message) {
 	balance, err := bot.GetUserBalance(m.Sender)
 	if err != nil {
 		log.Errorf("[/balance] Error fetching %s's balance: %s", usrStr, err)
-		bot.telegram.Send(m.Sender, "🚫 Error fetching your balance. Please try again later.")
+		bot.trySendMessage(m.Sender, "🚫 Error fetching your balance. Please try again later.")
 		return
 	}
 
 	log.Infof("[/balance] %s's balance: %d sat\n", usrStr, balance)
-	bot.telegram.Send(m.Sender, fmt.Sprintf("👑 *Your balance:* %d sat", balance))
+	bot.trySendMessage(m.Sender, fmt.Sprintf("👑 *Your balance:* %d sat", balance))
 	return
 }
