@@ -44,7 +44,7 @@ func Test_getTippersString(t *testing.T) {
 
 func TestMessage_getTooltipMessage(t *testing.T) {
 	type fields struct {
-		Message   *tb.Message
+		Message   Message
 		TipAmount int
 		Ntips     int
 		LastTip   time.Time
@@ -65,19 +65,19 @@ func TestMessage_getTooltipMessage(t *testing.T) {
 		{
 			name:   "1",
 			args:   args{botUserName: "@test-bot", notInitializedWallet: true},
-			fields: fields{Message: &tb.Message{}, TipAmount: 10, Ntips: 1, Tippers: append(tippers, tipper1)},
+			fields: fields{Message: Message{}, TipAmount: 10, Ntips: 1, Tippers: append(tippers, tipper1)},
 			want:   "🏅 10 sat (by @username1)\n🗑 Chat with @test-bot to manage your wallet.",
 		},
 		{
 			name:   "2",
 			args:   args{botUserName: "@test-bot", notInitializedWallet: true},
-			fields: fields{Message: &tb.Message{}, TipAmount: 100, Ntips: 6, Tippers: append(tippers, tipper1, tipper2, tipper3, tipper4, tipper5, tipper6)},
+			fields: fields{Message: Message{}, TipAmount: 100, Ntips: 6, Tippers: append(tippers, tipper1, tipper2, tipper3, tipper4, tipper5, tipper6)},
 			want:   "🏅 100 sat (6 tips by @username1, @username2, @username3, @username4, @username5, ... and others)\n🗑 Chat with @test-bot to manage your wallet.",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			x := Message{
+			x := TipTooltip{
 				Message:   tt.fields.Message,
 				TipAmount: tt.fields.TipAmount,
 				Ntips:     tt.fields.Ntips,

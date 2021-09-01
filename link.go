@@ -23,7 +23,7 @@ func (bot TipBot) lndhubHandler(m *tb.Message) {
 	// reply only in private message
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 	}
 	// first check whether the user is initialized
 	fromUser, err := GetUser(m.Sender, bot)

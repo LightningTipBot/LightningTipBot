@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"strings"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 
 	tb "gopkg.in/tucnak/telebot.v2"
 )
@@ -44,14 +43,14 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	bot.anyTextHandler(m)
 	// only if message is a reply
 	if !m.IsReply() {
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		bot.telegram.Send(m.Sender, helpTipUsage(fmt.Sprintf(tipDidYouReplyMessage)))
 		return
 	}
 
 	if ok, err := TipCheckSyntax(m); !ok {
 		bot.telegram.Send(m.Sender, helpTipUsage(err))
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		return
 	}
 
@@ -60,7 +59,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	if err != nil || amount < 1 {
 		errmsg := fmt.Sprintf("[/tip] Error: Tip amount not valid.")
 		// immediately delete if the amount is bullshit
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		bot.telegram.Send(m.Sender, helpTipUsage(tipValidAmountMessage))
 		log.Errorln(errmsg)
 		return
@@ -76,7 +75,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	from := m.Sender
 
 	if from.ID == to.ID {
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		bot.telegram.Send(m.Sender, tipYourselfMessage)
 		return
 	}
@@ -112,7 +111,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	t.Memo = transactionMemo
 	success, err := t.Send()
 	if !success {
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		if err != nil {
 			bot.telegram.Send(m.Sender, fmt.Sprintf(tipErrorMessage, err))
 		} else {
@@ -124,7 +123,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	}
 
 	// delete the tip message after a few seconds, this is default behaviour
-	NewMessage(m).Dispose(time.Second*time.Duration(Configuration.MessageDisposeDuration), bot.telegram)
+	NewMessage(m, WithDuration(time.Second*time.Duration(Configuration.MessageDisposeDuration), bot.telegram))
 
 	// update tooltip if necessary
 	messageHasTip := tipTooltipHandler(m, bot, amount, bot.UserInitializedWallet(to))

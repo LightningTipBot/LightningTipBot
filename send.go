@@ -71,7 +71,7 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 
 	if ok, errstr := bot.SendCheckSyntax(m); !ok {
 		bot.telegram.Send(m.Sender, helpSendUsage(errstr))
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		return
 	}
 
@@ -104,7 +104,7 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 		errmsg := fmt.Sprintf("[/send] Error: Send amount not valid.")
 		log.Errorln(errmsg)
 		// immediately delete if the amount is bullshit
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		bot.telegram.Send(m.Sender, helpSendUsage(sendValidAmountMessage))
 		return
 	}
@@ -127,7 +127,7 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 			return
 		}
 		arg = MarkdownEscape(arg)
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		errmsg := fmt.Sprintf("Error: User %s could not be found", arg)
 		bot.telegram.Send(m.Sender, helpSendUsage(fmt.Sprintf(sendUserNotFoundMessage, arg, bot.telegram.Me.Username)))
 		log.Errorln(errmsg)
@@ -137,12 +137,12 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 	if m.Entities[1].Type != "mention" {
 		arg, err := getArgumentFromCommand(m.Text, 2)
 		if err != nil {
-			NewMessage(m).Dispose(0, bot.telegram)
+			NewMessage(m, WithDuration(0, bot.telegram))
 			log.Errorln(err.Error())
 			return
 		}
 		arg = MarkdownEscape(arg)
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		errmsg := fmt.Sprintf("Error: %s is not a user", arg)
 		bot.telegram.Send(m.Sender, fmt.Sprintf(sendIsNotAUsser, arg, bot.telegram.Me.Username))
 		log.Errorln(errmsg)
@@ -160,7 +160,7 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 	toUserDb := &lnbits.User{}
 	tx := bot.database.Where("telegram_username = ?", strings.ToLower(toUserStrWithoutAt)).First(toUserDb)
 	if tx.Error != nil || toUserDb.Wallet == nil || toUserDb.Initialized == false {
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		errmsg := fmt.Sprintf(sendUserHasNoWalletMessage, MarkdownEscape(toUserStrMention))
 		log.Println("[/send] Error: " + errmsg)
 		bot.telegram.Send(m.Sender, errmsg)
@@ -178,7 +178,7 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 	log.Debug(sendData)
 	user, err = GetUser(m.Sender, *bot)
 	if err != nil {
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		log.Printf("[/send] Error: %s\n", err.Error())
 		bot.telegram.Send(m.Sender, fmt.Sprint(errorTryLaterMessage))
 		return
@@ -291,7 +291,7 @@ func (bot *TipBot) sendHandler(c *tb.Callback) {
 
 	success, err := t.Send()
 	if !success || err != nil {
-		// NewMessage(m).Dispose(0, bot.telegram)
+		// NewMessage(m, WithDuration(0, bot.telegram))
 		bot.telegram.Send(c.Sender, fmt.Sprintf(sendErrorMessage, err))
 		errmsg := fmt.Sprintf("[/send] Error: Transaction failed. %s", err)
 		log.Errorln(errmsg)

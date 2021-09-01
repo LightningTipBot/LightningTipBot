@@ -33,7 +33,7 @@ func (bot TipBot) invoiceHandler(m *tb.Message) {
 	bot.anyTextHandler(m)
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		return
 	}
 	if len(strings.Split(m.Text, " ")) < 2 {

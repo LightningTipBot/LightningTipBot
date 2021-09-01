@@ -16,8 +16,43 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
+type TipTooltip struct {
+	Message
+	TipAmount int        `json:"tip_amount"`
+	Ntips     int        `json:"ntips"`
+	LastTip   time.Time  `json:"last_tip"`
+	Tippers   []*tb.User `json:"tippers"`
+}
+
+type TipTooltipOption func(m *TipTooltip)
+
+func TipAmount(amount int) TipTooltipOption {
+	return func(m *TipTooltip) {
+		m.TipAmount = amount
+	}
+}
+func Tips(nTips int) TipTooltipOption {
+	return func(m *TipTooltip) {
+		m.LastTip = time.Now()
+		m.Ntips = nTips
+	}
+}
+
+func NewTipTooltip(m *tb.Message, opts ...TipTooltipOption) *TipTooltip {
+	tipTooltip := &TipTooltip{
+		Message: Message{
+			Message: m,
+		},
+	}
+	for _, opt := range opts {
+		opt(tipTooltip)
+	}
+	return tipTooltip
+
+}
+
 // updateToolTip updates existing tip tool tip in telegram
-func (x *Message) updateTooltip(bot *TipBot, user *tb.User, amount int, notInitializedWallet bool) error {
+func (x *TipTooltip) updateTooltip(bot *TipBot, user *tb.User, amount int, notInitializedWallet bool) error {
 	x.TipAmount += amount
 	x.Ntips += 1
 	x.Tippers = appendUinqueUsersToSlice(x.Tippers, user)
@@ -35,7 +70,7 @@ func tipTooltipInitializedHandler(user *tb.User, bot TipBot) {
 			replyToUserId := gjson.Get(value, storage.MessageOrderedByReplyToFrom)
 			if replyToUserId.String() == strconv.Itoa(user.ID) {
 				log.Infoln("loading persisted tip tool tip messages")
-				message := &Message{}
+				message := &TipTooltip{}
 				err := json.Unmarshal([]byte(value), message)
 				if err != nil {
 					log.Println(err)
@@ -52,13 +87,13 @@ func tipTooltipInitializedHandler(user *tb.User, bot TipBot) {
 	}))
 }
 
-func (x *Message) editTooltip(bot *TipBot, notInitializedWallet bool) error {
+func (x *TipTooltip) editTooltip(bot *TipBot, notInitializedWallet bool) error {
 	tipToolTip := x.getTooltipMessage(GetUserStrMd(bot.telegram.Me), notInitializedWallet)
-	m, err := bot.telegram.Edit(x.Message, tipToolTip)
+	m, err := bot.telegram.Edit(x.Message.Message, tipToolTip)
 	if err != nil {
 		return err
 	}
-	x.Message.Text = m.Text
+	x.Message.Message.Text = m.Text
 	return nil
 }
 
@@ -84,7 +119,7 @@ func getTippersString(tippers []*tb.User) string {
 }
 
 // getTooltipMessage will return the full tip tool tip
-func (x Message) getTooltipMessage(botUserName string, notInitializedWallet bool) string {
+func (x TipTooltip) getTooltipMessage(botUserName string, notInitializedWallet bool) string {
 	tippersStr := getTippersString(x.Tippers)
 	tipToolTipMessage := fmt.Sprintf("🏅 %d sat", x.TipAmount)
 	if len(x.Tippers) > 1 {
@@ -100,8 +135,16 @@ func (x Message) getTooltipMessage(botUserName string, notInitializedWallet bool
 }
 
 // tipTooltipExists checks if this tip is already known
-func tipTooltipExists(replyToId int, bot *TipBot) (bool, *Message) {
-	message := &Message{Message: &tb.Message{ReplyTo: &tb.Message{ID: replyToId}}}
+func tipTooltipExists(replyToId int, bot *TipBot) (bool, *TipTooltip) {
+	message := &TipTooltip{
+		Message: Message{
+			Message: &tb.Message{
+				ReplyTo: &tb.Message{
+					ID: replyToId,
+				},
+			},
+		},
+	}
 	err := bot.bunt.Get(message)
 	if err != nil {
 		return false, message
@@ -134,7 +177,7 @@ func tipTooltipHandler(m *tb.Message, bot *TipBot, amount int, notInitializedWal
 		if err != nil {
 			print(err)
 		}
-		message := NewMessage(msg, TipAmount(amount), Tips(1))
+		message := NewTipTooltip(msg, TipAmount(amount), Tips(1))
 		message.Tippers = appendUinqueUsersToSlice(message.Tippers, m.Sender)
 		runtime.IgnoreError(bot.bunt.Set(message))
 	}

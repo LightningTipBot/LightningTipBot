@@ -41,18 +41,18 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 	bot.anyTextHandler(m)
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		bot.telegram.Send(m.Sender, helpPayInvoiceUsage(invoicePrivateChatOnlyErrorMessage))
 		return
 	}
 	if len(strings.Split(m.Text, " ")) < 2 {
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		bot.telegram.Send(m.Sender, helpPayInvoiceUsage(""))
 		return
 	}
 	user, err := GetUser(m.Sender, bot)
 	if err != nil {
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		errmsg := fmt.Sprintf("[/pay] Error: Could not GetUser: %s", err)
 		log.Errorln(errmsg)
 		return
@@ -60,7 +60,7 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 	userStr := GetUserStr(m.Sender)
 	paymentRequest, err := getArgumentFromCommand(m.Text, 1)
 	if err != nil {
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		bot.telegram.Send(m.Sender, helpPayInvoiceUsage(invalidInvoiceHelpMessage))
 		errmsg := fmt.Sprintf("[/pay] Error: Could not getArgumentFromCommand: %s", err)
 		log.Errorln(errmsg)
@@ -90,13 +90,13 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 	// check user balance first
 	balance, err := bot.GetUserBalance(m.Sender)
 	if err != nil {
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		errmsg := fmt.Sprintf("[/pay] Error: Could not get user balance: %s", err)
 		log.Errorln(errmsg)
 		return
 	}
 	if amount > balance {
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		bot.telegram.Send(m.Sender, fmt.Sprintf(insufficientFundsMessage, balance, amount))
 		return
 	}
