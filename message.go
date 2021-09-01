@@ -35,21 +35,18 @@ func NewMessage(m *tb.Message, opts ...MessageOption) *Message {
 	return msg
 }
 
-func (m Message) Key() string {
-	if m.Message.ReplyTo != nil {
-		return strconv.Itoa(m.Message.ReplyTo.ID)
-	}
-	return strconv.Itoa(m.Message.ID)
+func (msg Message) Key() string {
+	return strconv.Itoa(msg.Message.ID)
 }
 
-func (x Message) dispose(telegram *tb.Bot) {
+func (msg Message) dispose(telegram *tb.Bot) {
 	// do not delete messages from private chat
-	if x.Message.Private() {
+	if msg.Message.Private() {
 		return
 	}
 	go func() {
-		time.Sleep(x.duration)
-		err := telegram.Delete(x.Message)
+		time.Sleep(msg.duration)
+		err := telegram.Delete(msg.Message)
 		if err != nil {
 			log.Println(err.Error())
 			return
