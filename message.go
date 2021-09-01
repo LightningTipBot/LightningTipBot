@@ -53,10 +53,3 @@ func (msg Message) dispose(telegram *tb.Bot) {
 		}
 	}()
 }
-
-func removeMessage(messages []*Message, s int) []*Message {
-	if len(messages) == 1 {
-		return make([]*Message, 0)
-	}
-	return append(messages[:s], messages[s+1:]...)
-}
