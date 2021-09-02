@@ -20,6 +20,14 @@ func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...i
 	return
 }
 
+func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...interface{}) (msg *tb.Message) {
+	msg, err := bot.telegram.Reply(to, what, options...)
+	if err != nil {
+		log.Errorln(err.Error())
+	}
+	return
+}
+
 func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...interface{}) (msg *tb.Message) {
 	msg, err := bot.telegram.Edit(to, what, options...)
 	if err != nil {
