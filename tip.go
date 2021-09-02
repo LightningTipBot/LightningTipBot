@@ -3,10 +3,9 @@ package main
 import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	tb "gopkg.in/tucnak/telebot.v2"
 	"strings"
 	"time"
-
-	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 const (
@@ -39,6 +38,8 @@ func TipCheckSyntax(m *tb.Message) (bool, string) {
 }
 
 func (bot *TipBot) tipHandler(m *tb.Message) {
+	// delete the tip message after a few seconds, this is default behaviour
+	defer NewMessage(m, WithDuration(time.Second*time.Duration(Configuration.MessageDisposeDuration), bot.telegram))
 	// check and print all commands
 	bot.anyTextHandler(m)
 	// only if message is a reply
@@ -74,11 +75,11 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	to := m.ReplyTo.Sender
 	from := m.Sender
 
-	if from.ID == to.ID {
+	/*if from.ID == to.ID {
 		NewMessage(m, WithDuration(0, bot.telegram))
 		bot.trySendMessage(m.Sender, tipYourselfMessage)
 		return
-	}
+	}*/
 
 	toUserStrMd := GetUserStrMd(m.ReplyTo.Sender)
 	fromUserStrMd := GetUserStrMd(from)
@@ -104,26 +105,23 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 			tipMemo = tipMemo + "..."
 		}
 	}
-
-	// todo: user new get username function to get userStrings
-	transactionMemo := fmt.Sprintf("Tip from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
-	t := NewTransaction(bot, from, to, amount, TransactionType("tip"), TransactionChat(m.Chat))
-	t.Memo = transactionMemo
-	success, err := t.Send()
-	if !success {
-		NewMessage(m, WithDuration(0, bot.telegram))
-		if err != nil {
-			bot.trySendMessage(m.Sender, fmt.Sprintf(tipErrorMessage, err))
-		} else {
-			bot.trySendMessage(m.Sender, fmt.Sprintf(tipErrorMessage, "please try again later"))
-		}
-		errMsg := fmt.Sprintf("[/tip] Transaction failed: %s", err)
-		log.Errorln(errMsg)
-		return
-	}
-
-	// delete the tip message after a few seconds, this is default behaviour
-	NewMessage(m, WithDuration(time.Second*time.Duration(Configuration.MessageDisposeDuration), bot.telegram))
+	/*
+		// todo: user new get username function to get userStrings
+		transactionMemo := fmt.Sprintf("Tip from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
+		t := NewTransaction(bot, from, to, amount, TransactionType("tip"), TransactionChat(m.Chat))
+		t.Memo = transactionMemo
+		success, err := t.Send()
+		if !success {
+			NewMessage(m, WithDuration(0, bot.telegram))
+			if err != nil {
+				bot.trySendMessage(m.Sender, fmt.Sprintf(tipErrorMessage, err))
+			} else {
+				bot.trySendMessage(m.Sender, fmt.Sprintf(tipErrorMessage, "please try again later"))
+			}
+			errMsg := fmt.Sprintf("[/tip] Transaction failed: %s", err)
+			log.Errorln(errMsg)
+			return
+		}*/
 
 	// update tooltip if necessary
 	messageHasTip := tipTooltipHandler(m, bot, amount, bot.UserInitializedWallet(to))
