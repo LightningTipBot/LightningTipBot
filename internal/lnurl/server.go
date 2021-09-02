@@ -32,7 +32,7 @@ type Server struct {
 const (
 	lnurlEndpoint = "/.well-known/lnurlp"
 	minSendable   = 1000 // mSat
-	MaxSendable   = 100000000
+	MaxSendable   = 1000000000
 )
 
 func NewServer(lnurlserver string, webhookserver string, bot *tb.Bot, client *lnbits.Client, database *gorm.DB) *Server {
@@ -105,7 +105,6 @@ func (w Server) metaData(request *http.Request) lnurl.Metadata {
 // to call and the metadata that matches the description hash of the second response
 func (w Server) serveLNURLpFirst(writer http.ResponseWriter, request *http.Request) error {
 	vars := mux.Vars(request)
-
 	callback := fmt.Sprintf("%s%s/%s", w.callbackUrl, lnurlEndpoint, vars["username"])
 	callbackURL, err := url.Parse(callback)
 	if err != nil {
@@ -136,6 +135,7 @@ func (w Server) serveLNURLpFirst(writer http.ResponseWriter, request *http.Reque
 	}
 	writer.WriteHeader(200)
 	writer.Write(jsonResponse)
+	log.Infof("[LNURL] Serving endpoint for user %s", vars["username"])
 	return nil
 }
 
@@ -197,7 +197,7 @@ func (w Server) serveLNURLpSecond(writer http.ResponseWriter, request *http.Requ
 			}
 		}
 	}
-
+	log.Infof("[LNURL] Serving invoice for user %s", vars["username"])
 	jsonResponse, err := json.Marshal(resp)
 	if err != nil {
 		writer.WriteHeader(400)

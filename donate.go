@@ -148,13 +148,13 @@ func (bot TipBot) parseCmdDonHandler(m *tb.Message) error {
 	}
 
 	var sb strings.Builder
-	_, err = io.Copy(&sb, rot13Reader{strings.NewReader("Vg ybbxf yvxr lbh'er znxvat n qbangvba. V'z ebhgvat guvf gb gur bevtvany cebwrpg.")})
+	_, err = io.Copy(&sb, rot13Reader{strings.NewReader("Gunax lbh! V'z ebhgvat guvf qbangvba gb YvtugavatGvcObg@ya.gvcf.")})
 	if err != nil {
 		panic(err)
 	}
 	donationInterceptMessage := sb.String()
 
-	bot.trySendMessage(m.Sender, donationInterceptMessage)
+  bot.trySendMessage(m.Sender, MarkdownEscape(donationInterceptMessage))
 	m.Text = fmt.Sprintf("/donate %d", amount)
 	bot.donationHandler(m)
 	// returning nil here will abort the parent handler (/pay or /tip)

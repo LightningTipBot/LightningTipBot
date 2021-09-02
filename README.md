@@ -52,10 +52,13 @@ You can either use your own LNbits instance (recommended) or create an account a
 
 #### More configuration
 
-- `webhook_server`: URL that can reach the bot. This is used for creating webhooks with LNbits to receive notifications about payments (optional).
 - `db_path`: User database file path.
-- `transactions_path`: Transaction log file path.
-- `message_dispose_duration`: Duration in seconds after which commands will be deleted from channel (only if the bot is channel admin).
+- `transactions_path`: Transaction database file path.
+- `webhook_server`: URL that lnbits can reach the bot with. This is used for creating webhooks from LNbits to receive notifications about payments (optional).
+- `message_dispose_duration`: Duration in seconds after which `/tip` are deleted from a channel (only if the bot is channel admin).
+- `http_proxy` uses a proxy for all LNURL-related outbound requests (optional).
+- `lnbits_public_url` is the public URL of your lnbits/LndHub (for BlueWallet/Zap support, optional).
+- `lnurl_public_server` is used for inbound LNURL payments and your lightning address host (optional).
 
 ## Features
 
@@ -69,10 +72,12 @@ You can either use your own LNbits instance (recommended) or create an account a
 /pay ⚡️ Pay over Lightning: /pay <invoice>
 /help 📖 Read this help.
 /advanced 🤖 Read the advanced help.
-/info 📚 More info.
+/basics 📚 More info.
 /donate ❤️ Donate to the project: /donate <amount>
 ```
+
 #### Advanced commands
+
 ```
 /link 🔗 Link your wallet to BlueWallet or Zeus
 /lnurl ⚡️ Lnurl receive or pay: /lnurl or /lnurl <lnurl>
@@ -92,7 +97,7 @@ Users can send and receive via . For this to work, you need to set the `lnurl_pu
 
 ### Send and receive via Lightning Address
 
-Every user has a [Lightning Address](https://lightningaddress.com/) a la `username@host.com` with which they can send to via `/send <amount> <user@domain.com>` and receive from other wallets. 
+Every user has a [Lightning Address](https://lightningaddress.com/) a la `username@host.com` with which they can send to via `/send <amount> <user@domain.com>` and receive from other wallets.
 
 ### Link to BlueWallet or Zap
 
