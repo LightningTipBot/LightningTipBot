@@ -33,11 +33,11 @@ func (bot TipBot) invoiceHandler(m *tb.Message) {
 	bot.anyTextHandler(m)
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		return
 	}
 	if len(strings.Split(m.Text, " ")) < 2 {
-		bot.telegram.Send(m.Sender, helpInvoiceUsage(invoiceEnterAmountMessage))
+		bot.trySendMessage(m.Sender, helpInvoiceUsage(invoiceEnterAmountMessage))
 		return
 	}
 
@@ -49,7 +49,7 @@ func (bot TipBot) invoiceHandler(m *tb.Message) {
 	}
 	if amount > 0 {
 	} else {
-		bot.telegram.Send(m.Sender, helpInvoiceUsage(invoiceValidAmountMessage))
+		bot.trySendMessage(m.Sender, helpInvoiceUsage(invoiceValidAmountMessage))
 		return
 	}
 
@@ -89,7 +89,7 @@ func (bot TipBot) invoiceHandler(m *tb.Message) {
 	}
 
 	// send the invoice data to user
-	bot.telegram.Send(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
+	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
 	log.Printf("[/invoice] Incvoice created. User: %s, amount: %d sat.", userStr, amount)
 	return
 }

@@ -95,15 +95,16 @@ func (bot *TipBot) GetUserBalance(user *tb.User) (amount int, err error) {
 	return
 }
 
+// copyLowercaseUser will create a coy user and cast username to lowercase.
 func (bot *TipBot) copyLowercaseUser(u *tb.User) *tb.User {
-	u_cp := *u
-	u_cp.Username = strings.ToLower(u.Username)
-	return &u_cp
+	userCopy := *u
+	userCopy.Username = strings.ToLower(u.Username)
+	return &userCopy
 }
 
 func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) error {
-	u_cp := bot.copyLowercaseUser(tbUser)
-	user := &lnbits.User{Telegram: u_cp}
+	userCopy := bot.copyLowercaseUser(tbUser)
+	user := &lnbits.User{Telegram: userCopy}
 	userStr := GetUserStr(tbUser)
 	log.Printf("[CreateWalletForTelegramUser] Creating wallet for user %s ... ", userStr)
 	err := bot.createWallet(user)
