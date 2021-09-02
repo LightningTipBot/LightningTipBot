@@ -24,6 +24,8 @@ type TipTooltip struct {
 	Tippers   []*tb.User `json:"tippers"`
 }
 
+const maxNamesInTipperMessage = 5
+
 type TipTooltipOption func(m *TipTooltip)
 
 func TipAmount(amount int) TipTooltipOption {
