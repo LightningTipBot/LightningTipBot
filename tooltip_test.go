@@ -84,8 +84,8 @@ func TestMessage_getTooltipMessage(t *testing.T) {
 				LastTip:   tt.fields.LastTip,
 				Tippers:   tt.fields.Tippers,
 			}
-			if got := x.getTooltipMessage(tt.args.botUserName, tt.args.notInitializedWallet); got != tt.want {
-				t.Errorf("getTooltipMessage() = %v, want %v", got, tt.want)
+			if got := x.getUpdatedTipTooltipMessage(tt.args.botUserName, tt.args.notInitializedWallet); got != tt.want {
+				t.Errorf("getUpdatedTipTooltipMessage() = %v, want %v", got, tt.want)
 			}
 		})
 	}

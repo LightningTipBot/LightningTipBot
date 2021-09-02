@@ -14,8 +14,6 @@ type Message struct {
 	duration time.Duration
 }
 
-const maxNamesInTipperMessage = 5
-
 type MessageOption func(m *Message)
 
 func WithDuration(duration time.Duration, bot *tb.Bot) MessageOption {

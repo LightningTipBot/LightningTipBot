@@ -24,6 +24,8 @@ type TipTooltip struct {
 	Tippers   []*tb.User `json:"tippers"`
 }
 
+const maxNamesInTipperMessage = 5
+
 type TipTooltipOption func(m *TipTooltip)
 
 func TipAmount(amount int) TipTooltipOption {
@@ -51,8 +53,8 @@ func NewTipTooltip(m *tb.Message, opts ...TipTooltipOption) *TipTooltip {
 
 }
 
-// getTooltipMessage will return the full tip tool tip
-func (ttt TipTooltip) getTooltipMessage(botUserName string, notInitializedWallet bool) string {
+// getUpdatedTipTooltipMessage will return the full tip tool tip
+func (ttt TipTooltip) getUpdatedTipTooltipMessage(botUserName string, notInitializedWallet bool) string {
 	tippersStr := getTippersString(ttt.Tippers)
 	tipToolTipMessage := fmt.Sprintf("🏅 %d sat", ttt.TipAmount)
 	if len(ttt.Tippers) > 1 {
@@ -172,7 +174,7 @@ func (ttt TipTooltip) Key() string {
 }
 
 func (ttt *TipTooltip) editTooltip(bot *TipBot, notInitializedWallet bool) error {
-	tipToolTip := ttt.getTooltipMessage(GetUserStrMd(bot.telegram.Me), notInitializedWallet)
+	tipToolTip := ttt.getUpdatedTipTooltipMessage(GetUserStrMd(bot.telegram.Me), notInitializedWallet)
 	m, err := bot.telegram.Edit(ttt.Message.Message, tipToolTip)
 	if err != nil {
 		return err
