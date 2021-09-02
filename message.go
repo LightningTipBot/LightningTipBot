@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -9,59 +10,44 @@ import (
 )
 
 type Message struct {
-	Message   *tb.Message
-	TipAmount int
-	Ntips     int
-	LastTip   time.Time
-	Tippers   []*tb.User
+	Message  *tb.Message `json:"message"`
+	duration time.Duration
 }
 
-const maxNamesInTipperMessage = 5
+type MessageOption func(m *Message)
 
-type messageOption func(m *Message)
-
-func TipAmount(amount int) messageOption {
+func WithDuration(duration time.Duration, bot *tb.Bot) MessageOption {
 	return func(m *Message) {
-		m.TipAmount = amount
-	}
-}
-func Tips(nTips int) messageOption {
-	return func(m *Message) {
-		m.LastTip = time.Now()
-		m.Ntips = nTips
+		m.duration = duration
+		go m.dispose(bot)
 	}
 }
 
-func NewMessage(m *tb.Message, opts ...messageOption) *Message {
+func NewMessage(m *tb.Message, opts ...MessageOption) *Message {
 	msg := &Message{
 		Message: m,
-		Tippers: make([]*tb.User, 0),
 	}
 	for _, opt := range opts {
 		opt(msg)
 	}
 	return msg
-
 }
 
-func (x Message) Dispose(duration time.Duration, telegram *tb.Bot) {
+func (msg Message) Key() string {
+	return strconv.Itoa(msg.Message.ID)
+}
+
+func (msg Message) dispose(telegram *tb.Bot) {
 	// do not delete messages from private chat
-	if x.Message.Private() {
+	if msg.Message.Private() {
 		return
 	}
 	go func() {
-		time.Sleep(duration)
-		err := telegram.Delete(x.Message)
+		time.Sleep(msg.duration)
+		err := telegram.Delete(msg.Message)
 		if err != nil {
 			log.Println(err.Error())
 			return
 		}
 	}()
-}
-
-func removeMessage(messages []*Message, s int) []*Message {
-	if len(messages) == 1 {
-		return make([]*Message, 0)
-	}
-	return append(messages[:s], messages[s+1:]...)
 }

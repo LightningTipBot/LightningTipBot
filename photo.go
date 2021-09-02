@@ -61,11 +61,11 @@ func (bot TipBot) privatePhotoHandler(m *tb.Message) {
 	data, err := TryRecognizeInvoiceFromQrCode(img)
 	if err != nil {
 		log.Errorf("tryRecognizeQrCodes error: %v\n", err)
-		bot.telegram.Send(m.Sender, photoQrNotRecognizedMessage)
+		bot.trySendMessage(m.Sender, photoQrNotRecognizedMessage)
 		return
 	}
 
-	bot.telegram.Send(m.Sender, fmt.Sprintf(photoInvoiceRecognizedMessage, data.String()))
+	bot.trySendMessage(m.Sender, fmt.Sprintf(photoInvoiceRecognizedMessage, data.String()))
 
 	// invoke payment handler
 	m.Text = fmt.Sprintf("/pay %s", data.String())

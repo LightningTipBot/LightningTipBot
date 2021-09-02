@@ -8,13 +8,18 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
+const (
+	balanceMessage      = "👑 *Your balance:* %d sat"
+	balanceErrorMessage = "🚫 Error fetching your balance. Please try again later."
+)
+
 func (bot TipBot) balanceHandler(m *tb.Message) {
 	// check and print all commands
 	bot.anyTextHandler(m)
 	// reply only in private message
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 	}
 	// first check whether the user is initialized
 	fromUser, err := GetUser(m.Sender, bot)
@@ -31,11 +36,11 @@ func (bot TipBot) balanceHandler(m *tb.Message) {
 	balance, err := bot.GetUserBalance(m.Sender)
 	if err != nil {
 		log.Errorf("[/balance] Error fetching %s's balance: %s", usrStr, err)
-		bot.telegram.Send(m.Sender, "🚫 Error fetching your balance. Please try again later.")
+		bot.trySendMessage(m.Sender, balanceErrorMessage)
 		return
 	}
 
 	log.Infof("[/balance] %s's balance: %d sat\n", usrStr, balance)
-	bot.telegram.Send(m.Sender, fmt.Sprintf("👑 *Your balance:* %d sat", balance))
+	bot.trySendMessage(m.Sender, fmt.Sprintf(balanceMessage, balance))
 	return
 }

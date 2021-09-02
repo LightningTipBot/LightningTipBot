@@ -43,7 +43,7 @@ func (bot TipBot) donationHandler(m *tb.Message) {
 	bot.anyTextHandler(m)
 
 	if len(strings.Split(m.Text, " ")) < 2 {
-		bot.telegram.Send(m.Sender, helpDonateUsage(donateEnterAmountMessage))
+		bot.trySendMessage(m.Sender, helpDonateUsage(donateEnterAmountMessage))
 		return
 	}
 	amount, err := decodeAmountFromCommand(m.Text)
@@ -51,23 +51,23 @@ func (bot TipBot) donationHandler(m *tb.Message) {
 		return
 	}
 	if amount < 1 {
-		bot.telegram.Send(m.Sender, helpDonateUsage(donateValidAmountMessage))
+		bot.trySendMessage(m.Sender, helpDonateUsage(donateValidAmountMessage))
 		return
 	}
 
 	// command is valid
-	msg, _ := bot.telegram.Send(m.Sender, donationProgressMessage)
+	msg := bot.trySendMessage(m.Sender, donationProgressMessage)
 	// get invoice
 	resp, err := http.Get(fmt.Sprintf(endpoint, amount, GetUserStr(m.Sender), GetUserStr(bot.telegram.Me)))
 	if err != nil {
 		log.Errorln(err)
-		bot.telegram.Edit(msg, donationErrorMessage)
+		bot.tryEditMessage(msg, donationErrorMessage)
 		return
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Errorln(err)
-		bot.telegram.Edit(msg, donationErrorMessage)
+		bot.tryEditMessage(msg, donationErrorMessage)
 		return
 	}
 
@@ -77,16 +77,16 @@ func (bot TipBot) donationHandler(m *tb.Message) {
 		return
 	}
 
-	// bot.telegram.Send(user.Telegram, string(body))
+	// bot.trySendMessage(user.Telegram, string(body))
 	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: string(body)}, *user.Wallet)
 	if err != nil {
 		userStr := GetUserStr(m.Sender)
 		errmsg := fmt.Sprintf("[/donate] Donation failed for user %s: %s", userStr, err)
 		log.Errorln(errmsg)
-		bot.telegram.Edit(msg, fmt.Sprintf(donationFailedMessage, err))
+		bot.tryEditMessage(msg, fmt.Sprintf(donationFailedMessage, err))
 		return
 	}
-	bot.telegram.Edit(msg, donationSuccess)
+	bot.tryEditMessage(msg, donationSuccess)
 
 }
 
@@ -154,7 +154,7 @@ func (bot TipBot) parseCmdDonHandler(m *tb.Message) error {
 	}
 	donationInterceptMessage := sb.String()
 
-	bot.telegram.Send(m.Sender, MarkdownEscape(donationInterceptMessage))
+  bot.trySendMessage(m.Sender, MarkdownEscape(donationInterceptMessage))
 	m.Text = fmt.Sprintf("/donate %d", amount)
 	bot.donationHandler(m)
 	// returning nil here will abort the parent handler (/pay or /tip)

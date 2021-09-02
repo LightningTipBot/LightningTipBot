@@ -6,7 +6,6 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -19,6 +18,7 @@ const (
 	tipSentMessage        = "💸 %d sat sent to %s."
 	tipReceivedMessage    = "🏅 %s has tipped you %d sat."
 	tipErrorMessage       = "🚫 Transaction failed: %s"
+	tipUndefinedErrorMsg  = "please try again later"
 	tipHelpText           = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/tip <amount> [<memo>]`\n" +
 		"*Example:* `/tip 1000 Dank meme!`"
@@ -41,19 +41,21 @@ func TipCheckSyntax(m *tb.Message) (bool, string) {
 }
 
 func (bot *TipBot) tipHandler(m *tb.Message) {
+	// delete the tip message after a few seconds, this is default behaviour
+	defer NewMessage(m, WithDuration(time.Second*time.Duration(Configuration.MessageDisposeDuration), bot.telegram))
 	// check and print all commands
 	bot.anyTextHandler(m)
 	// only if message is a reply
 	if !m.IsReply() {
-		NewMessage(m).Dispose(0, bot.telegram)
-		bot.telegram.Send(m.Sender, helpTipUsage(fmt.Sprintf(tipDidYouReplyMessage)))
-		bot.telegram.Send(m.Sender, tipInviteGroupMessage)
+		NewMessage(m, WithDuration(0, bot.telegram))
+		bot.trySendMessage(m.Sender, helpTipUsage(fmt.Sprintf(tipDidYouReplyMessage)))
+    bot.trySendMessage(m.Sender, tipInviteGroupMessage)
 		return
 	}
 
 	if ok, err := TipCheckSyntax(m); !ok {
-		bot.telegram.Send(m.Sender, helpTipUsage(err))
-		NewMessage(m).Dispose(0, bot.telegram)
+		bot.trySendMessage(m.Sender, helpTipUsage(err))
+		NewMessage(m, WithDuration(0, bot.telegram))
 		return
 	}
 
@@ -62,8 +64,8 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	if err != nil || amount < 1 {
 		errmsg := fmt.Sprintf("[/tip] Error: Tip amount not valid.")
 		// immediately delete if the amount is bullshit
-		NewMessage(m).Dispose(0, bot.telegram)
-		bot.telegram.Send(m.Sender, helpTipUsage(tipValidAmountMessage))
+		NewMessage(m, WithDuration(0, bot.telegram))
+		bot.trySendMessage(m.Sender, helpTipUsage(tipValidAmountMessage))
 		log.Errorln(errmsg)
 		return
 	}
@@ -78,8 +80,8 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	from := m.Sender
 
 	if from.ID == to.ID {
-		NewMessage(m).Dispose(0, bot.telegram)
-		bot.telegram.Send(m.Sender, tipYourselfMessage)
+		NewMessage(m, WithDuration(0, bot.telegram))
+		bot.trySendMessage(m.Sender, tipYourselfMessage)
 		return
 	}
 
@@ -114,22 +116,19 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	t.Memo = transactionMemo
 	success, err := t.Send()
 	if !success {
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		if err != nil {
-			bot.telegram.Send(m.Sender, fmt.Sprintf(tipErrorMessage, err))
+			bot.trySendMessage(m.Sender, fmt.Sprintf(tipErrorMessage, err))
 		} else {
-			bot.telegram.Send(m.Sender, fmt.Sprintf(tipErrorMessage, "please try again later"))
+			bot.trySendMessage(m.Sender, fmt.Sprintf(tipErrorMessage, tipUndefinedErrorMsg))
 		}
 		errMsg := fmt.Sprintf("[/tip] Transaction failed: %s", err)
 		log.Errorln(errMsg)
 		return
 	}
 
-	// delete the tip message after a few seconds, this is default behaviour
-	NewMessage(m).Dispose(time.Second*time.Duration(Configuration.MessageDisposeDuration), bot.telegram)
-
 	// update tooltip if necessary
-	messageHasTip := tipTooltipHandler(m, from, bot, amount, bot.UserInitializedWallet(to))
+	messageHasTip := tipTooltipHandler(m, bot, amount, bot.UserInitializedWallet(to))
 
 	log.Infof("[tip] %d sat from %s to %s", amount, fromUserStr, toUserStr)
 
@@ -143,12 +142,12 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 
 	// forward tipped message to user once
 	if !messageHasTip {
-		bot.telegram.Forward(to, m.ReplyTo, tb.Silent)
+		bot.tryForwardMessage(to, m.ReplyTo, tb.Silent)
 	}
-	bot.telegram.Send(to, fmt.Sprintf(tipReceivedMessage, fromUserStrMd, amount))
+	bot.trySendMessage(to, fmt.Sprintf(tipReceivedMessage, fromUserStrMd, amount))
 
 	if len(tipMemo) > 0 {
-		bot.telegram.Send(to, fmt.Sprintf("✉️ %s", MarkdownEscape(tipMemo)))
+		bot.trySendMessage(to, fmt.Sprintf("✉️ %s", MarkdownEscape(tipMemo)))
 	}
 	return
 }
