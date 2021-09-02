@@ -8,6 +8,11 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
+const (
+	balanceMessage      = "👑 *Your balance:* %d sat"
+	balanceErrorMessage = "🚫 Error fetching your balance. Please try again later."
+)
+
 func (bot TipBot) balanceHandler(m *tb.Message) {
 	// check and print all commands
 	bot.anyTextHandler(m)
@@ -31,11 +36,11 @@ func (bot TipBot) balanceHandler(m *tb.Message) {
 	balance, err := bot.GetUserBalance(m.Sender)
 	if err != nil {
 		log.Errorf("[/balance] Error fetching %s's balance: %s", usrStr, err)
-		bot.trySendMessage(m.Sender, "🚫 Error fetching your balance. Please try again later.")
+		bot.trySendMessage(m.Sender, balanceErrorMessage)
 		return
 	}
 
 	log.Infof("[/balance] %s's balance: %d sat\n", usrStr, balance)
-	bot.trySendMessage(m.Sender, fmt.Sprintf("👑 *Your balance:* %d sat", balance))
+	bot.trySendMessage(m.Sender, fmt.Sprintf(balanceMessage, balance))
 	return
 }

@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/tucnak/telebot.v2"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 const (
@@ -16,6 +17,7 @@ const (
 	tipSentMessage        = "💸 %d sat sent to %s."
 	tipReceivedMessage    = "🏅 %s has tipped you %d sat."
 	tipErrorMessage       = "🚫 Transaction failed: %s"
+	tipUndefinedErrorMsg  = "please try again later"
 	tipHelpText           = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/tip <amount> [<memo>]`\n" +
 		"*Example:* `/tip 1000 Dank meme!`"
@@ -116,7 +118,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 		if err != nil {
 			bot.trySendMessage(m.Sender, fmt.Sprintf(tipErrorMessage, err))
 		} else {
-			bot.trySendMessage(m.Sender, fmt.Sprintf(tipErrorMessage, "please try again later"))
+			bot.trySendMessage(m.Sender, fmt.Sprintf(tipErrorMessage, tipUndefinedErrorMsg))
 		}
 		errMsg := fmt.Sprintf("[/tip] Transaction failed: %s", err)
 		log.Errorln(errMsg)
