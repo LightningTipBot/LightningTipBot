@@ -125,7 +125,6 @@ func (w Server) descriptionHash(metadata lnurl.Metadata) (string, error) {
 // metaData returns the metadata that is sent in the first response
 // and is used again in the second response to verify the description hash
 func (w Server) metaData(username string) lnurl.Metadata {
-
 	return lnurl.Metadata{
 		{"text/identifier", fmt.Sprintf("%s@ln.tips", username)},
 		{"text/plain", fmt.Sprintf("Pay to %s@%s", username, w.callbackUrl)}}
@@ -134,7 +133,6 @@ func (w Server) metaData(username string) lnurl.Metadata {
 // serveLNURLpFirst serves the first part of the LNURLp protocol with the endpoint
 // to call and the metadata that matches the description hash of the second response
 func (w Server) serveLNURLpFirst(username string) (*lnurl.LNURLPayResponse1, error) {
-
 	log.Infof("[LNURL] Serving endpoint for user %s", username)
 	callbackURL, err := url.Parse(fmt.Sprintf("https://%s%s/%s", w.callbackUrl, lnurlEndpoint, username))
 	if err != nil {
