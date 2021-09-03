@@ -85,7 +85,7 @@ func (bot TipBot) createWallet(user *lnbits.User) error {
 	UserStr := GetUserStr(user.Telegram)
 	u, err := bot.client.CreateUserWithInitialWallet(strconv.Itoa(user.Telegram.ID),
 		fmt.Sprintf("%d (%s)", user.Telegram.ID, UserStr),
-		Configuration.AdminKey,
+		Configuration.Lnbits.AdminKey,
 		UserStr)
 	if err != nil {
 		errormsg := fmt.Sprintf("[createWallet] Create wallet error: %s", err)

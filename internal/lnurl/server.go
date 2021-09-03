@@ -2,8 +2,8 @@ package lnurl
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -31,10 +31,9 @@ const (
 	MaxSendable   = 1000000000
 )
 
-func NewServer(host string, port int, bot *tb.Bot, client *lnbits.Client, database *gorm.DB) *Server {
-
+func NewServer(addr *url.URL, callbackHostname, webhookServer string, bot *tb.Bot, client *lnbits.Client, database *gorm.DB) *Server {
 	srv := &http.Server{
-		Addr: fmt.Sprintf("%s:%d", host, port),
+		Addr: addr.Host,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
@@ -44,12 +43,13 @@ func NewServer(host string, port int, bot *tb.Bot, client *lnbits.Client, databa
 		database:         database,
 		bot:              bot,
 		httpServer:       srv,
-		callbackHostname: host,
+		callbackHostname: callbackHostname,
+		WebhookServer:    webhookServer,
 	}
 
 	apiServer.httpServer.Handler = apiServer.newRouter()
 	go apiServer.httpServer.ListenAndServe()
-	log.Infof("[LNURL] Server started at %s port %s", host, port)
+	log.Infof("[LNURL] Server started at %s", addr.Host)
 	return apiServer
 }
 
