@@ -33,7 +33,7 @@ func (bot TipBot) lndhubHandler(m *tb.Message) {
 	}
 	bot.trySendMessage(m.Sender, walletConnectMessage)
 
-	lnbitsUrl := Configuration.LnbitsPublicUrl
+	lnbitsUrl := Configuration.Lnbits.PublicUrl
 	if !strings.HasSuffix(lnbitsUrl, "/") {
 		lnbitsUrl = lnbitsUrl + "/"
 	}

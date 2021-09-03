@@ -121,7 +121,7 @@ func (bot TipBot) lnurlHandler(m *tb.Message) {
 
 func (bot *TipBot) UserGetLightningAddress(user *tb.User) (string, error) {
 	if len(user.Username) > 0 {
-		return fmt.Sprintf("%s@%s", strings.ToLower(user.Username), strings.ToLower(Configuration.LNURLServer.Host)), nil
+		return fmt.Sprintf("%s@%s", strings.ToLower(user.Username), strings.ToLower(Configuration.Bot.LNURLHostName)), nil
 	} else {
 		return "", fmt.Errorf("user has no username")
 	}
@@ -132,7 +132,7 @@ func (bot *TipBot) UserGetLNURL(user *tb.User) (string, error) {
 	if len(name) == 0 {
 		return "", fmt.Errorf("user has no username.")
 	}
-	callback := fmt.Sprintf("https://%s/.well-known/lnurlp/%s", Configuration.LNURLServer.Host, name)
+	callback := fmt.Sprintf("https://%s/.well-known/lnurlp/%s", Configuration.Bot.LNURLHostName, name)
 	log.Infof("[lnurlReceiveHandler] %s's LNURL: %s", GetUserStr(user), callback)
 
 	lnurlEncode, err := lnurl.LNURLEncode(callback)
@@ -281,8 +281,8 @@ func (bot TipBot) lnurlPayHandler(c *tb.Message) {
 
 func getHttpClient() (*http.Client, error) {
 	client := http.Client{}
-	if Configuration.HttpProxy != "" {
-		proxyUrl, err := url.Parse(Configuration.HttpProxy)
+	if Configuration.Bot.HttpProxy != "" {
+		proxyUrl, err := url.Parse(Configuration.Bot.HttpProxy)
 		if err != nil {
 			log.Errorln(err)
 			return nil, err
