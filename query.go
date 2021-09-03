@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/tucnak/telebot.v2"
 	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const image = "https://avatars.githubusercontent.com/u/88730856?v=4"
+const queryImage = "https://avatars.githubusercontent.com/u/88730856?v=4"
 
 var (
 	sendInlineMenu      = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
@@ -22,7 +23,11 @@ func (bot TipBot) inlineQueryInstructions(q *tb.Query) {
 		title       string
 		description string
 	}{
-		{url: image, title: "Send sats to any user accepting your tip", description: "/tip 1"},
+		{
+			url:         queryImage,
+			title:       "💸 Send sats to the person you chat with.",
+			description: fmt.Sprintf("Usage: @%s send <amount>", bot.telegram.Me.Username),
+		},
 	}
 	results := make(tb.Results, len(instructions)) // []tb.Result
 	for i, instruction := range instructions {
@@ -59,21 +64,21 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 		bot.inlineQueryInstructions(q)
 		return
 	}
-	if strings.HasPrefix(q.Text, "/tip ") {
+	if strings.HasPrefix(q.Text, "send ") {
 		amount, err := decodeAmountFromCommand(q.Text)
 		if err != nil {
 			return
 		}
 		urls := []string{
-			image,
+			queryImage,
 		}
 		results := make(tb.Results, len(urls)) // []tb.Result
 		for i, url := range urls {
 			result := &tb.ArticleResult{
 				URL:         url,
-				Text:        fmt.Sprintf("@%s wants to send you %d sats\n🏅 Please accept this payment as a receiver.", q.From.Username, amount),
-				Title:       fmt.Sprintf("Send %d sats to any accepting user", amount),
-				Description: fmt.Sprintf("Clicking this will send a message in your current chat. Any user accepting this payment will receive %d sats to their wallet", amount),
+				Text:        fmt.Sprintf("Press ✅ to accept payment.\n\n💸 Amount: %d sat\n", amount),
+				Title:       fmt.Sprintf("💸 Send %d sat to chat.", amount),
+				Description: fmt.Sprintf("You chat with will receive %d sat if they accept the payment.", amount),
 				// required for photos
 				ThumbURL: url,
 			}
@@ -88,7 +93,7 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 
 		err = bot.telegram.Answer(q, &tb.QueryResponse{
 			Results:   results,
-			CacheTime: 5, // a minute
+			CacheTime: 1, // a minute
 
 		})
 
