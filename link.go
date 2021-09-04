@@ -3,8 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"strings"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -33,11 +31,7 @@ func (bot TipBot) lndhubHandler(m *tb.Message) {
 	}
 	bot.trySendMessage(m.Sender, walletConnectMessage)
 
-	lnbitsUrl := Configuration.Lnbits.PublicUrl
-	if !strings.HasSuffix(lnbitsUrl, "/") {
-		lnbitsUrl = lnbitsUrl + "/"
-	}
-	lndhubUrl := fmt.Sprintf("lndhub://admin:%s@%slndhub/ext/", fromUser.Wallet.Adminkey, lnbitsUrl)
+	lndhubUrl := fmt.Sprintf("lndhub://admin:%s@%slndhub/ext/", fromUser.Wallet.Adminkey, Configuration.Lnbits.LndhubLinkUrl)
 
 	// create qr code
 	qr, err := qrcode.Encode(lndhubUrl, qrcode.Medium, 256)
