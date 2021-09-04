@@ -12,7 +12,7 @@ lnbits:
   admin_key: "1234"
   admin_id: "1234"
   webhook_server: "http://0.0.0.0:5588"
-
+  lndhub_link_url: "link.mylnurl.com"
 database:
   db_path: "data/dev.db"
   buntdb_path: "data/bunt.db"

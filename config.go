@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/jinzhu/configor"
+	log "github.com/sirupsen/logrus"
 	"net/url"
+	"strings"
 )
 
 var Configuration = struct {
@@ -33,7 +36,7 @@ type LnbitsConfiguration struct {
 	AdminId          string   `yaml:"admin_id"`
 	AdminKey         string   `yaml:"admin_key"`
 	Url              string   `yaml:"url"`
-	PublicUrl        string   `yaml:"public_url"`
+	LndhubLinkUrl    string   `yaml:"lndhub_link_url"`
 	WebhookServer    string   `yaml:"webhook_server"`
 	WebhookServerUrl *url.URL `yaml:"-"`
 }
@@ -54,4 +57,18 @@ func init() {
 		panic(err)
 	}
 	Configuration.Bot.LNURLServerUrl = lnUrl
+	checkLnbitsConfiguration()
+}
+
+func checkLnbitsConfiguration() {
+	if Configuration.Lnbits.Url == "" {
+		panic(fmt.Errorf("please configure a lnbits url"))
+	}
+	if Configuration.Lnbits.LndhubLinkUrl == "" {
+		log.Warnf("You have not specified a LNDHUB linking url. Using you Lnbits URL as default.")
+		Configuration.Lnbits.LndhubLinkUrl = Configuration.Lnbits.Url
+	}
+	if !strings.HasSuffix(Configuration.Lnbits.LndhubLinkUrl, "/") {
+		Configuration.Lnbits.LndhubLinkUrl = Configuration.Lnbits.LndhubLinkUrl + "/"
+	}
 }
