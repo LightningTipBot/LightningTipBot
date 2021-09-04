@@ -91,6 +91,7 @@ func (w Server) serveLNURLpSecond(username string, amount int64) (*lnurl.LNURLPa
 				Reason: fmt.Sprintf("Amount out of bounds (min: %d mSat, max: %d mSat).", minSendable, MaxSendable)},
 		}, fmt.Errorf("amount out of bounds")
 	}
+	// amount is ok now check for the user
 	user := &lnbits.User{}
 	tx := w.database.Where("telegram_username = ?", strings.ToLower(username)).First(user)
 	if tx.Error != nil {
@@ -104,7 +105,6 @@ func (w Server) serveLNURLpSecond(username string, amount int64) (*lnurl.LNURLPa
 	user.Wallet.Client = w.c
 	var resp *lnurl.LNURLPayResponse2
 
-	// amount is ok
 	// the same description_hash needs to be built in the second request
 	metadata := w.metaData(username)
 	descriptionHash, err := w.descriptionHash(metadata)
