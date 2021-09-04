@@ -93,7 +93,7 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 
 		err = bot.telegram.Answer(q, &tb.QueryResponse{
 			Results:   results,
-			CacheTime: 1, // a minute
+			CacheTime: 1, // 60 == 1 minute, todo: make higher than 1 s in production
 
 		})
 
