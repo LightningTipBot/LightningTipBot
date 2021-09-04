@@ -82,9 +82,15 @@ func (w Server) serveLNURLpFirst(username string) (*lnurl.LNURLPayResponse1, err
 
 // serveLNURLpSecond serves the second LNURL response with the payment request with the correct description hash
 func (w Server) serveLNURLpSecond(username string, amount int64) (*lnurl.LNURLPayResponse2, error) {
-
 	log.Infof("[LNURL] Serving invoice for user %s", username)
-
+	if amount < minSendable || amount > MaxSendable {
+		// amount is not ok
+		return &lnurl.LNURLPayResponse2{
+			LNURLResponse: lnurl.LNURLResponse{
+				Status: statusError,
+				Reason: fmt.Sprintf("Amount out of bounds (min: %d mSat, max: %d mSat).", minSendable, MaxSendable)},
+		}, fmt.Errorf("amount out of bounds")
+	}
 	user := &lnbits.User{}
 	tx := w.database.Where("telegram_username = ?", strings.ToLower(username)).First(user)
 	if tx.Error != nil {
@@ -96,17 +102,8 @@ func (w Server) serveLNURLpSecond(username string, amount int64) (*lnurl.LNURLPa
 
 	// set wallet lnbits client
 	user.Wallet.Client = w.c
-
 	var resp *lnurl.LNURLPayResponse2
 
-	if amount < minSendable || amount > MaxSendable {
-		// amount is not ok
-		return &lnurl.LNURLPayResponse2{
-			LNURLResponse: lnurl.LNURLResponse{
-				Status: statusError,
-				Reason: fmt.Sprintf("Amount out of bounds (min: %d mSat, max: %d mSat).", minSendable, MaxSendable)},
-		}, fmt.Errorf("amount out of bounds")
-	}
 	// amount is ok
 	// the same description_hash needs to be built in the second request
 	metadata := w.metaData(username)
