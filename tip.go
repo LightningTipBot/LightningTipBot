@@ -49,7 +49,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	if !m.IsReply() {
 		NewMessage(m, WithDuration(0, bot.telegram))
 		bot.trySendMessage(m.Sender, helpTipUsage(fmt.Sprintf(tipDidYouReplyMessage)))
-    bot.trySendMessage(m.Sender, tipInviteGroupMessage)
+		bot.trySendMessage(m.Sender, tipInviteGroupMessage)
 		return
 	}
 

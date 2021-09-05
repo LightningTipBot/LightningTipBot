@@ -3,13 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	"github.com/tidwall/buntdb"
 	"github.com/tidwall/gjson"
-	"strconv"
-	"strings"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -102,12 +103,12 @@ func tipTooltipExists(replyToId int, bot *TipBot) (bool, *TipTooltip) {
 }
 
 // tipTooltipHandler function to update the tooltip below a tipped message. either updates or creates initial tip tool tip
-func tipTooltipHandler(m *tb.Message, bot *TipBot, amount int, notInitializedWallet bool) (hasTip bool) {
+func tipTooltipHandler(m *tb.Message, bot *TipBot, amount int, initializedWallet bool) (hasTip bool) {
 	// todo: this crashes if the tooltip message (maybe also the original tipped message) was deleted in the mean time!!! need to check for existence!
 	hasTip, ttt := tipTooltipExists(m.ReplyTo.ID, bot)
 	if hasTip {
 		// update the tooltip with new tippers
-		err := ttt.updateTooltip(bot, m.Sender, amount, notInitializedWallet)
+		err := ttt.updateTooltip(bot, m.Sender, amount, !initializedWallet)
 		if err != nil {
 			log.Println(err)
 			// could not update the message (return false to )
@@ -118,7 +119,7 @@ func tipTooltipHandler(m *tb.Message, bot *TipBot, amount int, notInitializedWal
 		userStr := GetUserStrMd(m.Sender)
 		tipmsg = fmt.Sprintf("%s (by %s)", tipmsg, userStr)
 
-		if notInitializedWallet {
+		if !initializedWallet {
 			tipmsg = tipmsg + fmt.Sprintf("\n🗑 Chat with %s to manage your wallet.", GetUserStrMd(bot.telegram.Me))
 		}
 		msg, err := bot.telegram.Reply(m.ReplyTo, tipmsg, tb.Silent)
@@ -146,6 +147,7 @@ func (ttt *TipTooltip) updateTooltip(bot *TipBot, user *tb.User, amount int, not
 	return bot.bunt.Set(ttt)
 }
 
+// tipTooltipInitializedHandler is called when the user initializes the wallet
 func tipTooltipInitializedHandler(user *tb.User, bot TipBot) {
 	runtime.IgnoreError(bot.bunt.View(func(tx *buntdb.Tx) error {
 		err := tx.Ascend(storage.MessageOrderedByReplyToFrom, func(key, value string) bool {
@@ -155,11 +157,11 @@ func tipTooltipInitializedHandler(user *tb.User, bot TipBot) {
 				ttt := &TipTooltip{}
 				err := json.Unmarshal([]byte(value), ttt)
 				if err != nil {
-					log.Println(err)
+					log.Errorln(err)
 				}
 				err = ttt.editTooltip(&bot, false)
 				if err != nil {
-					log.Printf("[tipTooltipInitializedHandler] could not edit tooltip: %s", err.Error())
+					log.Errorf("[tipTooltipInitializedHandler] could not edit tooltip: %s", err.Error())
 				}
 			}
 
@@ -173,6 +175,7 @@ func (ttt TipTooltip) Key() string {
 	return strconv.Itoa(ttt.Message.Message.ReplyTo.ID)
 }
 
+// editTooltip updates the tooltip message with the new tip amount and tippers and edits it
 func (ttt *TipTooltip) editTooltip(bot *TipBot, notInitializedWallet bool) error {
 	tipToolTip := ttt.getUpdatedTipTooltipMessage(GetUserStrMd(bot.telegram.Me), notInitializedWallet)
 	m, err := bot.telegram.Edit(ttt.Message.Message, tipToolTip)
