@@ -24,7 +24,7 @@ type InlineSend struct {
 	Amount  int               `json:"inline_send_amount"`
 	From    *tb.User          `json:"inline_send_from"`
 	To      *tb.User          `json:"inline_send_to"`
-	ID      int64             `json:"inline_send_id"`
+	ID      string            `json:"inline_send_id"`
 }
 
 func NewInlineSend(m string, opts ...TipTooltipOption) *InlineSend {
@@ -39,7 +39,7 @@ func NewInlineSend(m string, opts ...TipTooltipOption) *InlineSend {
 }
 
 func (msg InlineSend) Key() string {
-	return strconv.Itoa(int(msg.ID))
+	return msg.ID
 }
 
 func (bot TipBot) inlineQueryInstructions(q *tb.Query) {
@@ -119,7 +119,9 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 			results[i] = result
 			// needed to set a unique string ID for each result
 			// results[i].SetResultID(strconv.Itoa(i))
-			results[i].SetResultID(fmt.Sprintf("inline-send-%d-%d-%d", q.From.ID, amount, i))
+			id := fmt.Sprintf("inline-send-%d-%d-%d", q.From.ID, amount, i)
+			results[i].SetResultID(id)
+			inlineSend.ID = id
 
 			// add result to persistent struct
 			inlineSend.result = result

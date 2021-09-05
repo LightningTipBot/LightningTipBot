@@ -147,6 +147,7 @@ func (ttt *TipTooltip) updateTooltip(bot *TipBot, user *tb.User, amount int, not
 	return bot.bunt.Set(ttt)
 }
 
+// tipTooltipInitializedHandler is called when the user initializes the wallet
 func tipTooltipInitializedHandler(user *tb.User, bot TipBot) {
 	runtime.IgnoreError(bot.bunt.View(func(tx *buntdb.Tx) error {
 		err := tx.Ascend(storage.MessageOrderedByReplyToFrom, func(key, value string) bool {
