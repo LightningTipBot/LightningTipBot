@@ -134,8 +134,6 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 				inlineMessage = inlineMessage + fmt.Sprintf(inlineSendAppendMemo, MarkdownEscape(memo))
 			}
 
-			// create persistend inline send struct
-			inlineSend := NewInlineSend(inlineMessage)
 			id := fmt.Sprintf("inline-send-%d-%d-%d", q.From.ID, amount, i)
 			result := &tb.ArticleResult{
 				URL:         url,
@@ -156,6 +154,8 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 			// needed to set a unique string ID for each result
 			results[i].SetResultID(id)
 
+			// create persistend inline send struct
+			inlineSend := NewInlineSend(inlineMessage)
 			// add data to persistent object
 			inlineSend.ID = id
 			inlineSend.From = &q.From
