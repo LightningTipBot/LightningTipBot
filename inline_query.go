@@ -23,11 +23,11 @@ var (
 )
 
 type InlineSend struct {
-	Message string            `json:"inline_send_message"`
-	result  *tb.ArticleResult `json:"inline_send_articleresult"`
-	Amount  int               `json:"inline_send_amount"`
-	From    *tb.User          `json:"inline_send_from"`
-	To      *tb.User          `json:"inline_send_to"`
+	Message string `json:"inline_send_message"`
+	result  *tb.ArticleResult
+	Amount  int      `json:"inline_send_amount"`
+	From    *tb.User `json:"inline_send_from"`
+	To      *tb.User `json:"inline_send_to"`
 	Memo    string
 	ID      string `json:"inline_send_id"`
 }
