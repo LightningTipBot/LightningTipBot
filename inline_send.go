@@ -14,6 +14,7 @@ const (
 	sendInlineUpdateMessageAccept = "💸 %d sat sent from %s to %s."
 	sendInlineCreateWalletMessage = "Chat with %s 👈 to manage your wallet."
 	sendYourselfMessage           = "📖 You can't pay to yourself."
+	inlineSendFailedMessage       = "🚫 Send failed."
 )
 
 // tipTooltipExists checks if this tip is already known
@@ -74,6 +75,7 @@ func (bot *TipBot) sendInlineHandler(c *tb.Callback) {
 		}
 		errMsg := fmt.Sprintf("[sendInline] Transaction failed: %s", err)
 		log.Errorln(errMsg)
+		bot.tryEditMessage(c.Message, inlineSendFailedMessage, &tb.ReplyMarkup{})
 		return
 	}
 
