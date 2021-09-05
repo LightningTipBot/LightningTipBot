@@ -22,8 +22,8 @@ type InlineSend struct {
 	Message string            `json:"inline_send_message"`
 	result  *tb.ArticleResult `json:"inline_send_articleresult"`
 	Amount  int               `json:"inline_send_amount"`
-	From    *tb.User          `json:"inline_send_from"`
-	To      *tb.User          `json:"inline_send_to"`
+	From    tb.User           `json:"inline_send_from"`
+	To      tb.User           `json:"inline_send_to"`
 	ID      string            `json:"inline_send_id"`
 }
 
@@ -103,7 +103,7 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 
 			// create persistend inline send struct
 			inlineSend := NewInlineSend(inlineMessage)
-
+			id := fmt.Sprintf("inline-send-%d-%d-%d", q.From.ID, amount, i)
 			result := &tb.ArticleResult{
 				URL:         url,
 				Text:        inlineMessage,
@@ -112,17 +112,20 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 				// required for photos
 				ThumbURL: url,
 			}
-			sendInlineMenu.Inline(sendInlineMenu.Row(btnSendInline, btnCancelSendInline))
 
+			// btnSendInline = paymentConfirmationMenu.Data("✅ Accept", id, id)
+			// bot.telegram.Handle(&btnSendInline, bot.sendInlineHandler)
+			btnSendInline.Data = id
+			sendInlineMenu.Inline(sendInlineMenu.Row(btnSendInline, btnCancelSendInline))
 			result.ReplyMarkup = &tb.InlineKeyboardMarkup{InlineKeyboard: sendInlineMenu.InlineKeyboard}
 
 			results[i] = result
 			// needed to set a unique string ID for each result
 			// results[i].SetResultID(strconv.Itoa(i))
-			id := fmt.Sprintf("inline-send-%d-%d-%d", q.From.ID, amount, i)
+
 			results[i].SetResultID(id)
 			inlineSend.ID = id
-
+			inlineSend.From = q.From
 			// add result to persistent struct
 			inlineSend.result = result
 			runtime.IgnoreError(bot.bunt.Set(inlineSend))
