@@ -80,7 +80,7 @@ func (bot *TipBot) sendInlineHandler(c *tb.Callback) {
 
 	message.Message = fmt.Sprintf("%s", fmt.Sprintf(sendInlineUpdateMessageAccept, amount, fromUserStrMd, toUserStrMd))
 
-	if !exists {
+	if !bot.UserInitializedWallet(to) {
 		message.Message += " " + fmt.Sprintf(sendInlineCreateWalletMessage, GetUserStrMd(bot.telegram.Me))
 	}
 
