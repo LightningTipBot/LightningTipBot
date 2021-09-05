@@ -62,7 +62,7 @@ func (bot TipBot) inlineQueryInstructions(q *tb.Query) {
 	results := make(tb.Results, len(instructions)) // []tb.Result
 	for i, instruction := range instructions {
 		result := &tb.ArticleResult{
-			URL:         instruction.url,
+			//URL:         instruction.url,
 			Text:        instruction.description,
 			Title:       instruction.title,
 			Description: instruction.description,
@@ -97,6 +97,19 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 	if strings.HasPrefix(q.Text, "send") || strings.HasPrefix(q.Text, "/send") || strings.HasPrefix(q.Text, "giveaway") || strings.HasPrefix(q.Text, "/giveaway") {
 		amount, err := decodeAmountFromCommand(q.Text)
 
+		fromUserStr := GetUserStr(&q.From)
+		balance, err := bot.GetUserBalance(&q.From)
+		if err != nil {
+			errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
+			log.Errorln(errmsg)
+			return
+		}
+		// check if fromUser has balance
+		if balance < amount {
+			log.Errorln("Balance of user %s too low", fromUserStr)
+			return
+		}
+
 		// check for memo in command
 		memo := ""
 		if len(strings.Split(q.Text, " ")) > 2 {
@@ -115,6 +128,7 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 		}
 		results := make(tb.Results, len(urls)) // []tb.Result
 		for i, url := range urls {
+
 			inlineMessage := fmt.Sprintf(inlineSendMessage, amount)
 
 			if len(memo) > 0 {
