@@ -132,7 +132,7 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 			}
 
 			result := &tb.ArticleResult{
-				URL:         url,
+				// URL:         url,
 				Text:        inlineMessage,
 				Title:       fmt.Sprintf(inlineResultSendTitle, amount),
 				Description: fmt.Sprintf(inlineResultDescription, amount),
