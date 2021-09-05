@@ -69,7 +69,7 @@ func (bot *TipBot) UserInitializedWallet(user *tb.User) bool {
 	if err != nil {
 		return false
 	}
-	return !toUser.Initialized
+	return toUser.Initialized
 }
 
 func (bot *TipBot) GetUserBalance(user *tb.User) (amount int, err error) {

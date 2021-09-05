@@ -13,9 +13,13 @@ import (
 const queryImage = "https://avatars.githubusercontent.com/u/88730856?v=4"
 
 var (
-	sendInlineMenu      = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
-	btnCancelSendInline = paymentConfirmationMenu.Data("🚫 Cancel", "cancel_send_inline")
-	btnSendInline       = paymentConfirmationMenu.Data("✅ Accept", "confirm_send_inline")
+	inlineQuerySendTitle    = "Send sats to a chat."
+	inlineQueryDescription  = "Usage: @%s send <amount> [<memo>]"
+	inlineResultSendTitle   = "💸 Send %d sat."
+	inlineResultDescription = "Click here to send %d sat to this chat."
+	sendInlineMenu          = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	btnCancelSendInline     = paymentConfirmationMenu.Data("🚫 Cancel", "cancel_send_inline")
+	btnSendInline           = paymentConfirmationMenu.Data("✅ Receive", "confirm_send_inline")
 )
 
 type InlineSend struct {
@@ -24,7 +28,8 @@ type InlineSend struct {
 	Amount  int               `json:"inline_send_amount"`
 	From    *tb.User          `json:"inline_send_from"`
 	To      *tb.User          `json:"inline_send_to"`
-	ID      string            `json:"inline_send_id"`
+	Memo    string
+	ID      string `json:"inline_send_id"`
 }
 
 func NewInlineSend(m string, opts ...TipTooltipOption) *InlineSend {
@@ -50,8 +55,8 @@ func (bot TipBot) inlineQueryInstructions(q *tb.Query) {
 	}{
 		{
 			url:         queryImage,
-			title:       "💸 Send sats to a group or a private chat.",
-			description: fmt.Sprintf("Usage: @%s send <amount>", bot.telegram.Me.Username),
+			title:       inlineQuerySendTitle,
+			description: fmt.Sprintf(inlineQueryDescription, bot.telegram.Me.Username),
 		},
 	}
 	results := make(tb.Results, len(instructions)) // []tb.Result
@@ -89,8 +94,19 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 		bot.inlineQueryInstructions(q)
 		return
 	}
-	if strings.HasPrefix(q.Text, "send ") {
+	if strings.HasPrefix(q.Text, "send") || strings.HasPrefix(q.Text, "/send") || strings.HasPrefix(q.Text, "giveaway") || strings.HasPrefix(q.Text, "/giveaway") {
 		amount, err := decodeAmountFromCommand(q.Text)
+
+		// check for memo in command
+		memo := ""
+		if len(strings.Split(q.Text, " ")) > 2 {
+			memo = strings.SplitN(q.Text, " ", 3)[2]
+			memoMaxLen := 159
+			if len(memo) > memoMaxLen {
+				memo = memo[:memoMaxLen]
+			}
+		}
+
 		if err != nil {
 			return
 		}
@@ -99,7 +115,11 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 		}
 		results := make(tb.Results, len(urls)) // []tb.Result
 		for i, url := range urls {
-			inlineMessage := fmt.Sprintf("Press ✅ to accept payment.\n\n💸 Amount: %d sat\n", amount)
+			inlineMessage := fmt.Sprintf(inlineSendMessage, amount)
+
+			if len(memo) > 0 {
+				inlineMessage = inlineMessage + fmt.Sprintf(inlineSendAppendMemo, MarkdownEscape(memo))
+			}
 
 			// create persistend inline send struct
 			inlineSend := NewInlineSend(inlineMessage)
@@ -107,28 +127,29 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 			result := &tb.ArticleResult{
 				URL:         url,
 				Text:        inlineMessage,
-				Title:       fmt.Sprintf("💸 Send %d sat.", amount),
-				Description: fmt.Sprintf("You will send %d sat in this chat.", amount),
+				Title:       fmt.Sprintf(inlineResultSendTitle, amount),
+				Description: fmt.Sprintf(inlineResultDescription, amount),
 				// required for photos
 				ThumbURL: url,
 			}
 
-			// btnSendInline = paymentConfirmationMenu.Data("✅ Accept", id, id)
-			// bot.telegram.Handle(&btnSendInline, bot.sendInlineHandler)
 			btnSendInline.Data = id
+			btnCancelSendInline.Data = id
 			sendInlineMenu.Inline(sendInlineMenu.Row(btnSendInline, btnCancelSendInline))
 			result.ReplyMarkup = &tb.InlineKeyboardMarkup{InlineKeyboard: sendInlineMenu.InlineKeyboard}
 
 			results[i] = result
-			// needed to set a unique string ID for each result
-			// results[i].SetResultID(strconv.Itoa(i))
 
+			// needed to set a unique string ID for each result
 			results[i].SetResultID(id)
+
+			// add data to persistent object
 			inlineSend.ID = id
 			inlineSend.From = &q.From
 			// add result to persistent struct
 			inlineSend.result = result
 			inlineSend.Amount = amount
+			inlineSend.Memo = memo
 			runtime.IgnoreError(bot.bunt.Set(inlineSend))
 		}
 

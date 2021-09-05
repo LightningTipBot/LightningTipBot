@@ -117,6 +117,8 @@ func (bot TipBot) registerTelegramHandlers() {
 		bot.telegram.Handle(&btnSend, bot.sendHandler)
 		bot.telegram.Handle(&btnCancelSend, bot.cancelSendHandler)
 
+		// register inline button handlers
+		// button for inline send
 		bot.telegram.Handle(&btnSendInline, bot.sendInlineHandler)
 		bot.telegram.Handle(&btnCancelSendInline, bot.cancelSendInlineHandler)
 
