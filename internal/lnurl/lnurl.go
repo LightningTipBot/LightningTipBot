@@ -37,7 +37,7 @@ func (w Server) handleLnUrl(writer http.ResponseWriter, request *http.Request) {
 	// check if error was returned from first or second handlers
 	if err != nil {
 		// log the error
-		log.Errorln(err)
+		log.Errorf("[LNURL] %v", err)
 		if response != nil {
 			// there is a valid error response
 			err = writeResponse(writer, response)
