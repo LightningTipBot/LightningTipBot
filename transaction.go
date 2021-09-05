@@ -10,6 +10,10 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
+const (
+	balanceTooLowMessage = "Your balance is too low."
+)
+
 type Transaction struct {
 	ID           uint      `gorm:"primarykey"`
 	Time         time.Time `json:"time"`
@@ -100,7 +104,7 @@ func (t *Transaction) SendTransaction(bot *TipBot, from *tb.User, to *tb.User, a
 	// from := m.Sender
 	fromUser, err := GetUser(from, *bot)
 	if err != nil {
-		errmsg := fmt.Sprintf("[SendTransaction] Error: Could not get user %s", fromUserStr)
+		errmsg := fmt.Sprintf("could not get user %s", fromUserStr)
 		log.Errorln(errmsg)
 		return false, err
 	}
@@ -109,15 +113,14 @@ func (t *Transaction) SendTransaction(bot *TipBot, from *tb.User, to *tb.User, a
 	// check if fromUser has balance
 	balance, err := bot.GetUserBalance(from)
 	if err != nil {
-		errmsg := fmt.Sprintf("[SendTransaction] Error: Could not get balance of user %s", fromUserStr)
+		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
 		log.Errorln(errmsg)
 		return false, err
 	}
 	// check if fromUser has balance
 	if balance < amount {
-		errmsg := fmt.Sprintf("[SendTransaction] Error: User %s has not enough balance", fromUserStr)
-		bot.trySendMessage(from, fmt.Sprintf("🚫 Your balance is too low for that."))
-		log.Errorln(errmsg)
+		errmsg := fmt.Sprintf(balanceTooLowMessage)
+		log.Errorln("Balance of user %s too low", fromUserStr)
 		return false, fmt.Errorf(errmsg)
 	}
 
