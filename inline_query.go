@@ -22,8 +22,8 @@ type InlineSend struct {
 	Message string            `json:"inline_send_message"`
 	result  *tb.ArticleResult `json:"inline_send_articleresult"`
 	Amount  int               `json:"inline_send_amount"`
-	From    tb.User           `json:"inline_send_from"`
-	To      tb.User           `json:"inline_send_to"`
+	From    *tb.User          `json:"inline_send_from"`
+	To      *tb.User          `json:"inline_send_to"`
 	ID      string            `json:"inline_send_id"`
 }
 
@@ -125,9 +125,10 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 
 			results[i].SetResultID(id)
 			inlineSend.ID = id
-			inlineSend.From = q.From
+			inlineSend.From = &q.From
 			// add result to persistent struct
 			inlineSend.result = result
+			inlineSend.Amount = amount
 			runtime.IgnoreError(bot.bunt.Set(inlineSend))
 		}
 
