@@ -36,7 +36,7 @@ type LnbitsConfiguration struct {
 	AdminId          string   `yaml:"admin_id"`
 	AdminKey         string   `yaml:"admin_key"`
 	Url              string   `yaml:"url"`
-	LndhubLinkUrl    string   `yaml:"lndhub_link_url"`
+	LnbitsPublicUrl  string   `yaml:"lnbits_public_url"`
 	WebhookServer    string   `yaml:"webhook_server"`
 	WebhookServerUrl *url.URL `yaml:"-"`
 }
@@ -64,11 +64,11 @@ func checkLnbitsConfiguration() {
 	if Configuration.Lnbits.Url == "" {
 		panic(fmt.Errorf("please configure a lnbits url"))
 	}
-	if Configuration.Lnbits.LndhubLinkUrl == "" {
+	if Configuration.Lnbits.LnbitsPublicUrl == "" {
 		log.Warnf("You have not specified a LNDHUB linking url. Using you Lnbits URL as default.")
-		Configuration.Lnbits.LndhubLinkUrl = Configuration.Lnbits.Url
+		Configuration.Lnbits.LnbitsPublicUrl = Configuration.Lnbits.Url
 	}
-	if !strings.HasSuffix(Configuration.Lnbits.LndhubLinkUrl, "/") {
-		Configuration.Lnbits.LndhubLinkUrl = Configuration.Lnbits.LndhubLinkUrl + "/"
+	if !strings.HasSuffix(Configuration.Lnbits.LnbitsPublicUrl, "/") {
+		Configuration.Lnbits.LnbitsPublicUrl = Configuration.Lnbits.LnbitsPublicUrl + "/"
 	}
 }

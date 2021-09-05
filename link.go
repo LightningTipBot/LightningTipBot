@@ -31,7 +31,7 @@ func (bot TipBot) lndhubHandler(m *tb.Message) {
 	}
 	bot.trySendMessage(m.Sender, walletConnectMessage)
 
-	lndhubUrl := fmt.Sprintf("lndhub://admin:%s@%slndhub/ext/", fromUser.Wallet.Adminkey, Configuration.Lnbits.LndhubLinkUrl)
+	lndhubUrl := fmt.Sprintf("lndhub://admin:%s@%slndhub/ext/", fromUser.Wallet.Adminkey, Configuration.Lnbits.LnbitsPublicUrl)
 
 	// create qr code
 	qr, err := qrcode.Encode(lndhubUrl, qrcode.Medium, 256)
