@@ -178,7 +178,10 @@ func (ttt TipTooltip) Key() string {
 // editTooltip updates the tooltip message with the new tip amount and tippers and edits it
 func (ttt *TipTooltip) editTooltip(bot *TipBot, notInitializedWallet bool) error {
 	tipToolTip := ttt.getUpdatedTipTooltipMessage(GetUserStrMd(bot.telegram.Me), notInitializedWallet)
-	m := bot.tryEditMessage(ttt.Message.Message, tipToolTip)
+	m, err := bot.telegram.Edit(ttt.Message.Message, tipToolTip)
+	if err != nil {
+		return err
+	}
 	ttt.Message.Message.Text = m.Text
 	return nil
 }
