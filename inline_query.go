@@ -29,6 +29,7 @@ type InlineSend struct {
 	To      *tb.User `json:"inline_send_to"`
 	Memo    string
 	ID      string `json:"inline_send_id"`
+	Active  bool   `json:"inline_send_active"`
 }
 
 func NewInlineSend(m string) *InlineSend {
@@ -157,6 +158,7 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 			// add result to persistent struct
 			inlineSend.Amount = amount
 			inlineSend.Memo = memo
+			inlineSend.Active = true
 			runtime.IgnoreError(bot.bunt.Set(inlineSend))
 		}
 

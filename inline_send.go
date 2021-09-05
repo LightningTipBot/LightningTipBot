@@ -35,7 +35,10 @@ func (bot *TipBot) sendInlineHandler(c *tb.Callback) {
 		log.Errorf("[sendInlineHandler] %s", err)
 		return
 	}
-
+	if !inlineSend.Active {
+		log.Errorf("[sendInlineHandler] inline send not active anymore")
+		return
+	}
 	amount := inlineSend.Amount
 	to := c.Sender
 	from := inlineSend.From
@@ -92,7 +95,7 @@ func (bot *TipBot) sendInlineHandler(c *tb.Callback) {
 	}
 
 	bot.tryEditMessage(c.Message, inlineSend.Message, &tb.ReplyMarkup{})
-
+	inlineSend.Active = false
 	// notify users
 	_, err = bot.telegram.Send(to, fmt.Sprintf(sendReceivedMessage, fromUserStrMd, amount))
 	_, err = bot.telegram.Send(from, fmt.Sprintf(tipSentMessage, amount, toUserStrMd))
@@ -110,6 +113,8 @@ func (bot *TipBot) sendInlineHandler(c *tb.Callback) {
 
 func (bot *TipBot) cancelSendInlineHandler(c *tb.Callback) {
 	inlineSend, err := bot.getInlineSend(c)
+	inlineSend.Active = false
+	runtime.IgnoreError(bot.bunt.Set(inlineSend))
 	if err != nil {
 		log.Errorf("[cancelSendInlineHandler] %s", err)
 		return
