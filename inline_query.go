@@ -96,7 +96,9 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 	}
 	if strings.HasPrefix(q.Text, "send") || strings.HasPrefix(q.Text, "/send") || strings.HasPrefix(q.Text, "giveaway") || strings.HasPrefix(q.Text, "/giveaway") {
 		amount, err := decodeAmountFromCommand(q.Text)
-
+		if err != nil {
+			return
+		}
 		fromUserStr := GetUserStr(&q.From)
 		balance, err := bot.GetUserBalance(&q.From)
 		if err != nil {
