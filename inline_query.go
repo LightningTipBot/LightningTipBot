@@ -134,7 +134,6 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 				inlineMessage = inlineMessage + fmt.Sprintf(inlineSendAppendMemo, MarkdownEscape(memo))
 			}
 
-			id := fmt.Sprintf("inline-send-%d-%d-%d", q.From.ID, amount, i)
 			result := &tb.ArticleResult{
 				URL:         url,
 				Text:        inlineMessage,
@@ -143,7 +142,7 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 				// required for photos
 				ThumbURL: url,
 			}
-
+			id := fmt.Sprintf("inline-send-%d-%d-%d", q.From.ID, amount, i)
 			btnSendInline.Data = id
 			btnCancelSendInline.Data = id
 			sendInlineMenu.Inline(sendInlineMenu.Row(btnSendInline, btnCancelSendInline))
