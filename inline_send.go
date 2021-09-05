@@ -94,6 +94,7 @@ func (bot *TipBot) sendInlineHandler(c *tb.Callback) {
 	bot.tryEditMessage(c.Message, inlineSend.Message, &tb.ReplyMarkup{})
 
 	// notify users
+	_, err = bot.telegram.Send(to, fmt.Sprintf(sendReceivedMessage, fromUserStrMd, amount))
 	_, err = bot.telegram.Send(from, fmt.Sprintf(tipSentMessage, amount, toUserStrMd))
 	if err != nil {
 		errmsg := fmt.Errorf("[sendInline] Error: Send message to %s: %s", toUserStr, err)
