@@ -122,9 +122,6 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 			}
 		}
 
-		if err != nil {
-			return
-		}
 		urls := []string{
 			queryImage,
 		}
