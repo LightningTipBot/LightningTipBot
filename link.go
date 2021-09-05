@@ -16,6 +16,10 @@ var (
 )
 
 func (bot TipBot) lndhubHandler(m *tb.Message) {
+	if Configuration.Lnbits.LnbitsPublicUrl == "" {
+		bot.trySendMessage(m.Sender, "Unable to link your wallet. Please try again later.")
+		return
+	}
 	// check and print all commands
 	bot.anyTextHandler(m)
 	// reply only in private message

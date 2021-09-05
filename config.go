@@ -65,10 +65,10 @@ func checkLnbitsConfiguration() {
 		panic(fmt.Errorf("please configure a lnbits url"))
 	}
 	if Configuration.Lnbits.LnbitsPublicUrl == "" {
-		log.Warnf("You have not specified a LNDHUB linking url. Using you Lnbits URL as default.")
-		Configuration.Lnbits.LnbitsPublicUrl = Configuration.Lnbits.Url
-	}
-	if !strings.HasSuffix(Configuration.Lnbits.LnbitsPublicUrl, "/") {
-		Configuration.Lnbits.LnbitsPublicUrl = Configuration.Lnbits.LnbitsPublicUrl + "/"
+		log.Warnf("Please specify a lnbits public url otherwise users won't be able to")
+	} else {
+		if !strings.HasSuffix(Configuration.Lnbits.LnbitsPublicUrl, "/") {
+			Configuration.Lnbits.LnbitsPublicUrl = Configuration.Lnbits.LnbitsPublicUrl + "/"
+		}
 	}
 }
