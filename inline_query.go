@@ -31,13 +31,10 @@ type InlineSend struct {
 	ID      string `json:"inline_send_id"`
 }
 
-func NewInlineSend(m string, opts ...TipTooltipOption) *InlineSend {
+func NewInlineSend(m string) *InlineSend {
 	inlineSend := &InlineSend{
 		Message: m,
 	}
-	// for _, opt := range opts {
-	// 	opt(tipTooltip)
-	// }
 	return inlineSend
 
 }
