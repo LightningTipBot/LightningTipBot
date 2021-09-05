@@ -3,13 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	"github.com/tidwall/buntdb"
 	"github.com/tidwall/gjson"
-	"strconv"
-	"strings"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -173,12 +174,10 @@ func (ttt TipTooltip) Key() string {
 	return strconv.Itoa(ttt.Message.Message.ReplyTo.ID)
 }
 
+// editTooltip updates the tooltip message with the new tip amount and tippers and edits it
 func (ttt *TipTooltip) editTooltip(bot *TipBot, notInitializedWallet bool) error {
 	tipToolTip := ttt.getUpdatedTipTooltipMessage(GetUserStrMd(bot.telegram.Me), notInitializedWallet)
-	m, err := bot.telegram.Edit(ttt.Message.Message, tipToolTip)
-	if err != nil {
-		return err
-	}
+	m := bot.tryEditMessage(ttt.Message.Message, tipToolTip)
 	ttt.Message.Message.Text = m.Text
 	return nil
 }
