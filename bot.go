@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
 
@@ -79,20 +80,22 @@ func (bot TipBot) registerTelegramHandlers() {
 	telegramHandlerRegistration.Do(func() {
 		// Set up handlers
 		var endpointHandler = map[string]interface{}{
-			"/tip":      bot.tipHandler,
-			"/pay":      bot.confirmPaymentHandler,
-			"/invoice":  bot.invoiceHandler,
-			"/balance":  bot.balanceHandler,
-			"/start":    bot.startHandler,
-			"/send":     bot.confirmSendHandler,
-			"/help":     bot.helpHandler,
-			"/basics":   bot.basicsHandler,
-			"/donate":   bot.donationHandler,
-			"/advanced": bot.advancedHelpHandler,
-			"/link":     bot.lndhubHandler,
-			"/lnurl":    bot.lnurlHandler,
-			tb.OnPhoto:  bot.privatePhotoHandler,
-			tb.OnText:   bot.anyTextHandler,
+			"/tip":                  bot.tipHandler,
+			"/pay":                  bot.confirmPaymentHandler,
+			"/invoice":              bot.invoiceHandler,
+			"/balance":              bot.balanceHandler,
+			"/start":                bot.startHandler,
+			"/send":                 bot.confirmSendHandler,
+			"/help":                 bot.helpHandler,
+			"/basics":               bot.basicsHandler,
+			"/donate":               bot.donationHandler,
+			"/advanced":             bot.advancedHelpHandler,
+			"/link":                 bot.lndhubHandler,
+			"/lnurl":                bot.lnurlHandler,
+			tb.OnPhoto:              bot.privatePhotoHandler,
+			tb.OnText:               bot.anyTextHandler,
+			tb.OnQuery:              bot.anyQueryHandler,
+			tb.OnChosenInlineResult: bot.anyChosenInlineHandler,
 		}
 		// assign handler to endpoint
 		for endpoint, handler := range endpointHandler {
@@ -113,6 +116,11 @@ func (bot TipBot) registerTelegramHandlers() {
 		// for /send
 		bot.telegram.Handle(&btnSend, bot.sendHandler)
 		bot.telegram.Handle(&btnCancelSend, bot.cancelSendHandler)
+
+		// register inline button handlers
+		// button for inline send
+		bot.telegram.Handle(&btnSendInline, bot.sendInlineHandler)
+		bot.telegram.Handle(&btnCancelSendInline, bot.cancelSendInlineHandler)
 
 	})
 }
