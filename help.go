@@ -40,9 +40,13 @@ const (
 
 	helpNoUsernameMessage = "ℹ️ Please set a Telegram username."
 
-	advancedMessage = "%s\n\n" + "⚙️ *Advanced commands*\n" +
+	advancedMessage = "%s\n\n" +
+		"👉 *Inline commands*\n" +
+		"*send* 💸 Send sats to chat: `%s send <amount> [<memo>]`\n\n" +
+		"📖 You can use inline commands in every chat, even in private conversations. Wait a second after entering an inline command and *click* the result, don't press enter.\n\n" +
+		"⚙️ *Advanced commands*\n" +
 		"*/link* 🔗 Link your wallet to [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)\n" +
-		"*/lnurl* ⚡️ Lnurl receive or pay: `/lnurl` or `/lnurl <lnurl>`\n"
+		"*/lnurl* ⚡️ Lnurl receive or pay: `/lnurl` or `/lnurl <lnurl>`"
 )
 
 func (bot TipBot) makeHelpMessage(m *tb.Message) string {
@@ -109,7 +113,7 @@ func (bot TipBot) makeadvancedHelpMessage(m *tb.Message) string {
 		}
 
 	}
-	return fmt.Sprintf(advancedMessage, dynamicHelpMessage)
+	return fmt.Sprintf(advancedMessage, dynamicHelpMessage, GetUserStrMd(bot.telegram.Me))
 }
 
 func (bot TipBot) advancedHelpHandler(m *tb.Message) {
