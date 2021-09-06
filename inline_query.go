@@ -16,7 +16,7 @@ var (
 	inlineQuerySendTitle    = "Send sats to a chat."
 	inlineQueryDescription  = "Usage: @%s send <amount> [<memo>]"
 	inlineResultSendTitle   = "💸 Send %d sat."
-	inlineResultDescription = "Click here to send %d sat to this chat."
+	inlineResultDescription = "👉 Click here to send %d sat to this chat."
 	sendInlineMenu          = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	btnCancelSendInline     = paymentConfirmationMenu.Data("🚫 Cancel", "cancel_send_inline")
 	btnSendInline           = paymentConfirmationMenu.Data("✅ Receive", "confirm_send_inline")
@@ -139,7 +139,7 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 				// required for photos
 				ThumbURL: url,
 			}
-			id := fmt.Sprintf("inline-send-%d-%d-%d", q.From.ID, amount, i)
+			id := fmt.Sprintf("inl-send-%d-%d-%s", q.From.ID, amount, RandStringRunes(5))
 			btnSendInline.Data = id
 			btnCancelSendInline.Data = id
 			sendInlineMenu.Inline(sendInlineMenu.Row(btnSendInline, btnCancelSendInline))
