@@ -16,7 +16,7 @@ var (
 	inlineQuerySendTitle    = "Send sats to a chat."
 	inlineQueryDescription  = "Usage: @%s send <amount> [<memo>]"
 	inlineResultSendTitle   = "💸 Send %d sat."
-	inlineResultDescription = "Click here to send %d sat to this chat."
+	inlineResultDescription = "👉 Click here to send %d sat to this chat."
 	sendInlineMenu          = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	btnCancelSendInline     = paymentConfirmationMenu.Data("🚫 Cancel", "cancel_send_inline")
 	btnSendInline           = paymentConfirmationMenu.Data("✅ Receive", "confirm_send_inline")
