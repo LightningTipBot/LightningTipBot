@@ -139,7 +139,7 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 				// required for photos
 				ThumbURL: url,
 			}
-			id := fmt.Sprintf("inline-send-%d-%d-%d", q.From.ID, amount, i)
+			id := fmt.Sprintf("inl-send-%d-%d-%s", q.From.ID, amount, RandStringRunes(5))
 			btnSendInline.Data = id
 			btnCancelSendInline.Data = id
 			sendInlineMenu.Inline(sendInlineMenu.Row(btnSendInline, btnCancelSendInline))
