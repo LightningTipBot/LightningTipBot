@@ -15,9 +15,9 @@ const (
 	balanceErrorMessage = "🚫 Error fetching your balance. Please try again later."
 )
 
-func (bot TipBot) balanceHandler(ctx context.Context,m *tb.Message) {
+func (bot TipBot) balanceHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
-	bot.anyTextHandler(m)
+	bot.anyTextHandler(ctx, m)
 	// reply only in private message
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message

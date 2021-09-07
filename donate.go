@@ -73,10 +73,7 @@ func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 	}
 
 	// send donation invoice
-	user, err := GetUser(m.Sender, bot)
-	if err != nil {
-		return
-	}
+	user := ctx.Value("user").(*lnbits.User)
 
 	// bot.trySendMessage(user.Telegram, string(body))
 	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: string(body)}, *user.Wallet)
@@ -155,7 +152,7 @@ func (bot TipBot) parseCmdDonHandler(ctx context.Context, m *tb.Message) error {
 	}
 	donationInterceptMessage := sb.String()
 
-  bot.trySendMessage(m.Sender, MarkdownEscape(donationInterceptMessage))
+	bot.trySendMessage(m.Sender, MarkdownEscape(donationInterceptMessage))
 	m.Text = fmt.Sprintf("/donate %d", amount)
 	bot.donationHandler(ctx, m)
 	// returning nil here will abort the parent handler (/pay or /tip)

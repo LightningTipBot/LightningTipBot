@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -70,7 +71,7 @@ func (bot TipBot) makeHelpMessage(m *tb.Message) string {
 
 func (bot TipBot) helpHandler(m *tb.Message) {
 	// check and print all commands
-	bot.anyTextHandler(m)
+	bot.anyTextHandler(context.Background(), m)
 	if !m.Private() {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))
@@ -81,7 +82,7 @@ func (bot TipBot) helpHandler(m *tb.Message) {
 
 func (bot TipBot) basicsHandler(m *tb.Message) {
 	// check and print all commands
-	bot.anyTextHandler(m)
+	bot.anyTextHandler(context.Background(), m)
 	if !m.Private() {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))
@@ -118,7 +119,7 @@ func (bot TipBot) makeadvancedHelpMessage(m *tb.Message) string {
 
 func (bot TipBot) advancedHelpHandler(m *tb.Message) {
 	// check and print all commands
-	bot.anyTextHandler(m)
+	bot.anyTextHandler(context.Background(), m)
 	if !m.Private() {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))

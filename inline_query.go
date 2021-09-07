@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"strconv"
 	"strings"
 
@@ -23,10 +25,10 @@ var (
 )
 
 type InlineSend struct {
-	Message string   `json:"inline_send_message"`
-	Amount  int      `json:"inline_send_amount"`
-	From    *tb.User `json:"inline_send_from"`
-	To      *tb.User `json:"inline_send_to"`
+	Message string       `json:"inline_send_message"`
+	Amount  int          `json:"inline_send_amount"`
+	From    *lnbits.User `json:"inline_send_from"`
+	To      *tb.User     `json:"inline_send_to"`
 	Memo    string
 	ID      string `json:"inline_send_id"`
 	Active  bool   `json:"inline_send_active"`
@@ -86,18 +88,22 @@ func (bot TipBot) inlineQueryInstructions(q *tb.Query) {
 func (bot TipBot) anyChosenInlineHandler(q *tb.ChosenInlineResult) {
 	fmt.Printf(q.Query)
 }
-func (bot TipBot) anyQueryHandler(q *tb.Query) {
+func (bot TipBot) anyQueryHandler(ctx context.Context, q *tb.Query) {
 	if q.Text == "" {
 		bot.inlineQueryInstructions(q)
 		return
 	}
 	if strings.HasPrefix(q.Text, "send") || strings.HasPrefix(q.Text, "/send") || strings.HasPrefix(q.Text, "giveaway") || strings.HasPrefix(q.Text, "/giveaway") {
+		from := ctx.Value("user").(*lnbits.User)
+		if from == nil {
+			return
+		}
 		amount, err := decodeAmountFromCommand(q.Text)
 		if err != nil {
 			return
 		}
 		fromUserStr := GetUserStr(&q.From)
-		balance, err := bot.GetUserBalance(&q.From)
+		balance, err := bot.GetUserBalance(from)
 		if err != nil {
 			errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
 			log.Errorln(errmsg)
@@ -154,7 +160,7 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 			inlineSend := NewInlineSend(inlineMessage)
 			// add data to persistent object
 			inlineSend.ID = id
-			inlineSend.From = &q.From
+			inlineSend.From.Telegram = &q.From
 			// add result to persistent struct
 			inlineSend.Amount = amount
 			inlineSend.Memo = memo

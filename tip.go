@@ -77,25 +77,23 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 	// TIP COMMAND IS VALID
+	from := ctx.Value("user").(*lnbits.User)
 
-	to, _ := GetUser(m.ReplyTo.Sender, *bot)
+	to := ctx.Value("reply_to_user").(*lnbits.User)
 
-	from := m.Sender
-
-	if from.ID == to.Telegram.ID {
+	if from.Telegram.ID == to.Telegram.ID {
 		NewMessage(m, WithDuration(0, bot.telegram))
 		bot.trySendMessage(m.Sender, tipYourselfMessage)
 		return
 	}
 
-	toUserStrMd := GetUserStrMd(m.ReplyTo.Sender)
-	fromUserStrMd := GetUserStrMd(from)
-	toUserStr := GetUserStr(m.ReplyTo.Sender)
-	fromUserStr := GetUserStr(from)
-	user := ctx.Value("to_user").(*lnbits.User)
-	if user == nil {
+	toUserStrMd := GetUserStrMd(to.Telegram)
+	fromUserStrMd := GetUserStrMd(from.Telegram)
+	toUserStr := GetUserStr(to.Telegram)
+	fromUserStr := GetUserStr(from.Telegram)
+	if !to.Initialized {
 		log.Infof("[/tip] User %s has no wallet.", toUserStr)
-		user, err = bot.CreateWalletForTelegramUser(to.Telegram)
+		to, err = bot.CreateWalletForTelegramUser(to.Telegram)
 		if err != nil {
 			errmsg := fmt.Errorf("[/tip] Error: Could not create wallet for %s", toUserStr)
 			log.Errorln(errmsg)
@@ -115,7 +113,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 
 	// todo: user new get username function to get userStrings
 	transactionMemo := fmt.Sprintf("Tip from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
-	t := NewTransaction(bot, user, to, amount, TransactionType("tip"), TransactionChat(m.Chat))
+	t := NewTransaction(bot, from, to, amount, TransactionType("tip"), TransactionChat(m.Chat))
 	t.Memo = transactionMemo
 	success, err := t.Send()
 	if !success {
@@ -131,12 +129,12 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	}
 
 	// update tooltip if necessary
-	messageHasTip := tipTooltipHandler(m, bot, amount, bot.UserInitializedWallet(to))
+	messageHasTip := tipTooltipHandler(m, bot, amount, to.Initialized)
 
 	log.Infof("[tip] %d sat from %s to %s", amount, fromUserStr, toUserStr)
 
 	// notify users
-	_, err = bot.telegram.Send(from, fmt.Sprintf(tipSentMessage, amount, toUserStrMd))
+	_, err = bot.telegram.Send(from.Telegram, fmt.Sprintf(tipSentMessage, amount, toUserStrMd))
 	if err != nil {
 		errmsg := fmt.Errorf("[/tip] Error: Send message to %s: %s", toUserStr, err)
 		log.Errorln(errmsg)

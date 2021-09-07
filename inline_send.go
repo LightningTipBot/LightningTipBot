@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"
@@ -29,7 +31,12 @@ func (bot *TipBot) getInlineSend(c *tb.Callback) (*InlineSend, error) {
 
 }
 
-func (bot *TipBot) sendInlineHandler(c *tb.Callback) {
+func (bot *TipBot) sendInlineHandler(ctx context.Context, c *tb.Callback) {
+
+	to := ctx.Value("user").(*lnbits.User)
+	if to == nil {
+		return
+	}
 	inlineSend, err := bot.getInlineSend(c)
 	if err != nil {
 		log.Errorf("[sendInlineHandler] %s", err)
@@ -39,25 +46,25 @@ func (bot *TipBot) sendInlineHandler(c *tb.Callback) {
 		log.Errorf("[sendInlineHandler] inline send not active anymore")
 		return
 	}
-	amount := inlineSend.Amount
-	to := c.Sender
 	from := inlineSend.From
 
-	if from.ID == to.ID {
-		bot.trySendMessage(from, sendYourselfMessage)
+	amount := inlineSend.Amount
+
+	if from.Telegram.ID == to.Telegram.ID {
+		bot.trySendMessage(from.Telegram, sendYourselfMessage)
 		return
 	}
 
-	toUserStrMd := GetUserStrMd(to)
-	fromUserStrMd := GetUserStrMd(from)
-	toUserStr := GetUserStr(to)
-	fromUserStr := GetUserStr(from)
+	toUserStrMd := GetUserStrMd(to.Telegram)
+	fromUserStrMd := GetUserStrMd(from.Telegram)
+	toUserStr := GetUserStr(to.Telegram)
+	fromUserStr := GetUserStr(from.Telegram)
 
 	// check if user exists and create a wallet if not
-	_, exists := bot.UserExists(to)
+	_, exists := bot.UserExists(to.Telegram)
 	if !exists {
 		log.Infof("[sendInline] User %s has no wallet.", toUserStr)
-		err = bot.CreateWalletForTelegramUser(to)
+		_, err = bot.CreateWalletForTelegramUser(to.Telegram)
 		if err != nil {
 			errmsg := fmt.Errorf("[sendInline] Error: Could not create wallet for %s", toUserStr)
 			log.Errorln(errmsg)
@@ -72,9 +79,9 @@ func (bot *TipBot) sendInlineHandler(c *tb.Callback) {
 	success, err := t.Send()
 	if !success {
 		if err != nil {
-			bot.trySendMessage(from, fmt.Sprintf(tipErrorMessage, err))
+			bot.trySendMessage(from.Telegram, fmt.Sprintf(tipErrorMessage, err))
 		} else {
-			bot.trySendMessage(from, fmt.Sprintf(tipErrorMessage, tipUndefinedErrorMsg))
+			bot.trySendMessage(from.Telegram, fmt.Sprintf(tipErrorMessage, tipUndefinedErrorMsg))
 		}
 		errMsg := fmt.Sprintf("[sendInline] Transaction failed: %s", err)
 		log.Errorln(errMsg)
@@ -90,15 +97,15 @@ func (bot *TipBot) sendInlineHandler(c *tb.Callback) {
 		inlineSend.Message = inlineSend.Message + fmt.Sprintf(inlineSendAppendMemo, MarkdownEscape(memo))
 	}
 
-	if !bot.UserInitializedWallet(to) {
+	if !to.Initialized {
 		inlineSend.Message += "\n\n" + fmt.Sprintf(sendInlineCreateWalletMessage, GetUserStrMd(bot.telegram.Me))
 	}
 
 	bot.tryEditMessage(c.Message, inlineSend.Message, &tb.ReplyMarkup{})
 	inlineSend.Active = false
 	// notify users
-	_, err = bot.telegram.Send(to, fmt.Sprintf(sendReceivedMessage, fromUserStrMd, amount))
-	_, err = bot.telegram.Send(from, fmt.Sprintf(tipSentMessage, amount, toUserStrMd))
+	_, err = bot.telegram.Send(to.Telegram, fmt.Sprintf(sendReceivedMessage, fromUserStrMd, amount))
+	_, err = bot.telegram.Send(from.Telegram, fmt.Sprintf(tipSentMessage, amount, toUserStrMd))
 	if err != nil {
 		errmsg := fmt.Errorf("[sendInline] Error: Send message to %s: %s", toUserStr, err)
 		log.Errorln(errmsg)
@@ -106,7 +113,7 @@ func (bot *TipBot) sendInlineHandler(c *tb.Callback) {
 	}
 
 	// edit persistent object and store it
-	inlineSend.To = to
+	inlineSend.To = to.Telegram
 	runtime.IgnoreError(bot.bunt.Set(inlineSend))
 
 }
@@ -117,7 +124,7 @@ func (bot *TipBot) cancelSendInlineHandler(c *tb.Callback) {
 		log.Errorf("[cancelSendInlineHandler] %s", err)
 		return
 	}
-	if c.Sender.ID == inlineSend.From.ID {
+	if c.Sender.ID == inlineSend.From.Telegram.ID {
 		bot.tryEditMessage(c.Message, sendCancelledMessage, &tb.ReplyMarkup{})
 		// set the inlineSend inactive
 		inlineSend.Active = false

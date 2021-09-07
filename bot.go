@@ -82,22 +82,21 @@ func (bot TipBot) registerTelegramHandlers() {
 		// Set up handlers
 		beforeMessage := intercept.WithBeforeMessage(bot.loadUserInterceptor)
 		var endpointHandler = map[string]interface{}{
-			"/tip":     intercept.HandlerWithMessage(bot.tipHandler, beforeMessage),
-			"/pay":     intercept.HandlerWithMessage(bot.confirmPaymentHandler, beforeMessage),
-			"/invoice": intercept.HandlerWithMessage(bot.invoiceHandler, beforeMessage),
-			"/balance": intercept.HandlerWithMessage(bot.balanceHandler, beforeMessage),
-			"/start":   bot.startHandler,
-			"/send":    intercept.HandlerWithMessage(bot.confirmSendHandler, beforeMessage),
-			"/help":    bot.helpHandler,
-			"/info":    bot.infoHandler,
-			tb.OnPhoto: intercept.HandlerWithMessage(bot.privatePhotoHandler, beforeMessage),
-			tb.OnText:  intercept.HandlerWithMessage(bot.anyTextHandler, beforeMessage),
+			"/tip":                  intercept.HandlerWithMessage(bot.tipHandler, intercept.WithBeforeMessage(bot.loadUserInterceptor, bot.loadReplyToInterceptor)),
+			"/pay":                  intercept.HandlerWithMessage(bot.confirmPaymentHandler, beforeMessage),
+			"/invoice":              intercept.HandlerWithMessage(bot.invoiceHandler, beforeMessage),
+			"/balance":              intercept.HandlerWithMessage(bot.balanceHandler, beforeMessage),
+			"/start":                bot.startHandler,
+			"/send":                 intercept.HandlerWithMessage(bot.confirmSendHandler, beforeMessage),
+			"/help":                 bot.helpHandler,
+			tb.OnPhoto:              intercept.HandlerWithMessage(bot.privatePhotoHandler, beforeMessage),
+			tb.OnText:               intercept.HandlerWithMessage(bot.anyTextHandler, beforeMessage),
 			"/basics":               bot.basicsHandler,
 			"/donate":               bot.donationHandler,
 			"/advanced":             bot.advancedHelpHandler,
-			"/link":                 bot.lndhubHandler,
-			"/lnurl":                bot.lnurlHandler,
-			tb.OnQuery:              bot.anyQueryHandler,
+			"/link":                 intercept.HandlerWithMessage(bot.lndhubHandler, beforeMessage),
+			"/lnurl":                intercept.HandlerWithMessage(bot.lnurlHandler, beforeMessage),
+			tb.OnQuery:              intercept.HandlerWithQuery(bot.anyQueryHandler, intercept.WithBeforeQuery(bot.loadUserQueryInterceptor)),
 			tb.OnChosenInlineResult: bot.anyChosenInlineHandler,
 		}
 		// assign handler to endpoint
@@ -122,7 +121,7 @@ func (bot TipBot) registerTelegramHandlers() {
 		bot.telegram.Handle(&btnCancelSend, intercept.HandlerWithCallback(bot.cancelSendHandler, beforeCallback))
 		// register inline button handlers
 		// button for inline send
-		bot.telegram.Handle(&btnSendInline, bot.sendInlineHandler)
+		bot.telegram.Handle(&btnSendInline, intercept.HandlerWithCallback(bot.sendInlineHandler, beforeCallback))
 		bot.telegram.Handle(&btnCancelSendInline, bot.cancelSendInlineHandler)
 
 	})

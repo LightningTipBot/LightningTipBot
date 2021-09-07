@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -35,7 +36,7 @@ const (
 )
 
 // lnurlHandler is invoked on /lnurl command
-func (bot TipBot) lnurlHandler(m *tb.Message) {
+func (bot TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 	// commands:
 	// /lnurl
 	// /lnurl <LNURL>
@@ -69,12 +70,7 @@ func (bot TipBot) lnurlHandler(m *tb.Message) {
 		// bot.trySendMessage(m.Sender, err.Error())
 		return
 	}
-	user, err := GetUser(m.Sender, bot)
-	if err != nil {
-		log.Errorln(err)
-		bot.tryEditMessage(msg, fmt.Sprintf(lnurlPaymentFailed, "database error."))
-		return
-	}
+	user := ctx.Value("user").(*lnbits.User)
 
 	// if no amount is in the command, ask for it
 	amount, err := decodeAmountFromCommand(m.Text)
@@ -116,7 +112,7 @@ func (bot TipBot) lnurlHandler(m *tb.Message) {
 		}
 		bot.telegram.Delete(msg)
 		// directly go to confirm
-		bot.lnurlPayHandler(m)
+		bot.lnurlPayHandler(ctx, m)
 	}
 }
 
@@ -170,13 +166,8 @@ func (bot TipBot) lnurlReceiveHandler(m *tb.Message) {
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lnurl)})
 }
 
-func (bot TipBot) lnurlEnterAmountHandler(m *tb.Message) {
-	user, err := GetUser(m.Sender, bot)
-	if err != nil {
-		log.Errorln(err)
-		// bot.trySendMessage(m.Sender, err.Error())
-		return
-	}
+func (bot TipBot) lnurlEnterAmountHandler(ctx context.Context, m *tb.Message) {
+	user := ctx.Value("user").(*lnbits.User)
 	if user.StateKey == lnbits.UserStateLNURLEnterAmount {
 		a, err := strconv.Atoi(m.Text)
 		if err != nil {
@@ -211,7 +202,7 @@ func (bot TipBot) lnurlEnterAmountHandler(m *tb.Message) {
 			log.Errorln(err)
 			return
 		}
-		bot.lnurlPayHandler(m)
+		bot.lnurlPayHandler(ctx, m)
 	}
 }
 
@@ -222,16 +213,11 @@ type LnurlStateResponse struct {
 }
 
 // lnurlPayHandler is invoked when the user has delivered an amount and is ready to pay
-func (bot TipBot) lnurlPayHandler(c *tb.Message) {
+func (bot TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
 	msg := bot.trySendMessage(c.Sender, lnurlGettingUserMessage)
 
-	user, err := GetUser(c.Sender, bot)
-	if err != nil {
-		log.Errorln(err)
-		// bot.trySendMessage(c.Sender, err.Error())
-		bot.tryEditMessage(msg, fmt.Sprintf(lnurlPaymentFailed, "database error."))
-		return
-	}
+	user := ctx.Value("user").(*lnbits.User)
+
 	if user.StateKey == lnbits.UserStateConfirmLNURLPay {
 		client, err := getHttpClient()
 		if err != nil {
@@ -282,7 +268,7 @@ func (bot TipBot) lnurlPayHandler(c *tb.Message) {
 		}
 		bot.telegram.Delete(msg)
 		c.Text = fmt.Sprintf("/pay %s", response2.PR)
-		bot.confirmPaymentHandler(c)
+		bot.confirmPaymentHandler(ctx, c)
 	}
 }
 
@@ -384,7 +370,7 @@ func HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error) {
 	}
 }
 
-func (bot *TipBot) sendToLightningAddress(m *tb.Message, address string, amount int) error {
+func (bot *TipBot) sendToLightningAddress(ctx context.Context, m *tb.Message, address string, amount int) error {
 	split := strings.Split(address, "@")
 	if len(split) != 2 {
 		return fmt.Errorf("lightning address format wrong")
@@ -407,6 +393,6 @@ func (bot *TipBot) sendToLightningAddress(m *tb.Message, address string, amount 
 	} else {
 		m.Text = fmt.Sprintf("/lnurl %s", lnurl)
 	}
-	bot.lnurlHandler(m)
+	bot.lnurlHandler(ctx, m)
 	return nil
 }

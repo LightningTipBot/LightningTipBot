@@ -39,7 +39,7 @@ func helpPayInvoiceUsage(errormsg string) string {
 // confirmPaymentHandler invoked on "/pay lnbc..." command
 func (bot TipBot) confirmPaymentHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
-	bot.anyTextHandler(m)
+	bot.anyTextHandler(ctx, m)
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))

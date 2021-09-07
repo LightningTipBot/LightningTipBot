@@ -39,7 +39,7 @@ func (bot TipBot) anyTextHandler(ctx context.Context, m *tb.Message) {
 	// could be a LNURL
 	// var lnurlregex = regexp.MustCompile(`.*?((lnurl)([0-9]{1,}[a-z0-9]+){1})`)
 	if user.StateKey == lnbits.UserStateLNURLEnterAmount {
-		bot.lnurlEnterAmountHandler(m)
+		bot.lnurlEnterAmountHandler(ctx, m)
 	}
 
 }

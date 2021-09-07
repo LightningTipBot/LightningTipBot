@@ -57,7 +57,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, m *tb.Message) {
 	log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
 	user := ctx.Value("user").(*lnbits.User)
 	if user == nil {
-		NewMessage(m).Dispose(0, bot.telegram)
+		NewMessage(m, WithDuration(0, bot.telegram))
 		log.Print("[/send] Error: user not found")
 		bot.telegram.Send(m.Sender, fmt.Sprint(errorTryLaterMessage))
 		return
@@ -65,7 +65,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, m *tb.Message) {
 	user.ResetState()
 	err := UpdateUserRecord(user, *bot)
 	if err != nil {
-		log.Printf("[/send] Error: %v",err)
+		log.Printf("[/send] Error: %v", err)
 		return
 	}
 	// check and print all commands
@@ -97,7 +97,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, m *tb.Message) {
 	if err == nil {
 		if lightning.IsLightningAddress(arg) {
 			// if the second argument is a lightning address, then send to that address
-			err = bot.sendToLightningAddress(m, arg, amount)
+			err = bot.sendToLightningAddress(ctx, m, arg, amount)
 			if err != nil {
 				log.Errorln(err.Error())
 				return
@@ -159,7 +159,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, m *tb.Message) {
 	toUserStrMention := m.Text[m.Entities[1].Offset : m.Entities[1].Offset+m.Entities[1].Length]
 	toUserStrWithoutAt := strings.TrimPrefix(toUserStrMention, "@")
 
-	err = bot.parseCmdDonHandler(ctx,m)
+	err = bot.parseCmdDonHandler(ctx, m)
 	if err == nil {
 		return
 	}
