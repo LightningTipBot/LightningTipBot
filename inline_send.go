@@ -113,14 +113,15 @@ func (bot *TipBot) sendInlineHandler(c *tb.Callback) {
 
 func (bot *TipBot) cancelSendInlineHandler(c *tb.Callback) {
 	inlineSend, err := bot.getInlineSend(c)
-	inlineSend.Active = false
-	runtime.IgnoreError(bot.bunt.Set(inlineSend))
 	if err != nil {
 		log.Errorf("[cancelSendInlineHandler] %s", err)
 		return
 	}
 	if c.Sender.ID == inlineSend.From.ID {
 		bot.tryEditMessage(c.Message, sendCancelledMessage, &tb.ReplyMarkup{})
+		// set the inlineSend inactive
+		inlineSend.Active = false
+		runtime.IgnoreError(bot.bunt.Set(inlineSend))
 	}
 	return
 }
