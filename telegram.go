@@ -32,6 +32,7 @@ func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...in
 	msg, err := bot.telegram.Edit(to, what, options...)
 	if err != nil {
 		log.Errorln(err.Error())
+		log.Errorln(what)
 	}
 	return
 }

@@ -194,7 +194,7 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 	sendConfirmationMenu.Inline(sendConfirmationMenu.Row(btnSend, btnCancelSend))
 	confirmText := fmt.Sprintf(confirmSendInvoiceMessage, MarkdownEscape(toUserStrMention), amount)
 	if len(sendMemo) > 0 {
-		confirmText = confirmText + fmt.Sprintf(confirmSendAppendMemo, MarkdownEscape(sendMemo))
+		confirmText = confirmText + fmt.Sprintf(confirmSendAppendMemo, sendMemo)
 	}
 	_, err = bot.telegram.Send(m.Sender, confirmText, sendConfirmationMenu)
 	if err != nil {
@@ -302,7 +302,7 @@ func (bot *TipBot) sendHandler(c *tb.Callback) {
 	bot.trySendMessage(to, fmt.Sprintf(sendReceivedMessage, fromUserStrMd, amount))
 	// send memo if it was present
 	if len(sendMemo) > 0 {
-		bot.trySendMessage(to, fmt.Sprintf("✉️ %s", MarkdownEscape(sendMemo)))
+		bot.trySendMessage(to, fmt.Sprintf("✉️ %s", sendMemo))
 	}
 
 	return
