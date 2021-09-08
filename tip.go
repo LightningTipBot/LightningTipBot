@@ -147,7 +147,7 @@ func (bot *TipBot) tipHandler(m *tb.Message) {
 	bot.trySendMessage(to, fmt.Sprintf(tipReceivedMessage, fromUserStrMd, amount))
 
 	if len(tipMemo) > 0 {
-		bot.trySendMessage(to, fmt.Sprintf("✉️ %s", tipMemo))
+		bot.trySendMessage(to, fmt.Sprintf("✉️ %s", MarkdownEscape(tipMemo)))
 	}
 	return
 }
