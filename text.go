@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -14,7 +15,7 @@ const (
 )
 
 func (bot TipBot) anyTextHandler(m *tb.Message) {
-	// log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
+	log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
 	if m.Chat.Type != tb.ChatPrivate {
 		return
 	}

@@ -43,10 +43,10 @@ func (bot *TipBot) sendInlineHandler(c *tb.Callback) {
 	to := c.Sender
 	from := inlineSend.From
 
-	// if from.ID == to.ID {
-	// 	bot.trySendMessage(from, sendYourselfMessage)
-	// 	return
-	// }
+	if from.ID == to.ID {
+		bot.trySendMessage(from, sendYourselfMessage)
+		return
+	}
 
 	toUserStrMd := GetUserStrMd(to)
 	fromUserStrMd := GetUserStrMd(from)
@@ -94,7 +94,6 @@ func (bot *TipBot) sendInlineHandler(c *tb.Callback) {
 		inlineSend.Message += "\n\n" + fmt.Sprintf(sendInlineCreateWalletMessage, GetUserStrMd(bot.telegram.Me))
 	}
 
-	log.Info(inlineSend.Message)
 	bot.tryEditMessage(c.Message, inlineSend.Message, &tb.ReplyMarkup{})
 	inlineSend.Active = false
 	// notify users
