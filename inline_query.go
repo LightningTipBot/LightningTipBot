@@ -79,7 +79,7 @@ func (bot TipBot) inlineQueryInstructions(q *tb.Query) {
 	})
 
 	if err != nil {
-		log.Println(err)
+		log.Errorln(err)
 	}
 }
 
@@ -169,7 +169,7 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 		})
 
 		if err != nil {
-			log.Println(err)
+			log.Errorln(err)
 		}
 	}
 }
