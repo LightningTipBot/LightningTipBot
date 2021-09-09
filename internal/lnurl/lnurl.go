@@ -59,7 +59,7 @@ func (w Server) handleLnUrl(writer http.ResponseWriter, request *http.Request) {
 // to call and the metadata that matches the description hash of the second response
 func (w Server) serveLNURLpFirst(username string) (*lnurl.LNURLPayResponse1, error) {
 	log.Infof("[LNURL] Serving endpoint for user %s", username)
-	callbackURL, err := url.Parse(fmt.Sprintf("%s%s/%s", w.callbackHostname.String(), lnurlEndpoint, username))
+	callbackURL, err := url.Parse(fmt.Sprintf("%s/%s/%s", w.callbackHostname.String(), lnurlEndpoint, username))
 	if err != nil {
 		return nil, err
 	}
