@@ -94,7 +94,7 @@ func (bot *TipBot) sendInlineHandler(ctx context.Context, c *tb.Callback) {
 	inlineSend.Message = fmt.Sprintf("%s", fmt.Sprintf(sendInlineUpdateMessageAccept, amount, fromUserStrMd, toUserStrMd))
 	memo := inlineSend.Memo
 	if len(memo) > 0 {
-		inlineSend.Message = inlineSend.Message + fmt.Sprintf(inlineSendAppendMemo, MarkdownEscape(memo))
+		inlineSend.Message = inlineSend.Message + fmt.Sprintf(inlineSendAppendMemo, memo)
 	}
 
 	if !to.Initialized {

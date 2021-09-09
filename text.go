@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-
 	log "github.com/sirupsen/logrus"
 
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"

@@ -13,7 +13,7 @@ import (
 )
 
 var markdownV2Escapes = []string{"_", "[", "]", "(", ")", "~", "`", ">", "#", "+", "-", "=", "|", "{", "}", ".", "!"}
-var markdownEscapes = []string{"_"}
+var markdownEscapes = []string{"_", "*", "`", "["}
 
 func MarkdownV2Escape(s string) string {
 	for _, esc := range markdownV2Escapes {
@@ -49,10 +49,14 @@ func GetUserStrMd(user *tb.User) string {
 	// if user does not have a username
 	if len(userStr) < 2 && user.FirstName != "" {
 		userStr = fmt.Sprintf("[%s](tg://user?id=%d)", user.FirstName, user.ID)
+		return userStr
 	} else if len(userStr) < 2 {
 		userStr = fmt.Sprintf("[%d](tg://user?id=%d)", user.ID, user.ID)
+		return userStr
+	} else {
+		// escape only if user has a username
+		return MarkdownEscape(userStr)
 	}
-	return MarkdownEscape(userStr)
 }
 
 func appendUinqueUsersToSlice(slice []*tb.User, i *tb.User) []*tb.User {

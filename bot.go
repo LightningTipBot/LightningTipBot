@@ -46,14 +46,14 @@ func NewBot() TipBot {
 	return TipBot{
 		database: db,
 		logger:   txLogger,
-		bunt:     storage.NewBunt(Configuration.BuntDbPath),
+		bunt:     storage.NewBunt(Configuration.Database.BuntDbPath),
 	}
 }
 
 // newTelegramBot will create a new telegram bot.
 func newTelegramBot() *tb.Bot {
 	tgb, err := tb.NewBot(tb.Settings{
-		Token:     Configuration.ApiKey,
+		Token:     Configuration.Telegram.ApiKey,
 		Poller:    &tb.LongPoller{Timeout: 60 * time.Second},
 		ParseMode: tb.ModeMarkdown,
 	})
@@ -130,7 +130,7 @@ func (bot TipBot) registerTelegramHandlers() {
 // Start will initialize the telegram bot and lnbits.
 func (bot TipBot) Start() {
 	// set up lnbits api
-	bot.client = lnbits.NewClient(Configuration.LnbitsKey, Configuration.LnbitsUrl)
+	bot.client = lnbits.NewClient(Configuration.Lnbits.AdminKey, Configuration.Lnbits.Url)
 	// set up telebot
 	bot.telegram = newTelegramBot()
 	log.Infof("[Telegram] Authorized on account @%s", bot.telegram.Me.Username)
@@ -140,7 +140,7 @@ func (bot TipBot) Start() {
 		log.Errorf("Could not initialize bot wallet: %s", err.Error())
 	}
 	bot.registerTelegramHandlers()
-	lnbits.NewWebhook(Configuration.WebhookServer, bot.telegram, bot.client, bot.database)
-	lnurl.NewServer(Configuration.LNURLServer, Configuration.WebhookServer, bot.telegram, bot.client, bot.database)
+	lnbits.NewWebhookServer(Configuration.Lnbits.WebhookServerUrl, bot.telegram, bot.client, bot.database)
+	lnurl.NewServer(Configuration.Bot.LNURLServerUrl, Configuration.Bot.LNURLHostUrl, Configuration.Lnbits.WebhookServer, bot.telegram, bot.client, bot.database)
 	bot.telegram.Start()
 }

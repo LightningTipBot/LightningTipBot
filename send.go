@@ -168,12 +168,15 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, m *tb.Message) {
 	tx := bot.database.Where("telegram_username = ?", strings.ToLower(toUserStrWithoutAt)).First(toUserDb)
 	if tx.Error != nil || toUserDb.Wallet == nil || toUserDb.Initialized == false {
 		NewMessage(m, WithDuration(0, bot.telegram))
-		errmsg := fmt.Sprintf(sendUserHasNoWalletMessage, MarkdownEscape(toUserStrMention))
-		log.Println("[/send] Error: " + errmsg)
-		bot.trySendMessage(m.Sender, errmsg)
+		err = fmt.Errorf(sendUserHasNoWalletMessage, MarkdownEscape(toUserStrMention))
+		bot.trySendMessage(m.Sender, err.Error())
+		if tx.Error != nil {
+			log.Printf("[/send] Error: %v %v", err, tx.Error)
+			return
+		}
+		log.Printf("[/send] Error: %v", err)
 		return
 	}
-
 	// string that holds all information about the send payment
 	sendData := strconv.Itoa(toUserDb.Telegram.ID) + "|" + toUserStrWithoutAt + "|" +
 		strconv.Itoa(amount)

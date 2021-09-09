@@ -44,7 +44,7 @@ func TipCheckSyntax(m *tb.Message) (bool, string) {
 
 func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	// delete the tip message after a few seconds, this is default behaviour
-	defer NewMessage(m, WithDuration(time.Second*time.Duration(Configuration.MessageDisposeDuration), bot.telegram))
+	defer NewMessage(m, WithDuration(time.Second*time.Duration(Configuration.Telegram.MessageDisposeDuration), bot.telegram))
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)
 	// only if message is a reply
