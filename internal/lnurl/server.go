@@ -26,7 +26,7 @@ const (
 	statusError   = "ERROR"
 	statusOk      = "OK"
 	payRequestTag = "payRequest"
-	lnurlEndpoint = "/.well-known/lnurlp"
+	lnurlEndpoint = ".well-known/lnurlp"
 	minSendable   = 1000 // mSat
 	MaxSendable   = 1000000000
 )

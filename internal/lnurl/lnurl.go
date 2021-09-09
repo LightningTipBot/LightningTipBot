@@ -5,14 +5,15 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/fiatjaf/go-lnurl"
-	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/fiatjaf/go-lnurl"
+	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 )
 
 func (w Server) handleLnUrl(writer http.ResponseWriter, request *http.Request) {
@@ -58,7 +59,7 @@ func (w Server) handleLnUrl(writer http.ResponseWriter, request *http.Request) {
 // to call and the metadata that matches the description hash of the second response
 func (w Server) serveLNURLpFirst(username string) (*lnurl.LNURLPayResponse1, error) {
 	log.Infof("[LNURL] Serving endpoint for user %s", username)
-	callbackURL, err := url.Parse(fmt.Sprintf("https://%s%s/%s", w.callbackHostname, lnurlEndpoint, username))
+	callbackURL, err := url.Parse(fmt.Sprintf("%s/%s/%s", w.callbackHostname, lnurlEndpoint, username))
 	if err != nil {
 		return nil, err
 	}
