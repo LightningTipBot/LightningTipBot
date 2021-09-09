@@ -69,9 +69,9 @@ func (bot TipBot) makeHelpMessage(m *tb.Message) string {
 	return fmt.Sprintf(helpMessage, dynamicHelpMessage)
 }
 
-func (bot TipBot) helpHandler(m *tb.Message) {
+func (bot TipBot) helpHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
-	bot.anyTextHandler(context.Background(), m)
+	bot.anyTextHandler(ctx, m)
 	if !m.Private() {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))

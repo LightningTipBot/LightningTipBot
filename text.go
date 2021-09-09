@@ -23,8 +23,8 @@ func (bot TipBot) anyTextHandler(ctx context.Context, m *tb.Message) {
 
 	// check if user is in database, if not, initialize wallet
 	user := ctx.Value("user")
-	if user == nil {
-		bot.startHandler(m)
+	if user == nil || !user.(*lnbits.User).Initialized {
+		bot.startHandler(ctx, m)
 		return
 	}
 

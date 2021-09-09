@@ -30,7 +30,7 @@ func (bot TipBot) balanceHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 	if !fromUser.Initialized {
-		bot.startHandler(m)
+		bot.startHandler(ctx, m)
 		return
 	}
 

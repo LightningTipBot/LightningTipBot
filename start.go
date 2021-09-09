@@ -21,7 +21,7 @@ const (
 	startNoUsernameMessage    = "☝️ It looks like you don't have a Telegram @username yet. That's ok, you don't need one to use this bot. However, to make better use of your wallet, set up a username in the Telegram settings. Then, enter /balance so the bot can update its record of you."
 )
 
-func (bot TipBot) startHandler(m *tb.Message) {
+func (bot TipBot) startHandler(ctx context.Context, m *tb.Message) {
 	if !m.Private() {
 		return
 	}
@@ -36,9 +36,10 @@ func (bot TipBot) startHandler(m *tb.Message) {
 		bot.tryEditMessage(walletCreationMsg, startWalletErrorMessage)
 		return
 	}
+	ctx = context.WithValue(ctx, "user", user)
 	bot.tryDeleteMessage(walletCreationMsg)
 
-	bot.helpHandler(m)
+	bot.helpHandler(ctx, m)
 	bot.trySendMessage(m.Sender, startWalletReadyMessage)
 	bot.balanceHandler(context.WithValue(context.Background(), "user", user), m)
 
@@ -52,16 +53,16 @@ func (bot TipBot) startHandler(m *tb.Message) {
 func (bot TipBot) initWallet(tguser *tb.User) (*lnbits.User, error) {
 	user, err := GetUser(tguser, bot)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		u := &lnbits.User{Telegram: tguser}
-		err = bot.createWallet(u)
+		user = &lnbits.User{Telegram: tguser}
+		err = bot.createWallet(user)
 		if err != nil {
-			return u, err
+			return user, err
 		}
-		u.Initialized = true
-		err = UpdateUserRecord(u, bot)
+		user.Initialized = true
+		err = UpdateUserRecord(user, bot)
 		if err != nil {
 			log.Errorln(fmt.Sprintf("[initWallet] error updating user: %s", err.Error()))
-			return u, err
+			return user, err
 		}
 	} else if !user.Initialized {
 		// update all tip tooltips (with the "initialize me" message) that this user might have received before
@@ -74,10 +75,10 @@ func (bot TipBot) initWallet(tguser *tb.User) (*lnbits.User, error) {
 		}
 	} else if user.Initialized {
 		// wallet is already initialized
-		return user,nil
+		return user, nil
 	} else {
 		err = fmt.Errorf("could not initialize wallet")
-		return user,err
+		return user, err
 	}
 	return user, nil
 }
