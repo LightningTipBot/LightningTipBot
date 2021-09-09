@@ -14,12 +14,12 @@ import (
 )
 
 func migration() (db *gorm.DB, txLogger *gorm.DB) {
-	txLogger, err := gorm.Open(sqlite.Open(Configuration.TransactionsPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
+	txLogger, err := gorm.Open(sqlite.Open(Configuration.Database.TransactionsPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
 	if err != nil {
 		panic("Initialize orm failed.")
 	}
 
-	orm, err := gorm.Open(sqlite.Open(Configuration.DbPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
+	orm, err := gorm.Open(sqlite.Open(Configuration.Database.DbPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
 	if err != nil {
 		panic("Initialize orm failed.")
 	}

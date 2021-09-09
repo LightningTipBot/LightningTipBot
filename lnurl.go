@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -92,7 +91,7 @@ func (bot TipBot) lnurlHandler(m *tb.Message) {
 			log.Errorln(err)
 			return
 		}
-		bot.telegram.Delete(msg)
+		bot.tryDeleteMessage(msg)
 		// Let the user enter an amount and return
 		bot.trySendMessage(m.Sender, fmt.Sprintf(lnurlEnterAmountMessage), tb.ForceReply)
 	} else {
@@ -114,22 +113,17 @@ func (bot TipBot) lnurlHandler(m *tb.Message) {
 			// bot.trySendMessage(m.Sender, err.Error())
 			return
 		}
-		bot.telegram.Delete(msg)
+		bot.tryDeleteMessage(msg)
 		// directly go to confirm
 		bot.lnurlPayHandler(m)
 	}
 }
 
 func (bot *TipBot) UserGetLightningAddress(user *tb.User) (string, error) {
-	host, _, err := net.SplitHostPort(strings.Split(Configuration.LNURLServer, "//")[1])
-	if err != nil {
-		log.Errorf("[UserGetLightningAddress] Error: %s", err)
-		return "", err
-	}
 	if len(user.Username) > 0 {
-		return fmt.Sprintf("%s@%s", strings.ToLower(user.Username), strings.ToLower(host)), nil
+		return fmt.Sprintf("%s@%s", strings.ToLower(user.Username), strings.ToLower(Configuration.Bot.LNURLHostName)), nil
 	} else {
-		return "", fmt.Errorf("user has no username.")
+		return "", fmt.Errorf("user has no username")
 	}
 }
 
@@ -138,27 +132,26 @@ func (bot *TipBot) UserGetLNURL(user *tb.User) (string, error) {
 	if len(name) == 0 {
 		return "", fmt.Errorf("user has no username.")
 	}
-	host, _, err := net.SplitHostPort(strings.Split(Configuration.LNURLServer, "//")[1])
-	callback := fmt.Sprintf("https://%s/.well-known/lnurlp/%s", host, name)
+	callback := fmt.Sprintf("https://%s/.well-known/lnurlp/%s", Configuration.Bot.LNURLHostName, name)
 	log.Infof("[lnurlReceiveHandler] %s's LNURL: %s", GetUserStr(user), callback)
 
-	lnurl, err := lnurl.LNURLEncode(callback)
+	lnurlEncode, err := lnurl.LNURLEncode(callback)
 	if err != nil {
 		return "", err
 	}
-	return lnurl, nil
+	return lnurlEncode, nil
 }
 
 // lnurlReceiveHandler outputs the LNURL of the user
 func (bot TipBot) lnurlReceiveHandler(m *tb.Message) {
-	lnurl, err := bot.UserGetLNURL(m.Sender)
+	lnurlEncode, err := bot.UserGetLNURL(m.Sender)
 	if err != nil {
 		errmsg := fmt.Sprintf("[lnurlReceiveHandler] Failed to get LNURL: %s", err)
 		log.Errorln(errmsg)
 		bot.telegram.Send(m.Sender, lnurlNoUsernameMessage)
 	}
 	// create qr code
-	qr, err := qrcode.Encode(lnurl, qrcode.Medium, 256)
+	qr, err := qrcode.Encode(lnurlEncode, qrcode.Medium, 256)
 	if err != nil {
 		errmsg := fmt.Sprintf("[lnurlReceiveHandler] Failed to create QR code for LNURL: %s", err)
 		log.Errorln(errmsg)
@@ -167,7 +160,7 @@ func (bot TipBot) lnurlReceiveHandler(m *tb.Message) {
 
 	bot.trySendMessage(m.Sender, lnurlReceiveInfoText)
 	// send the lnurl data to user
-	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lnurl)})
+	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lnurlEncode)})
 }
 
 func (bot TipBot) lnurlEnterAmountHandler(m *tb.Message) {
@@ -288,8 +281,8 @@ func (bot TipBot) lnurlPayHandler(c *tb.Message) {
 
 func getHttpClient() (*http.Client, error) {
 	client := http.Client{}
-	if Configuration.HttpProxy != "" {
-		proxyUrl, err := url.Parse(Configuration.HttpProxy)
+	if Configuration.Bot.HttpProxy != "" {
+		proxyUrl, err := url.Parse(Configuration.Bot.HttpProxy)
 		if err != nil {
 			log.Errorln(err)
 			return nil, err

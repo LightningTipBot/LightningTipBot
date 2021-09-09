@@ -3,18 +3,15 @@ package lnbits
 import (
 	"encoding/json"
 	"fmt"
-	"net"
-	"strings"
-
 	log "github.com/sirupsen/logrus"
-
 	"gorm.io/gorm"
+	"net/url"
+	"time"
 
 	"github.com/gorilla/mux"
 	tb "gopkg.in/tucnak/telebot.v2"
 
 	"net/http"
-	"time"
 )
 
 const (
@@ -28,16 +25,9 @@ type WebhookServer struct {
 	database   *gorm.DB
 }
 
-func NewWebhook(webhookServer string, bot *tb.Bot, client *Client, database *gorm.DB) *WebhookServer {
-	if !strings.Contains(webhookServer, "://") {
-		log.Fatal("invalid webhook server configuration. please add a scheme.")
-	}
-	host, port, err := net.SplitHostPort(strings.Split(webhookServer, "//")[1])
-	if err != nil {
-		return nil
-	}
+func NewWebhookServer(addr *url.URL, bot *tb.Bot, client *Client, database *gorm.DB) *WebhookServer {
 	srv := &http.Server{
-		Addr: fmt.Sprintf("0.0.0.0:%s", port),
+		Addr: addr.Host,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
@@ -50,7 +40,7 @@ func NewWebhook(webhookServer string, bot *tb.Bot, client *Client, database *gor
 	}
 	apiServer.httpServer.Handler = apiServer.newRouter()
 	go apiServer.httpServer.ListenAndServe()
-	log.Infof("[Webhook] Server started at %s port %s", host, port)
+	log.Infof("[Webhook] Server started at %s", addr)
 	return apiServer
 }
 
