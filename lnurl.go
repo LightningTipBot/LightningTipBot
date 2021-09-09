@@ -132,7 +132,7 @@ func (bot *TipBot) UserGetLNURL(user *tb.User) (string, error) {
 	if len(name) == 0 {
 		return "", fmt.Errorf("user has no username.")
 	}
-	callback := fmt.Sprintf("https://%s/.well-known/lnurlp/%s", Configuration.Bot.LNURLHostName, name)
+	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", Configuration.Bot.LNURLHostName, name)
 	log.Infof("[lnurlReceiveHandler] %s's LNURL: %s", GetUserStr(user), callback)
 
 	lnurlEncode, err := lnurl.LNURLEncode(callback)
