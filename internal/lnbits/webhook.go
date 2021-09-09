@@ -39,7 +39,7 @@ func NewWebhookServer(addr *url.URL, bot *tb.Bot, client *Client, database *gorm
 		httpServer: srv,
 	}
 	apiServer.httpServer.Handler = apiServer.newRouter()
-	go log.Fatal(apiServer.httpServer.ListenAndServe())
+	go apiServer.httpServer.ListenAndServe()
 	log.Infof("[Webhook] Server started at %s", addr)
 	return apiServer
 }
