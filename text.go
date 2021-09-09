@@ -23,8 +23,8 @@ func (bot TipBot) anyTextHandler(ctx context.Context, m *tb.Message) {
 	}
 
 	// check if user is in database, if not, initialize wallet
-	user, exists := bot.UserExists(m.Sender)
-	if !exists {
+	user := ctx.Value("user")
+	if user == nil {
 		bot.startHandler(m)
 		return
 	}
@@ -38,7 +38,7 @@ func (bot TipBot) anyTextHandler(ctx context.Context, m *tb.Message) {
 
 	// could be a LNURL
 	// var lnurlregex = regexp.MustCompile(`.*?((lnurl)([0-9]{1,}[a-z0-9]+){1})`)
-	if user.StateKey == lnbits.UserStateLNURLEnterAmount {
+	if user.(*lnbits.User).StateKey == lnbits.UserStateLNURLEnterAmount {
 		bot.lnurlEnterAmountHandler(ctx, m)
 	}
 
