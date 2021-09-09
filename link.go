@@ -36,7 +36,7 @@ func (bot TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
 	user := ctx.Value("user").(*lnbits.User)
 	bot.trySendMessage(m.Sender, walletConnectMessage)
 
-	lnbitsUrl := Configuration.LnbitsPublicUrl
+	lnbitsUrl := Configuration.Lnbits.LnbitsPublicUrl
 	if !strings.HasSuffix(lnbitsUrl, "/") {
 		lnbitsUrl = lnbitsUrl + "/"
 	}
