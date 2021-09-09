@@ -139,6 +139,6 @@ func (bot TipBot) Start() {
 	}
 	bot.registerTelegramHandlers()
 	lnbits.NewWebhookServer(Configuration.Lnbits.WebhookServerUrl, bot.telegram, bot.client, bot.database)
-	lnurl.NewServer(Configuration.Bot.LNURLServerUrl, Configuration.Bot.LNURLHostName, Configuration.Lnbits.WebhookServer, bot.telegram, bot.client, bot.database)
+	lnurl.NewServer(Configuration.Bot.LNURLServerUrl, Configuration.Bot.LNURLHostUrl, Configuration.Lnbits.WebhookServer, bot.telegram, bot.client, bot.database)
 	bot.telegram.Start()
 }

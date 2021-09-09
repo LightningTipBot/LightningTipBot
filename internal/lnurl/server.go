@@ -18,7 +18,7 @@ type Server struct {
 	bot              *tb.Bot
 	c                *lnbits.Client
 	database         *gorm.DB
-	callbackHostname string
+	callbackHostname *url.URL
 	WebhookServer    string
 }
 
@@ -31,7 +31,7 @@ const (
 	MaxSendable   = 1000000000
 )
 
-func NewServer(addr *url.URL, callbackHostname, webhookServer string, bot *tb.Bot, client *lnbits.Client, database *gorm.DB) *Server {
+func NewServer(addr, callbackHostname *url.URL, webhookServer string, bot *tb.Bot, client *lnbits.Client, database *gorm.DB) *Server {
 	srv := &http.Server{
 		Addr: addr.Host,
 		// Good practice: enforce timeouts for servers you create!
