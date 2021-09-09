@@ -152,6 +152,6 @@ func (w Server) descriptionHash(metadata lnurl.Metadata) (string, error) {
 // and is used again in the second response to verify the description hash
 func (w Server) metaData(username string) lnurl.Metadata {
 	return lnurl.Metadata{
-		{"text/identifier", fmt.Sprintf("%s@ln.tips", username)},
+		{"text/identifier", fmt.Sprintf("%s@%s", username, w.callbackHostname)},
 		{"text/plain", fmt.Sprintf("Pay to %s@%s", username, w.callbackHostname)}}
 }
