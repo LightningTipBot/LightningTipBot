@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/jinzhu/configor"
+	log "github.com/sirupsen/logrus"
 	"net/url"
+	"strings"
 )
 
 var Configuration = struct {
