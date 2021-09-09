@@ -5,6 +5,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"net/url"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -24,9 +25,9 @@ type WebhookServer struct {
 	database   *gorm.DB
 }
 
-func NewWebhookServer(addr string, bot *tb.Bot, client *Client, database *gorm.DB) *WebhookServer {
+func NewWebhookServer(addr *url.URL, bot *tb.Bot, client *Client, database *gorm.DB) *WebhookServer {
 	srv := &http.Server{
-		Addr: addr,
+		Addr: addr.Host,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
@@ -38,7 +39,7 @@ func NewWebhookServer(addr string, bot *tb.Bot, client *Client, database *gorm.D
 		httpServer: srv,
 	}
 	apiServer.httpServer.Handler = apiServer.newRouter()
-	go apiServer.httpServer.ListenAndServe()
+	go log.Fatal(apiServer.httpServer.ListenAndServe())
 	log.Infof("[Webhook] Server started at %s", addr)
 	return apiServer
 }

@@ -138,7 +138,7 @@ func (bot TipBot) Start() {
 		log.Errorf("Could not initialize bot wallet: %s", err.Error())
 	}
 	bot.registerTelegramHandlers()
-	lnbits.NewWebhookServer(Configuration.Lnbits.WebhookServer, bot.telegram, bot.client, bot.database)
+	lnbits.NewWebhookServer(Configuration.Lnbits.WebhookServerUrl, bot.telegram, bot.client, bot.database)
 	lnurl.NewServer(Configuration.Bot.LNURLServerUrl, Configuration.Bot.LNURLHostName, Configuration.Lnbits.WebhookServer, bot.telegram, bot.client, bot.database)
 	bot.telegram.Start()
 }
