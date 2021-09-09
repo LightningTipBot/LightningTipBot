@@ -87,7 +87,7 @@ func (bot *TipBot) sendInlineHandler(c *tb.Callback) {
 	inlineSend.Message = fmt.Sprintf("%s", fmt.Sprintf(sendInlineUpdateMessageAccept, amount, fromUserStrMd, toUserStrMd))
 	memo := inlineSend.Memo
 	if len(memo) > 0 {
-		inlineSend.Message = inlineSend.Message + fmt.Sprintf(inlineSendAppendMemo, memo)
+		inlineSend.Message = inlineSend.Message + fmt.Sprintf(inlineSendAppendMemo, MarkdownEscape(memo))
 	}
 
 	if !bot.UserInitializedWallet(to) {
