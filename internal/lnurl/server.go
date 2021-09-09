@@ -55,7 +55,7 @@ func NewServer(addr, callbackHostname *url.URL, webhookServer string, bot *tb.Bo
 
 func (w *Server) newRouter() *mux.Router {
 	router := mux.NewRouter()
-	router.HandleFunc(lnurlEndpoint+"/{username}", w.handleLnUrl).Methods(http.MethodGet)
+	router.HandleFunc("/.well-known/lnurlp/{username}", w.handleLnUrl).Methods(http.MethodGet)
 	router.HandleFunc("/@{username}", w.handleLnUrl).Methods(http.MethodGet)
 	return router
 }
