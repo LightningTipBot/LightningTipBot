@@ -79,7 +79,7 @@ func (bot TipBot) inlineQueryInstructions(q *tb.Query) {
 	})
 
 	if err != nil {
-		log.Println(err)
+		log.Errorln(err)
 	}
 }
 
@@ -128,7 +128,7 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 			inlineMessage := fmt.Sprintf(inlineSendMessage, amount)
 
 			if len(memo) > 0 {
-				inlineMessage = inlineMessage + fmt.Sprintf(inlineSendAppendMemo, MarkdownEscape(memo))
+				inlineMessage = inlineMessage + fmt.Sprintf(inlineSendAppendMemo, memo)
 			}
 
 			result := &tb.ArticleResult{
@@ -169,7 +169,7 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 		})
 
 		if err != nil {
-			log.Println(err)
+			log.Errorln(err)
 		}
 	}
 }
