@@ -20,6 +20,7 @@ type BotConfiguration struct {
 	LNURLServer    string   `yaml:"lnurl_server"`
 	LNURLServerUrl *url.URL `yaml:"-"`
 	LNURLHostName  string   `yaml:"lnurl_public_host_name"`
+	LNURLHostUrl   *url.URL `yaml:"-"`
 }
 
 type TelegramConfiguration struct {
@@ -57,6 +58,11 @@ func init() {
 		panic(err)
 	}
 	Configuration.Bot.LNURLServerUrl = lnUrl
+	hostname, err := url.Parse(Configuration.Bot.LNURLHostName)
+	if err != nil {
+		panic(err)
+	}
+	Configuration.Bot.LNURLHostUrl = hostname
 	checkLnbitsConfiguration()
 }
 

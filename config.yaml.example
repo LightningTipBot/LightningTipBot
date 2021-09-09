@@ -2,11 +2,9 @@ bot:
   http_proxy: ""
   lnurl_public_host_name: "mylnurl.com"
   lnurl_server: "http://0.0.0.0:8080"
-
 telegram:
   message_dispose_duration: 10
   api_key: "1234"
-
 lnbits:
   url: "http://127.0.0.1:5000"
   admin_key: "1234"
@@ -14,8 +12,6 @@ lnbits:
   webhook_server: "http://0.0.0.0:5588"
   lnbits_public_url: "link.mylnurl.com"
 database:
-  db_path: "data/dev.db"
+  db_path: "data/bot.db"
   buntdb_path: "data/bunt.db"
   transactions_path: "data/transactions.db"
-
-
