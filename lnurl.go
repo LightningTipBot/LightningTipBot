@@ -27,7 +27,7 @@ const (
 	lnurlInvalidAmountMessage      = "🚫 Invalid amount."
 	lnurlInvalidAmountRangeMessage = "🚫 Amount must be between %d and %d sat."
 	lnurlNoUsernameMessage         = "🚫 You need to set a Telegram username to receive via LNURL."
-	lnurlEnterAmountMessage        = "Please enter an amount."
+	lnurlEnterAmountMessage        = "⌨️ Please enter an amount."
 	lnurlHelpText                  = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/lnurl [amount] <lnurl>`\n" +
 		"*Example:* `/lnurl LNURL1DP68GUR...`"
