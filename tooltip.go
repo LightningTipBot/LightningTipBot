@@ -17,14 +17,6 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const (
-	tooltipChatWithBotMessage  = "🗑 Chat with %s 👈 to manage your wallet."
-	tooltipAndOthersMessage    = " ... and others"
-	tooltipMultipleTipsMessage = "%s (%d tips by %s)"
-	tooltipSingleTipMessage    = "%s (by %s)"
-	tooltipTipAmountMessage    = "🏅 %d sat"
-)
-
 type TipTooltip struct {
 	Message
 	TipAmount int        `json:"tip_amount"`
@@ -65,15 +57,15 @@ func NewTipTooltip(m *tb.Message, opts ...TipTooltipOption) *TipTooltip {
 // getUpdatedTipTooltipMessage will return the full tip tool tip
 func (ttt TipTooltip) getUpdatedTipTooltipMessage(botUserName string, notInitializedWallet bool) string {
 	tippersStr := getTippersString(ttt.Tippers)
-	tipToolTipMessage := fmt.Sprintf(tooltipTipAmountMessage, ttt.TipAmount)
+	tipToolTipMessage := fmt.Sprintf("🏅 %d sat", ttt.TipAmount)
 	if len(ttt.Tippers) > 1 {
-		tipToolTipMessage = fmt.Sprintf(tooltipMultipleTipsMessage, tipToolTipMessage, ttt.Ntips, tippersStr)
+		tipToolTipMessage = fmt.Sprintf("%s (%d tips by %s)", tipToolTipMessage, ttt.Ntips, tippersStr)
 	} else {
-		tipToolTipMessage = fmt.Sprintf(tooltipSingleTipMessage, tipToolTipMessage, tippersStr)
+		tipToolTipMessage = fmt.Sprintf("%s (by %s)", tipToolTipMessage, tippersStr)
 	}
 
 	if notInitializedWallet {
-		tipToolTipMessage = tipToolTipMessage + fmt.Sprintf("\n%s", fmt.Sprintf(tooltipChatWithBotMessage, botUserName))
+		tipToolTipMessage = tipToolTipMessage + fmt.Sprintf("\n🗑 Chat with %s to manage your wallet.", botUserName)
 	}
 	return tipToolTipMessage
 }
@@ -94,7 +86,7 @@ func getTippersString(tippers []*tb.User) string {
 	if len(tippersSlice) > maxNamesInTipperMessage {
 		// tippersStr = tippersStr[:50]
 		tippersStr = strings.Join(tippersSlice[:maxNamesInTipperMessage], " ")
-		tippersStr = tippersStr + tooltipAndOthersMessage
+		tippersStr = tippersStr + " ... and others"
 	}
 	return tippersStr
 }
@@ -123,12 +115,12 @@ func tipTooltipHandler(m *tb.Message, bot *TipBot, amount int, initializedWallet
 			return false
 		}
 	} else {
-		tipmsg := fmt.Sprintf(tooltipTipAmountMessage, amount)
+		tipmsg := fmt.Sprintf("🏅 %d sat", amount)
 		userStr := GetUserStrMd(m.Sender)
-		tipmsg = fmt.Sprintf(tooltipSingleTipMessage, tipmsg, userStr)
+		tipmsg = fmt.Sprintf("%s (by %s)", tipmsg, userStr)
 
 		if !initializedWallet {
-			tipmsg = tipmsg + fmt.Sprintf("\n%s", fmt.Sprintf(tooltipChatWithBotMessage, GetUserStrMd(bot.telegram.Me)))
+			tipmsg = tipmsg + fmt.Sprintf("\n🗑 Chat with %s to manage your wallet.", GetUserStrMd(bot.telegram.Me))
 		}
 		msg, err := bot.telegram.Reply(m.ReplyTo, tipmsg, tb.Silent)
 		if err != nil {

@@ -17,6 +17,38 @@ const (
 	inlineSendFailedMessage       = "🚫 Send failed."
 )
 
+var (
+	inlineQuerySendTitle        = "Send sats to a chat."
+	inlineQuerySendDescription  = "Usage: @%s send <amount> [<memo>]"
+	inlineResultSendTitle       = "💸 Send %d sat."
+	inlineResultSendDescription = "👉 Click here to send %d sat to this chat."
+	sendInlineMenu              = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	btnCancelSendInline         = paymentConfirmationMenu.Data("🚫 Cancel", "cancel_send_inline")
+	btnSendInline               = paymentConfirmationMenu.Data("✅ Receive", "confirm_send_inline")
+)
+
+type InlineSend struct {
+	Message string   `json:"inline_send_message"`
+	Amount  int      `json:"inline_send_amount"`
+	From    *tb.User `json:"inline_send_from"`
+	To      *tb.User `json:"inline_send_to"`
+	Memo    string
+	ID      string `json:"inline_send_id"`
+	Active  bool   `json:"inline_send_active"`
+}
+
+func NewInlineSend(m string) *InlineSend {
+	inlineSend := &InlineSend{
+		Message: m,
+	}
+	return inlineSend
+
+}
+
+func (msg InlineSend) Key() string {
+	return msg.ID
+}
+
 // tipTooltipExists checks if this tip is already known
 func (bot *TipBot) getInlineSend(c *tb.Callback) (*InlineSend, error) {
 	inlineSend := NewInlineSend("")
@@ -66,7 +98,7 @@ func (bot *TipBot) sendInlineHandler(c *tb.Callback) {
 	}
 
 	// todo: user new get username function to get userStrings
-	transactionMemo := fmt.Sprintf("Tip from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
+	transactionMemo := fmt.Sprintf("Send from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
 	t := NewTransaction(bot, from, to, amount, TransactionType("inline send"))
 	t.Memo = transactionMemo
 	success, err := t.Send()
