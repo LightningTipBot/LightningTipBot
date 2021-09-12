@@ -29,7 +29,7 @@ After the configuration (see below), start it using the command
 
 ### Configuration
 
-You need to edit `config.yaml` before starting the bot.
+You need to edit `config.yaml` before you can start the bot.
 
 #### Create a Telegram bot
 
@@ -84,6 +84,21 @@ You can either use your own LNbits instance (recommended) or create an account a
 /lnurl ⚡️ Lnurl receive or pay: /lnurl or /lnurl <lnurl>
 ```
 
+### Inline commands
+```
+send 💸 Send sats to chat: @LightningTipBot send <amount> [<memo>]
+```
+
+📖 You can use inline commands in every chat, even in private conversations. Wait a second after entering an inline command and click the result, don't press enter.
+
+### Inline send
+
+You can use inline commands to send payments to anyone who can read your messages, even inside private chats and group chat in which the bot isn't part of. For that, you need to trigger an [inline command](https://core.telegram.org/bots/inline). Here is how it works: Enter the name of the bot (`@LightningTipBot`) and the command you want to trigger (`send 13 Hi friend!`). When the result pops up above the text field, click it to send it to the chat. Do not press enter. 
+
+<p align="center">
+  	<img alt="Send sats inside any chat, including private conversations and groups." src="resources/inline_send.png" >
+</p>
+
 ### Live tooltips
 
 The bot replies to a tipped message to indicate to all participants how many and what amount of tips a post has received. This tooltip will be updated as new tips are given to a post.
@@ -91,6 +106,7 @@ The bot replies to a tipped message to indicate to all participants how many and
 <p align="center">
   	<img alt="How to set up a lnbits wallet and the User Manager extension." src="resources/tooltips.png" >
 </p>
+
 
 ### LNURL server
 
