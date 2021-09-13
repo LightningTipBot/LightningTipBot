@@ -27,7 +27,7 @@ const (
 	lnurlInvalidAmountMessage      = "🚫 Invalid amount."
 	lnurlInvalidAmountRangeMessage = "🚫 Amount must be between %d and %d sat."
 	lnurlNoUsernameMessage         = "🚫 You need to set a Telegram username to receive via LNURL."
-	lnurlEnterAmountMessage        = "⌨️ Enter an amount."
+	lnurlEnterAmountMessage        = "⌨️ Enter an amount between %d and %d sat."
 	lnurlHelpText                  = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/lnurl [amount] <lnurl>`\n" +
 		"*Example:* `/lnurl LNURL1DP68GUR...`"
@@ -89,7 +89,7 @@ func (bot TipBot) lnurlHandler(m *tb.Message) {
 
 		bot.tryDeleteMessage(msg)
 		// Let the user enter an amount and return
-		bot.trySendMessage(m.Sender, fmt.Sprintf(lnurlEnterAmountMessage), tb.ForceReply)
+		bot.trySendMessage(m.Sender, fmt.Sprintf(lnurlEnterAmountMessage, payParams.MinSendable/1000, payParams.MaxSendable/1000), tb.ForceReply)
 	} else {
 		// amount is already present in the command
 		// set also amount in the state of the user
