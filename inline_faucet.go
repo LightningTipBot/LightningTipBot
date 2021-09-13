@@ -110,7 +110,7 @@ func (bot *TipBot) getInlineFaucet(c *tb.Callback) (*InlineFaucet, error) {
 	for inlineFaucet.InTransaction {
 		select {
 		case <-ticker.C:
-			return inlineFaucet, fmt.Errorf("inline send timeout")
+			return nil, fmt.Errorf("inline send timeout")
 		default:
 			log.Infoln("in transaction")
 			time.Sleep(time.Duration(500) * time.Millisecond)

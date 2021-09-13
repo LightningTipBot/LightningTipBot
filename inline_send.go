@@ -97,7 +97,7 @@ func (bot *TipBot) getInlineSend(c *tb.Callback) (*InlineSend, error) {
 	for inlineSend.InTransaction {
 		select {
 		case <-ticker.C:
-			return inlineSend, fmt.Errorf("inline send timeout")
+			return nil, fmt.Errorf("inline send timeout")
 		default:
 			log.Infoln("in transaction")
 			time.Sleep(time.Duration(500) * time.Millisecond)
@@ -194,7 +194,6 @@ func (bot *TipBot) acceptInlineSendHandler(c *tb.Callback) {
 	inlineSend, err := bot.getInlineSend(c)
 	if err != nil {
 		log.Errorf("[acceptInlineSendHandler] %s", err)
-		bot.ReleaseSend(inlineSend)
 		return
 	}
 	// immediatelly set intransaction to block duplicate calls
@@ -203,12 +202,13 @@ func (bot *TipBot) acceptInlineSendHandler(c *tb.Callback) {
 		log.Errorf("[getInlineSend] %s", err)
 		return
 	}
-
 	if !inlineSend.Active {
 		log.Errorf("[acceptInlineSendHandler] inline send not active anymore")
-		bot.ReleaseSend(inlineSend)
 		return
 	}
+
+	defer bot.ReleaseSend(inlineSend)
+
 	amount := inlineSend.Amount
 	to := c.Sender
 	from := inlineSend.From
@@ -231,7 +231,6 @@ func (bot *TipBot) acceptInlineSendHandler(c *tb.Callback) {
 		if err != nil {
 			errmsg := fmt.Errorf("[sendInline] Error: Could not create wallet for %s", toUserStr)
 			log.Errorln(errmsg)
-			bot.ReleaseSend(inlineSend)
 			return
 		}
 	}
@@ -252,7 +251,6 @@ func (bot *TipBot) acceptInlineSendHandler(c *tb.Callback) {
 		errMsg := fmt.Sprintf("[sendInline] Transaction failed: %s", err)
 		log.Errorln(errMsg)
 		bot.tryEditMessage(c.Message, inlineSendFailedMessage, &tb.ReplyMarkup{})
-		bot.ReleaseSend(inlineSend)
 		return
 	}
 
@@ -275,7 +273,6 @@ func (bot *TipBot) acceptInlineSendHandler(c *tb.Callback) {
 	if err != nil {
 		errmsg := fmt.Errorf("[sendInline] Error: Send message to %s: %s", toUserStr, err)
 		log.Errorln(errmsg)
-		bot.ReleaseSend(inlineSend)
 		return
 	}
 

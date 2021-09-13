@@ -94,7 +94,7 @@ func (bot *TipBot) getInlineReceive(c *tb.Callback) (*InlineReceive, error) {
 	for inlineReceive.InTransaction {
 		select {
 		case <-ticker.C:
-			return inlineReceive, fmt.Errorf("inline send timeout")
+			return nil, fmt.Errorf("inline send timeout")
 		default:
 			log.Infoln("in transaction")
 			time.Sleep(time.Duration(500) * time.Millisecond)
@@ -185,17 +185,17 @@ func (bot *TipBot) acceptInlineReceiveHandler(c *tb.Callback) {
 		return
 	}
 	err = bot.LockReceive(inlineReceive)
-
 	if err != nil {
 		log.Errorf("[acceptInlineReceiveHandler] %s", err)
-		bot.ReleaseReceive(inlineReceive)
 		return
 	}
+
 	if !inlineReceive.Active {
 		log.Errorf("[acceptInlineReceiveHandler] inline receive not active anymore")
-		bot.ReleaseReceive(inlineReceive)
 		return
 	}
+
+	defer bot.ReleaseReceive(inlineReceive)
 
 	// user `from` is the one who is SENDING
 	// user `to` is the one who is RECEIVING
@@ -216,14 +216,12 @@ func (bot *TipBot) acceptInlineReceiveHandler(c *tb.Callback) {
 	if err != nil {
 		errmsg := fmt.Sprintf("could not get balance of user %s", toUserStrMd)
 		log.Errorln(errmsg)
-		bot.ReleaseReceive(inlineReceive)
 		return
 	}
 	// check if fromUser has balance
 	if balance < inlineReceive.Amount {
 		log.Errorln("[acceptInlineReceiveHandler] balance of user %s too low", toUserStrMd)
 		bot.trySendMessage(from, fmt.Sprintf(inlineSendBalanceLowMessage, balance))
-		bot.ReleaseReceive(inlineReceive)
 		return
 	}
 
@@ -244,7 +242,6 @@ func (bot *TipBot) acceptInlineReceiveHandler(c *tb.Callback) {
 		errMsg := fmt.Sprintf("[acceptInlineReceiveHandler] Transaction failed: %s", err)
 		log.Errorln(errMsg)
 		bot.tryEditMessage(c.Message, inlineReceiveFailedMessage, &tb.ReplyMarkup{})
-		bot.ReleaseReceive(inlineReceive)
 		return
 	}
 
@@ -267,7 +264,6 @@ func (bot *TipBot) acceptInlineReceiveHandler(c *tb.Callback) {
 	if err != nil {
 		errmsg := fmt.Errorf("[acceptInlineReceiveHandler] Error: Receive message to %s: %s", toUserStr, err)
 		log.Errorln(errmsg)
-		bot.ReleaseReceive(inlineReceive)
 		return
 	}
 
