@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	inlineFaucetMessage                     = "Press ✅ to collect from this faucet.\n\n🏅 Remaining: %d/%d sat (given to %d users)"
+	inlineFaucetMessage                     = "Press ✅ to collect %d sat from this faucet.\n\n🏅 Remaining: %d/%d sat (given to %d/%d users)"
 	inlineFaucetEndedMessage                = "🏅 Faucet empty 🏅\n\n💸 %d sat given to %d users."
 	inlineFaucetAppendMemo                  = "\n✉️ %s"
 	inlineFaucetCreateWalletMessage         = "Chat with %s 👈 to manage your wallet."
@@ -172,7 +172,7 @@ func (bot TipBot) faucetHandler(m *tb.Message) {
 	// // check for memo in command
 	memo := GetMemoFromCommand(m.Text, 3)
 
-	inlineMessage := fmt.Sprintf(inlineFaucetMessage, inlineFaucet.Amount, inlineFaucet.Amount, 0)
+	inlineMessage := fmt.Sprintf(inlineFaucetMessage, inlineFaucet.PerUserAmount, inlineFaucet.Amount, inlineFaucet.Amount, 0, inlineFaucet.NTotal)
 	if len(memo) > 0 {
 		inlineMessage = inlineMessage + fmt.Sprintf(inlineFaucetAppendMemo, memo)
 	}
@@ -244,7 +244,7 @@ func (bot TipBot) handleInlineFaucetQuery(q *tb.Query) {
 	}
 	results := make(tb.Results, len(urls)) // []tb.Result
 	for i, url := range urls {
-		inlineMessage := fmt.Sprintf(inlineFaucetMessage, inlineFaucet.Amount, inlineFaucet.Amount, 0)
+		inlineMessage := fmt.Sprintf(inlineFaucetMessage, inlineFaucet.PerUserAmount, inlineFaucet.Amount, inlineFaucet.Amount, 0, inlineFaucet.NTotal)
 		if len(memo) > 0 {
 			inlineMessage = inlineMessage + fmt.Sprintf(inlineFaucetAppendMemo, memo)
 		}
@@ -371,7 +371,7 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 		}
 
 		// build faucet message
-		inlineFaucet.Message = fmt.Sprintf(inlineFaucetMessage, inlineFaucet.RemainingAmount, inlineFaucet.Amount, inlineFaucet.NTaken)
+		inlineFaucet.Message = fmt.Sprintf(inlineFaucetMessage, inlineFaucet.PerUserAmount, inlineFaucet.RemainingAmount, inlineFaucet.Amount, inlineFaucet.NTaken, inlineFaucet.NTotal)
 		memo := inlineFaucet.Memo
 		if len(memo) > 0 {
 			inlineFaucet.Message = inlineFaucet.Message + fmt.Sprintf(inlineFaucetAppendMemo, memo)
