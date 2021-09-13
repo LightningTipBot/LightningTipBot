@@ -43,7 +43,6 @@ type InlineFaucet struct {
 	Active          bool       `json:"inline_faucet_active"`
 	NTotal          int        `json:"inline_faucet_ntotal"`
 	NTaken          int        `json:"inline_faucet_ntaken"`
-	AcceptButton    *tb.Btn    `json:"inline_faucet_acceptbutton"`
 }
 
 func NewInlineFaucet(m string) *InlineFaucet {
@@ -68,6 +67,87 @@ func (bot *TipBot) getInlineFaucet(c *tb.Callback) (*InlineFaucet, error) {
 		return nil, fmt.Errorf("could not get inline faucet: %s", err)
 	}
 	return inlineFaucet, nil
+
+}
+
+func (bot TipBot) faucetHandler(m *tb.Message) {
+	amount, err := decodeAmountFromCommand(m.Text)
+	if err != nil {
+		return
+	}
+	if amount < 1 {
+		return
+	}
+
+	peruserStr, err := getArgumentFromCommand(m.Text, 2)
+	if err != nil {
+		return
+	}
+	peruser, err := strconv.Atoi(peruserStr)
+	if err != nil {
+		return
+	}
+	// peruser amount must be >1 and a divisor of amount
+	if peruser < 1 || amount%peruser != 0 {
+		return
+	}
+	ntotal := amount / peruser
+
+	fromUserStr := GetUserStr(m.Sender)
+	balance, err := bot.GetUserBalance(m.Sender)
+	if err != nil {
+		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
+		log.Errorln(errmsg)
+		return
+	}
+	// check if fromUser has balance
+	if balance < amount {
+		log.Errorln("Balance of user %s too low", fromUserStr)
+		return
+	}
+
+	// check for memo in command
+	memo := ""
+	if len(strings.Split(m.Text, " ")) > 3 {
+		memo = strings.SplitN(m.Text, " ", 4)[3]
+		memoMaxLen := 159
+		if len(memo) > memoMaxLen {
+			memo = memo[:memoMaxLen]
+		}
+	}
+
+	inlineMessage := fmt.Sprintf(inlineFaucetMessage, amount, amount, 0)
+
+	if len(memo) > 0 {
+		inlineMessage = inlineMessage + fmt.Sprintf(inlineFaucetAppendMemo, memo)
+	}
+
+	id := fmt.Sprintf("inl-faucet-%d-%d-%s", m.Sender.ID, amount, RandStringRunes(5))
+
+	inlineFaucetMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	btnCancelInlineFaucet = inlineFaucetMenu.Data("🚫 Cancel", "cancel_faucet_inline")
+	btnAcceptInlineFaucet = inlineFaucetMenu.Data("✅ Receive", "confirm_faucet_inline")
+	btnAcceptInlineFaucet.Data = id
+	btnCancelInlineFaucet.Data = id
+	inlineFaucetMenu.Inline(inlineFaucetMenu.Row(btnAcceptInlineFaucet, btnCancelInlineFaucet))
+
+	bot.trySendMessage(m.Chat, inlineMessage, inlineFaucetMenu)
+
+	// create persistend inline send struct
+	inlineFaucet := NewInlineFaucet(inlineMessage)
+	// add data to persistent object
+	inlineFaucet.ID = id
+	inlineFaucet.From = m.Sender
+	// add result to persistent struct
+	inlineFaucet.Amount = amount
+	inlineFaucet.PerUserAmount = peruser
+	inlineFaucet.RemainingAmount = amount
+	inlineFaucet.NTotal = ntotal
+	inlineFaucet.NTaken = 0
+
+	inlineFaucet.Memo = memo
+	inlineFaucet.Active = true
+	runtime.IgnoreError(bot.bunt.Set(inlineFaucet))
 
 }
 
@@ -166,7 +246,6 @@ func (bot TipBot) handleInlineFaucetQuery(q *tb.Query) {
 		inlineFaucet.NTaken = 0
 
 		inlineFaucet.Memo = memo
-		inlineFaucet.AcceptButton = &btnAcceptInlineFaucet
 
 		inlineFaucet.Active = true
 		runtime.IgnoreError(bot.bunt.Set(inlineFaucet))
@@ -254,16 +333,14 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 		inlineFaucet.Message = inlineFaucet.Message + fmt.Sprintf(inlineFaucetAppendMemo, memo)
 	}
 
-	// if !bot.UserInitializedWallet(to) {
-	// 	inlineFaucet.Message += "\n\n" + fmt.Sprintf(inlineSendCreateWalletMessage, GetUserStrMd(bot.telegram.Me))
-	// }
-	// btnAcceptInlineFaucet = inlineFaucetMenu.Data("✅ Receive asdasd", "confirm_faucet_inline_2")
-	// btnAcceptInlineFaucet.Data = inlineFaucet.ID
-	// btnCancelInlineFaucet.Data = inlineFaucet.ID
-	btnAcceptInlineFaucet = *inlineFaucet.AcceptButton
+	if !bot.UserInitializedWallet(to) {
+		inlineFaucet.Message += "\n\n" + fmt.Sprintf(inlineSendCreateWalletMessage, GetUserStrMd(bot.telegram.Me))
+	}
+
+	inlineFaucetMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	btnCancelInlineFaucet = inlineFaucetMenu.Data("🚫 Cancel", "cancel_faucet_inline", inlineFaucet.ID)
+	btnAcceptInlineFaucet = inlineFaucetMenu.Data("✅ Receive", "confirm_faucet_inline", inlineFaucet.ID)
 	inlineFaucetMenu.Inline(inlineFaucetMenu.Row(btnAcceptInlineFaucet, btnCancelInlineFaucet))
-	// bot.telegram.Handle(&btnAcceptInlineFaucet, bot.accpetInlineFaucetHandler)
-	// bot.telegram.Handle(&btnCancelInlineFaucet, bot.cancelInlineFaucetHandler)
 
 	log.Infoln(inlineFaucet.Message)
 	bot.tryEditMessage(c.Message, inlineFaucet.Message, inlineFaucetMenu)

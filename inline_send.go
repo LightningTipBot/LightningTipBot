@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"
@@ -31,13 +32,14 @@ var (
 )
 
 type InlineSend struct {
-	Message string   `json:"inline_send_message"`
-	Amount  int      `json:"inline_send_amount"`
-	From    *tb.User `json:"inline_send_from"`
-	To      *tb.User `json:"inline_send_to"`
-	Memo    string
-	ID      string `json:"inline_send_id"`
-	Active  bool   `json:"inline_send_active"`
+	Message       string   `json:"inline_send_message"`
+	Amount        int      `json:"inline_send_amount"`
+	From          *tb.User `json:"inline_send_from"`
+	To            *tb.User `json:"inline_send_to"`
+	Memo          string
+	ID            string `json:"inline_send_id"`
+	Active        bool   `json:"inline_send_active"`
+	InTransaction bool   `json:"inline_send_intransaction"`
 }
 
 func NewInlineSend(m string) *InlineSend {
@@ -55,10 +57,26 @@ func (msg InlineSend) Key() string {
 func (bot *TipBot) getInlineSend(c *tb.Callback) (*InlineSend, error) {
 	inlineSend := NewInlineSend("")
 	inlineSend.ID = c.Data
+
 	err := bot.bunt.Get(inlineSend)
+
+	// to avoid race conditions, we block the call if there is
+	// already an active transaction by loop until InTransaction is false
+	for inlineSend.InTransaction {
+		time.Sleep(time.Duration(500) * time.Millisecond)
+		err = bot.bunt.Get(inlineSend)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("could not get inline send message")
 	}
+
+	// immediatelly set intransaction to block duplicate calls
+	inlineSend.InTransaction = true
+	err = bot.bunt.Set(inlineSend)
+	if err != nil {
+		return nil, fmt.Errorf("could not save send message")
+	}
+
 	return inlineSend, nil
 
 }
@@ -69,7 +87,6 @@ func (bot *TipBot) inactivateInlineSend(c *tb.Callback) error {
 		log.Errorf("[inactivateInlineSend] %s", err)
 		return err
 	}
-	// immediatelly set inactive to avoid double-sends
 	inlineSend.Active = false
 	runtime.IgnoreError(bot.bunt.Set(inlineSend))
 	return nil
@@ -241,6 +258,8 @@ func (bot *TipBot) acceptInlineSendHandler(c *tb.Callback) {
 
 	// edit persistent object and store it
 	inlineSend.To = to
+	// complete this transaction
+	inlineSend.InTransaction = false
 	runtime.IgnoreError(bot.bunt.Set(inlineSend))
 
 }
