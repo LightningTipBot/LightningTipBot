@@ -35,7 +35,7 @@ func GetMemoFromCommand(command string, fromWord int) string {
 }
 
 func MakeProgressbar(current int, total int) string {
-	MAX_BARS := 14
+	MAX_BARS := 16
 	progress := math.Round((float64(current) / float64(total)) * float64(MAX_BARS))
 	progressbar := strings.Repeat("🟩", int(progress))
 	progressbar += strings.Repeat("⬜️", MAX_BARS-int(progress))
