@@ -12,6 +12,25 @@ import (
 	"gorm.io/gorm"
 )
 
+func SetUserState(user *lnbits.User, bot TipBot, stateKey lnbits.UserStateKey, stateData string) {
+	user.StateKey = stateKey
+	user.StateData = stateData
+	err := UpdateUserRecord(user, bot)
+	if err != nil {
+		log.Errorln(err.Error())
+		return
+	}
+}
+
+func ResetUserState(user *lnbits.User, bot TipBot) {
+	user.ResetState()
+	err := UpdateUserRecord(user, bot)
+	if err != nil {
+		log.Errorln(err.Error())
+		return
+	}
+}
+
 var markdownV2Escapes = []string{"_", "[", "]", "(", ")", "~", "`", ">", "#", "+", "-", "=", "|", "{", "}", ".", "!"}
 var markdownEscapes = []string{"_", "*", "`", "["}
 

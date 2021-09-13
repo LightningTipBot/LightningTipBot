@@ -3,7 +3,6 @@ package main
 import (
 	"strings"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
@@ -37,7 +36,7 @@ func (bot TipBot) anyTextHandler(m *tb.Message) {
 
 	// could be a LNURL
 	// var lnurlregex = regexp.MustCompile(`.*?((lnurl)([0-9]{1,}[a-z0-9]+){1})`)
-	if user.StateKey == lnbits.UserStateLNURLEnterAmount {
+	if user.StateKey == UserStateLNURLEnterAmount {
 		bot.lnurlEnterAmountHandler(m)
 	}
 

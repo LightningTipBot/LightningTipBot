@@ -106,13 +106,8 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 	}
 
 	log.Printf("[/pay] User: %s, amount: %d sat.", userStr, amount)
-	user.StateKey = lnbits.UserStateConfirmPayment
-	user.StateData = paymentRequest
-	err = UpdateUserRecord(user, bot)
-	if err != nil {
-		log.Printf("[UpdateUserRecord] User: %s Error: %s", userStr, err.Error())
-		return
-	}
+
+	SetUserState(user, bot, UserStateConfirmPayment, paymentRequest)
 
 	// // // create inline buttons
 	paymentConfirmationMenu.Inline(paymentConfirmationMenu.Row(btnPay, btnCancelPay))
@@ -130,8 +125,7 @@ func (bot TipBot) cancelPaymentHandler(c *tb.Callback) {
 	if err != nil {
 		return
 	}
-	user.ResetState()
-	err = UpdateUserRecord(user, bot)
+	ResetUserState(user, bot)
 
 	bot.tryDeleteMessage(c.Message)
 	_, err = bot.telegram.Send(c.Sender, paymentCancelledMessage)
@@ -150,12 +144,11 @@ func (bot TipBot) payHandler(c *tb.Callback) {
 		log.Printf("[GetUser] User: %d: %s", c.Sender.ID, err.Error())
 		return
 	}
-	if user.StateKey == lnbits.UserStateConfirmPayment {
+	if user.StateKey == UserStateConfirmPayment {
 		invoiceString := user.StateData
 
 		// reset state immediatelly
-		user.ResetState()
-		err = UpdateUserRecord(user, bot)
+		ResetUserState(user, bot)
 
 		userStr := GetUserStr(c.Sender)
 		// pay invoice

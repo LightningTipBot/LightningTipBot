@@ -21,7 +21,6 @@ type User struct {
 	StateKey    UserStateKey `json:"stateKey"`
 	StateData   string       `json:"stateData"`
 }
-type UserStateKey int
 
 const (
 	UserStateConfirmPayment = iota + 1
@@ -29,6 +28,8 @@ const (
 	UserStateLNURLEnterAmount
 	UserStateConfirmLNURLPay
 )
+
+type UserStateKey int
 
 func (u *User) ResetState() {
 	u.StateData = ""

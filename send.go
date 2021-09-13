@@ -58,8 +58,7 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 	if err != nil {
 		return
 	}
-	user.ResetState()
-	err = UpdateUserRecord(user, *bot)
+	ResetUserState(user, *bot)
 
 	// check and print all commands
 	bot.anyTextHandler(m)
@@ -186,13 +185,8 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 		bot.trySendMessage(m.Sender, fmt.Sprint(errorTryLaterMessage))
 		return
 	}
-	user.StateKey = lnbits.UserStateConfirmSend
-	user.StateData = sendData
-	err = UpdateUserRecord(user, *bot)
-	if err != nil {
-		log.Printf("[UpdateUserRecord] User: %s Error: %s", GetUserStr(m.Sender), err.Error())
-		return
-	}
+
+	SetUserState(user, *bot, UserStateConfirmSend, sendData)
 
 	sendConfirmationMenu.Inline(sendConfirmationMenu.Row(btnSend, btnCancelSend))
 	confirmText := fmt.Sprintf(confirmSendInvoiceMessage, MarkdownEscape(toUserStrMention), amount)
@@ -214,12 +208,8 @@ func (bot *TipBot) cancelSendHandler(c *tb.Callback) {
 		log.Errorln(err.Error())
 		return
 	}
-	user.ResetState()
-	err = UpdateUserRecord(user, *bot)
-	if err != nil {
-		log.Errorln(err.Error())
-		return
-	}
+	ResetUserState(user, *bot)
+
 	// delete the confirmation message
 	err = bot.telegram.Delete(c.Message)
 	if err != nil {
@@ -247,7 +237,7 @@ func (bot *TipBot) sendHandler(c *tb.Callback) {
 		log.Printf("[GetUser] User: %d: %s", c.Sender.ID, err.Error())
 		return
 	}
-	if user.StateKey != lnbits.UserStateConfirmSend {
+	if user.StateKey != UserStateConfirmSend {
 		log.Errorf("[sendHandler] User StateKey does not match! User: %d: StateKey: %d", c.Sender.ID, user.StateKey)
 		return
 	}
@@ -274,12 +264,8 @@ func (bot *TipBot) sendHandler(c *tb.Callback) {
 	}
 
 	// reset state
-	user.ResetState()
-	err = UpdateUserRecord(user, *bot)
-	if err != nil {
-		log.Errorln(err.Error())
-		return
-	}
+	ResetUserState(user, *bot)
+
 	// we can now get the wallets of both users
 	to := &tb.User{ID: toId, Username: toUserStrWithoutAt}
 	from := c.Sender

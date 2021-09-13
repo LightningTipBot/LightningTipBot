@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
@@ -27,7 +26,7 @@ const (
 	lnurlInvalidAmountMessage      = "🚫 Invalid amount."
 	lnurlInvalidAmountRangeMessage = "🚫 Amount must be between %d and %d sat."
 	lnurlNoUsernameMessage         = "🚫 You need to set a Telegram username to receive via LNURL."
-	lnurlEnterAmountMessage        = "⌨️ Please enter an amount."
+	lnurlEnterAmountMessage        = "⌨️ Enter an amount."
 	lnurlHelpText                  = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/lnurl [amount] <lnurl>`\n" +
 		"*Example:* `/lnurl LNURL1DP68GUR...`"
@@ -84,13 +83,9 @@ func (bot TipBot) lnurlHandler(m *tb.Message) {
 			log.Errorln(err)
 			return
 		}
-		user.StateData = string(paramsJson)
-		user.StateKey = lnbits.UserStateLNURLEnterAmount
-		err = UpdateUserRecord(user, bot)
-		if err != nil {
-			log.Errorln(err)
-			return
-		}
+
+		SetUserState(user, bot, UserStateLNURLEnterAmount, string(paramsJson))
+
 		bot.tryDeleteMessage(msg)
 		// Let the user enter an amount and return
 		bot.trySendMessage(m.Sender, fmt.Sprintf(lnurlEnterAmountMessage), tb.ForceReply)
@@ -105,14 +100,7 @@ func (bot TipBot) lnurlHandler(m *tb.Message) {
 			// bot.trySendMessage(m.Sender, err.Error())
 			return
 		}
-		user.StateData = string(paramsJson)
-		user.StateKey = lnbits.UserStateConfirmLNURLPay
-		err = UpdateUserRecord(user, bot)
-		if err != nil {
-			log.Errorln(err)
-			// bot.trySendMessage(m.Sender, err.Error())
-			return
-		}
+		SetUserState(user, bot, UserStateConfirmLNURLPay, string(paramsJson))
 		bot.tryDeleteMessage(msg)
 		// directly go to confirm
 		bot.lnurlPayHandler(m)
@@ -168,13 +156,15 @@ func (bot TipBot) lnurlEnterAmountHandler(m *tb.Message) {
 	if err != nil {
 		log.Errorln(err)
 		// bot.trySendMessage(m.Sender, err.Error())
+		ResetUserState(user, bot)
 		return
 	}
-	if user.StateKey == lnbits.UserStateLNURLEnterAmount {
+	if user.StateKey == UserStateLNURLEnterAmount {
 		a, err := strconv.Atoi(m.Text)
 		if err != nil {
 			log.Errorln(err)
 			bot.trySendMessage(m.Sender, lnurlInvalidAmountMessage)
+			ResetUserState(user, bot)
 			return
 		}
 		amount := int64(a)
@@ -182,6 +172,7 @@ func (bot TipBot) lnurlEnterAmountHandler(m *tb.Message) {
 		err = json.Unmarshal([]byte(user.StateData), &stateResponse)
 		if err != nil {
 			log.Errorln(err)
+			ResetUserState(user, bot)
 			return
 		}
 		// amount not in allowed range from LNURL
@@ -189,21 +180,17 @@ func (bot TipBot) lnurlEnterAmountHandler(m *tb.Message) {
 			err = fmt.Errorf("amount not in range")
 			log.Errorln(err)
 			bot.trySendMessage(m.Sender, fmt.Sprintf(lnurlInvalidAmountRangeMessage, stateResponse.MinSendable/1000, stateResponse.MaxSendable/1000))
+			ResetUserState(user, bot)
 			return
 		}
 		stateResponse.Amount = a
-		user.StateKey = lnbits.UserStateConfirmLNURLPay
 		state, err := json.Marshal(stateResponse)
 		if err != nil {
 			log.Errorln(err)
+			ResetUserState(user, bot)
 			return
 		}
-		user.StateData = string(state)
-		err = UpdateUserRecord(user, bot)
-		if err != nil {
-			log.Errorln(err)
-			return
-		}
+		SetUserState(user, bot, UserStateConfirmLNURLPay, string(state))
 		bot.lnurlPayHandler(m)
 	}
 }
@@ -225,7 +212,7 @@ func (bot TipBot) lnurlPayHandler(c *tb.Message) {
 		bot.tryEditMessage(msg, fmt.Sprintf(lnurlPaymentFailed, "database error."))
 		return
 	}
-	if user.StateKey == lnbits.UserStateConfirmLNURLPay {
+	if user.StateKey == UserStateConfirmLNURLPay {
 		client, err := getHttpClient()
 		if err != nil {
 			log.Errorln(err)
