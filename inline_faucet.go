@@ -14,22 +14,21 @@ const (
 	inlineFaucetMessage                     = "Press ✅ to collect from this faucet.\n\n🏅 Remaining: %d/%d sat (given to %d users)"
 	inlineFaucetEndedMessage                = "🏅 Faucet empty 🏅\n\n💸 %d sat given to %d users."
 	inlineFaucetAppendMemo                  = "\n✉️ %s"
-	inlineFaucetUpdateMessageAccept         = "💸 %d sat sent from %s to %s."
 	inlineFaucetCreateWalletMessage         = "Chat with %s 👈 to manage your wallet."
-	inlineFaucetYourselfMessage             = "📖 You can't pay to yourself."
-	inlineFaucetFailedMessage               = "🚫 Send failed."
 	inlineFaucetCancelledMessage            = "🚫 Faucet cancelled."
 	inlineFaucetInvalidPeruserAmountMessage = "🚫 Peruser amount not divisor of capacity."
 )
-
-var (
+const (
 	inlineQueryFaucetTitle        = "🚰 Create a faucet."
 	inlineQueryFaucetDescription  = "Usage: @%s faucet <capacity> <per_user>"
 	inlineResultFaucetTitle       = "💸 Create a %d sat faucet."
 	inlineResultFaucetDescription = "👉 Click here to create a faucet worth %d sat in this chat."
-	inlineFaucetMenu              = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
-	btnCancelInlineFaucet         = inlineFaucetMenu.Data("🚫 Cancel", "cancel_faucet_inline")
-	btnAcceptInlineFaucet         = inlineFaucetMenu.Data("✅ Receive", "confirm_faucet_inline")
+)
+
+var (
+	inlineFaucetMenu      = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	btnCancelInlineFaucet = inlineFaucetMenu.Data("🚫 Cancel", "cancel_faucet_inline")
+	btnAcceptInlineFaucet = inlineFaucetMenu.Data("✅ Receive", "confirm_faucet_inline")
 )
 
 type InlineFaucet struct {
