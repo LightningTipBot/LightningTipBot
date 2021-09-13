@@ -17,7 +17,12 @@ const (
 	inlineFaucetCreateWalletMessage         = "Chat with %s 👈 to manage your wallet."
 	inlineFaucetCancelledMessage            = "🚫 Faucet cancelled."
 	inlineFaucetInvalidPeruserAmountMessage = "🚫 Peruser amount not divisor of capacity."
+	inlineFaucetInvalidAmountMessage        = "🚫 Invalid amount."
+	inlineFaucetHelpText                    = "📖 Oops, that didn't work. %s\n\n" +
+		"*Usage:* `/faucet <capacity> <per_user>`\n" +
+		"*Example:* `/faucet 210 21`"
 )
+
 const (
 	inlineQueryFaucetTitle        = "🚰 Create a faucet."
 	inlineQueryFaucetDescription  = "Usage: @%s faucet <capacity> <per_user>"
@@ -124,18 +129,26 @@ func (bot TipBot) faucetHandler(m *tb.Message) {
 	var err error
 	inlineFaucet.Amount, err = decodeAmountFromCommand(m.Text)
 	if err != nil {
+		bot.trySendMessage(m.Sender, fmt.Sprintf(inlineFaucetHelpText, inlineFaucetInvalidAmountMessage))
+		bot.tryDeleteMessage(m)
 		return
 	}
 	peruserStr, err := getArgumentFromCommand(m.Text, 2)
 	if err != nil {
+		bot.trySendMessage(m.Sender, fmt.Sprintf(inlineFaucetHelpText, ""))
+		bot.tryDeleteMessage(m)
 		return
 	}
 	inlineFaucet.PerUserAmount, err = strconv.Atoi(peruserStr)
 	if err != nil {
+		bot.trySendMessage(m.Sender, fmt.Sprintf(inlineFaucetHelpText, inlineFaucetInvalidAmountMessage))
+		bot.tryDeleteMessage(m)
 		return
 	}
 	// peruser amount must be >1 and a divisor of amount
 	if inlineFaucet.PerUserAmount < 1 || inlineFaucet.Amount%inlineFaucet.PerUserAmount != 0 {
+		bot.trySendMessage(m.Sender, fmt.Sprintf(inlineFaucetHelpText, inlineFaucetInvalidPeruserAmountMessage))
+		bot.tryDeleteMessage(m)
 		return
 	}
 	inlineFaucet.NTotal = inlineFaucet.Amount / inlineFaucet.PerUserAmount
@@ -145,11 +158,14 @@ func (bot TipBot) faucetHandler(m *tb.Message) {
 	if err != nil {
 		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
 		log.Errorln(errmsg)
+		bot.tryDeleteMessage(m)
 		return
 	}
 	// check if fromUser has balance
 	if balance < inlineFaucet.Amount {
 		log.Errorln("Balance of user %s too low", fromUserStr)
+		bot.trySendMessage(m.Sender, fmt.Sprintf(inlineSendBalanceLowMessage, balance))
+		bot.tryDeleteMessage(m)
 		return
 	}
 
@@ -191,11 +207,12 @@ func (bot TipBot) handleInlineFaucetQuery(q *tb.Query) {
 
 	peruserStr, err := getArgumentFromCommand(q.Text, 2)
 	if err != nil {
+		bot.inlineQueryReplyWithError(q, inlineQueryFaucetTitle, fmt.Sprintf(inlineQueryFaucetDescription, bot.telegram.Me.Username))
 		return
 	}
 	inlineFaucet.PerUserAmount, err = strconv.Atoi(peruserStr)
 	if err != nil {
-		bot.inlineQueryReplyWithError(q, inlineQuerySendTitle, fmt.Sprintf(inlineQueryFaucetDescription, bot.telegram.Me.Username))
+		bot.inlineQueryReplyWithError(q, inlineQueryFaucetTitle, fmt.Sprintf(inlineQueryFaucetDescription, bot.telegram.Me.Username))
 		return
 	}
 	// peruser amount must be >1 and a divisor of amount
