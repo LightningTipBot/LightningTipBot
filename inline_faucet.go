@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	inlineFaucetMessage                     = "Press ✅ to collect.\n\n🏅 Balance: %d/%d sat (%d users)"
-	inlineFaucetEndedMessage                = "🏅 Faucet ended 🏅\n\n💸 %d sat given to %d users."
+	inlineFaucetMessage                     = "Press ✅ to collect from this faucet.\n\n🏅 Remaining balance: %d/%d sat (given to %d users)"
+	inlineFaucetEndedMessage                = "🏅 Faucet empty 🏅\n\n💸 %d sat given to %d users."
 	inlineFaucetAppendMemo                  = "\n✉️ %s"
 	inlineFaucetUpdateMessageAccept         = "💸 %d sat sent from %s to %s."
 	inlineFaucetCreateWalletMessage         = "Chat with %s 👈 to manage your wallet."
@@ -64,6 +64,35 @@ func (msg InlineFaucet) Key() string {
 	return msg.ID
 }
 
+func (bot *TipBot) LockFaucet(tx *InlineFaucet) error {
+	// immediatelly set intransaction to block duplicate calls
+	tx.InTransaction = true
+	err := bot.bunt.Set(tx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (bot *TipBot) ReleaseFaucet(tx *InlineFaucet) error {
+	// immediatelly set intransaction to block duplicate calls
+	tx.InTransaction = false
+	err := bot.bunt.Set(tx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (bot *TipBot) inactivateFaucet(tx *InlineFaucet) error {
+	tx.Active = false
+	err := bot.bunt.Set(tx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // tipTooltipExists checks if this tip is already known
 func (bot *TipBot) getInlineFaucet(c *tb.Callback) (*InlineFaucet, error) {
 	inlineFaucet := NewInlineFaucet()
@@ -80,14 +109,6 @@ func (bot *TipBot) getInlineFaucet(c *tb.Callback) (*InlineFaucet, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not get inline faucet: %s", err)
 	}
-
-	// immediatelly set intransaction to block duplicate calls
-	inlineFaucet.InTransaction = true
-	err = bot.bunt.Set(inlineFaucet)
-	if err != nil {
-		return nil, fmt.Errorf("could not save send message")
-	}
-
 	return inlineFaucet, nil
 
 }
@@ -251,11 +272,16 @@ func (bot TipBot) handleInlineFaucetQuery(q *tb.Query) {
 func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 	inlineFaucet, err := bot.getInlineFaucet(c)
 	if err != nil {
-		log.Errorf("[acceptInlineSendHandler] %s", err)
+		log.Errorf("[accpetInlineFaucetHandler] %s", err)
+		return
+	}
+	err = bot.LockFaucet(inlineFaucet)
+	if err != nil {
+		log.Errorf("[accpetInlineFaucetHandler] %s", err)
 		return
 	}
 	if !inlineFaucet.Active {
-		log.Errorf("[acceptInlineSendHandler] inline send not active anymore")
+		log.Errorf("[accpetInlineFaucetHandler] inline send not active anymore")
 		return
 	}
 	to := c.Sender
@@ -286,6 +312,7 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 			if err != nil {
 				errmsg := fmt.Errorf("[sendInline] Error: Could not create wallet for %s", toUserStr)
 				log.Errorln(errmsg)
+				bot.ReleaseFaucet(inlineFaucet)
 				return
 			}
 		}
@@ -298,6 +325,7 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 		transactionMemo := fmt.Sprintf("Faucet from %s to %s (%d sat).", fromUserStr, toUserStr, inlineFaucet.PerUserAmount)
 		t := NewTransaction(bot, from, to, inlineFaucet.PerUserAmount, TransactionType("inline faucet"))
 		t.Memo = transactionMemo
+
 		success, err := t.Send()
 		if !success {
 			if err != nil {
@@ -307,6 +335,7 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 			}
 			errMsg := fmt.Sprintf("[sendInline] Transaction failed: %s", err)
 			log.Errorln(errMsg)
+			bot.ReleaseFaucet(inlineFaucet)
 			return
 		}
 
@@ -321,6 +350,7 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 		if err != nil {
 			errmsg := fmt.Errorf("[sendInline] Error: Send message to %s: %s", toUserStr, err)
 			log.Errorln(errmsg)
+			bot.ReleaseFaucet(inlineFaucet)
 			return
 		}
 
@@ -331,7 +361,7 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 			inlineFaucet.Message = inlineFaucet.Message + fmt.Sprintf(inlineFaucetAppendMemo, memo)
 		}
 		if inlineFaucet.UserNeedsWallet {
-			inlineFaucet.Message += "\n\n" + fmt.Sprintf(inlineSendCreateWalletMessage, GetUserStrMd(bot.telegram.Me))
+			inlineFaucet.Message += "\n\n" + fmt.Sprintf(inlineFaucetCreateWalletMessage, GetUserStrMd(bot.telegram.Me))
 		}
 
 		// register new inline buttons
@@ -352,7 +382,6 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 	// edit persistent object and store it
 	inlineFaucet.InTransaction = false
 	runtime.IgnoreError(bot.bunt.Set(inlineFaucet))
-
 }
 
 func (bot *TipBot) cancelInlineFaucetHandler(c *tb.Callback) {
