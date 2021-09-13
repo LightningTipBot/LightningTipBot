@@ -35,10 +35,10 @@ type InlineSend struct {
 	Amount        int      `json:"inline_send_amount"`
 	From          *tb.User `json:"inline_send_from"`
 	To            *tb.User `json:"inline_send_to"`
-	Memo          string
-	ID            string `json:"inline_send_id"`
-	Active        bool   `json:"inline_send_active"`
-	InTransaction bool   `json:"inline_send_intransaction"`
+	Memo          string   `json:"inline_send_memo"`
+	ID            string   `json:"inline_send_id"`
+	Active        bool     `json:"inline_send_active"`
+	InTransaction bool     `json:"inline_send_intransaction"`
 }
 
 func NewInlineSend() *InlineSend {
