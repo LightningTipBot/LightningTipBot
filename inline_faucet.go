@@ -38,11 +38,12 @@ type InlineFaucet struct {
 	PerUserAmount   int        `json:"inline_faucet_peruseramount"`
 	From            *tb.User   `json:"inline_faucet_from"`
 	To              []*tb.User `json:"inline_faucet_to"`
-	Memo            string
-	ID              string `json:"inline_faucet_id"`
-	Active          bool   `json:"inline_faucet_active"`
-	NTotal          int    `json:"inline_faucet_ntotal"`
-	NTaken          int    `json:"inline_faucet_ntaken"`
+	Memo            string     `json:"inline_faucet_memo"`
+	ID              string     `json:"inline_faucet_id"`
+	Active          bool       `json:"inline_faucet_active"`
+	NTotal          int        `json:"inline_faucet_ntotal"`
+	NTaken          int        `json:"inline_faucet_ntaken"`
+	AcceptButton    *tb.Btn    `json:"inline_faucet_acceptbutton"`
 }
 
 func NewInlineFaucet(m string) *InlineFaucet {
@@ -64,7 +65,7 @@ func (bot *TipBot) getInlineFaucet(c *tb.Callback) (*InlineFaucet, error) {
 	inlineFaucet.ID = c.Data
 	err := bot.bunt.Get(inlineFaucet)
 	if err != nil {
-		return nil, fmt.Errorf("could not get inline faucet")
+		return nil, fmt.Errorf("could not get inline faucet: %s", err)
 	}
 	return inlineFaucet, nil
 
@@ -165,6 +166,8 @@ func (bot TipBot) handleInlineFaucetQuery(q *tb.Query) {
 		inlineFaucet.NTaken = 0
 
 		inlineFaucet.Memo = memo
+		inlineFaucet.AcceptButton = &btnAcceptInlineFaucet
+
 		inlineFaucet.Active = true
 		runtime.IgnoreError(bot.bunt.Set(inlineFaucet))
 	}
@@ -257,9 +260,10 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 	// btnAcceptInlineFaucet = inlineFaucetMenu.Data("✅ Receive asdasd", "confirm_faucet_inline_2")
 	// btnAcceptInlineFaucet.Data = inlineFaucet.ID
 	// btnCancelInlineFaucet.Data = inlineFaucet.ID
+	btnAcceptInlineFaucet = *inlineFaucet.AcceptButton
+	inlineFaucetMenu.Inline(inlineFaucetMenu.Row(btnAcceptInlineFaucet, btnCancelInlineFaucet))
 	// bot.telegram.Handle(&btnAcceptInlineFaucet, bot.accpetInlineFaucetHandler)
 	// bot.telegram.Handle(&btnCancelInlineFaucet, bot.cancelInlineFaucetHandler)
-	inlineFaucetMenu.Inline(inlineFaucetMenu.Row(btnAcceptInlineFaucet, btnCancelInlineFaucet))
 
 	log.Infoln(inlineFaucet.Message)
 	bot.tryEditMessage(c.Message, inlineFaucet.Message, inlineFaucetMenu)

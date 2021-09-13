@@ -161,7 +161,7 @@ func tipTooltipInitializedHandler(user *tb.User, bot TipBot) {
 		err := tx.Ascend(storage.MessageOrderedByReplyToFrom, func(key, value string) bool {
 			replyToUserId := gjson.Get(value, storage.MessageOrderedByReplyToFrom)
 			if replyToUserId.String() == strconv.Itoa(user.ID) {
-				log.Infoln("loading persisted tip tool tip messages")
+				log.Debugln("loading persistant tip tool tip messages")
 				ttt := &TipTooltip{}
 				err := json.Unmarshal([]byte(value), ttt)
 				if err != nil {

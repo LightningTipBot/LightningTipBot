@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	inlineSendMessage              = "Press ✅ to receive payment.\n\n💸 Amount: %d sat"
+	inlineSendMessage              = "Press ✅ to receive payment from %s.\n\n💸 Amount: %d sat"
 	inlineSendAppendMemo           = "\n✉️ %s"
 	inlineSendUpdateMessageAccept  = "💸 %d sat sent from %s to %s."
 	inlineSendCreateWalletMessage  = "Chat with %s 👈 to manage your wallet."
@@ -115,7 +115,7 @@ func (bot TipBot) handleInlineSendQuery(q *tb.Query) {
 	results := make(tb.Results, len(urls)) // []tb.Result
 	for i, url := range urls {
 
-		inlineMessage := fmt.Sprintf(inlineSendMessage, amount)
+		inlineMessage := fmt.Sprintf(inlineSendMessage, fromUserStr, amount)
 
 		if len(memo) > 0 {
 			inlineMessage = inlineMessage + fmt.Sprintf(inlineSendAppendMemo, memo)
