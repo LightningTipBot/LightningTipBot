@@ -89,10 +89,17 @@ func (bot *TipBot) getInlineReceive(c *tb.Callback) (*InlineReceive, error) {
 	err := bot.bunt.Get(inlineReceive)
 	// to avoid race conditions, we block the call if there is
 	// already an active transaction by loop until InTransaction is false
+	ticker := time.NewTicker(time.Second * 10)
+
 	for inlineReceive.InTransaction {
-		log.Infoln("in transaction")
-		time.Sleep(time.Duration(500) * time.Millisecond)
-		err = bot.bunt.Get(inlineReceive)
+		select {
+		case <-ticker.C:
+			return inlineReceive, fmt.Errorf("inline send timeout")
+		default:
+			log.Infoln("in transaction")
+			time.Sleep(time.Duration(500) * time.Millisecond)
+			err = bot.bunt.Get(inlineReceive)
+		}
 	}
 	if err != nil {
 		return nil, fmt.Errorf("could not get inline receive message")
@@ -173,11 +180,12 @@ func (bot TipBot) handleInlineReceiveQuery(q *tb.Query) {
 func (bot *TipBot) acceptInlineReceiveHandler(c *tb.Callback) {
 	inlineReceive, err := bot.getInlineReceive(c)
 	// immediatelly set intransaction to block duplicate calls
-	err = bot.LockReceive(inlineReceive)
 	if err != nil {
 		log.Errorf("[getInlineReceive] %s", err)
 		return
 	}
+	err = bot.LockReceive(inlineReceive)
+
 	if err != nil {
 		log.Errorf("[acceptInlineReceiveHandler] %s", err)
 		bot.ReleaseReceive(inlineReceive)

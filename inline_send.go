@@ -92,10 +92,17 @@ func (bot *TipBot) getInlineSend(c *tb.Callback) (*InlineSend, error) {
 
 	// to avoid race conditions, we block the call if there is
 	// already an active transaction by loop until InTransaction is false
+	ticker := time.NewTicker(time.Second * 10)
+
 	for inlineSend.InTransaction {
-		log.Infoln("in transaction")
-		time.Sleep(time.Duration(500) * time.Millisecond)
-		err = bot.bunt.Get(inlineSend)
+		select {
+		case <-ticker.C:
+			return inlineSend, fmt.Errorf("inline send timeout")
+		default:
+			log.Infoln("in transaction")
+			time.Sleep(time.Duration(500) * time.Millisecond)
+			err = bot.bunt.Get(inlineSend)
+		}
 	}
 	if err != nil {
 		return nil, fmt.Errorf("could not get inline send message")

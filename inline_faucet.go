@@ -101,10 +101,17 @@ func (bot *TipBot) getInlineFaucet(c *tb.Callback) (*InlineFaucet, error) {
 
 	// to avoid race conditions, we block the call if there is
 	// already an active transaction by loop until InTransaction is false
+	ticker := time.NewTicker(time.Second * 10)
+
 	for inlineFaucet.InTransaction {
-		log.Errorln("Faucet in transaction, waiting")
-		time.Sleep(time.Duration(500) * time.Millisecond)
-		err = bot.bunt.Get(inlineFaucet)
+		select {
+		case <-ticker.C:
+			return inlineFaucet, fmt.Errorf("inline send timeout")
+		default:
+			log.Infoln("in transaction")
+			time.Sleep(time.Duration(500) * time.Millisecond)
+			err = bot.bunt.Get(inlineFaucet)
+		}
 	}
 	if err != nil {
 		return nil, fmt.Errorf("could not get inline faucet: %s", err)
