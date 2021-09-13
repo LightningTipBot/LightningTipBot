@@ -266,13 +266,6 @@ func (bot *TipBot) acceptInlineReceiveHandler(c *tb.Callback) {
 		log.Errorln(errmsg)
 		return
 	}
-
-	// edit persistent object and store it
-	inlineReceive.To = to
-	// complete this transaction
-	inlineReceive.InTransaction = false
-	runtime.IgnoreError(bot.bunt.Set(inlineReceive))
-
 }
 
 func (bot *TipBot) cancelInlineReceiveHandler(c *tb.Callback) {

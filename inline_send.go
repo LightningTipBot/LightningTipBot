@@ -213,6 +213,8 @@ func (bot *TipBot) acceptInlineSendHandler(c *tb.Callback) {
 	to := c.Sender
 	from := inlineSend.From
 
+	inlineSend.To = to
+
 	if from.ID == to.ID {
 		bot.trySendMessage(from, sendYourselfMessage)
 		return
@@ -275,13 +277,6 @@ func (bot *TipBot) acceptInlineSendHandler(c *tb.Callback) {
 		log.Errorln(errmsg)
 		return
 	}
-
-	// edit persistent object and store it
-	inlineSend.To = to
-	// complete this transaction
-	inlineSend.InTransaction = false
-	runtime.IgnoreError(bot.bunt.Set(inlineSend))
-
 }
 
 func (bot *TipBot) cancelInlineSendHandler(c *tb.Callback) {
