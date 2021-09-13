@@ -307,8 +307,8 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 	from := inlineFaucet.From
 
 	if from.ID == to.ID {
-	    bot.trySendMessage(from, sendYourselfMessage)
-	 	return
+		bot.trySendMessage(from, sendYourselfMessage)
+		return
 	}
 	// check if to user has already taken from the faucet
 	for _, a := range inlineFaucet.To {
