@@ -306,17 +306,17 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 	to := c.Sender
 	from := inlineFaucet.From
 
-	// if from.ID == to.ID {
-	// 	bot.trySendMessage(from, sendYourselfMessage)
-	// 	return
-	// }
-	// // check if to user has already taken from the faucet
-	// for _, a := range inlineFaucet.To {
-	// 	if a.ID == to.ID {
-	// 		// to user is already in To slice, has taken from facuet
-	// 		return
-	// 	}
-	// }
+	if from.ID == to.ID {
+	    bot.trySendMessage(from, sendYourselfMessage)
+	 	return
+	}
+	// check if to user has already taken from the faucet
+	for _, a := range inlineFaucet.To {
+		if a.ID == to.ID {
+			// to user is already in To slice, has taken from facuet
+			return
+		}
+	}
 
 	if inlineFaucet.RemainingAmount >= inlineFaucet.PerUserAmount {
 		toUserStrMd := GetUserStrMd(to)
