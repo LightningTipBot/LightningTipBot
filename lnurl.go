@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
@@ -84,7 +85,7 @@ func (bot TipBot) lnurlHandler(m *tb.Message) {
 			return
 		}
 
-		SetUserState(user, bot, UserStateLNURLEnterAmount, string(paramsJson))
+		SetUserState(user, bot, lnbits.UserStateLNURLEnterAmount, string(paramsJson))
 
 		bot.tryDeleteMessage(msg)
 		// Let the user enter an amount and return
@@ -100,7 +101,7 @@ func (bot TipBot) lnurlHandler(m *tb.Message) {
 			// bot.trySendMessage(m.Sender, err.Error())
 			return
 		}
-		SetUserState(user, bot, UserStateConfirmLNURLPay, string(paramsJson))
+		SetUserState(user, bot, lnbits.UserStateConfirmLNURLPay, string(paramsJson))
 		bot.tryDeleteMessage(msg)
 		// directly go to confirm
 		bot.lnurlPayHandler(m)
@@ -159,7 +160,7 @@ func (bot TipBot) lnurlEnterAmountHandler(m *tb.Message) {
 		ResetUserState(user, bot)
 		return
 	}
-	if user.StateKey == UserStateLNURLEnterAmount {
+	if user.StateKey == lnbits.UserStateLNURLEnterAmount {
 		a, err := strconv.Atoi(m.Text)
 		if err != nil {
 			log.Errorln(err)
@@ -190,7 +191,7 @@ func (bot TipBot) lnurlEnterAmountHandler(m *tb.Message) {
 			ResetUserState(user, bot)
 			return
 		}
-		SetUserState(user, bot, UserStateConfirmLNURLPay, string(state))
+		SetUserState(user, bot, lnbits.UserStateConfirmLNURLPay, string(state))
 		bot.lnurlPayHandler(m)
 	}
 }
@@ -212,7 +213,7 @@ func (bot TipBot) lnurlPayHandler(c *tb.Message) {
 		bot.tryEditMessage(msg, fmt.Sprintf(lnurlPaymentFailed, "database error."))
 		return
 	}
-	if user.StateKey == UserStateConfirmLNURLPay {
+	if user.StateKey == lnbits.UserStateConfirmLNURLPay {
 		client, err := getHttpClient()
 		if err != nil {
 			log.Errorln(err)

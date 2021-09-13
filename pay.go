@@ -107,7 +107,7 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 
 	log.Printf("[/pay] User: %s, amount: %d sat.", userStr, amount)
 
-	SetUserState(user, bot, UserStateConfirmPayment, paymentRequest)
+	SetUserState(user, bot, lnbits.UserStateConfirmPayment, paymentRequest)
 
 	// // // create inline buttons
 	paymentConfirmationMenu.Inline(paymentConfirmationMenu.Row(btnPay, btnCancelPay))
@@ -144,7 +144,7 @@ func (bot TipBot) payHandler(c *tb.Callback) {
 		log.Printf("[GetUser] User: %d: %s", c.Sender.ID, err.Error())
 		return
 	}
-	if user.StateKey == UserStateConfirmPayment {
+	if user.StateKey == lnbits.UserStateConfirmPayment {
 		invoiceString := user.StateData
 
 		// reset state immediatelly

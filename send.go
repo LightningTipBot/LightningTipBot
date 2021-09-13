@@ -186,7 +186,7 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 		return
 	}
 
-	SetUserState(user, *bot, UserStateConfirmSend, sendData)
+	SetUserState(user, *bot, lnbits.UserStateConfirmSend, sendData)
 
 	sendConfirmationMenu.Inline(sendConfirmationMenu.Row(btnSend, btnCancelSend))
 	confirmText := fmt.Sprintf(confirmSendInvoiceMessage, MarkdownEscape(toUserStrMention), amount)
@@ -237,7 +237,7 @@ func (bot *TipBot) sendHandler(c *tb.Callback) {
 		log.Printf("[GetUser] User: %d: %s", c.Sender.ID, err.Error())
 		return
 	}
-	if user.StateKey != UserStateConfirmSend {
+	if user.StateKey != lnbits.UserStateConfirmSend {
 		log.Errorf("[sendHandler] User StateKey does not match! User: %d: StateKey: %d", c.Sender.ID, user.StateKey)
 		return
 	}
