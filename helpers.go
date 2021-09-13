@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math"
 	"math/rand"
 	"strings"
 	"time"
@@ -31,4 +32,12 @@ func GetMemoFromCommand(command string, fromWord int) string {
 		}
 	}
 	return memo
+}
+
+func MakeProgressbar(current int, total int) string {
+	MAX_BARS := 14
+	progress := math.Round((float64(current) / float64(total)) * float64(MAX_BARS))
+	progressbar := strings.Repeat("🟩", int(progress))
+	progressbar += strings.Repeat("⬜️", MAX_BARS-int(progress))
+	return progressbar
 }
