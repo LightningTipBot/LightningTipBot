@@ -7,11 +7,23 @@ import (
 
 // IsInvoice is used to check if a string matches lnbc invoide pattern.
 // todo -- probably should add regex and validate length
-func IsInvoice(invoice string) bool {
+func IsInvoice(message string) bool {
+	message = strings.ToLower(message)
 	// invoice string must start with lnbc or lightning:lnbc
-	if strings.HasPrefix(invoice, "lnbc") || strings.HasPrefix(invoice, "lightning:lnbc") {
+	if strings.HasPrefix(message, "lnbc") || strings.HasPrefix(message, "lightning:lnbc") {
 		// invoice string must be a single word
-		if !strings.Contains(invoice, " ") {
+		if !strings.Contains(message, " ") {
+			return true
+		}
+	}
+	return false
+}
+
+func IsLnurl(message string) bool {
+	message = strings.ToLower(message)
+	if strings.HasPrefix(message, "lnurl") {
+		// string must be a single word
+		if !strings.Contains(message, " ") {
 			return true
 		}
 	}

@@ -34,6 +34,11 @@ func (bot TipBot) anyTextHandler(m *tb.Message) {
 		bot.confirmPaymentHandler(m)
 		return
 	}
+	if lightning.IsLnurl(anyText) {
+		m.Text = "/lnurl " + anyText
+		bot.lnurlHandler(m)
+		return
+	}
 
 	// could be a LNURL
 	// var lnurlregex = regexp.MustCompile(`.*?((lnurl)([0-9]{1,}[a-z0-9]+){1})`)

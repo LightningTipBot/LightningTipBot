@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	inlineFaucetMessage                     = "Press ✅ to collect from this faucet.\n\n🏅 Remaining balance: %d/%d sat (given to %d users)"
+	inlineFaucetMessage                     = "Press ✅ to collect from this faucet.\n\n🏅 Remaining: %d/%d sat (given to %d users)"
 	inlineFaucetEndedMessage                = "🏅 Faucet empty 🏅\n\n💸 %d sat given to %d users."
 	inlineFaucetAppendMemo                  = "\n✉️ %s"
 	inlineFaucetUpdateMessageAccept         = "💸 %d sat sent from %s to %s."

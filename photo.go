@@ -14,12 +14,12 @@ import (
 )
 
 var (
-	photoQrNotRecognizedMessage   = "🚫 Could not regocognize a Lightning invoice. Try to center the QR code, crop the photo, or zoom in."
-	photoInvoiceRecognizedMessage = "✅ Invoice:\n`%s`"
+	photoQrNotRecognizedMessage = "🚫 Could not regocognize a Lightning invoice. Try to center the QR code, crop the photo, or zoom in."
+	photoQrRecognizedMessage    = "✅ QR code:\n`%s`"
 )
 
 // TryRecognizeInvoiceFromQrCode will try to read an invoice string from a qr code and invoke the payment handler.
-func TryRecognizeInvoiceFromQrCode(img image.Image) (*gozxing.Result, error) {
+func TryRecognizeQrCode(img image.Image) (*gozxing.Result, error) {
 	// check for qr code
 	bmp, _ := gozxing.NewBinaryBitmapFromImage(img)
 	// decode image
@@ -29,7 +29,7 @@ func TryRecognizeInvoiceFromQrCode(img image.Image) (*gozxing.Result, error) {
 		return nil, err
 	}
 	payload := strings.ToLower(result.String())
-	if lightning.IsInvoice(payload) {
+	if lightning.IsInvoice(payload) || lightning.IsLnurl(payload) {
 		// create payment command payload
 		// invoke payment confirmation handler
 		return result, nil
@@ -58,16 +58,22 @@ func (bot TipBot) privatePhotoHandler(m *tb.Message) {
 		log.Errorf("image.Decode error: %v\n", err)
 		return
 	}
-	data, err := TryRecognizeInvoiceFromQrCode(img)
+	data, err := TryRecognizeQrCode(img)
 	if err != nil {
 		log.Errorf("tryRecognizeQrCodes error: %v\n", err)
 		bot.trySendMessage(m.Sender, photoQrNotRecognizedMessage)
 		return
 	}
 
-	bot.trySendMessage(m.Sender, fmt.Sprintf(photoInvoiceRecognizedMessage, data.String()))
-
+	bot.trySendMessage(m.Sender, fmt.Sprintf(photoQrRecognizedMessage, data.String()))
 	// invoke payment handler
-	m.Text = fmt.Sprintf("/pay %s", data.String())
-	bot.confirmPaymentHandler(m)
+	if lightning.IsInvoice(data.String()) {
+		m.Text = fmt.Sprintf("/pay %s", data.String())
+		bot.confirmPaymentHandler(m)
+		return
+	} else if lightning.IsLnurl(data.String()) {
+		m.Text = fmt.Sprintf("/lnurl %s", data.String())
+		bot.lnurlHandler(m)
+		return
+	}
 }

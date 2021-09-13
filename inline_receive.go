@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	inlineReceiveMessage             = "Press ✅ to pay to %s.\n\n💸 Amount: %d sat"
+	inlineReceiveMessage             = "Press 💸 to pay to %s.\n\n💸 Amount: %d sat"
 	inlineReceiveAppendMemo          = "\n✉️ %s"
 	inlineReceiveUpdateMessageAccept = "💸 %d sat sent from %s to %s."
 	inlineReceiveCreateWalletMessage = "Chat with %s 👈 to manage your wallet."
@@ -25,7 +25,7 @@ var (
 	inlineResultReceiveDescription = "👉 Click to request a payment of %d sat."
 	inlineReceiveMenu              = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	btnCancelInlineReceive         = inlineReceiveMenu.Data("🚫 Cancel", "cancel_receive_inline")
-	btnAcceptInlineReceive         = inlineReceiveMenu.Data("✅ Pay", "confirm_receive_inline")
+	btnAcceptInlineReceive         = inlineReceiveMenu.Data("💸 Pay", "confirm_receive_inline")
 )
 
 type InlineReceive struct {
