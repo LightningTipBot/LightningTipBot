@@ -157,9 +157,6 @@ func (bot TipBot) faucetHandler(m *tb.Message) {
 
 	inlineFaucet.ID = fmt.Sprintf("inl-faucet-%d-%d-%s", m.Sender.ID, inlineFaucet.Amount, RandStringRunes(5))
 
-	// inlineFaucetMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
-	// btnCancelInlineFaucet = inlineFaucetMenu.Data("🚫 Cancel", "cancel_faucet_inline")
-	// btnAcceptInlineFaucet = inlineFaucetMenu.Data("✅ Receive", "confirm_faucet_inline")
 	btnAcceptInlineFaucet.Data = inlineFaucet.ID
 	btnCancelInlineFaucet.Data = inlineFaucet.ID
 	inlineFaucetMenu.Inline(inlineFaucetMenu.Row(btnAcceptInlineFaucet, btnCancelInlineFaucet))
@@ -169,7 +166,6 @@ func (bot TipBot) faucetHandler(m *tb.Message) {
 	inlineFaucet.From = m.Sender
 	inlineFaucet.Memo = memo
 	inlineFaucet.RemainingAmount = inlineFaucet.Amount
-	// inlineFaucet.Active = true
 	runtime.IgnoreError(bot.bunt.Set(inlineFaucet))
 
 }
@@ -287,17 +283,19 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 	to := c.Sender
 	from := inlineFaucet.From
 
-	// if from.ID == to.ID {
-	// 	bot.trySendMessage(from, sendYourselfMessage)
-	// 	return
-	// }
+	if from.ID == to.ID {
+		bot.trySendMessage(from, sendYourselfMessage)
+		bot.ReleaseFaucet(inlineFaucet)
+		return
+	}
 	// check if to user has already taken from the faucet
-	// for _, a := range inlineFaucet.To {
-	// 	if a.ID == to.ID {
-	// 		// to user is already in To slice, has taken from facuet
-	// 		return
-	// 	}
-	// }
+	for _, a := range inlineFaucet.To {
+		if a.ID == to.ID {
+			bot.ReleaseFaucet(inlineFaucet)
+			// to user is already in To slice, has taken from facuet
+			return
+		}
+	}
 
 	if inlineFaucet.RemainingAmount >= inlineFaucet.PerUserAmount {
 		toUserStrMd := GetUserStrMd(to)

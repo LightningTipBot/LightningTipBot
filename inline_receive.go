@@ -198,10 +198,10 @@ func (bot *TipBot) acceptInlineReceiveHandler(c *tb.Callback) {
 	toUserStr := GetUserStr(to)
 	fromUserStr := GetUserStr(from)
 
-	// if from.ID == to.ID {
-	// 	bot.trySendMessage(from, sendYourselfMessage)
-	// 	return
-	// }
+	if from.ID == to.ID {
+		bot.trySendMessage(from, sendYourselfMessage)
+		return
+	}
 
 	// balance check of the user
 	balance, err := bot.GetUserBalance(to)
