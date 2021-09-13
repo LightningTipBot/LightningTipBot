@@ -94,15 +94,18 @@ func (bot TipBot) anyQueryHandler(q *tb.Query) {
 	}
 
 	// create the inline send result
-	if strings.HasPrefix(q.Text, "send") || strings.HasPrefix(q.Text, "/send") || strings.HasPrefix(q.Text, "giveaway") || strings.HasPrefix(q.Text, "/giveaway") || strings.HasPrefix(q.Text, "pay") {
+	if strings.HasPrefix(q.Text, "/") {
+		q.Text = strings.TrimPrefix(q.Text, "/")
+	}
+	if strings.HasPrefix(q.Text, "send") || strings.HasPrefix(q.Text, "pay") {
 		bot.handleInlineSendQuery(q)
 	}
 
-	if strings.HasPrefix(q.Text, "faucet") || strings.HasPrefix(q.Text, "/faucet") {
+	if strings.HasPrefix(q.Text, "faucet") || strings.HasPrefix(q.Text, "giveaway") {
 		bot.handleInlineFaucetQuery(q)
 	}
 
-	if strings.HasPrefix(q.Text, "receive") || strings.HasPrefix(q.Text, "/receive") || strings.HasPrefix(q.Text, "get") || strings.HasPrefix(q.Text, "payme") || strings.HasPrefix(q.Text, "request") {
+	if strings.HasPrefix(q.Text, "receive") || strings.HasPrefix(q.Text, "get") || strings.HasPrefix(q.Text, "payme") || strings.HasPrefix(q.Text, "request") {
 		bot.handleInlineReceiveQuery(q)
 	}
 }
