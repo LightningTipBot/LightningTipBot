@@ -381,6 +381,9 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 	if inlineFaucet.RemainingAmount < inlineFaucet.PerUserAmount {
 		// faucet is depleted
 		inlineFaucet.Message = fmt.Sprintf(inlineFaucetEndedMessage, inlineFaucet.Amount, inlineFaucet.NTaken)
+		if inlineFaucet.UserNeedsWallet {
+			inlineFaucet.Message += "\n\n" + fmt.Sprintf(inlineFaucetCreateWalletMessage, GetUserStrMd(bot.telegram.Me))
+		}
 		bot.tryEditMessage(c.Message, inlineFaucet.Message)
 		inlineFaucet.Active = false
 	}
