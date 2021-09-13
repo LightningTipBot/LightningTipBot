@@ -20,11 +20,11 @@ func RandStringRunes(n int) string {
 	return string(b)
 }
 
-func GetMemoFromCommand(command string, from_word int) string {
+func GetMemoFromCommand(command string, fromWord int) string {
 	// check for memo in command
 	memo := ""
-	if len(strings.Split(command, " ")) > from_word {
-		memo = strings.SplitN(command, " ", from_word+1)[from_word]
+	if len(strings.Split(command, " ")) > fromWord {
+		memo = strings.SplitN(command, " ", fromWord+1)[fromWord]
 		memoMaxLen := 159
 		if len(memo) > memoMaxLen {
 			memo = memo[:memoMaxLen]
