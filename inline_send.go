@@ -213,10 +213,10 @@ func (bot *TipBot) acceptInlineSendHandler(c *tb.Callback) {
 	to := c.Sender
 	from := inlineSend.From
 
-	// if from.ID == to.ID {
-	// 	bot.trySendMessage(from, sendYourselfMessage)
-	// 	return
-	// }
+	if from.ID == to.ID {
+		bot.trySendMessage(from, sendYourselfMessage)
+		return
+	}
 
 	toUserStrMd := GetUserStrMd(to)
 	fromUserStrMd := GetUserStrMd(from)
