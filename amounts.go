@@ -21,7 +21,7 @@ func decodeAmountFromCommand(input string) (amount int, err error) {
 		return 0, errors.New(errmsg)
 	}
 	amount, err = getAmount(input)
-	return amount, nil
+	return amount, err
 }
 
 func getAmount(input string) (amount int, err error) {

@@ -56,7 +56,7 @@ func (bot TipBot) invoiceHandler(m *tb.Message) {
 	// check for memo in command
 	memo := "Powered by @LightningTipBot"
 	if len(strings.Split(m.Text, " ")) > 2 {
-		memo = strings.SplitN(m.Text, " ", 3)[2]
+		memo = GetMemoFromCommand(m.Text, 2)
 		tag := " (@LightningTipBot)"
 		memoMaxLen := 159 - len(tag)
 		if len(memo) > memoMaxLen {

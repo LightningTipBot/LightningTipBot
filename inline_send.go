@@ -274,6 +274,7 @@ func (bot *TipBot) cancelInlineSendHandler(c *tb.Callback) {
 		bot.tryEditMessage(c.Message, sendCancelledMessage, &tb.ReplyMarkup{})
 		// set the inlineSend inactive
 		inlineSend.Active = false
+		inlineSend.InTransaction = false
 		runtime.IgnoreError(bot.bunt.Set(inlineSend))
 	}
 	return

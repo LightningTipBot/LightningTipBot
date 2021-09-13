@@ -111,14 +111,7 @@ func (bot *TipBot) confirmSendHandler(m *tb.Message) {
 
 	// SEND COMMAND IS VALID
 	// check for memo in command
-	sendMemo := ""
-	if len(strings.Split(m.Text, " ")) > 3 {
-		sendMemo = strings.SplitN(m.Text, " ", 4)[3]
-		if len(sendMemo) > 200 {
-			sendMemo = sendMemo[:200]
-			sendMemo = sendMemo + "..."
-		}
-	}
+	sendMemo := GetMemoFromCommand(m.Text, 3)
 
 	if len(m.Entities) < 2 {
 		arg, err := getArgumentFromCommand(m.Text, 2)
