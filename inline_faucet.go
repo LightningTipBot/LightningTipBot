@@ -272,15 +272,12 @@ func (bot TipBot) handleInlineFaucetQuery(q *tb.Query) {
 		inlineFaucet.From = &q.From
 		inlineFaucet.RemainingAmount = inlineFaucet.Amount
 		inlineFaucet.Memo = memo
-
-		// inlineFaucet.Active = true
 		runtime.IgnoreError(bot.bunt.Set(inlineFaucet))
 	}
 
 	err = bot.telegram.Answer(q, &tb.QueryResponse{
 		Results:   results,
-		CacheTime: 1, // 60 == 1 minute, todo: make higher than 1 s in production
-
+		CacheTime: 1,
 	})
 
 	if err != nil {
@@ -303,18 +300,19 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 		log.Errorf("[accpetInlineFaucetHandler] inline send not active anymore")
 		return
 	}
+	// release faucet no matter what
+	defer bot.ReleaseFaucet(inlineFaucet)
+
 	to := c.Sender
 	from := inlineFaucet.From
 
 	if from.ID == to.ID {
 		bot.trySendMessage(from, sendYourselfMessage)
-		bot.ReleaseFaucet(inlineFaucet)
 		return
 	}
 	// check if to user has already taken from the faucet
 	for _, a := range inlineFaucet.To {
 		if a.ID == to.ID {
-			bot.ReleaseFaucet(inlineFaucet)
 			// to user is already in To slice, has taken from facuet
 			return
 		}
@@ -333,7 +331,6 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 			if err != nil {
 				errmsg := fmt.Errorf("[sendInline] Error: Could not create wallet for %s", toUserStr)
 				log.Errorln(errmsg)
-				bot.ReleaseFaucet(inlineFaucet)
 				return
 			}
 		}
@@ -356,7 +353,6 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 			}
 			errMsg := fmt.Sprintf("[sendInline] Transaction failed: %s", err)
 			log.Errorln(errMsg)
-			bot.ReleaseFaucet(inlineFaucet)
 			return
 		}
 
@@ -371,7 +367,6 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 		if err != nil {
 			errmsg := fmt.Errorf("[sendInline] Error: Send message to %s: %s", toUserStr, err)
 			log.Errorln(errmsg)
-			bot.ReleaseFaucet(inlineFaucet)
 			return
 		}
 
@@ -403,9 +398,7 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 		bot.tryEditMessage(c.Message, inlineFaucet.Message)
 		inlineFaucet.Active = false
 	}
-	// edit persistent object and store it
-	inlineFaucet.InTransaction = false
-	runtime.IgnoreError(bot.bunt.Set(inlineFaucet))
+
 }
 
 func (bot *TipBot) cancelInlineFaucetHandler(c *tb.Callback) {
