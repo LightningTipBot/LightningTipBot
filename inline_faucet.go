@@ -190,7 +190,7 @@ func (bot TipBot) faucetHandler(m *tb.Message) {
 	btnCancelInlineFaucet.Data = inlineFaucet.ID
 	inlineFaucetMenu.Inline(inlineFaucetMenu.Row(btnAcceptInlineFaucet, btnCancelInlineFaucet))
 	bot.trySendMessage(m.Chat, inlineMessage, inlineFaucetMenu)
-
+	log.Infof("[faucet] %s created faucet %s: %d sat (%d per user)", fromUserStr, inlineFaucet.ID, inlineFaucet.Amount, inlineFaucet.PerUserAmount)
 	inlineFaucet.Message = inlineMessage
 	inlineFaucet.From = m.Sender
 	inlineFaucet.Memo = memo
@@ -286,7 +286,7 @@ func (bot TipBot) handleInlineFaucetQuery(q *tb.Query) {
 		Results:   results,
 		CacheTime: 1,
 	})
-
+	log.Infof("[faucet] %s created inline faucet %s: %d sat (%d per user)", fromUserStr, inlineFaucet.ID, inlineFaucet.Amount, inlineFaucet.PerUserAmount)
 	if err != nil {
 		log.Errorln(err)
 	}
@@ -364,7 +364,7 @@ func (bot *TipBot) accpetInlineFaucetHandler(c *tb.Callback) {
 			return
 		}
 
-		log.Infof("[faucet] %d sat from %s to %s (faucet %s)", inlineFaucet.PerUserAmount, fromUserStr, toUserStr, inlineFaucet.ID)
+		log.Infof("[faucet] faucet %s: %d sat from %s to %s ", inlineFaucet.ID, inlineFaucet.PerUserAmount, fromUserStr, toUserStr)
 		inlineFaucet.NTaken += 1
 		inlineFaucet.To = append(inlineFaucet.To, to)
 		inlineFaucet.RemainingAmount = inlineFaucet.RemainingAmount - inlineFaucet.PerUserAmount
