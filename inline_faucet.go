@@ -33,7 +33,7 @@ const (
 var (
 	inlineFaucetMenu      = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	btnCancelInlineFaucet = inlineFaucetMenu.Data("🚫 Cancel", "cancel_faucet_inline")
-	btnAcceptInlineFaucet = inlineFaucetMenu.Data("✅ Receive", "confirm_faucet_inline")
+	btnAcceptInlineFaucet = inlineFaucetMenu.Data("✅ Collect", "confirm_faucet_inline")
 )
 
 type InlineFaucet struct {
