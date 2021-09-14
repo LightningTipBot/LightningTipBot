@@ -212,15 +212,15 @@ func (bot *TipBot) acceptInlineReceiveHandler(c *tb.Callback) {
 	}
 
 	// balance check of the user
-	balance, err := bot.GetUserBalance(to)
+	balance, err := bot.GetUserBalance(from)
 	if err != nil {
-		errmsg := fmt.Sprintf("could not get balance of user %s", toUserStrMd)
+		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
 		log.Errorln(errmsg)
 		return
 	}
 	// check if fromUser has balance
 	if balance < inlineReceive.Amount {
-		log.Errorln("[acceptInlineReceiveHandler] balance of user %s too low", toUserStrMd)
+		log.Errorln("[acceptInlineReceiveHandler] balance of user %s too low", fromUserStr)
 		bot.trySendMessage(from, fmt.Sprintf(inlineSendBalanceLowMessage, balance))
 		return
 	}
