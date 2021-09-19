@@ -26,8 +26,8 @@ type Interceptor struct {
 	AfterCallback  []intercept.CallbackFunc
 }
 
-// forceUserQueryInterceptor Loading the telegram user with query intercept
-func (bot TipBot) forceUserQueryInterceptor(ctx context.Context, c *tb.Query) (context.Context, error) {
+// requireUserQueryInterceptor Loading the telegram user with query intercept
+func (bot TipBot) requireUserQueryInterceptor(ctx context.Context, c *tb.Query) (context.Context, error) {
 	user, err := GetUser(&c.From, bot)
 	if err != nil {
 		return ctx, err
@@ -56,17 +56,17 @@ func (bot TipBot) loadReplyToInterceptor(ctx context.Context, m *tb.Message) (co
 
 // loadUserInterceptor Loading the telegram into lnbits user. will create user without wallet, if user is not found.
 func (bot TipBot) loadUserInterceptor(ctx context.Context, m *tb.Message) (context.Context, error) {
-	ctx, _ = bot.forceUserInterceptor(ctx, m)
+	ctx, _ = bot.requireUserInterceptor(ctx, m)
 	return ctx, nil
 }
 
-// forceUserInterceptor Loading the telegram into lnbits user. will not invoke the handler if user is not found.
-func (bot TipBot) forceUserInterceptor(ctx context.Context, m *tb.Message) (context.Context, error) {
+// requireUserInterceptor Loading the telegram into lnbits user. will not invoke the handler if user is not found.
+func (bot TipBot) requireUserInterceptor(ctx context.Context, m *tb.Message) (context.Context, error) {
 	user, err := GetUser(m.Sender, bot)
 	return context.WithValue(ctx, "user", user), err
 }
 
-func (bot TipBot) forcePrivateChatInterceptor(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot TipBot) requirePrivateChatInterceptor(ctx context.Context, m *tb.Message) (context.Context, error) {
 	if m.Chat.Type != tb.ChatPrivate {
 		return nil, fmt.Errorf("no private chat")
 	}

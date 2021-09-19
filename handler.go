@@ -156,7 +156,7 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				BeforeMessage: []intercept.MessageFunc{
-					bot.forcePrivateChatInterceptor, bot.loadUserInterceptor}},
+					bot.requirePrivateChatInterceptor, bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{tb.OnText},
@@ -164,14 +164,14 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				BeforeMessage: []intercept.MessageFunc{
-					bot.forcePrivateChatInterceptor, bot.loadUserInterceptor}},
+					bot.requirePrivateChatInterceptor, bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{tb.OnQuery},
 			Handler:   bot.anyQueryHandler,
 			Interceptor: &Interceptor{
 				Type:        QueryInterceptor,
-				BeforeQuery: []intercept.QueryFunc{bot.forceUserQueryInterceptor}},
+				BeforeQuery: []intercept.QueryFunc{bot.requireUserQueryInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{tb.OnChosenInlineResult},
