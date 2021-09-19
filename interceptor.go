@@ -58,9 +58,9 @@ func (bot TipBot) loadReplyToInterceptor(ctx context.Context, i interface{}) (co
 				return context.WithValue(ctx, "reply_to_user", user), nil
 			}
 		}
-		return context.Background(), fmt.Errorf("reply to user not found")
+		return ctx, nil
 	}
-	return nil, invalidTypeError
+	return ctx, invalidTypeError
 }
 
 func (bot TipBot) requirePrivateChatInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
