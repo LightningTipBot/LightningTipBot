@@ -118,7 +118,7 @@ func (bot TipBot) makeAdvancedHelpMessage(m *tb.Message) string {
 
 	}
 	// this is so stupid:
-	return fmt.Sprintf(advancedMessage, dynamicHelpMessage, GetUserStrMd(bot.telegram.Me), GetUserStrMd(bot.telegram.Me), GetUserStrMd(bot.telegram.Me))
+	return fmt.Sprintf(advancedMessage, dynamicHelpMessage, GetUserStr(bot.telegram.Me), GetUserStr(bot.telegram.Me), GetUserStr(bot.telegram.Me))
 }
 
 func (bot TipBot) advancedHelpHandler(ctx context.Context, m *tb.Message) {
