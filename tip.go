@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
