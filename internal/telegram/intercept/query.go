@@ -7,22 +7,21 @@ import (
 )
 
 type QueryFuncHandler func(ctx context.Context, message *tb.Query)
-type QueryFunc func(ctx context.Context, message *tb.Query) (context.Context, error)
 
 type handlerQueryInterceptor struct {
 	handler QueryFuncHandler
 	before  QueryChain
 	after   QueryChain
 }
-type QueryChain []QueryFunc
+type QueryChain []Func
 type QueryInterceptOption func(*handlerQueryInterceptor)
 
-func WithBeforeQuery(chain ...QueryFunc) QueryInterceptOption {
+func WithBeforeQuery(chain ...Func) QueryInterceptOption {
 	return func(a *handlerQueryInterceptor) {
 		a.before = chain
 	}
 }
-func WithAfterQuery(chain ...QueryFunc) QueryInterceptOption {
+func WithAfterQuery(chain ...Func) QueryInterceptOption {
 	return func(a *handlerQueryInterceptor) {
 		a.after = chain
 	}

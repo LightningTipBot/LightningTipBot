@@ -71,91 +71,91 @@ func (bot TipBot) getHandler() []Handler {
 			Handler:   bot.faucetHandler,
 			Interceptor: &Interceptor{
 				Type:          MessageInterceptor,
-				BeforeMessage: []intercept.MessageFunc{bot.loadUserInterceptor}},
+				BeforeMessage: []intercept.Func{bot.requireUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/tip"},
 			Handler:   bot.tipHandler,
 			Interceptor: &Interceptor{
 				Type:          MessageInterceptor,
-				BeforeMessage: []intercept.MessageFunc{bot.loadUserInterceptor, bot.loadReplyToInterceptor}},
+				BeforeMessage: []intercept.Func{bot.loadUserInterceptor, bot.loadReplyToInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/pay"},
 			Handler:   bot.confirmPaymentHandler,
 			Interceptor: &Interceptor{
 				Type:          MessageInterceptor,
-				BeforeMessage: []intercept.MessageFunc{bot.loadUserInterceptor}},
+				BeforeMessage: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/invoice"},
 			Handler:   bot.invoiceHandler,
 			Interceptor: &Interceptor{
 				Type:          MessageInterceptor,
-				BeforeMessage: []intercept.MessageFunc{bot.loadUserInterceptor}},
+				BeforeMessage: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/balance"},
 			Handler:   bot.balanceHandler,
 			Interceptor: &Interceptor{
 				Type:          MessageInterceptor,
-				BeforeMessage: []intercept.MessageFunc{bot.loadUserInterceptor}},
+				BeforeMessage: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/send"},
 			Handler:   bot.confirmSendHandler,
 			Interceptor: &Interceptor{
 				Type:          MessageInterceptor,
-				BeforeMessage: []intercept.MessageFunc{bot.loadUserInterceptor}},
+				BeforeMessage: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/help"},
 			Handler:   bot.helpHandler,
 			Interceptor: &Interceptor{
 				Type:          MessageInterceptor,
-				BeforeMessage: []intercept.MessageFunc{bot.loadUserInterceptor}},
+				BeforeMessage: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/basics"},
 			Handler:   bot.basicsHandler,
 			Interceptor: &Interceptor{
 				Type:          MessageInterceptor,
-				BeforeMessage: []intercept.MessageFunc{bot.loadUserInterceptor}},
+				BeforeMessage: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/donate"},
 			Handler:   bot.donationHandler,
 			Interceptor: &Interceptor{
 				Type:          MessageInterceptor,
-				BeforeMessage: []intercept.MessageFunc{bot.loadUserInterceptor}},
+				BeforeMessage: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/advanced"},
 			Handler:   bot.advancedHelpHandler,
 			Interceptor: &Interceptor{
 				Type:          MessageInterceptor,
-				BeforeMessage: []intercept.MessageFunc{bot.loadUserInterceptor}},
+				BeforeMessage: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/link"},
 			Handler:   bot.lndhubHandler,
 			Interceptor: &Interceptor{
 				Type:          MessageInterceptor,
-				BeforeMessage: []intercept.MessageFunc{bot.loadUserInterceptor}},
+				BeforeMessage: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/lnurl"},
 			Handler:   bot.lnurlHandler,
 			Interceptor: &Interceptor{
 				Type:          MessageInterceptor,
-				BeforeMessage: []intercept.MessageFunc{bot.loadUserInterceptor}},
+				BeforeMessage: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{tb.OnPhoto},
 			Handler:   bot.privatePhotoHandler,
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
-				BeforeMessage: []intercept.MessageFunc{
+				BeforeMessage: []intercept.Func{
 					bot.requirePrivateChatInterceptor, bot.loadUserInterceptor}},
 		},
 		{
@@ -163,7 +163,7 @@ func (bot TipBot) getHandler() []Handler {
 			Handler:   bot.anyTextHandler,
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
-				BeforeMessage: []intercept.MessageFunc{
+				BeforeMessage: []intercept.Func{
 					bot.requirePrivateChatInterceptor, bot.loadUserInterceptor}},
 		},
 		{
@@ -171,7 +171,7 @@ func (bot TipBot) getHandler() []Handler {
 			Handler:   bot.anyQueryHandler,
 			Interceptor: &Interceptor{
 				Type:        QueryInterceptor,
-				BeforeQuery: []intercept.QueryFunc{bot.requireUserQueryInterceptor}},
+				BeforeQuery: []intercept.Func{bot.requireUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{tb.OnChosenInlineResult},
@@ -182,35 +182,35 @@ func (bot TipBot) getHandler() []Handler {
 			Handler:   bot.payHandler,
 			Interceptor: &Interceptor{
 				Type:           CallbackInterceptor,
-				BeforeCallback: []intercept.CallbackFunc{bot.loadUserCallbackInterceptor}},
+				BeforeCallback: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnCancelPay},
 			Handler:   bot.cancelPaymentHandler,
 			Interceptor: &Interceptor{
 				Type:           CallbackInterceptor,
-				BeforeCallback: []intercept.CallbackFunc{bot.loadUserCallbackInterceptor}},
+				BeforeCallback: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnSend},
 			Handler:   bot.sendHandler,
 			Interceptor: &Interceptor{
 				Type:           CallbackInterceptor,
-				BeforeCallback: []intercept.CallbackFunc{bot.loadUserCallbackInterceptor}},
+				BeforeCallback: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnCancelSend},
 			Handler:   bot.cancelSendHandler,
 			Interceptor: &Interceptor{
 				Type:           CallbackInterceptor,
-				BeforeCallback: []intercept.CallbackFunc{bot.loadUserCallbackInterceptor}},
+				BeforeCallback: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnAcceptInlineSend},
 			Handler:   bot.acceptInlineSendHandler,
 			Interceptor: &Interceptor{
 				Type:           CallbackInterceptor,
-				BeforeCallback: []intercept.CallbackFunc{bot.loadUserCallbackInterceptor}},
+				BeforeCallback: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnCancelInlineSend},
@@ -221,7 +221,7 @@ func (bot TipBot) getHandler() []Handler {
 			Handler:   bot.acceptInlineReceiveHandler,
 			Interceptor: &Interceptor{
 				Type:           CallbackInterceptor,
-				BeforeCallback: []intercept.CallbackFunc{bot.loadUserCallbackInterceptor}},
+				BeforeCallback: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnCancelInlineReceive},
@@ -232,7 +232,7 @@ func (bot TipBot) getHandler() []Handler {
 			Handler:   bot.accpetInlineFaucetHandler,
 			Interceptor: &Interceptor{
 				Type:           CallbackInterceptor,
-				BeforeCallback: []intercept.CallbackFunc{bot.loadUserCallbackInterceptor}},
+				BeforeCallback: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnCancelInlineFaucet},

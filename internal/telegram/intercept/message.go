@@ -10,22 +10,21 @@ type MessageInterface interface {
 	a() func(ctx context.Context, message *tb.Message)
 }
 type MessageFuncHandler func(ctx context.Context, message *tb.Message)
-type MessageFunc func(ctx context.Context, message *tb.Message) (context.Context, error)
 
 type handlerMessageInterceptor struct {
 	handler MessageFuncHandler
 	before  MessageChain
 	after   MessageChain
 }
-type MessageChain []MessageFunc
+type MessageChain []Func
 type MessageInterceptOption func(*handlerMessageInterceptor)
 
-func WithBeforeMessage(chain ...MessageFunc) MessageInterceptOption {
+func WithBeforeMessage(chain ...Func) MessageInterceptOption {
 	return func(a *handlerMessageInterceptor) {
 		a.before = chain
 	}
 }
-func WithAfterMessage(chain ...MessageFunc) MessageInterceptOption {
+func WithAfterMessage(chain ...Func) MessageInterceptOption {
 	return func(a *handlerMessageInterceptor) {
 		a.after = chain
 	}

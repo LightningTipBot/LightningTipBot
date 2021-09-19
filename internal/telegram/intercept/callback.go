@@ -7,22 +7,22 @@ import (
 )
 
 type CallbackFuncHandler func(ctx context.Context, message *tb.Callback)
-type CallbackFunc func(ctx context.Context, message *tb.Callback) (context.Context, error)
+type Func func(ctx context.Context, message interface{}) (context.Context, error)
 
 type handlerCallbackInterceptor struct {
 	handler CallbackFuncHandler
 	before  CallbackChain
 	after   CallbackChain
 }
-type CallbackChain []CallbackFunc
+type CallbackChain []Func
 type CallbackInterceptOption func(*handlerCallbackInterceptor)
 
-func WithBeforeCallback(chain ...CallbackFunc) CallbackInterceptOption {
+func WithBeforeCallback(chain ...Func) CallbackInterceptOption {
 	return func(a *handlerCallbackInterceptor) {
 		a.before = chain
 	}
 }
-func WithAfterCallback(chain ...CallbackFunc) CallbackInterceptOption {
+func WithAfterCallback(chain ...Func) CallbackInterceptOption {
 	return func(a *handlerCallbackInterceptor) {
 		a.after = chain
 	}
