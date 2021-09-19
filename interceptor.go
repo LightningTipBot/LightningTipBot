@@ -19,13 +19,9 @@ const (
 var invalidTypeError = fmt.Errorf("invalid type")
 
 type Interceptor struct {
-	Type           InterceptorType
-	BeforeMessage  []intercept.Func
-	AfterMessage   []intercept.Func
-	BeforeQuery    []intercept.Func
-	AfterQuery     []intercept.Func
-	BeforeCallback []intercept.Func
-	AfterCallback  []intercept.Func
+	Type   InterceptorType
+	Before []intercept.Func
+	After  []intercept.Func
 }
 
 func (bot TipBot) requireUserInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
