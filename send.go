@@ -157,7 +157,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, m *tb.Message) {
 
 	toUserDb := &lnbits.User{}
 	tx := bot.database.Where("telegram_username = ?", strings.ToLower(toUserStrWithoutAt)).First(toUserDb)
-	if tx.Error != nil || toUserDb.Wallet == nil || toUserDb.Initialized == false {
+	if tx.Error != nil || toUserDb.Wallet == nil {
 		NewMessage(m, WithDuration(0, bot.telegram))
 		err = fmt.Errorf(sendUserHasNoWalletMessage, MarkdownEscape(toUserStrMention))
 		bot.trySendMessage(m.Sender, err.Error())
