@@ -19,11 +19,11 @@ const (
 	sendUserHasNoWalletMessage = "🚫 User %s hasn't created a wallet yet."
 	sendSentMessage            = "💸 %d sat sent to %s."
 	sendReceivedMessage        = "🏅 %s sent you %d sat."
-	sendErrorMessage           = "🚫 Transaction failed: %s"
+	sendErrorMessage           = "🚫 Send failed."
 	confirmSendInvoiceMessage  = "Do you want to pay to %s?\n\n💸 Amount: %d sat"
 	confirmSendAppendMemo      = "\n✉️ %s"
 	sendCancelledMessage       = "🚫 Send cancelled."
-	errorTryLaterMessage       = "🚫 Internal error. Please try again later.."
+	errorTryLaterMessage       = "🚫 Error. Please try again later."
 	sendHelpText               = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/send <amount> <user> [<memo>]`\n" +
 		"*Example:* `/send 1000 @LightningTipBot I just like the bot ❤️`\n" +
@@ -86,7 +86,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, m *tb.Message) {
 	}
 	if err == nil {
 		if lightning.IsLightningAddress(arg) {
-			// if the second argument is a lightning address, then send to that address
+			// lightning address, send to that address
 			err = bot.sendToLightningAddress(ctx, m, arg, amount)
 			if err != nil {
 				log.Errorln(err.Error())
@@ -95,6 +95,9 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, m *tb.Message) {
 			return
 		}
 	}
+
+	// todo: this error might have been overwritten by the functions above
+	// we should only check for a valid amount here, instead of error and amount
 
 	// ASSUME INTERNAL SEND TO TELEGRAM USER
 	if err != nil || amount < 1 {
@@ -260,7 +263,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, c *tb.Callback) {
 	success, err := t.Send()
 	if !success || err != nil {
 		// NewMessage(m, WithDuration(0, bot.telegram))
-		bot.trySendMessage(c.Sender, fmt.Sprintf(sendErrorMessage, err))
+		bot.trySendMessage(c.Sender, sendErrorMessage)
 		errmsg := fmt.Sprintf("[/send] Error: Transaction failed. %s", err)
 		log.Errorln(errmsg)
 		return
