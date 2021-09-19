@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
@@ -162,9 +163,8 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{tb.OnText},
 			Handler:   bot.anyTextHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
-				BeforeMessage: []intercept.Func{
-					bot.requirePrivateChatInterceptor, bot.loadUserInterceptor}},
+				Type:          MessageInterceptor,
+				BeforeMessage: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{tb.OnQuery},
