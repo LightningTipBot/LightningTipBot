@@ -70,6 +70,9 @@ func (bot TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return
+	}
 
 	// if no amount is in the command, ask for it
 	amount, err := decodeAmountFromCommand(m.Text)
@@ -150,6 +153,10 @@ func (bot TipBot) lnurlReceiveHandler(m *tb.Message) {
 
 func (bot TipBot) lnurlEnterAmountHandler(ctx context.Context, m *tb.Message) {
 	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return
+	}
+
 	if user.StateKey == lnbits.UserStateLNURLEnterAmount {
 		a, err := strconv.Atoi(m.Text)
 		if err != nil {
@@ -197,6 +204,10 @@ func (bot TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
 	msg := bot.trySendMessage(c.Sender, lnurlGettingUserMessage)
 
 	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return
+	}
+
 	if user.StateKey == lnbits.UserStateConfirmLNURLPay {
 		client, err := getHttpClient()
 		if err != nil {

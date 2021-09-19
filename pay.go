@@ -40,6 +40,11 @@ func helpPayInvoiceUsage(errormsg string) string {
 func (bot TipBot) confirmPaymentHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return
+	}
+
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))
@@ -51,7 +56,6 @@ func (bot TipBot) confirmPaymentHandler(ctx context.Context, m *tb.Message) {
 		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(""))
 		return
 	}
-	user := LoadUser(ctx)
 	userStr := GetUserStr(m.Sender)
 	paymentRequest, err := getArgumentFromCommand(m.Text, 1)
 	if err != nil {
@@ -117,6 +121,7 @@ func (bot TipBot) confirmPaymentHandler(ctx context.Context, m *tb.Message) {
 func (bot TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 	// reset state immediately
 	user := LoadUser(ctx)
+
 	ResetUserState(user, bot)
 
 	bot.tryDeleteMessage(c.Message)
@@ -132,6 +137,10 @@ func (bot TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 func (bot TipBot) payHandler(ctx context.Context, c *tb.Callback) {
 	bot.tryEditMessage(c.Message, c.Message.Text, &tb.ReplyMarkup{})
 	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return
+	}
+
 	if user.StateKey == lnbits.UserStateConfirmPayment {
 		invoiceString := user.StateData
 

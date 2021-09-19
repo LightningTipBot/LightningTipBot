@@ -48,6 +48,11 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	defer NewMessage(m, WithDuration(time.Second*time.Duration(Configuration.Telegram.MessageDisposeDuration), bot.telegram))
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return
+	}
+
 	// only if message is a reply
 	if !m.IsReply() {
 		NewMessage(m, WithDuration(0, bot.telegram))

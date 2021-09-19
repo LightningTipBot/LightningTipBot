@@ -23,14 +23,18 @@ func (bot TipBot) balanceHandler(ctx context.Context, m *tb.Message) {
 		NewMessage(m, WithDuration(0, bot.telegram))
 	}
 	// first check whether the user is initialized
-	fromUser := LoadUser(ctx)
-	if !fromUser.Initialized {
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return
+	}
+
+	if !user.Initialized {
 		bot.startHandler(m)
 		return
 	}
 
 	usrStr := GetUserStr(m.Sender)
-	balance, err := bot.GetUserBalance(fromUser)
+	balance, err := bot.GetUserBalance(user)
 	if err != nil {
 		log.Errorf("[/balance] Error fetching %s's balance: %s", usrStr, err)
 		bot.trySendMessage(m.Sender, balanceErrorMessage)

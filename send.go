@@ -54,12 +54,17 @@ func (bot *TipBot) SendCheckSyntax(m *tb.Message) (bool, string) {
 
 // confirmPaymentHandler invoked on "/send 123 @user" command
 func (bot *TipBot) confirmSendHandler(ctx context.Context, m *tb.Message) {
-	// reset state immediately
+	bot.anyTextHandler(ctx, m)
 	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return
+	}
+
+	// reset state immediately
 	ResetUserState(user, *bot)
 
 	// check and print all commands
-	bot.anyTextHandler(ctx, m)
+
 	// If the send is a reply, then trigger /tip handler
 	if m.IsReply() {
 		bot.tipHandler(ctx, m)

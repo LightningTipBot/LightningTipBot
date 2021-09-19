@@ -43,6 +43,10 @@ func (bot TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 	}
 
 	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return
+	}
+
 	userStr := GetUserStr(m.Sender)
 	amount, err := decodeAmountFromCommand(m.Text)
 	if err != nil {
