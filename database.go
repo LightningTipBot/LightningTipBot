@@ -37,11 +37,12 @@ func migration() (db *gorm.DB, txLogger *gorm.DB) {
 
 // GetUser from telegram user. Update the user if user information changed.
 func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
-	user := &lnbits.User{Name: strconv.Itoa(u.ID), Telegram: u}
+	user := &lnbits.User{Name: strconv.Itoa(u.ID)}
 	tx := bot.database.First(user)
 	if tx.Error != nil {
 		errmsg := fmt.Sprintf("[GetUser] Couldn't fetch %s's info from database.", GetUserStr(u))
 		log.Warnln(errmsg)
+		user.Telegram = u
 		return user, tx.Error
 	}
 	var err error
