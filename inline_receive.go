@@ -238,11 +238,6 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	t.Memo = transactionMemo
 	success, err := t.Send()
 	if !success {
-		if err != nil {
-			bot.trySendMessage(from.Telegram, fmt.Sprintf(tipErrorMessage, err))
-		} else {
-			bot.trySendMessage(from.Telegram, fmt.Sprintf(tipErrorMessage, tipUndefinedErrorMsg))
-		}
 		errMsg := fmt.Sprintf("[acceptInlineReceiveHandler] Transaction failed: %s", err)
 		log.Errorln(errMsg)
 		bot.tryEditMessage(c.Message, inlineReceiveFailedMessage, &tb.ReplyMarkup{})

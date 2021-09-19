@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
@@ -18,7 +20,7 @@ const (
 	tipYourselfMessage    = "📖 You can't tip yourself."
 	tipSentMessage        = "💸 %d sat sent to %s."
 	tipReceivedMessage    = "🏅 %s has tipped you %d sat."
-	tipErrorMessage       = "🚫 Transaction failed: %s"
+	tipErrorMessage       = "🚫 Tip failed."
 	tipUndefinedErrorMsg  = "please try again later"
 	tipHelpText           = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/tip <amount> [<memo>]`\n" +
@@ -118,11 +120,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	success, err := t.Send()
 	if !success {
 		NewMessage(m, WithDuration(0, bot.telegram))
-		if err != nil {
-			bot.trySendMessage(m.Sender, fmt.Sprintf(tipErrorMessage, err))
-		} else {
-			bot.trySendMessage(m.Sender, fmt.Sprintf(tipErrorMessage, tipUndefinedErrorMsg))
-		}
+		bot.trySendMessage(m.Sender, tipErrorMessage)
 		errMsg := fmt.Sprintf("[/tip] Transaction failed: %s", err)
 		log.Errorln(errMsg)
 		return
