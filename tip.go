@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"strings"
 	"time"
 
@@ -77,9 +76,9 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 	// TIP COMMAND IS VALID
-	from := ctx.Value("user").(*lnbits.User)
+	from := LoadUser(ctx)
 
-	to := ctx.Value("reply_to_user").(*lnbits.User)
+	to := LoadReplyToUser(ctx)
 
 	if from.ID == to.ID {
 		NewMessage(m, WithDuration(0, bot.telegram))

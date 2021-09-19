@@ -80,7 +80,7 @@ func LoadUser(ctx context.Context) *lnbits.User {
 
 // LoadReplyToUser from context
 func LoadReplyToUser(ctx context.Context) *lnbits.User {
-	u := ctx.Value("user")
+	u := ctx.Value("reply_to_user")
 	if u != nil {
 		return u.(*lnbits.User)
 	}
