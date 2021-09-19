@@ -41,7 +41,7 @@ func helpSendUsage(errormsg string) string {
 func (bot *TipBot) SendCheckSyntax(m *tb.Message) (bool, string) {
 	arguments := strings.Split(m.Text, " ")
 	if len(arguments) < 2 {
-		return false, fmt.Sprintf("Did you enter an amount and a recipient? You can use the /send command to either send to Telegram users like @%s or to a Lightning address like LightningTipBot@ln.tips.", GetUserStrMd(bot.telegram.Me))
+		return false, fmt.Sprintf("Did you enter an amount and a recipient? You can use the /send command to either send to Telegram users like %s or to a Lightning address like LightningTipBot@ln.tips.", GetUserStrMd(bot.telegram.Me))
 	}
 	// if len(arguments) < 3 {
 	// 	return false, "Did you enter a recipient?"
