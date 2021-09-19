@@ -15,20 +15,12 @@ import (
 func SetUserState(user *lnbits.User, bot TipBot, stateKey lnbits.UserStateKey, stateData string) {
 	user.StateKey = stateKey
 	user.StateData = stateData
-	err := UpdateUserRecord(user, bot)
-	if err != nil {
-		log.Errorln(err.Error())
-		return
-	}
+	bot.database.Table("users").Where("name = ?", user.Name).Update("state_key", user.StateKey).Update("state_data", user.StateData)
 }
 
 func ResetUserState(user *lnbits.User, bot TipBot) {
 	user.ResetState()
-	err := UpdateUserRecord(user, bot)
-	if err != nil {
-		log.Errorln(err.Error())
-		return
-	}
+	bot.database.Table("users").Where("name = ?", user.Name).Update("state_key", 0).Update("state_data", "")
 }
 
 var markdownV2Escapes = []string{"_", "[", "]", "(", ")", "~", "`", ">", "#", "+", "-", "=", "|", "{", "}", ".", "!"}
