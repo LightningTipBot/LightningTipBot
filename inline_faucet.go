@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"strconv"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"
@@ -22,7 +23,7 @@ const (
 	inlineFaucetInvalidAmountMessage        = "🚫 Invalid amount."
 	inlineFaucetSentMessage                 = "🚰 %d sat sent to %s."
 	inlineFaucetReceivedMessage             = "🚰 %s sent you %d sat."
-	inlineFaucetHelpFaucetInGroup           = "Create a faucet in a group with the bot inside or use 👉 inline commands (/advanced for more)."
+	inlineFaucetHelpFaucetInGroup           = "Create a faucet in a group with the bot inside or use 👉 inline command (/advanced for more)."
 	inlineFaucetHelpText                    = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/faucet <capacity> <per_user>`\n" +
 		"*Example:* `/faucet 210 21`"

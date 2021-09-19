@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"
@@ -18,6 +19,7 @@ const (
 	inlineReceiveCreateWalletMessage = "Chat with %s 👈 to manage your wallet."
 	inlineReceiveYourselfMessage     = "📖 You can't pay to yourself."
 	inlineReceiveFailedMessage       = "🚫 Receive failed."
+	inlineReceiveCancelledMessage    = "🚫 Receive cancelled."
 )
 
 var (
@@ -277,7 +279,7 @@ func (bot *TipBot) cancelInlineReceiveHandler(c *tb.Callback) {
 		return
 	}
 	if c.Sender.ID == inlineReceive.To.Telegram.ID {
-		bot.tryEditMessage(c.Message, sendCancelledMessage, &tb.ReplyMarkup{})
+		bot.tryEditMessage(c.Message, inlineReceiveCancelledMessage, &tb.ReplyMarkup{})
 		// set the inlineReceive inactive
 		inlineReceive.Active = false
 		inlineReceive.InTransaction = false
