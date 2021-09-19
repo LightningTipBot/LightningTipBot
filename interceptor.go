@@ -35,7 +35,7 @@ func (bot TipBot) requireUserInterceptor(ctx context.Context, i interface{}) (co
 		c := i.(*tb.Callback)
 		m := *c.Message
 		m.Sender = c.Sender
-		user, err := GetUser(i.(*tb.Message).Sender, bot)
+		user, err := GetUser(i.(*tb.Callback).Sender, bot)
 		return context.WithValue(ctx, "user", user), err
 	case *tb.Message:
 		user, err := GetUser(i.(*tb.Message).Sender, bot)
