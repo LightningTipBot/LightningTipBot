@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"
@@ -249,11 +250,6 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 	t.Memo = transactionMemo
 	success, err := t.Send()
 	if !success {
-		if err != nil {
-			bot.trySendMessage(fromUser.Telegram, fmt.Sprintf(tipErrorMessage, err))
-		} else {
-			bot.trySendMessage(fromUser.Telegram, fmt.Sprintf(tipErrorMessage, tipUndefinedErrorMsg))
-		}
 		errMsg := fmt.Sprintf("[sendInline] Transaction failed: %s", err)
 		log.Errorln(errMsg)
 		bot.tryEditMessage(c.Message, inlineSendFailedMessage, &tb.ReplyMarkup{})

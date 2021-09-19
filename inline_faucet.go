@@ -357,11 +357,7 @@ func (bot *TipBot) accpetInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 		success, err := t.Send()
 		if !success {
-			if err != nil {
-				bot.trySendMessage(from.Telegram, fmt.Sprintf(tipErrorMessage, err))
-			} else {
-				bot.trySendMessage(from.Telegram, fmt.Sprintf(tipErrorMessage, tipUndefinedErrorMsg))
-			}
+			bot.trySendMessage(from.Telegram, sendErrorMessage)
 			errMsg := fmt.Sprintf("[faucet] Transaction failed: %s", err)
 			log.Errorln(errMsg)
 			return
