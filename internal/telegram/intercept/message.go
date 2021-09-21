@@ -55,13 +55,13 @@ func HandlerWithMessage(handler MessageFuncHandler, option ...MessageInterceptOp
 	return func(message *tb.Message) {
 		ctx, err := interceptMessage(context.Background(), message, hm.before)
 		if err != nil {
-			log.Errorln(err)
+			log.Traceln(err)
 			return
 		}
 		hm.handler(ctx, message)
 		_, err = interceptMessage(ctx, message, hm.after)
 		if err != nil {
-			log.Errorln(err)
+			log.Traceln(err)
 			return
 		}
 	}

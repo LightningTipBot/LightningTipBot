@@ -52,13 +52,13 @@ func HandlerWithCallback(handler CallbackFuncHandler, option ...CallbackIntercep
 	return func(c *tb.Callback) {
 		ctx, err := interceptCallback(context.Background(), c, hm.before)
 		if err != nil {
-			log.Errorln(err)
+			log.Traceln(err)
 			return
 		}
 		hm.handler(ctx, c)
 		_, err = interceptCallback(ctx, c, hm.after)
 		if err != nil {
-			log.Errorln(err)
+			log.Traceln(err)
 		}
 	}
 }

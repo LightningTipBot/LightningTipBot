@@ -51,13 +51,13 @@ func HandlerWithQuery(handler QueryFuncHandler, option ...QueryInterceptOption) 
 	return func(message *tb.Query) {
 		ctx, err := interceptQuery(context.Background(), message, hm.before)
 		if err != nil {
-			log.Errorln(err)
+			log.Traceln(err)
 			return
 		}
 		hm.handler(ctx, message)
 		_, err = interceptQuery(ctx, message, hm.after)
 		if err != nil {
-			log.Errorln(err)
+			log.Traceln(err)
 			return
 		}
 	}
