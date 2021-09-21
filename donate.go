@@ -28,7 +28,7 @@ var (
 	donateHelpText           = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/donate <amount>`\n" +
 		"*Example:* `/donate 1000`"
-	endpoint string
+	donationEndpoint string
 )
 
 func helpDonateUsage(errormsg string) string {
@@ -59,7 +59,7 @@ func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 	// command is valid
 	msg := bot.trySendMessage(m.Sender, donationProgressMessage)
 	// get invoice
-	resp, err := http.Get(fmt.Sprintf(endpoint, amount, GetUserStr(m.Sender), GetUserStr(bot.telegram.Me)))
+	resp, err := http.Get(fmt.Sprintf(donationEndpoint, amount, GetUserStr(m.Sender), GetUserStr(bot.telegram.Me)))
 	if err != nil {
 		log.Errorln(err)
 		bot.tryEditMessage(msg, donationErrorMessage)
@@ -93,7 +93,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	endpoint = sb.String()
+	donationEndpoint = sb.String()
 }
 
 type rot13Reader struct {
