@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	tb "gopkg.in/tucnak/telebot.v2"
+	"strings"
 )
 
 type Handler struct {
@@ -26,41 +26,62 @@ func (bot TipBot) registerTelegramHandlers() {
 	})
 }
 
+// registerHandlerWithInterceptor will register a handler with all the predefined interceptors, based on the interceptor type
 func (bot TipBot) registerHandlerWithInterceptor(h Handler) {
 	switch h.Interceptor.Type {
 	case MessageInterceptor:
 		for _, endpoint := range h.Endpoints {
-			bot.telegram.Handle(endpoint,
-				intercept.HandlerWithMessage(h.Handler.(func(ctx context.Context, query *tb.Message)),
-					intercept.WithBeforeMessage(h.Interceptor.Before...),
-					intercept.WithAfterMessage(h.Interceptor.After...)))
+			bot.handle(endpoint, intercept.HandlerWithMessage(h.Handler.(func(ctx context.Context, query *tb.Message)),
+				intercept.WithBeforeMessage(h.Interceptor.Before...),
+				intercept.WithAfterMessage(h.Interceptor.After...)))
 		}
-
 	case QueryInterceptor:
 		for _, endpoint := range h.Endpoints {
-			bot.telegram.Handle(endpoint,
-				intercept.HandlerWithQuery(h.Handler.(func(ctx context.Context, query *tb.Query)),
-					intercept.WithBeforeQuery(h.Interceptor.Before...),
-					intercept.WithAfterQuery(h.Interceptor.After...)))
+			bot.handle(endpoint, intercept.HandlerWithQuery(h.Handler.(func(ctx context.Context, query *tb.Query)),
+				intercept.WithBeforeQuery(h.Interceptor.Before...),
+				intercept.WithAfterQuery(h.Interceptor.After...)))
 		}
 	case CallbackInterceptor:
 		for _, endpoint := range h.Endpoints {
-			bot.telegram.Handle(endpoint,
-				intercept.HandlerWithCallback(h.Handler.(func(ctx context.Context, callback *tb.Callback)),
-					intercept.WithBeforeCallback(h.Interceptor.Before...),
-					intercept.WithAfterCallback(h.Interceptor.After...)))
+			bot.handle(endpoint, intercept.HandlerWithCallback(h.Handler.(func(ctx context.Context, callback *tb.Callback)),
+				intercept.WithBeforeCallback(h.Interceptor.Before...),
+				intercept.WithAfterCallback(h.Interceptor.After...)))
 		}
 	}
 }
+
+// handle accepts an endpoint and handler for telegram handler registration.
+// function will automatically register string handlers as uppercase and first letter uppercase.
+func (bot TipBot) handle(endpoint interface{}, handler interface{}) {
+	// register the endpoint
+	bot.telegram.Handle(endpoint, handler)
+	switch endpoint.(type) {
+	case string:
+		// check if this is a string endpoint
+		sEndpoint := endpoint.(string)
+		if strings.HasPrefix(sEndpoint, "/") {
+			// Uppercase endpoint registration, because starting with slash
+			bot.telegram.Handle(strings.ToUpper(sEndpoint), handler)
+			if len(sEndpoint) > 2 {
+				// Also register endpoint with first letter uppercase
+				bot.telegram.Handle(fmt.Sprintf("/%s%s", strings.ToUpper(string(sEndpoint[1])), sEndpoint[2:]), handler)
+			}
+		}
+	}
+}
+
+// register registers a handler, so that telegram can handle the endpoint correctly.
 func (bot TipBot) register(h Handler) {
 	if h.Interceptor != nil {
 		bot.registerHandlerWithInterceptor(h)
 	} else {
 		for _, endpoint := range h.Endpoints {
-			bot.telegram.Handle(endpoint, h.Handler)
+			bot.handle(endpoint, h.Handler)
 		}
 	}
 }
+
+// getHandler returns a list of all handlers, that need to be registered with telegram
 func (bot TipBot) getHandler() []Handler {
 	return []Handler{
 		{
