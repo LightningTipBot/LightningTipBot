@@ -38,30 +38,30 @@ func TryRecognizeQrCode(img image.Image) (*gozxing.Result, error) {
 	return nil, fmt.Errorf("no codes found")
 }
 
-// privatePhotoHandler is the handler function for every photo from a private chat that the bot receives
-func (bot TipBot) privatePhotoHandler(ctx context.Context, m *tb.Message) {
+// photoHandler is the handler function for every photo from a private chat that the bot receives
+func (bot TipBot) photoHandler(ctx context.Context, m *tb.Message) {
 	if m.Chat.Type != tb.ChatPrivate {
 		return
 	}
 	if m.Photo == nil {
 		return
 	}
-	log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, "<Photo>")
+
 	// get file reader closer from telegram api
 	reader, err := bot.telegram.GetFile(m.Photo.MediaFile())
 	if err != nil {
-		log.Errorf("Getfile error: %v\n", err)
+		log.Errorf("[photoHandler] getfile error: %v\n", err)
 		return
 	}
 	// decode to jpeg image
 	img, err := jpeg.Decode(reader)
 	if err != nil {
-		log.Errorf("image.Decode error: %v\n", err)
+		log.Errorf("[photoHandler] image.Decode error: %v\n", err)
 		return
 	}
 	data, err := TryRecognizeQrCode(img)
 	if err != nil {
-		log.Errorf("tryRecognizeQrCodes error: %v\n", err)
+		log.Errorf("[photoHandler] tryRecognizeQrCodes error: %v\n", err)
 		bot.trySendMessage(m.Sender, photoQrNotRecognizedMessage)
 		return
 	}

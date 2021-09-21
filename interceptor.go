@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -70,6 +72,20 @@ func (bot TipBot) requirePrivateChatInterceptor(ctx context.Context, i interface
 		if m.Chat.Type != tb.ChatPrivate {
 			return nil, fmt.Errorf("no private chat")
 		}
+		return ctx, nil
+	}
+	return nil, invalidTypeError
+}
+
+func (bot TipBot) logMessageInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
+	switch i.(type) {
+	case *tb.Message:
+		m := i.(*tb.Message)
+		log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
+		return ctx, nil
+	case *tb.Photo:
+		m := i.(*tb.Message)
+		log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, "<Photo>")
 		return ctx, nil
 	}
 	return nil, invalidTypeError

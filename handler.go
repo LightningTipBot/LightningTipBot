@@ -78,8 +78,11 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/tip"},
 			Handler:   bot.tipHandler,
 			Interceptor: &Interceptor{
-				Type:   MessageInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor, bot.loadReplyToInterceptor}},
+				Type: MessageInterceptor,
+				Before: []intercept.Func{
+					bot.loadUserInterceptor,
+					bot.loadReplyToInterceptor,
+				}},
 		},
 		{
 			Endpoints: []interface{}{"/pay"},
@@ -153,18 +156,24 @@ func (bot TipBot) getHandler() []Handler {
 		},
 		{
 			Endpoints: []interface{}{tb.OnPhoto},
-			Handler:   bot.privatePhotoHandler,
+			Handler:   bot.photoHandler,
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.requirePrivateChatInterceptor, bot.loadUserInterceptor}},
+					bot.logMessageInterceptor,
+					bot.requirePrivateChatInterceptor,
+					bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{tb.OnText},
 			Handler:   bot.anyTextHandler,
 			Interceptor: &Interceptor{
-				Type:   MessageInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Type: MessageInterceptor,
+				Before: []intercept.Func{
+					bot.logMessageInterceptor,
+					bot.requirePrivateChatInterceptor,
+					bot.loadUserInterceptor,
+				}},
 		},
 		{
 			Endpoints: []interface{}{tb.OnQuery},
