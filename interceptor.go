@@ -77,15 +77,17 @@ func (bot TipBot) requirePrivateChatInterceptor(ctx context.Context, i interface
 	return nil, invalidTypeError
 }
 
+const photoTag = "<Photo>"
+
 func (bot TipBot) logMessageInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	switch i.(type) {
 	case *tb.Message:
 		m := i.(*tb.Message)
-		log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
-		return ctx, nil
-	case *tb.Photo:
-		m := i.(*tb.Message)
-		log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, "<Photo>")
+		if m.Text != "" {
+			log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
+		} else if m.Photo != nil {
+			log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, photoTag)
+		}
 		return ctx, nil
 	}
 	return nil, invalidTypeError
