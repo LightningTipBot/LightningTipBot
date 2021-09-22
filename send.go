@@ -265,10 +265,11 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	btnCancelSend.Data = id
 
 	sendConfirmationMenu.Inline(sendConfirmationMenu.Row(btnSend, btnCancelSend))
-	_, err = bot.telegram.Send(m.Chat, confirmText, sendConfirmationMenu)
-	if err != nil {
-		log.Error("[send]" + err.Error())
-		return
+
+	if m.Private() {
+		bot.trySendMessage(m.Chat, confirmText, sendConfirmationMenu)
+	} else {
+		bot.tryReplyMessage(m, confirmText, sendConfirmationMenu)
 	}
 }
 
