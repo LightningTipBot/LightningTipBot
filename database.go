@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -33,6 +34,19 @@ func migration() (db *gorm.DB, txLogger *gorm.DB) {
 		panic(err)
 	}
 	return orm, txLogger
+}
+
+func GetUserByTelegramUsername(toUserStrWithoutAt string, bot TipBot) (*lnbits.User, error) {
+	toUserDb := &lnbits.User{}
+	tx := bot.database.Where("telegram_username = ?", strings.ToLower(toUserStrWithoutAt)).First(toUserDb)
+	if tx.Error != nil || toUserDb.Wallet == nil {
+		err := tx.Error
+		if toUserDb.Wallet == nil {
+			err = fmt.Errorf("%s | user @%s has no wallet", tx.Error, toUserStrWithoutAt)
+		}
+		return nil, err
+	}
+	return toUserDb, nil
 }
 
 // GetUser from telegram user. Update the user if user information changed.
