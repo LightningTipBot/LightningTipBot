@@ -228,7 +228,7 @@ func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) {
 	}
 }
 
-func (bot *TipBot) accpetInlineFaucetHandler(ctx context.Context, c *tb.Callback) {
+func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback) {
 	to := LoadUser(ctx)
 	tx := NewInlineFaucet()
 	tx.ID = c.Data
