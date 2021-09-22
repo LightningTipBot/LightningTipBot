@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -9,8 +12,6 @@ import (
 	"gopkg.in/tucnak/telebot.v2"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"gorm.io/gorm"
-	"sync"
-	"time"
 )
 
 type TipBot struct {
@@ -22,13 +23,9 @@ type TipBot struct {
 }
 
 var (
-	paymentConfirmationMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
-	btnCancelPay            = paymentConfirmationMenu.Data("🚫 Cancel", "cancel_pay")
-	btnPay                  = paymentConfirmationMenu.Data("✅ Pay", "confirm_pay")
-	sendConfirmationMenu    = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
-	btnCancelSend           = sendConfirmationMenu.Data("🚫 Cancel", "cancel_send")
-	btnSend                 = sendConfirmationMenu.Data("✅ Send", "confirm_send")
-
+	paymentConfirmationMenu     = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	btnCancelPay                = paymentConfirmationMenu.Data("🚫 Cancel", "cancel_pay")
+	btnPay                      = paymentConfirmationMenu.Data("✅ Pay", "confirm_pay")
 	botWalletInitialisation     = sync.Once{}
 	telegramHandlerRegistration = sync.Once{}
 )

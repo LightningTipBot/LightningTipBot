@@ -224,7 +224,7 @@ func (bot TipBot) getHandler() []Handler {
 		},
 		{
 			Endpoints: []interface{}{&btnSend},
-			Handler:   bot.sendHandler,
+			Handler:   bot.confirmSendHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
 				Before: []intercept.Func{bot.loadUserInterceptor}},

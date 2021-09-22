@@ -23,14 +23,17 @@ const (
 	inlineSendBalanceLowMessage    = "🚫 Your balance is too low (👑 %d sat)."
 )
 
-var (
+const (
 	inlineQuerySendTitle        = "💸 Send payment to a chat."
 	inlineQuerySendDescription  = "Usage: @%s send <amount> [<memo>]"
 	inlineResultSendTitle       = "💸 Send %d sat."
 	inlineResultSendDescription = "👉 Click to send %d sat to this chat."
-	inlineSendMenu              = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
-	btnCancelInlineSend         = inlineSendMenu.Data("🚫 Cancel", "cancel_send_inline")
-	btnAcceptInlineSend         = inlineSendMenu.Data("✅ Receive", "confirm_send_inline")
+)
+
+var (
+	inlineSendMenu      = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	btnCancelInlineSend = inlineSendMenu.Data("🚫 Cancel", "cancel_send_inline")
+	btnAcceptInlineSend = inlineSendMenu.Data("✅ Receive", "confirm_send_inline")
 )
 
 type InlineSend struct {

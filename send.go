@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -29,6 +30,12 @@ const (
 		"*Usage:* `/send <amount> <user> [<memo>]`\n" +
 		"*Example:* `/send 1000 @LightningTipBot I just like the bot ❤️`\n" +
 		"*Example:* `/send 1234 LightningTipBot@ln.tips`"
+)
+
+var (
+	sendConfirmationMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	btnCancelSend        = sendConfirmationMenu.Data("🚫 Cancel", "cancel_send")
+	btnSend              = sendConfirmationMenu.Data("✅ Send", "confirm_send")
 )
 
 func helpSendUsage(errormsg string) string {
@@ -235,28 +242,6 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 		NewMessage(m, WithDuration(0, bot.telegram))
 		bot.trySendMessage(m.Sender, sendUserHasNoWalletMessage)
 	}
-	// toUserDb := &lnbits.User{}
-	// tx := bot.database.Where("telegram_username = ?", strings.ToLower(toUserStrWithoutAt)).First(toUserDb)
-	// if tx.Error != nil || toUserDb.Wallet == nil {
-	// 	NewMessage(m, WithDuration(0, bot.telegram))
-	// 	err = fmt.Errorf(sendUserHasNoWalletMessage, MarkdownEscape(toUserStrMention))
-	// 	bot.trySendMessage(m.Sender, err.Error())
-	// 	if tx.Error != nil {
-	// 		log.Printf("[/send] Error: %v %v", err, tx.Error)
-	// 		return
-	// 	}
-	// 	log.Printf("[/send] Error: %v", err)
-	// 	return
-	// }
-	// string that holds all information about the send payment
-	// sendData := strconv.Itoa(toUserDb.Telegram.ID) + "|" + toUserStrWithoutAt + "|" +
-	// 	strconv.Itoa(amount)
-	// if len(sendMemo) > 0 {
-	// 	sendData = sendData + "|" + sendMemo
-	// }
-
-	// // save the send data to the database
-	// log.Debug(sendData)
 
 	// entire text of the inline object
 	confirmText := fmt.Sprintf(confirmSendMessage, MarkdownEscape(toUserStrMention), amount)
@@ -266,6 +251,8 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	// object that holds all information about the send payment
 	id := fmt.Sprintf("send-%d-%d-%s", m.Sender.ID, amount, RandStringRunes(5))
 	sendData := SendData{
+		Active:         true,
+		InTransaction:  false,
 		ID:             id,
 		Amount:         int64(amount),
 		ToTelegramId:   toUserDb.Telegram.ID,
@@ -273,6 +260,9 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 		Memo:           sendMemo,
 		Message:        confirmText,
 	}
+	// add result to persistent struct
+	runtime.IgnoreError(bot.bunt.Set(sendData))
+
 	sendDataJson, err := json.Marshal(sendData)
 	if err != nil {
 		NewMessage(m, WithDuration(0, bot.telegram))
@@ -295,25 +285,6 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	}
 }
 
-// cancelPaymentHandler invoked when user clicked cancel on payment confirmation
-func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
-	// reset state immediately
-	user := LoadUser(ctx)
-	ResetUserState(user, *bot)
-
-	// delete the confirmation message
-	err := bot.telegram.Delete(c.Message)
-	if err != nil {
-		log.Errorln("[cancelSendHandler] " + err.Error())
-	}
-	// notify the user
-	_, err = bot.telegram.Send(c.Sender, sendCancelledMessage)
-	if err != nil {
-		log.WithField("message", sendCancelledMessage).WithField("user", c.Sender.ID).Printf("[Send] %s", err.Error())
-		return
-	}
-}
-
 // sendHandler invoked when user clicked send on payment confirmation
 func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	sendData, err := bot.getSend(c)
@@ -328,7 +299,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 	if !sendData.Active {
-		log.Errorf("[acceptSendHandler] inline send not active anymore")
+		log.Errorf("[acceptSendHandler] send not active anymore")
 		return
 	}
 	defer bot.ReleaseSend(sendData)
@@ -342,39 +313,13 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	// decode callback data
 	// log.Debug("[send] Callback: %s", c.Data)
 	from := LoadUser(ctx)
-	if from.StateKey != lnbits.UserStateConfirmSend {
-		log.Errorf("[send] User StateKey does not match! User: %d: StateKey: %d", c.Sender.ID, from.StateKey)
-		return
-	}
-	// reset state
-	ResetUserState(from, *bot)
+	ResetUserState(from, *bot) // we don't need to check the statekey anymore like we did earlier
 
 	// information about the send
 	toId := sendData.ToTelegramId
 	toUserStrWithoutAt := sendData.ToTelegramUser
 	amount := sendData.Amount
 	sendMemo := sendData.Memo
-
-	// // decode StateData in which we have information about the send payment
-	// splits := strings.Split(from.StateData, "|")
-	// if len(splits) < 3 {
-	// 	log.Error("[send] Not enough arguments in callback data")
-	// 	log.Errorf("user.StateData: %s", from.StateData)
-	// 	return
-	// }
-	// toId, err := strconv.Atoi(splits[0])
-	// if err != nil {
-	// 	log.Errorln("[send] " + err.Error())
-	// }
-	// toUserStrWithoutAt := splits[1]
-	// amount, err := strconv.Atoi(splits[2])
-	// if err != nil {
-	// 	log.Errorln("[send] " + err.Error())
-	// }
-	// sendMemo := ""
-	// if len(splits) > 3 {
-	// 	sendMemo = strings.Join(splits[3:], "|")
-	// }
 
 	// we can now get the wallets of both users
 	to, err := GetUser(&tb.User{ID: toId, Username: toUserStrWithoutAt}, *bot)
@@ -408,4 +353,27 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	}
 
 	return
+}
+
+// cancelPaymentHandler invoked when user clicked cancel on payment confirmation
+func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
+	// reset state immediately
+	user := LoadUser(ctx)
+	ResetUserState(user, *bot)
+	sendData, err := bot.getSend(c)
+	if err != nil {
+		log.Errorf("[acceptSendHandler] %s", err)
+		return
+	}
+
+	// delete the confirmation message
+	bot.tryDeleteMessage(c.Message)
+	// notify the user
+	bot.trySendMessage(c.Sender, sendCancelledMessage)
+
+	// set the inlineSend inactive
+	sendData.Active = false
+	sendData.InTransaction = false
+	runtime.IgnoreError(bot.bunt.Set(sendData))
+
 }
