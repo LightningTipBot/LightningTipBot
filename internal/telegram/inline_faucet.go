@@ -8,6 +8,7 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"
@@ -21,6 +22,7 @@ var (
 )
 
 type InlineFaucet struct {
+	*storage.Transaction
 	Message         string       `json:"inline_faucet_message"`
 	Amount          int          `json:"inline_faucet_amount"`
 	RemainingAmount int          `json:"inline_faucet_remainingamount"`
@@ -28,12 +30,9 @@ type InlineFaucet struct {
 	From            *lnbits.User `json:"inline_faucet_from"`
 	To              []*tb.User   `json:"inline_faucet_to"`
 	Memo            string       `json:"inline_faucet_memo"`
-	ID              string       `json:"inline_faucet_id"`
-	Active          bool         `json:"inline_faucet_active"`
 	NTotal          int          `json:"inline_faucet_ntotal"`
 	NTaken          int          `json:"inline_faucet_ntaken"`
 	UserNeedsWallet bool         `json:"inline_faucet_userneedswallet"`
-	InTransaction   bool         `json:"inline_faucet_intransaction"`
 	LanguageCode    string       `json:"languagecode"`
 }
 
@@ -42,79 +41,13 @@ func NewInlineFaucet() *InlineFaucet {
 		Message:         "",
 		NTaken:          0,
 		UserNeedsWallet: false,
-		InTransaction:   false,
-		Active:          true,
+		Transaction: &storage.Transaction{
+			InTransaction: false,
+			Active:        true,
+		},
 	}
 	return inlineFaucet
 
-}
-
-func (msg InlineFaucet) Key() string {
-	return msg.ID
-}
-
-func (bot *TipBot) LockFaucet(tx *InlineFaucet) error {
-	// immediatelly set intransaction to block duplicate calls
-	tx.InTransaction = true
-	err := bot.Bunt.Set(tx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (bot *TipBot) ReleaseFaucet(tx *InlineFaucet) error {
-	// immediatelly set intransaction to block duplicate calls
-	tx.InTransaction = false
-	err := bot.Bunt.Set(tx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (bot *TipBot) inactivateFaucet(tx *InlineFaucet) error {
-	tx.Active = false
-	err := bot.Bunt.Set(tx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// tipTooltipExists checks if this tip is already known
-func (bot *TipBot) getInlineFaucet(c *tb.Callback) (*InlineFaucet, error) {
-	inlineFaucet := NewInlineFaucet()
-	inlineFaucet.ID = c.Data
-	err := bot.Bunt.Get(inlineFaucet)
-
-	// to avoid race conditions, we block the call if there is
-	// already an active transaction by loop until InTransaction is false
-	ticker := time.NewTicker(time.Second * 10)
-
-	for inlineFaucet.InTransaction {
-		select {
-		case <-ticker.C:
-			return nil, fmt.Errorf("faucet %s timeout", inlineFaucet.ID)
-		default:
-			log.Warnf("[getInlineFaucet] %s in transaction", inlineFaucet.ID)
-			time.Sleep(time.Duration(500) * time.Millisecond)
-			err = bot.Bunt.Get(inlineFaucet)
-		}
-	}
-	if err != nil {
-		return nil, fmt.Errorf("could not get inline faucet %s: %s", inlineFaucet.ID, err)
-	}
-	return inlineFaucet, nil
-
-}
-
-func (bot TipBot) mapFaucetLanguage(ctx context.Context, command string) context.Context {
-	if len(strings.Split(command, " ")) > 1 {
-		c := strings.Split(command, " ")[0][1:] // cut the /
-		ctx = bot.commandTranslationMap(ctx, c)
-	}
-	return ctx
 }
 
 func (bot TipBot) faucetHandler(ctx context.Context, m *tb.Message) {
@@ -301,14 +234,16 @@ func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) {
 
 func (bot *TipBot) accpetInlineFaucetHandler(ctx context.Context, c *tb.Callback) {
 	to := LoadUser(ctx)
-
-	inlineFaucet, err := bot.getInlineFaucet(c)
+	tx := NewInlineFaucet()
+	tx.ID = c.Data
+	fn, err := storage.GetTransaction(tx, tx.Transaction, bot.bunt)
 	if err != nil {
 		log.Errorf("[faucet] %s", err)
 		return
 	}
+	inlineFaucet := fn.(*InlineFaucet)
 	from := inlineFaucet.From
-	err = bot.LockFaucet(inlineFaucet)
+	err = storage.Lock(inlineFaucet, inlineFaucet.Transaction, bot.bunt)
 	if err != nil {
 		log.Errorf("[faucet] LockFaucet %s error: %s", inlineFaucet.ID, err)
 		return
@@ -318,7 +253,7 @@ func (bot *TipBot) accpetInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		return
 	}
 	// release faucet no matter what
-	defer bot.ReleaseFaucet(inlineFaucet)
+	defer storage.Lock(inlineFaucet, inlineFaucet.Transaction, bot.bunt)
 
 	if from.Telegram.ID == to.Telegram.ID {
 		bot.trySendMessage(from.Telegram, Translate(ctx, "sendYourselfMessage"))
@@ -419,11 +354,15 @@ func (bot *TipBot) accpetInlineFaucetHandler(ctx context.Context, c *tb.Callback
 }
 
 func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback) {
-	inlineFaucet, err := bot.getInlineFaucet(c)
+	tx := NewInlineFaucet()
+	tx.ID = c.Data
+	fn, err := storage.GetTransaction(tx, tx.Transaction, bot.bunt)
+
 	if err != nil {
 		log.Errorf("[cancelInlineSendHandler] %s", err)
 		return
 	}
+	inlineFaucet := fn.(*InlineFaucet)
 	if c.Sender.ID == inlineFaucet.From.Telegram.ID {
 		bot.tryEditMessage(c.Message, i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetCancelledMessage"), &tb.ReplyMarkup{})
 		// set the inlineFaucet inactive
