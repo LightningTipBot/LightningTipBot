@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"strings"
-	"time"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
@@ -31,86 +31,25 @@ func helpPayInvoiceUsage(ctx context.Context, errormsg string) string {
 }
 
 type PayData struct {
-	From          *lnbits.User `json:"from"`
-	ID            string       `json:"id"`
-	Invoice       string       `json:"invoice"`
-	Hash          string       `json:"hash"`
-	Proof         string       `json:"proof"`
-	Memo          string       `json:"memo"`
-	Message       string       `json:"message"`
-	Amount        int64        `json:"amount"`
-	InTransaction bool         `json:"intransaction"`
-	Active        bool         `json:"active"`
-	LanguageCode  string       `json:"languagecode"`
+	*storage.Transaction
+	From         *lnbits.User `json:"from"`
+	Invoice      string       `json:"invoice"`
+	Hash         string       `json:"hash"`
+	Proof        string       `json:"proof"`
+	Memo         string       `json:"memo"`
+	Message      string       `json:"message"`
+	Amount       int64        `json:"amount"`
+	LanguageCode string       `json:"languagecode"`
 }
 
 func NewPay() *PayData {
 	payData := &PayData{
-		Active:        true,
-		InTransaction: false,
+		Transaction: &storage.Transaction{
+			Active:        true,
+			InTransaction: false,
+		},
 	}
 	return payData
-}
-
-func (msg PayData) Key() string {
-	return msg.ID
-}
-
-func (bot *TipBot) LockPay(tx *PayData) error {
-	// immediatelly set intransaction to block duplicate calls
-	tx.InTransaction = true
-	err := bot.Bunt.Set(tx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (bot *TipBot) ReleasePay(tx *PayData) error {
-	// immediatelly set intransaction to block duplicate calls
-	tx.InTransaction = false
-	err := bot.Bunt.Set(tx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (bot *TipBot) InactivatePay(tx *PayData) error {
-	tx.Active = false
-	err := bot.Bunt.Set(tx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (bot *TipBot) getPay(c *tb.Callback) (*PayData, error) {
-	payData := NewPay()
-	payData.ID = c.Data
-
-	err := bot.Bunt.Get(payData)
-
-	// to avoid race conditions, we block the call if there is
-	// already an active transaction by loop until InTransaction is false
-	ticker := time.NewTicker(time.Second * 10)
-
-	for payData.InTransaction {
-		select {
-		case <-ticker.C:
-			return nil, fmt.Errorf("pay timeout")
-		default:
-			log.Infoln("[pay] in transaction")
-			time.Sleep(time.Duration(500) * time.Millisecond)
-			err = bot.Bunt.Get(payData)
-		}
-	}
-	if err != nil {
-		return nil, fmt.Errorf("could not get payData")
-	}
-
-	return payData, nil
-
 }
 
 // payHandler invoked on "/pay lnbc..." command
@@ -184,15 +123,17 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 	// object that holds all information about the send payment
 	id := fmt.Sprintf("pay-%d-%d-%s", m.Sender.ID, amount, RandStringRunes(5))
 	payData := PayData{
-		From:          user,
-		Invoice:       paymentRequest,
-		Active:        true,
-		InTransaction: false,
-		ID:            id,
-		Amount:        int64(amount),
-		Memo:          bolt11.Description,
-		Message:       confirmText,
-		LanguageCode:  ctx.Value("publicLanguageCode").(string),
+		From:    user,
+		Invoice: paymentRequest,
+		Transaction: &storage.Transaction{
+			Active:        true,
+			InTransaction: false,
+			ID:            id,
+		},
+		Amount:       int64(amount),
+		Memo:         bolt11.Description,
+		Message:      confirmText,
+		LanguageCode: ctx.Value("publicLanguageCode").(string),
 	}
 	// add result to persistent struct
 	runtime.IgnoreError(bot.Bunt.Set(payData))
@@ -215,28 +156,33 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 
 // confirmPayHandler when user clicked pay on payment confirmation
 func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
-	payData, err := bot.getPay(c)
+	tx := NewPay()
+	tx.ID = c.Data
+	sn, err := storage.GetTransaction(tx, tx.Transaction, bot.bunt)
+	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
-		log.Errorf("[acceptSendHandler] %s", err)
+		log.Errorf("[confirmPayHandler] %s", err)
 		return
 	}
+	payData := sn.(*PayData)
+
 	// onnly the correct user can press
 	if payData.From.Telegram.ID != c.Sender.ID {
 		return
 	}
 	// immediatelly set intransaction to block duplicate calls
-	err = bot.LockPay(payData)
+	err = storage.Lock(payData, payData.Transaction, bot.bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
 		bot.tryDeleteMessage(c.Message)
 		return
 	}
 	if !payData.Active {
-		log.Errorf("[acceptSendHandler] send not active anymore")
+		log.Errorf("[confirmPayHandler] send not active anymore")
 		bot.tryDeleteMessage(c.Message)
 		return
 	}
-	defer bot.ReleasePay(payData)
+	defer storage.Release(payData, payData.Transaction, bot.bunt)
 
 	// remove buttons from confirmation message
 	// bot.tryEditMessage(c.Message, MarkdownEscape(payData.Message), &tb.ReplyMarkup{})
@@ -286,16 +232,20 @@ func (bot TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 	user := LoadUser(ctx)
 
 	ResetUserState(user, bot)
-	payData, err := bot.getPay(c)
+	tx := NewPay()
+	tx.ID = c.Data
+	sn, err := storage.GetTransaction(tx, tx.Transaction, bot.bunt)
+	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
-		log.Errorf("[acceptSendHandler] %s", err)
+		log.Errorf("[cancelPaymentHandler] %s", err)
 		return
 	}
+	payData := sn.(*PayData)
 	// onnly the correct user can press
 	if payData.From.Telegram.ID != c.Sender.ID {
 		return
 	}
 	bot.tryEditMessage(c.Message, i18n.Translate(payData.LanguageCode, "paymentCancelledMessage"), &tb.ReplyMarkup{})
 	payData.InTransaction = false
-	bot.InactivatePay(payData)
+	storage.Inactivate(payData, payData.Transaction, bot.bunt)
 }
