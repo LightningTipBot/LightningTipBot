@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	tb "gopkg.in/tucnak/telebot.v2"
-	"strings"
 )
 
 type Handler struct {
@@ -128,7 +129,7 @@ func (bot TipBot) getHandler() []Handler {
 		},
 		{
 			Endpoints: []interface{}{"/send"},
-			Handler:   bot.confirmSendHandler,
+			Handler:   bot.sendHandler,
 			Interceptor: &Interceptor{
 				Type:   MessageInterceptor,
 				Before: []intercept.Func{bot.loadUserInterceptor}},
