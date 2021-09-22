@@ -85,7 +85,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 
 	to := LoadReplyToUser(ctx)
 
-	if from.ID == to.ID {
+	if from.Telegram.ID == to.Telegram.ID {
 		NewMessage(m, WithDuration(0, bot.telegram))
 		bot.trySendMessage(m.Sender, tipYourselfMessage)
 		return

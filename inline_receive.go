@@ -211,7 +211,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	toUserStr := GetUserStr(to.Telegram)
 	fromUserStr := GetUserStr(from.Telegram)
 
-	if from.ID == to.ID {
+	if from.Telegram.ID == to.Telegram.ID {
 		bot.trySendMessage(from.Telegram, sendYourselfMessage)
 		return
 	}
