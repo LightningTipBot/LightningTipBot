@@ -15,18 +15,19 @@ import (
 )
 
 const (
-	paymentCancelledMessage            = "🚫 Payment cancelled."
-	invoicePaidMessage                 = "⚡️ Payment sent."
-	invoicePrivateChatOnlyErrorMessage = "You can pay invoices only in the private chat with the bot."
-	invalidInvoiceHelpMessage          = "Did you enter a valid Lightning invoice? Try /send if you want to send to a Telegram user or Lightning address."
-	invoiceNoAmountMessage             = "🚫 Can't pay invoices without an amount."
-	insufficientFundsMessage           = "🚫 Insufficient funds. You have %d sat but you need at least %d sat."
-	feeReserveMessage                  = "⚠️ Sending your entire balance might fail because of network fees. If it fails, try sending a bit less."
-	invoicePaymentFailedMessage        = "🚫 Payment failed: %s"
-	invoiceUndefinedErrorMessage       = "Could not pay invoice."
-	confirmPayInvoiceMessage           = "Do you want to send this payment?\n\n💸 Amount: %d sat"
-	confirmPayAppendMemo               = "\n✉️ %s"
-	payHelpText                        = "📖 Oops, that didn't work. %s\n\n" +
+	paymentCancelledMessage  = "🚫 Payment cancelled."
+	invoicePaidMessage       = "⚡️ Payment sent."
+	invoicePublicPaidMessage = "⚡️ Payment sent by %s."
+	// invoicePrivateChatOnlyErrorMessage = "You can pay invoices only in the private chat with the bot."
+	invalidInvoiceHelpMessage    = "Did you enter a valid Lightning invoice? Try /send if you want to send to a Telegram user or Lightning address."
+	invoiceNoAmountMessage       = "🚫 Can't pay invoices without an amount."
+	insufficientFundsMessage     = "🚫 Insufficient funds. You have %d sat but you need at least %d sat."
+	feeReserveMessage            = "⚠️ Sending your entire balance might fail because of network fees. If it fails, try sending a bit less."
+	invoicePaymentFailedMessage  = "🚫 Payment failed: %s"
+	invoiceUndefinedErrorMessage = "Could not pay invoice."
+	confirmPayInvoiceMessage     = "Do you want to send this payment?\n\n💸 Amount: %d sat"
+	confirmPayAppendMemo         = "\n✉️ %s"
+	payHelpText                  = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/pay <invoice>`\n" +
 		"*Example:* `/pay lnbc20n1psscehd...`"
 )
@@ -136,12 +137,12 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 
-	if m.Chat.Type != tb.ChatPrivate {
-		// delete message
-		NewMessage(m, WithDuration(0, bot.telegram))
-		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(invoicePrivateChatOnlyErrorMessage))
-		return
-	}
+	// if m.Chat.Type != tb.ChatPrivate {
+	// 	// delete message
+	// 	NewMessage(m, WithDuration(0, bot.telegram))
+	// 	bot.trySendMessage(m.Sender, helpPayInvoiceUsage(invoicePrivateChatOnlyErrorMessage))
+	// 	return
+	// }
 	if len(strings.Split(m.Text, " ")) < 2 {
 		NewMessage(m, WithDuration(0, bot.telegram))
 		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(""))
@@ -223,23 +224,7 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 	btnPay.Data = id
 	btnCancelPay.Data = id
 	paymentConfirmationMenu.Inline(paymentConfirmationMenu.Row(btnPay, btnCancelPay))
-	bot.trySendMessage(m.Sender, confirmText, paymentConfirmationMenu)
-}
-
-// cancelPaymentHandler invoked when user clicked cancel on payment confirmation
-func (bot TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
-	// reset state immediately
-	user := LoadUser(ctx)
-
-	ResetUserState(user, bot)
-
-	bot.tryDeleteMessage(c.Message)
-	_, err := bot.telegram.Send(c.Sender, paymentCancelledMessage)
-	if err != nil {
-		log.WithField("message", paymentCancelledMessage).WithField("user", c.Sender.ID).Printf("[Send] %s", err.Error())
-		return
-	}
-
+	bot.trySendMessage(m.Chat, confirmText, paymentConfirmationMenu)
 }
 
 // confirmPayHandler when user clicked pay on payment confirmation
@@ -249,23 +234,30 @@ func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 		log.Errorf("[acceptSendHandler] %s", err)
 		return
 	}
+	// onnly the correct user can press
+	if payData.From.Telegram.ID != c.Sender.ID {
+		return
+	}
 	// immediatelly set intransaction to block duplicate calls
 	err = bot.LockPay(payData)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
+		bot.tryDeleteMessage(c.Message)
 		return
 	}
 	if !payData.Active {
 		log.Errorf("[acceptSendHandler] send not active anymore")
+		bot.tryDeleteMessage(c.Message)
 		return
 	}
 	defer bot.ReleasePay(payData)
 
 	// remove buttons from confirmation message
-	bot.tryEditMessage(c.Message, MarkdownEscape(payData.Message), &tb.ReplyMarkup{})
+	// bot.tryEditMessage(c.Message, MarkdownEscape(payData.Message), &tb.ReplyMarkup{})
 
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
+		bot.tryDeleteMessage(c.Message)
 		return
 	}
 
@@ -282,13 +274,40 @@ func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 		if len(err.Error()) == 0 {
 			err = fmt.Errorf(invoiceUndefinedErrorMessage)
 		}
-		bot.trySendMessage(c.Sender, fmt.Sprintf(invoicePaymentFailedMessage, err))
+		// bot.trySendMessage(c.Sender, fmt.Sprintf(invoicePaymentFailedMessage, err))
+		bot.tryEditMessage(c.Message, fmt.Sprintf(invoicePaymentFailedMessage, err), &tb.ReplyMarkup{})
 		log.Errorln(errmsg)
 		return
 	}
 	payData.Hash = invoice.PaymentHash
 	payData.InTransaction = false
-	bot.trySendMessage(c.Sender, invoicePaidMessage)
+
+	if c.Message.Private() {
+		bot.tryEditMessage(c.Message, invoicePaidMessage, &tb.ReplyMarkup{})
+	} else {
+		bot.trySendMessage(c.Sender, invoicePaidMessage)
+		bot.tryEditMessage(c.Message, fmt.Sprintf(invoicePublicPaidMessage, userStr), &tb.ReplyMarkup{})
+	}
 	log.Printf("[/pay] User %s paid invoice %s", userStr, invoice.PaymentHash)
 	return
+}
+
+// cancelPaymentHandler invoked when user clicked cancel on payment confirmation
+func (bot TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
+	// reset state immediately
+	user := LoadUser(ctx)
+
+	ResetUserState(user, bot)
+	payData, err := bot.getPay(c)
+	if err != nil {
+		log.Errorf("[acceptSendHandler] %s", err)
+		return
+	}
+	// onnly the correct user can press
+	if payData.From.Telegram.ID != c.Sender.ID {
+		return
+	}
+	bot.tryEditMessage(c.Message, paymentCancelledMessage, &tb.ReplyMarkup{})
+	payData.InTransaction = false
+	bot.InactivatePay(payData)
 }

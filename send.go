@@ -18,6 +18,7 @@ const (
 	sendValidAmountMessage     = "Did you enter a valid amount?"
 	sendUserHasNoWalletMessage = "🚫 User %s hasn't created a wallet yet."
 	sendSentMessage            = "💸 %d sat sent to %s."
+	sendPublicSentMessage      = "💸 %d sat sent from %s to %s."
 	sendReceivedMessage        = "🏅 %s sent you %d sat."
 	sendErrorMessage           = "🚫 Send failed."
 	confirmSendMessage         = "Do you want to pay to %s?\n\n💸 Amount: %d sat"
@@ -203,7 +204,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	toUserStrWithoutAt := ""
 
 	// check for user in command, accepts user mention or plan username without @
-	if len(m.Entities) > 1 && m.Entities[1].Type != "mention" {
+	if len(m.Entities) > 1 && m.Entities[1].Type == "mention" {
 		toUserStrMention = m.Text[m.Entities[1].Offset : m.Entities[1].Offset+m.Entities[1].Length]
 		toUserStrWithoutAt = strings.TrimPrefix(toUserStrMention, "@")
 	} else {
@@ -264,7 +265,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	btnCancelSend.Data = id
 
 	sendConfirmationMenu.Inline(sendConfirmationMenu.Row(btnSend, btnCancelSend))
-	_, err = bot.telegram.Send(m.Sender, confirmText, sendConfirmationMenu)
+	_, err = bot.telegram.Send(m.Chat, confirmText, sendConfirmationMenu)
 	if err != nil {
 		log.Error("[send]" + err.Error())
 		return
@@ -278,20 +279,26 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 		log.Errorf("[acceptSendHandler] %s", err)
 		return
 	}
+	// onnly the correct user can press
+	if sendData.From.Telegram.ID != c.Sender.ID {
+		return
+	}
 	// immediatelly set intransaction to block duplicate calls
 	err = bot.LockSend(sendData)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
+		bot.tryDeleteMessage(c.Message)
 		return
 	}
 	if !sendData.Active {
 		log.Errorf("[acceptSendHandler] send not active anymore")
+		bot.tryDeleteMessage(c.Message)
 		return
 	}
 	defer bot.ReleaseSend(sendData)
 
-	// remove buttons from confirmation message
-	bot.tryEditMessage(c.Message, MarkdownEscape(sendData.Message), &tb.ReplyMarkup{})
+	// // remove buttons from confirmation message
+	// bot.tryEditMessage(c.Message, MarkdownEscape(sendData.Message), &tb.ReplyMarkup{})
 
 	// decode callback data
 	// log.Debug("[send] Callback: %s", c.Data)
@@ -308,6 +315,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	to, err := GetUser(&tb.User{ID: toId, Username: toUserStrWithoutAt}, *bot)
 	if err != nil {
 		log.Errorln(err.Error())
+		bot.tryDeleteMessage(c.Message)
 		return
 	}
 	toUserStrMd := GetUserStrMd(to.Telegram)
@@ -321,15 +329,23 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 
 	success, err := t.Send()
 	if !success || err != nil {
-		bot.trySendMessage(c.Sender, sendErrorMessage)
+		// bot.trySendMessage(c.Sender, sendErrorMessage)
 		errmsg := fmt.Sprintf("[/send] Error: Transaction failed. %s", err)
 		log.Errorln(errmsg)
+		bot.tryEditMessage(c.Message, sendErrorMessage, &tb.ReplyMarkup{})
 		return
 	}
 
 	sendData.InTransaction = false
-	bot.trySendMessage(from.Telegram, fmt.Sprintf(sendSentMessage, amount, toUserStrMd))
+
 	bot.trySendMessage(to.Telegram, fmt.Sprintf(sendReceivedMessage, fromUserStrMd, amount))
+	// bot.trySendMessage(from.Telegram, fmt.Sprintf(sendSentMessage, amount, toUserStrMd))
+	if c.Message.Private() {
+		bot.tryEditMessage(c.Message, fmt.Sprintf(sendSentMessage, amount, toUserStrMd), &tb.ReplyMarkup{})
+	} else {
+		bot.trySendMessage(c.Sender, fmt.Sprintf(sendSentMessage, amount, toUserStrMd))
+		bot.tryEditMessage(c.Message, fmt.Sprintf(sendPublicSentMessage, amount, fromUserStrMd, toUserStrMd), &tb.ReplyMarkup{})
+	}
 	// send memo if it was present
 	if len(sendMemo) > 0 {
 		bot.trySendMessage(to.Telegram, fmt.Sprintf("✉️ %s", MarkdownEscape(sendMemo)))
@@ -348,15 +364,22 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 		log.Errorf("[acceptSendHandler] %s", err)
 		return
 	}
-
-	// delete the confirmation message
-	bot.tryDeleteMessage(c.Message)
-	// notify the user
-	bot.trySendMessage(c.Sender, sendCancelledMessage)
-
-	// set the inlineSend inactive
-	sendData.Active = false
+	// onnly the correct user can press
+	if sendData.From.Telegram.ID != c.Sender.ID {
+		return
+	}
+	// remove buttons from confirmation message
+	bot.tryEditMessage(c.Message, sendCancelledMessage, &tb.ReplyMarkup{})
 	sendData.InTransaction = false
-	runtime.IgnoreError(bot.bunt.Set(sendData))
+	bot.InactivateSend(sendData)
+	// // delete the confirmation message
+	// bot.tryDeleteMessage(c.Message)
+	// // notify the user
+	// bot.trySendMessage(c.Sender, sendCancelledMessage)
+
+	// // set the inlineSend inactive
+	// sendData.Active = false
+	// sendData.InTransaction = false
+	// runtime.IgnoreError(bot.bunt.Set(sendData))
 
 }
