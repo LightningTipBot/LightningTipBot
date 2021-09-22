@@ -23,9 +23,6 @@ type TipBot struct {
 }
 
 var (
-	paymentConfirmationMenu     = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
-	btnCancelPay                = paymentConfirmationMenu.Data("🚫 Cancel", "cancel_pay")
-	btnPay                      = paymentConfirmationMenu.Data("✅ Pay", "confirm_pay")
 	botWalletInitialisation     = sync.Once{}
 	telegramHandlerRegistration = sync.Once{}
 )

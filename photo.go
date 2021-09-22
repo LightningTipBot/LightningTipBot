@@ -70,7 +70,7 @@ func (bot TipBot) photoHandler(ctx context.Context, m *tb.Message) {
 	// invoke payment handler
 	if lightning.IsInvoice(data.String()) {
 		m.Text = fmt.Sprintf("/pay %s", data.String())
-		bot.confirmPaymentHandler(ctx, m)
+		bot.payHandler(ctx, m)
 		return
 	} else if lightning.IsLnurl(data.String()) {
 		m.Text = fmt.Sprintf("/lnurl %s", data.String())

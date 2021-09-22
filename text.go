@@ -29,7 +29,7 @@ func (bot TipBot) anyTextHandler(ctx context.Context, m *tb.Message) {
 	anyText := strings.ToLower(m.Text)
 	if lightning.IsInvoice(anyText) {
 		m.Text = "/pay " + anyText
-		bot.confirmPaymentHandler(ctx, m)
+		bot.payHandler(ctx, m)
 		return
 	}
 	if lightning.IsLnurl(anyText) {

@@ -258,7 +258,7 @@ func (bot TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
 		}
 		bot.telegram.Delete(msg)
 		c.Text = fmt.Sprintf("/pay %s", response2.PR)
-		bot.confirmPaymentHandler(ctx, c)
+		bot.payHandler(ctx, c)
 	}
 }
 

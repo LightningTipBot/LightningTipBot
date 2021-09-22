@@ -108,7 +108,7 @@ func (bot TipBot) getHandler() []Handler {
 		},
 		{
 			Endpoints: []interface{}{"/pay"},
-			Handler:   bot.confirmPaymentHandler,
+			Handler:   bot.payHandler,
 			Interceptor: &Interceptor{
 				Type:   MessageInterceptor,
 				Before: []intercept.Func{bot.loadUserInterceptor}},
@@ -210,7 +210,7 @@ func (bot TipBot) getHandler() []Handler {
 		},
 		{
 			Endpoints: []interface{}{&btnPay},
-			Handler:   bot.payHandler,
+			Handler:   bot.confirmPayHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
 				Before: []intercept.Func{bot.loadUserInterceptor}},
