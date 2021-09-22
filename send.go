@@ -15,9 +15,7 @@ import (
 )
 
 const (
-	sendValidAmountMessage  = "Did you enter a valid amount?"
-	sendUserNotFoundMessage = "User %s could not be found. You can /send only to Telegram tags like @%s."
-	// sendIsNotAUsser            = "🚫 %s is not a username. You can /send only to Telegram tags like @%s."
+	sendValidAmountMessage     = "Did you enter a valid amount?"
 	sendUserHasNoWalletMessage = "🚫 User %s hasn't created a wallet yet."
 	sendSentMessage            = "💸 %d sat sent to %s."
 	sendReceivedMessage        = "🏅 %s sent you %d sat."
@@ -203,7 +201,8 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 
 	toUserStrMention := ""
 	toUserStrWithoutAt := ""
-	// check for user in command
+
+	// check for user in command, accepts user mention or plan username without @
 	if len(m.Entities) > 1 && m.Entities[1].Type != "mention" {
 		toUserStrMention = m.Text[m.Entities[1].Offset : m.Entities[1].Offset+m.Entities[1].Length]
 		toUserStrWithoutAt = strings.TrimPrefix(toUserStrMention, "@")
@@ -216,38 +215,6 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 		toUserStrMention = "@" + toUserStrWithoutAt
 		toUserStrWithoutAt = strings.TrimPrefix(toUserStrWithoutAt, "@")
 	}
-
-	// if len(m.Entities) < 2 {
-	// 	arg, err := getArgumentFromCommand(m.Text, 2)
-	// 	if err != nil {
-	// 		log.Errorln(err.Error())
-	// 		return
-	// 	}
-	// 	arg = MarkdownEscape(arg)
-	// 	NewMessage(m, WithDuration(0, bot.telegram))
-	// 	errmsg := fmt.Sprintf("Error: User %s could not be found", arg)
-	// 	bot.trySendMessage(m.Sender, helpSendUsage(fmt.Sprintf(sendUserNotFoundMessage, arg, bot.telegram.Me.Username)))
-	// 	log.Errorln(errmsg)
-
-	// 	return
-	// }
-	// if m.Entities[1].Type != "mention" {
-	// 	arg, err := getArgumentFromCommand(m.Text, 2)
-	// 	if err != nil {
-	// 		NewMessage(m, WithDuration(0, bot.telegram))
-	// 		log.Errorln(err.Error())
-	// 		return
-	// 	}
-	// 	arg = MarkdownEscape(arg)
-	// 	NewMessage(m, WithDuration(0, bot.telegram))
-	// 	errmsg := fmt.Sprintf("Error: %s is not a user", arg)
-	// 	bot.trySendMessage(m.Sender, fmt.Sprintf(sendIsNotAUsser, arg, bot.telegram.Me.Username))
-	// 	log.Errorln(errmsg)
-	// 	return
-	// }
-
-	// toUserStrMention := m.Text[m.Entities[1].Offset : m.Entities[1].Offset+m.Entities[1].Length]
-	// toUserStrWithoutAt := strings.TrimPrefix(toUserStrMention, "@")
 
 	err = bot.parseCmdDonHandler(ctx, m)
 	if err == nil {
