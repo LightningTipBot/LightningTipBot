@@ -1,14 +1,11 @@
-package telegram
+package main
 
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"

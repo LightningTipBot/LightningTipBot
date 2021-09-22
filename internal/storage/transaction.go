@@ -2,7 +2,6 @@ package storage
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"time"
 )
 
