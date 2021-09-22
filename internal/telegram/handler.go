@@ -300,7 +300,7 @@ func (bot TipBot) getHandler() []Handler {
 		},
 		{
 			Endpoints: []interface{}{&btnAcceptInlineFaucet},
-			Handler:   bot.accpetInlineFaucetHandler,
+			Handler:   bot.acceptInlineFaucetHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
 				Before: []intercept.Func{bot.loadUserInterceptor}},
