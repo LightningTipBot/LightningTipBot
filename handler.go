@@ -111,70 +111,70 @@ func (bot TipBot) getHandler() []Handler {
 			Handler:   bot.payHandler,
 			Interceptor: &Interceptor{
 				Type:   MessageInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.logMessageInterceptor, bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/invoice"},
 			Handler:   bot.invoiceHandler,
 			Interceptor: &Interceptor{
 				Type:   MessageInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.logMessageInterceptor, bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/balance"},
 			Handler:   bot.balanceHandler,
 			Interceptor: &Interceptor{
 				Type:   MessageInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.logMessageInterceptor, bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/send"},
 			Handler:   bot.sendHandler,
 			Interceptor: &Interceptor{
 				Type:   MessageInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.logMessageInterceptor, bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/help"},
 			Handler:   bot.helpHandler,
 			Interceptor: &Interceptor{
 				Type:   MessageInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.logMessageInterceptor, bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/basics"},
 			Handler:   bot.basicsHandler,
 			Interceptor: &Interceptor{
 				Type:   MessageInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.logMessageInterceptor, bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/donate"},
 			Handler:   bot.donationHandler,
 			Interceptor: &Interceptor{
 				Type:   MessageInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.logMessageInterceptor, bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/advanced"},
 			Handler:   bot.advancedHelpHandler,
 			Interceptor: &Interceptor{
 				Type:   MessageInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.logMessageInterceptor, bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/link"},
 			Handler:   bot.lndhubHandler,
 			Interceptor: &Interceptor{
 				Type:   MessageInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.logMessageInterceptor, bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/lnurl"},
 			Handler:   bot.lnurlHandler,
 			Interceptor: &Interceptor{
 				Type:   MessageInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.logMessageInterceptor, bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{tb.OnPhoto},
@@ -192,8 +192,8 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.logMessageInterceptor,
 					bot.requirePrivateChatInterceptor,
+					bot.logMessageInterceptor, // Log message only if private chat
 					bot.loadUserInterceptor,
 				}},
 		},
