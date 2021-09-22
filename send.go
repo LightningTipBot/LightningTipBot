@@ -354,13 +354,13 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 
 	success, err := t.Send()
 	if !success || err != nil {
-		// NewMessage(m, WithDuration(0, bot.telegram))
 		bot.trySendMessage(c.Sender, sendErrorMessage)
 		errmsg := fmt.Sprintf("[/send] Error: Transaction failed. %s", err)
 		log.Errorln(errmsg)
 		return
 	}
 
+	sendData.InTransaction = false
 	bot.trySendMessage(from.Telegram, fmt.Sprintf(sendSentMessage, amount, toUserStrMd))
 	bot.trySendMessage(to.Telegram, fmt.Sprintf(sendReceivedMessage, fromUserStrMd, amount))
 	// send memo if it was present

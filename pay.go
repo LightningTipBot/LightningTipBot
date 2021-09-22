@@ -283,6 +283,8 @@ func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 		log.Errorln(errmsg)
 		return
 	}
+	payData.Hash = invoice.PaymentHash
+	payData.InTransaction = false
 	bot.trySendMessage(c.Sender, invoicePaidMessage)
 	log.Printf("[/pay] User %s paid invoice %s", userStr, invoice.PaymentHash)
 	return

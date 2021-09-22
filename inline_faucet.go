@@ -409,6 +409,7 @@ func (bot *TipBot) accpetInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 func (bot *TipBot) cancelInlineFaucetHandler(c *tb.Callback) {
 	inlineFaucet, err := bot.getInlineFaucet(c)
+	defer bot.inactivateFaucet(inlineFaucet)
 	if err != nil {
 		log.Errorf("[cancelInlineSendHandler] %s", err)
 		return
