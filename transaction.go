@@ -113,7 +113,7 @@ func (t *Transaction) SendTransaction(bot *TipBot, from *lnbits.User, to *lnbits
 	// check if fromUser has balance
 	if balance < amount {
 		errmsg := fmt.Sprintf(balanceTooLowMessage)
-		log.Errorln("Balance of user %s too low", fromUserStr)
+		log.Errorf("Balance of user %s too low", fromUserStr)
 		return false, fmt.Errorf(errmsg)
 	}
 

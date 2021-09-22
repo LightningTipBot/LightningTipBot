@@ -173,7 +173,7 @@ func (bot TipBot) faucetHandler(ctx context.Context, m *tb.Message) {
 	}
 	// check if fromUser has balance
 	if balance < inlineFaucet.Amount {
-		log.Errorln("Balance of user %s too low", fromUserStr)
+		log.Errorf("Balance of user %s too low", fromUserStr)
 		bot.trySendMessage(m.Sender, fmt.Sprintf(inlineSendBalanceLowMessage, balance))
 		bot.tryDeleteMessage(m)
 		return
@@ -241,7 +241,7 @@ func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) {
 	}
 	// check if fromUser has balance
 	if balance < inlineFaucet.Amount {
-		log.Errorln("Balance of user %s too low", fromUserStr)
+		log.Errorf("Balance of user %s too low", fromUserStr)
 		bot.inlineQueryReplyWithError(q, fmt.Sprintf(inlineSendBalanceLowMessage, balance), fmt.Sprintf(inlineQueryFaucetDescription, bot.telegram.Me.Username))
 		return
 	}

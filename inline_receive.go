@@ -224,7 +224,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	}
 	// check if fromUser has balance
 	if balance < inlineReceive.Amount {
-		log.Errorln("[acceptInlineReceiveHandler] balance of user %s too low", fromUserStr)
+		log.Errorf("[acceptInlineReceiveHandler] balance of user %s too low", fromUserStr)
 		bot.trySendMessage(from.Telegram, fmt.Sprintf(inlineSendBalanceLowMessage, balance))
 		return
 	}
