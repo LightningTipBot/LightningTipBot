@@ -23,6 +23,7 @@ const (
 	insufficientFundsMessage           = "🚫 Insufficient funds. You have %d sat but you need at least %d sat."
 	feeReserveMessage                  = "⚠️ Sending your entire balance might fail because of network fees. If it fails, try sending a bit less."
 	invoicePaymentFailedMessage        = "🚫 Payment failed: %s"
+	invoiceUndefinedErrorMessage       = "Could not pay invoice."
 	confirmPayInvoiceMessage           = "Do you want to send this payment?\n\n💸 Amount: %d sat"
 	confirmPayAppendMemo               = "\n✉️ %s"
 	payHelpText                        = "📖 Oops, that didn't work. %s\n\n" +
@@ -268,7 +269,6 @@ func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 
-	// if user.StateKey == lnbits.UserStateConfirmPayment {
 	invoiceString := payData.Invoice
 
 	// reset state immediately
@@ -279,6 +279,9 @@ func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 	invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoiceString}, bot.client)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/pay] Could not pay invoice of user %s: %s", userStr, err)
+		if len(err.Error()) == 0 {
+			err = fmt.Errorf(invoiceUndefinedErrorMessage)
+		}
 		bot.trySendMessage(c.Sender, fmt.Sprintf(invoicePaymentFailedMessage, err))
 		log.Errorln(errmsg)
 		return
@@ -288,6 +291,4 @@ func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 	bot.trySendMessage(c.Sender, invoicePaidMessage)
 	log.Printf("[/pay] User %s paid invoice %s", userStr, invoice.PaymentHash)
 	return
-	// }
-
 }
