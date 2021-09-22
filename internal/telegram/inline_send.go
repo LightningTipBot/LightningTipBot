@@ -41,67 +41,6 @@ func NewInlineSend() *InlineSend {
 
 }
 
-func (msg InlineSend) Key() string {
-	return msg.ID
-}
-
-func (bot *TipBot) LockInlineSend(tx *InlineSend) error {
-	// immediatelly set intransaction to block duplicate calls
-	tx.InTransaction = true
-	err := bot.Bunt.Set(tx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (bot *TipBot) ReleaseInlineSend(tx *InlineSend) error {
-	// immediatelly set intransaction to block duplicate calls
-	tx.InTransaction = false
-	err := bot.Bunt.Set(tx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (bot *TipBot) InactivateInlineSend(tx *InlineSend) error {
-	tx.Active = false
-	err := bot.Bunt.Set(tx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (bot *TipBot) getInlineSend(c *tb.Callback) (*InlineSend, error) {
-	inlineSend := NewInlineSend()
-	inlineSend.ID = c.Data
-
-	err := bot.Bunt.Get(inlineSend)
-
-	// to avoid race conditions, we block the call if there is
-	// already an active transaction by loop until InTransaction is false
-	ticker := time.NewTicker(time.Second * 10)
-
-	for inlineSend.InTransaction {
-		select {
-		case <-ticker.C:
-			return nil, fmt.Errorf("inline send %s timeout", inlineSend.ID)
-		default:
-			log.Warnf("[getInlineSend] %s in transaction", inlineSend.ID)
-			time.Sleep(time.Duration(500) * time.Millisecond)
-			err = bot.Bunt.Get(inlineSend)
-		}
-	}
-	if err != nil {
-		return nil, fmt.Errorf("could not get inline send %s", inlineSend.ID)
-	}
-
-	return inlineSend, nil
-
-}
-
 func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 	inlineSend := NewInlineSend()
 	var err error
