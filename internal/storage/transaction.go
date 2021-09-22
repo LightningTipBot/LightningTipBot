@@ -2,7 +2,6 @@ package storage
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -53,15 +52,14 @@ func GetTransaction(s Storable, tx *Transaction, db *DB) (Storable, error) {
 	for tx.InTransaction {
 		select {
 		case <-ticker.C:
-			return nil, fmt.Errorf("send timeout")
+			return nil, fmt.Errorf("transaction timeout")
 		default:
-			log.Infoln("[send] in transaction")
 			time.Sleep(time.Duration(500) * time.Millisecond)
 			err = db.Get(s)
 		}
 	}
 	if err != nil {
-		return nil, fmt.Errorf("could not get sendData")
+		return nil, fmt.Errorf("could not get transaction")
 	}
 
 	return s, nil
