@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -128,7 +127,7 @@ func (bot TipBot) faucetHandler(ctx context.Context, m *tb.Message) {
 		bot.tryDeleteMessage(m)
 		return
 	}
-	inlineFaucet.PerUserAmount, err = strconv.Atoi(peruserStr)
+	inlineFaucet.PerUserAmount, err = getAmount(peruserStr)
 	if err != nil {
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "inlineFaucetHelpText"), Translate(ctx, "inlineFaucetInvalidAmountMessage")))
 		bot.tryDeleteMessage(m)
@@ -206,7 +205,7 @@ func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) {
 		bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineQueryFaucetTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.telegram.Me.Username))
 		return
 	}
-	inlineFaucet.PerUserAmount, err = strconv.Atoi(peruserStr)
+	inlineFaucet.PerUserAmount, err = getAmount(peruserStr)
 	if err != nil {
 		bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineQueryFaucetTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.telegram.Me.Username))
 		return
