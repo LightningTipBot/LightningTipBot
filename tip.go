@@ -120,7 +120,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	log.Infof("[tip] Transaction sent from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
 
 	// notify users
-	_, err = bot.telegram.Send(from.Telegram, fmt.Sprintf(Translate(ctx, "tipSentMessage"), amount, toUserStrMd))
+	_, err = bot.telegram.Send(from.Telegram, fmt.Sprintf(bot.Translate(from.Telegram.LanguageCode, "tipSentMessage"), amount, toUserStrMd))
 	if err != nil {
 		errmsg := fmt.Errorf("[/tip] Error: Send message to %s: %s", toUserStr, err)
 		log.Errorln(errmsg)
