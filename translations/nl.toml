@@ -1,0 +1,276 @@
+# COMMANDS
+
+helpCommandStr = """hielp"""
+basicsCommandStr = """basis"""
+tipCommandStr = """tip"""
+balanceCommandStr = """rekeningsaldo"""
+sendCommandStr = """verzenden"""
+invoiceCommandStr = """factuur"""
+payCommandStr = """betalen"""
+donateCommandStr = """donatie"""
+advancedCommandStr = """geavanceerd"""
+transactionsCommandStr = """transacties"""
+logCommandStr = """log"""
+listCommandStr = """lijst"""
+
+linkCommandStr = """connect"""
+lnurlCommandStr = """lnurl"""
+faucetCommandStr = """tapkraan"""
+
+tipjarCommandStr = """donatiebox"""
+receiveCommandStr = """ontvangen"""
+hideCommandStr = """verbergen"""
+volcanoCommandStr = """vulkaan"""
+showCommandStr = """toon"""
+optionsCommandStr = """opties"""
+settingsCommandStr = """instellingen"""
+saveCommandStr = """save"""
+deleteCommandStr = """verwijderen"""
+infoCommandStr = """info"""
+
+# NOTIFICATIONS
+
+cantDoThatMessage = """Dat kun je niet doen."""
+cantClickMessage = """Je kunt niet op deze knop klikken."""
+balanceTooLowMessage = """Uw saldo is te laag."""
+
+# BUTTONS
+
+sendButtonMessage = """✅ verzenden"""
+payButtonMessage = """✅ betalen"""
+payReceiveButtonMessage = """💸 betalen"""
+receiveButtonMessage = """✅ ontvangen"""
+cancelButtonMessage = """🚫 annuleren"""
+collectButtonMessage = """✅ verzamelen"""
+nextButtonMessage = """volgende"""
+backButtonMessage = """terug"""
+acceptButtonMessage = """accepteren"""
+denyButtonMessage = """weigeren"""
+tipButtonMessage = """tip"""
+revealButtonMessage = """onthullen"""
+showButtonMessage = """toon"""
+hideButtonMessage = """verbergen"""
+joinButtonMessage = """deelnemen"""
+optionsButtonMessage = """opties"""
+settingsButtonMessage = """instellingen"""
+saveButtonMessage = """save"""
+deleteButtonMessage = """verwijderen"""
+infoButtonMessage = """info"""
+
+# HELP
+
+helpMessage = """⚡️ *Wallet*
+_Deze bot is een Bitcoin Lightning wallet die tips kan sturen op Telegram. Om tips te geven, voeg de bot toe aan een groepschat. De basiseenheid van tips zijn Satoshis (sat). 100.000.000 sat = 1 Bitcoin. Type 📚 /basics voor meer._
+❤️ *Doneren*
+_Deze bot brengt geen kosten in rekening maar kost Satoshis om te werken. Als je de bot leuk vindt, overweeg dan om dit project te steunen met een donatie. Om te doneren, gebruik_ `/donate 1000`
+%s
+⚙️ *opdrachten*
+*/tip* 🏅 Antwoord op een bericht aan tip: `/tip <amount> [<memo>]`
+*/balance* 👑 Controleer uw saldo: `/balance`
+*/send* 💸 Stuur geld naar een gebruiker: `/send <amount> @user or user@ln.tips [<memo>]`
+*/invoice* ⚡️ Ontvang met Lightning: `/invoice <amount> [<memo>]`
+*/pay* ⚡️ Betaal met Lightning: `/pay <invoice>`
+*/donate* ❤️ Doneer aan het project: `/donate 1000`
+*/advanced* 🤖 Geavanceerde functies.
+*/help* 📖 Lees deze hulp."""
+
+infoHelpMessage = """ℹ️ *Info*"""
+infoYourLightningAddress = """Uw Lightning adres is `%s`"""
+
+
+basicsMessage = """🧡 *Bitcoin*
+_Bitcoin is de munteenheid van het internet. Het is zonder toestemming en gedecentraliseerd en heeft geen meesters en geen controlerende autoriteit. Bitcoin is gezond geld dat sneller, veiliger en inclusiever is dan het oude financiële systeem.
+🧮 *Economie*
+_De kleinste eenheid van Bitcoin zijn Satoshis (sat) en 100.000.000 sat = 1 Bitcoin. Er zullen ooit maar 21 miljoen Bitcoin zijn. De fiatvalutawaarde van Bitcoin kan dagelijks veranderen. Echter, als u leeft op een Bitcoin-standaard zal 1 sat altijd gelijk zijn aan 1 sat._
+⚡️ *Het Lightning Network*
+_Het Lightning Network is een betalingsprotocol dat snelle en goedkope Bitcoin-betalingen mogelijk maakt die bijna geen energie vergen. Het is wat Bitcoin schaalt naar de miljarden mensen over de hele wereld._
+📲 *Lightning Wallets*
+_U kunt uw geld via deze bot naar elke andere Lightning Wallet in de wereld sturen. Aanbevolen Lightning wallets voor uw telefoon zijn_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (niet-custodiaal), of_ [Wallet van Satoshi](https://www.walletofsatoshi.com/) _(gemakkelijk)_.
+📄 *Open Source*
+_Deze bot is gratis en_ [open source](https://github.com/LightningTipBot/LightningTipBot) _software. U kunt het op uw eigen computer draaien en in uw eigen gemeenschap gebruiken._
+✈️ *Telegram*
+_Voeg deze bot toe aan je Telegram groep chat om berichten te /tip. Als je de bot admin maakt van de groep zal hij ook commando's opruimen om de chat netjes te houden._
+🏛 *Voorwaarden*
+_Wij zijn geen bewaarder van uw fondsen. Wij zullen in uw belang handelen, maar we zijn ons er ook van bewust dat de situatie zonder KYC lastig is totdat we iets hebben uitgezocht. Elk bedrag dat u in uw portemonnee laadt, wordt beschouwd als een donatie. Geef ons niet al uw geld.  Wees ervan bewust dat deze bot in beta ontwikkeling is. Gebruik op eigen risico.
+❤️ *Doneren*
+_Deze bot brengt geen kosten in rekening maar kost satoshis om te werken. Als je de bot leuk vindt, overweeg dan om dit project te steunen met een donatie. Om te doneren, gebruik_ `/donate 1000`"""
+
+helpNoUsernameMessage = """👋 Stel alstublieft een Telegram gebruikersnaam in."""
+
+advancedMessage = """%s
+👉 *Inline commands*
+*send* 💸 Stuur sats naar chat: `%s send <bedrag> [<memo>]`
+*receive* 🏅 Verzoek om betaling: `%s receive <bedrag> [<memo>]`
+*faucet* 🚰 Maak een tapkraan: `%s faucet <capacity> <per_user>`
+📖 Je kunt inline commando's in elke chat gebruiken, zelfs in privé gesprekken. Wacht een seconde na het invoeren van een inline commando en *klik* op het resultaat, druk niet op enter.
+⚙️ *Geavanceerde opdrachten*
+*/link* 🔗 Koppel uw wallet aan [BlueWallet](https://bluewallet.io/) of [Zeus](https://zeusln.app/)
+*/lnurl* ⚡️ Lnurl ontvangen of betalen: `/lnurl` of `/lnurl <lnurl>`
+*/faucet* 🚰 Maak een tapkraan `/faucet <capacity> <per_user>`"""
+
+# START
+
+startSettingWalletMessage = """🧮 Uw wallet instellen..."""
+startWalletCreatedMessage = """🧮 Wallet gemaakt."""
+startWalletReadyMessage   = """✅ *Uw wallet is klaar.*"""
+startWalletErrorMessage   = """🚫 Fout bij het initialiseren van uw wallet. Probeer later opnieuw."""
+startNoUsernameMessage    = """☝️ Het lijkt erop dat je nog geen Telegram @ gebruikersnaam hebt. Dat is niet erg, je hebt er geen nodig om deze bot te gebruiken. Echter, om beter gebruik te maken van je wallet, stel je een gebruikersnaam in bij de Telegram instellingen. Voer vervolgens /balance in, zodat de bot zijn gegevens over jou kan bijwerken."""
+
+# BALANCE
+
+balanceMessage      = """👑 *Uw saldo:* %d sat"""
+balanceErrorMessage = """🚫 Kon uw saldo niet ophalen. Probeer het later nog eens."""
+
+# TIP
+
+tipDidYouReplyMessage = """Hebt u een bericht aan tip beantwoord? Om te antwoorden op een bericht, klik met de rechtermuisknop -> Beantwoorden op uw computer of veeg over het bericht op uw telefoon. Als je direct naar een andere gebruiker wilt sturen, gebruik dan het /send commando."""
+tipInviteGroupMessage = """ℹ️ Trouwens, je kan deze bot uitnodigen voor elke groep om daar te beginnen tippen."""
+tipEnterAmountMessage = """Heb je een bedrag ingevoerd?"""
+tipValidAmountMessage = """Heb je een geldig bedrag ingevoerd?"""
+tipYourselfMessage    = """📖 Je kunt jezelf geen tip geven."""
+tipSentMessage        = """💸 %d sat gestuurd naar %s."""
+tipReceivedMessage    = """🏅 %s heeft je getipt %d sat."""
+tipErrorMessage       = """🚫 Tip mislukt."""
+tipUndefinedErrorMsg  = """probeer het later nog eens"""
+tipHelpText           = """📖 Oeps, dat werkte niet. %s
+*Usage:* `/tip <betrag> [<memo>]`
+*Example:* `/tip 1000 Dank meme!`"""
+
+# SEND
+
+sendValidAmountMessage     = """Heb je een geldig bedrag ingevoerd?"""
+sendUserHasNoWalletMessage = """🚫 Gebruiker %s heeft nog geen portemonnee aangemaakt."""
+sendSentMessage            = """💸 %d zat verstuurd naar %s."""
+sendPublicSentMessage      = """💸 %d sat verstuurd van %s naar %s."""
+sendReceivedMessage        = """🏅 %s stuurde u %d sat."""
+sendErrorMessage           = """🚫 Verzenden mislukt."""
+confirmSendMessage         = """Wilt u betalen aan %s? bedrag: %d sat"""
+confirmSendAppendMemo      = """\n✉️ %s"""
+sendCancelledMessage       = """🚫 Geannuleerd verzenden."""
+errorTryLaterMessage       = """🚫 Fout. Probeer het later nog eens."""
+sendSyntaxErrorMessage     = """Heb je een bedrag en een ontvanger ingevoerd? U kunt het /send commando gebruiken om ofwel naar Telegram gebruikers te sturen zoals %s of naar een Lightning adres zoals LightningTipBot@ln.tips."""
+sendHelpText               = """📖 Oeps, dat werkte niet. %s
+*Usage:* `/send <amount> <user> [<memo>]`
+*Example:* `/send 1000 @LightningTipBot Ik hou gewoon van de bot ❤️`
+*Example:* `/send 1234 LightningTipBot@ln.tips`"""
+
+# INVOICE
+
+invoiceEnterAmountMessage = """Heb je een bedrag ingevoerd?"""
+invoiceValidAmountMessage = """Heeft u een geldig bedrag ingevoerd?"""
+invoiceHelpText           = """📖 Oeps, dat werkte niet. %s
+
+*Usage:* `/invoice <betrag> [<memo>]`
+*Example:* `/invoice 1000 Dank je!`"""
+
+# PAY
+
+paymentCancelledMessage     = """🚫 Betaling geannuleerd."""
+invoicePaidMessage          = """⚡️ Betaling verzonden."""
+invoicePublicPaidMessage    = """⚡️ Betaling verzonden door %s."""
+invalidInvoiceHelpMessage    = """Heeft u een geldige Lightning factuur ingevoerd? Probeer /send als u wilt verzenden naar een Telegram gebruiker of Lightning address."""
+invoiceNoAmountMessage       = """🚫 Kan facturen niet betalen zonder een bedrag."""
+insufficientFundsMessage     = """🚫 Onvoldoende middelen. Je hebt %d sat maar je hebt minstens %d sat nodig."""
+feeReserveMessage            = """⚠️ Het versturen van uw volledige saldo kan mislukken vanwege netwerkkosten. Als het mislukt, probeer dan een beetje minder te verzenden."""
+invoicePaymentFailedMessage  = """🚫 Betaling mislukt: %s"""
+invoiceUndefinedErrorMessage = """Kon de factuur niet betalen."""
+confirmPayInvoiceMessage     = """Wilt u deze betaling sturen?\n\n💸 bedrag: %d sat"""
+confirmPayAppendMemo         = """\n✉️ %s"""
+payHelpText                  = """📖 Oeps, dat werkte niet. %s
+
+*Usage:* `/pay <invoice>`
+*Example:* `/pay lnbc20n1psscehd...`"""
+
+# DONATE
+
+donationSuccess          = """🙏 Thank you for your donation."""
+donationErrorMessage     = """🚫 Oh no. Donation failed."""
+donationProgressMessage  = """🧮 Preparing your donation..."""
+donationFailedMessage    = """🚫 Donation failed: %s"""
+donateEnterAmountMessage = """Did you enter an amount?"""
+donateValidAmountMessage = """Did you enter a valid amount?"""
+donateHelpText           = """📖 Oops, that didn't work. %s
+*Usage:* `/donate <amount>`
+*Example:* `/donate 1000`"""
+
+# PHOTO
+
+photoQrNotRecognizedMessage = """🚫 Kon een Lightning factuur of een LNURL niet herkennen. Probeer de QR code te centreren, de foto bij te snijden, of in te zoomen."""
+photoQrRecognizedMessage = """✅ QR code:
+`%s`"""
+
+# LNURL
+
+lnurlReceiveInfoText           = """👇 U kunt deze statische LNURL gebruiken om betalingen te ontvangen."""
+lnurlResolvingUrlMessage       = """🧮 Oplossen adres..."""
+lnurlGettingUserMessage        = """🧮 Voorbereiding van betaling..."""
+lnurlPaymentFailed             = """🚫 Betaling mislukt: %s"""
+lnurlInvalidAmountMessage      = """🚫 Ongeldig bedrag."""
+lnurlInvalidAmountRangeMessage = """🚫 Bedrag moet liggen tussen %d en %d zat."""
+lnurlNoUsernameMessage         = """🚫 U moet een Telegram gebruikersnaam instellen om betalingen te ontvangen via LNURL."""
+lnurlEnterAmountMessage        = """⌨️ Voer een bedrag in tussen %d en %d sat."""
+lnurlHelpText                  = """📖 Oeps, dat werkte niet. %s
+*Usage:* `/lnurl [bedrag] <lnurl>`
+*Example:* `/lnurl LNURL1DP68GUR...`"""
+
+# LINK
+
+walletConnectMessage = """🔗 *Koppel uw wallet*
+⚠️ Deel nooit de URL of de QR code met iemand anders of zij zullen toegang krijgen tot uw fondsen.
+- *BlueWallet:* Druk op *Nieuwe wallet*, *Import wallet*, *Scan of importeer een bestand*, en scan de QR code.
+- *Zeus:* Kopieer de URL hieronder, druk op *Voeg een nieuw knooppunt toe*, *Import* (de URL), *Save Node Config*."""
+couldNotLinkMessage = """🚫 Uw wallet kon niet gelinkt worden. Probeer het later opnieuw."""
+
+# FAUCET
+
+inlineQueryFaucetTitle        = """🚰 Maak een tapkraan."""
+inlineQueryFaucetDescription  = """Gebruik: @%s tapkrann <capacity> <per_user>"""
+inlineResultFaucetTitle       = """🚰 Maak een %d sat tapkraan."""
+inlineResultFaucetDescription = """👉 Klik hier om een tapkraan in deze chatt te maken.."""
+
+inlineFaucetMessage                     = """Druk op ✅ om %d sat te verzamelen van deze tapkraan.
+🚰 Remaining: %d/%d sat (given to %d/%d users)
+%s"""
+inlineFaucetEndedMessage                = """🚰 Tapkraan leeg 🍺🏅 %d zat gegeven aan %d gebruikers."""
+inlineFaucetAppendMemo                  = """\n✉️ %s"""
+inlineFaucetCreateWalletMessage         = """Chat met %s 👈 om uw wallet te beheren."""
+inlineFaucetCancelledMessage            = """🚫 Tapkraan geannuleerd."""
+inlineFaucetInvalidPeruserAmountMessage = """🚫 Per gebruiker bedrag niet deelbaar van capaciteit."""
+inlineFaucetInvalidAmountMessage        = """🚫 Ongeldig bedrag."""
+inlineFaucetSentMessage                 = """🚰 %d zat gestuurd naar %s."""
+inlineFaucetReceivedMessage             = """🚰 %s stuurde je %d sat."""
+inlineFaucetHelpFaucetInGroup           = """Maak een tapkraan in een groep met de bot erin of gebruik 👉 inline commando (/advanced voor meer)."""
+inlineFaucetHelpText                    = """📖 Oeps, dat werkte niet. %s
+*Usage:* `/tapkraan <capaciteit> <per_gebruiker>`
+*Example:* `/tapkraan 210 21`"""
+
+# INLINE VERZENDEN
+
+inlineQuerySendTitle            = """💸 Stuur betaling naar een chat."""
+inlineQuerySendDescription      = """Gebruik: @%s send <bedrag> [<memo>]"""
+inlineResultSendTitle           = """💸 Stuur %d sat."""
+inlineResultSendDescription     = """👉 Klik om %d sat naar deze chat te sturen."""
+
+inlineSendMessage              = """Druk op ✅ om de betaling van %s te ontvangen.\n💸 Bedrag: %d sat"""
+inlineSendAppendMemo           = """\n✉️ %s"""
+inlineSendUpdateMessageAccept  = """💸 %d verzonden van %s naar %s."""
+inlineSendCreateWalletMessage  = """Chat met %s 👈 om uw wallet te beheren."""
+sendYourselfMessage            = """📖 Je kunt niet aan jezelf betalen."""
+inlineSendFailedMessage        = """🚫 verzenden mislukt."""
+inlineSendInvalidAmountMessage = """🚫 Bedrag moet groter zijn dan 0."""
+inlineSendBalanceLowMessage    = """🚫 Uw saldo is te laag (%d zat)."""
+
+# INLINE RECEIVE
+
+inlineQueryReceiveTitle        = """🏅 Vraag een betaling in een chat."""
+inlineQueryReceiveDescription  = """Gebruik: @%s ontvangt <bedrag> [<memo>]"""
+inlineResultReceiveTitle       = """🏅 Ontvang %d zat."""
+inlineResultReceiveDescription = """👉 Klik om een betaling van %d sat aan te vragen."""
+
+inlineReceiveMessage             = """Druk op 💸 om te betalen aan %s.\n💸 Bedrag: %d sat"""
+inlineReceiveAppendMemo          = """\n✉️ %s"""
+inlineReceiveUpdateMessageAccept = """💸 %d sat verstuurd van %s naar %s."""
+inlineReceiveCreateWalletMessage = """Chat met %s 👈 om uw wallet te beheren."""
+inlineReceiveYourselfMessage     = """📖 Je kunt niet aan jezelf betalen."""
+inlineReceiveFailedMessage       = """🚫 Ontvangst mislukt."""
+inlineReceiveCancelledMessage    = """🚫 Ontvangen geannuleerd."""
