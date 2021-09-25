@@ -70,7 +70,7 @@ _Este bot no cobra ninguna comisión, pero su funcionamiento cuesta Satoshis. Si
 ⚙️ *Comandos*
 */tip* 🏅 Responder a un mensaje para dar tip: `/tip <monto> [<memo>]`
 */balance* 👑 Consulta tu saldo: `/balance`.
-*/send* 💸 Enviar fondos a un usuario: `/send <amount> @user o user@ln.tips [<memo>]`
+*/send* 💸 Enviar fondos a un usuario: `/send <monto> @user o user@ln.tips [<memo>]`
 */invoice* ⚡️ Recibir con Lightning: `/invoice <monto> [<memo>]`
 */pay* ⚡️ Pagar con Lightning: `/pay <invoice>`
 */donate* ❤️ Donar al proyecto: `/donate 1000`
