@@ -20,12 +20,22 @@ func decodeAmountFromCommand(input string) (amount int, err error) {
 		// log.Errorln(errmsg)
 		return 0, errors.New(errmsg)
 	}
-	amount, err = getAmount(input)
+	amount, err = getAmount(strings.Split(input, " ")[1])
 	return amount, err
 }
 
 func getAmount(input string) (amount int, err error) {
-	amount, err = strconv.Atoi(strings.Split(input, " ")[1])
+	// convert something like 1.2k into 1200
+	if strings.HasSuffix(input, "k") {
+		fmount, err := strconv.ParseFloat(strings.TrimSpace(input[:len(input)-1]), 64)
+		if err != nil {
+			return 0, err
+		}
+		amount = int(fmount * 1000)
+		return amount, err
+	}
+
+	amount, err = strconv.Atoi(input)
 	if err != nil {
 		return 0, err
 	}
