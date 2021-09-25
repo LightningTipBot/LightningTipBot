@@ -29,10 +29,10 @@ func (bot TipBot) startHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 	bot.tryDeleteMessage(walletCreationMsg)
-	userContext := context.WithValue(context.Background(), "user", user)
-	bot.helpHandler(userContext, m)
+	ctx = context.WithValue(ctx, "user", user)
+	bot.helpHandler(ctx, m)
 	bot.trySendMessage(m.Sender, Translate(ctx, "startWalletReadyMessage"))
-	bot.balanceHandler(userContext, m)
+	bot.balanceHandler(ctx, m)
 
 	// send the user a warning about the fact that they need to set a username
 	if len(m.Sender.Username) == 0 {
