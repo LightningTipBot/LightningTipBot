@@ -1,9 +1,9 @@
 # COMMANDS
 
-helpCommandStr = """hielp"""
+helpCommandStr = """help"""
 basicsCommandStr = """basis"""
 tipCommandStr = """tip"""
-balanceCommandStr = """rekeningsaldo"""
+balanceCommandStr = """saldo"""
 sendCommandStr = """verzenden"""
 invoiceCommandStr = """factuur"""
 payCommandStr = """betalen"""
@@ -15,7 +15,7 @@ listCommandStr = """lijst"""
 
 linkCommandStr = """connect"""
 lnurlCommandStr = """lnurl"""
-faucetCommandStr = """tapkraan"""
+faucetCommandStr = """kraan"""
 
 tipjarCommandStr = """donatiebox"""
 receiveCommandStr = """ontvangen"""
@@ -47,7 +47,7 @@ backButtonMessage = """terug"""
 acceptButtonMessage = """accepteren"""
 denyButtonMessage = """weigeren"""
 tipButtonMessage = """tip"""
-revealButtonMessage = """onthullen"""
+revealButtonMessage = """laat zijn"""
 showButtonMessage = """toon"""
 hideButtonMessage = """verbergen"""
 joinButtonMessage = """deelnemen"""
@@ -101,12 +101,12 @@ advancedMessage = """%s
 👉 *Inline commands*
 *send* 💸 Stuur sats naar chat: `%s send <bedrag> [<memo>]`
 *receive* 🏅 Verzoek om betaling: `%s receive <bedrag> [<memo>]`
-*faucet* 🚰 Maak een tapkraan: `%s faucet <capacity> <per_user>`
+*faucet* 🚰 Maak een kraan: `%s faucet <capacity> <per_user>`
 📖 Je kunt inline commando's in elke chat gebruiken, zelfs in privé gesprekken. Wacht een seconde na het invoeren van een inline commando en *klik* op het resultaat, druk niet op enter.
 ⚙️ *Geavanceerde opdrachten*
 */link* 🔗 Koppel uw wallet aan [BlueWallet](https://bluewallet.io/) of [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ Lnurl ontvangen of betalen: `/lnurl` of `/lnurl <lnurl>`
-*/faucet* 🚰 Maak een tapkraan `/faucet <capacity> <per_user>`"""
+*/faucet* 🚰 Maak een kraan `/faucet <capacity> <per_user>`"""
 
 # START
 
@@ -183,14 +183,14 @@ payHelpText                  = """📖 Oeps, dat werkte niet. %s
 
 # DONATE
 
-donationSuccess          = """🙏 Thank you for your donation."""
-donationErrorMessage     = """🚫 Oh no. Donation failed."""
+donationSuccess          = """🙏 Dank u voor uw donatie."""
+donationErrorMessage     = """🚫 Oh nee. Donatie mislukt."""
 donationProgressMessage  = """🧮 Preparing your donation..."""
-donationFailedMessage    = """🚫 Donation failed: %s"""
-donateEnterAmountMessage = """Did you enter an amount?"""
-donateValidAmountMessage = """Did you enter a valid amount?"""
-donateHelpText           = """📖 Oops, that didn't work. %s
-*Usage:* `/donate <amount>`
+donationFailedMessage    = """🚫 Donatie mislukt: %s"""
+donateEnterAmountMessage = """Heeft u een bedrag ingevoerd?"""
+donateValidAmountMessage = """Heeft u een geldig bedrag ingevoerd?"""
+donateHelpText           = """📖 Oeps, dat werkte niet. %s
+*Usage:* `/donate <bedrag>`
 *Example:* `/donate 1000`"""
 
 # PHOTO
@@ -223,26 +223,26 @@ couldNotLinkMessage = """🚫 Uw wallet kon niet gelinkt worden. Probeer het lat
 
 # FAUCET
 
-inlineQueryFaucetTitle        = """🚰 Maak een tapkraan."""
+inlineQueryFaucetTitle        = """🚰 Maak een kraan."""
 inlineQueryFaucetDescription  = """Gebruik: @%s tapkrann <capacity> <per_user>"""
-inlineResultFaucetTitle       = """🚰 Maak een %d sat tapkraan."""
-inlineResultFaucetDescription = """👉 Klik hier om een tapkraan in deze chatt te maken.."""
+inlineResultFaucetTitle       = """🚰 Maak een %d sat kraan."""
+inlineResultFaucetDescription = """👉 Klik hier om een kraan in deze chat te maken.."""
 
-inlineFaucetMessage                     = """Druk op ✅ om %d sat te verzamelen van deze tapkraan.
+inlineFaucetMessage                     = """Druk op ✅ om %d sat te verzamelen van deze kraan.
 🚰 Remaining: %d/%d sat (given to %d/%d users)
 %s"""
-inlineFaucetEndedMessage                = """🚰 Tapkraan leeg 🍺🏅 %d zat gegeven aan %d gebruikers."""
+inlineFaucetEndedMessage                = """🚰 kraan leeg 🍺🏅 %d zat gegeven aan %d gebruikers."""
 inlineFaucetAppendMemo                  = """\n✉️ %s"""
 inlineFaucetCreateWalletMessage         = """Chat met %s 👈 om uw wallet te beheren."""
-inlineFaucetCancelledMessage            = """🚫 Tapkraan geannuleerd."""
+inlineFaucetCancelledMessage            = """🚫 kraan geannuleerd."""
 inlineFaucetInvalidPeruserAmountMessage = """🚫 Per gebruiker bedrag niet deelbaar van capaciteit."""
 inlineFaucetInvalidAmountMessage        = """🚫 Ongeldig bedrag."""
 inlineFaucetSentMessage                 = """🚰 %d zat gestuurd naar %s."""
 inlineFaucetReceivedMessage             = """🚰 %s stuurde je %d sat."""
-inlineFaucetHelpFaucetInGroup           = """Maak een tapkraan in een groep met de bot erin of gebruik 👉 inline commando (/advanced voor meer)."""
+inlineFaucetHelpFaucetInGroup           = """Maak een kraan in een groep met de bot erin of gebruik 👉 inline commando (/advanced voor meer)."""
 inlineFaucetHelpText                    = """📖 Oeps, dat werkte niet. %s
-*Usage:* `/tapkraan <capaciteit> <per_gebruiker>`
-*Example:* `/tapkraan 210 21`"""
+*Usage:* `/kraan <capaciteit> <per_gebruiker>`
+*Example:* `/kraan 210 21`"""
 
 # INLINE VERZENDEN
 
