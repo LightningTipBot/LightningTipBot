@@ -80,7 +80,6 @@ _Deze bot brengt geen kosten in rekening maar kost Satoshis om te werken. Als je
 infoHelpMessage = """ℹ️ *Info*"""
 infoYourLightningAddress = """Uw Lightning adres is `%s`"""
 
-
 basicsMessage = """🧡 *Bitcoin*
 _Bitcoin is de munteenheid van het internet. Het is zonder toestemming en gedecentraliseerd en heeft geen meesters en geen controlerende autoriteit. Bitcoin is gezond geld dat sneller, veiliger en inclusiever is dan het oude financiële systeem.
 

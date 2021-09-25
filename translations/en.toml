@@ -80,7 +80,6 @@ _This bot charges no fees but costs Satoshis to operate. If you like the bot, pl
 infoHelpMessage = """ℹ️ *Info*"""
 infoYourLightningAddress = """Your Lightning Address is `%s`"""
 
-
 basicsMessage = """🧡 *Bitcoin*
 _Bitcoin is the currency of the internet. It is permissionless and decentralized and has no masters and no controling authority. Bitcoin is sound money that is faster, more secure, and more inclusive than the legacy financial system._
 

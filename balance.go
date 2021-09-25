@@ -9,11 +9,6 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const (
-// balanceMessage      = "👑 *Your balance:* %d sat"
-// balanceErrorMessage = "🚫 Error fetching your balance. Please try again later."
-)
-
 func (bot TipBot) balanceHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)

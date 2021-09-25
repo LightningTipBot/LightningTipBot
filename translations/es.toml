@@ -1,7 +1,7 @@
 # COMMANDS
 
 helpCommandStr = """ayuda"""
-basicsCommandStr = """básico"""
+basicsCommandStr = """basico"""
 tipCommandStr = """tip"""
 balanceCommandStr = """saldo"""
 sendCommandStr = """enviar"""
@@ -59,8 +59,8 @@ infoButtonMessage = """Info"""
 
 # HELP
 
-helpMessage = """*Monedero* ⚡️
-_Este bot es un monedero Bitcoin Lightning que puede enviar tips vía Telegram. Para dar tips, añade el bot a un chat de grupo. La unidad básica de los tips son los Satoshis (sat). 100.000.000 sat = 1 Bitcoin. Escribe 📚 /básico para saber más._
+helpMessage = """⚡️ *Monedero*
+_Este bot es un monedero Bitcoin Lightning que puede enviar tips vía Telegram. Para dar tips, añade el bot a un chat de grupo. La unidad básica de los tips son los Satoshis (sat). 100.000.000 sat = 1 Bitcoin. Escribe 📚 /basics para saber más._
 
 ❤️ *Donar*
 _Este bot no cobra ninguna comisión, pero su funcionamiento cuesta Satoshis. Si te gusta el bot, por favor considera apoyar este proyecto con una donación. Para donar, usa_ `/donate 1000`.
@@ -79,7 +79,6 @@ _Este bot no cobra ninguna comisión, pero su funcionamiento cuesta Satoshis. Si
 
 infoHelpMessage = """ℹ️ *Info*"""
 infoYourLightningAddress = """Su Lightning Address _(Dirección Lightning)_ es `%s`."""
-
 
 basicsMessage = """🧡 *Bitcoin*
 _Bitcoin es la moneda de Internet. Es una moneda sin permisos y descentralizada que no tiene dueños ni autoridad que la controle. Bitcoin es un dinero sólido que es más rápido, más seguro y más inclusivo que el sistema financiero fiduciario._
@@ -103,11 +102,12 @@ _Añade este bot al chat de tu grupo de Telegram para enviar fondos usando /tip.
 _No somos custodios de tus fondos. Actuaremos en su mejor interés, pero también somos conscientes de que la situación sin KYC es complicada hasta que resolvamos algo. Cualquier cantidad que pongas en tu monedero se considerará una donación. No nos des todo tu dinero.  Ten en cuenta que este bot está en desarrollo beta. Utilízalo bajo tu propio riesgo._
 
 ❤️ *Donar*
-_Este bot no cobra ninguna comisión, pero su funcionamiento cuesta satoshis. Si te gusta el bot, por favor considera apoyar este proyecto con una donación. Para donar, use_ `/donate 1000`""
+_Este bot no cobra ninguna comisión, pero su funcionamiento cuesta satoshis. Si te gusta el bot, por favor considera apoyar este proyecto con una donación. Para donar, use_ `/donate 1000`"""
 
 helpNoUsernameMessage = """👋 Por favor, pon un nombre de usuario de Telegram."""
 
 advancedMessage = """%s
+
 👉 *Comandos Inline*
 *send* 💸 Enviar sats al chat: `%s send <monto> [<memo>]`
 *receive* 🏅 Solicita un pago: `%s receive <monto> [<memo>]`.

@@ -19,15 +19,6 @@ import (
 // IF YOU USE THIS PROJECT, LEAVE THIS CODE ALONE
 
 var (
-	// donationSuccess          = "🙏 Thank you for your donation."
-	// donationErrorMessage     = "🚫 Oh no. Donation failed."
-	// donationProgressMessage  = "🧮 Preparing your donation..."
-	// donationFailedMessage    = "🚫 Donation failed: %s"
-	// donateEnterAmountMessage = "Did you enter an amount?"
-	// donateValidAmountMessage = "Did you enter a valid amount?"
-	// donateHelpText           = "📖 Oops, that didn't work. %s\n\n" +
-	// 	"*Usage:* `/donate <amount>`\n" +
-	// 	"*Example:* `/donate 1000`"
 	donationEndpoint string
 )
 

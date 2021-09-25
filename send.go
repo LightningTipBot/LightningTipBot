@@ -14,24 +14,6 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const (
-// sendValidAmountMessage     = "Did you enter a valid amount?"
-// sendUserHasNoWalletMessage = "🚫 User %s hasn't created a wallet yet."
-// sendSentMessage            = "💸 %d sat sent to %s."
-// sendPublicSentMessage      = "💸 %d sat sent from %s to %s."
-// sendReceivedMessage        = "🏅 %s sent you %d sat."
-// sendErrorMessage           = "🚫 Send failed."
-// confirmSendMessage         = "Do you want to pay to %s?\n\n💸 Amount: %d sat"
-// confirmSendAppendMemo      = "\n✉️ %s"
-// sendCancelledMessage       = "🚫 Send cancelled."
-// errorTryLaterMessage       = "🚫 Error. Please try again later."
-// sendHelpText               = "📖 Oops, that didn't work. %s\n\n" +
-// 	"*Usage:* `/send <amount> <user> [<memo>]`\n" +
-// 	"*Example:* `/send 1000 @LightningTipBot I just like the bot ❤️`\n" +
-// 	"*Example:* `/send 1234 LightningTipBot@ln.tips`"
-// sendSyntaxErrorMessage = "Did you enter an amount and a recipient? You can use the /send command to either send to Telegram users like %s or to a Lightning address like LightningTipBot@ln.tips."
-)
-
 var (
 	sendConfirmationMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	btnCancelSend        = sendConfirmationMenu.Data("🚫 Cancel", "cancel_send")

@@ -14,24 +14,6 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const (
-// paymentCancelledMessage  = "🚫 Payment cancelled."
-// invoicePaidMessage       = "⚡️ Payment sent."
-// invoicePublicPaidMessage = "⚡️ Payment sent by %s."
-// // invoicePrivateChatOnlyErrorMessage = "You can pay invoices only in the private chat with the bot."
-// invalidInvoiceHelpMessage    = "Did you enter a valid Lightning invoice? Try /send if you want to send to a Telegram user or Lightning address."
-// invoiceNoAmountMessage       = "🚫 Can't pay invoices without an amount."
-// insufficientFundsMessage     = "🚫 Insufficient funds. You have %d sat but you need at least %d sat."
-// feeReserveMessage            = "⚠️ Sending your entire balance might fail because of network fees. If it fails, try sending a bit less."
-// invoicePaymentFailedMessage  = "🚫 Payment failed: %s"
-// invoiceUndefinedErrorMessage = "Could not pay invoice."
-// confirmPayInvoiceMessage     = "Do you want to send this payment?\n\n💸 Amount: %d sat"
-// confirmPayAppendMemo         = "\n✉️ %s"
-// payHelpText                  = "📖 Oops, that didn't work. %s\n\n" +
-// 	"*Usage:* `/pay <invoice>`\n" +
-// 	"*Example:* `/pay lnbc20n1psscehd...`"
-)
-
 var (
 	paymentConfirmationMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	btnCancelPay            = paymentConfirmationMenu.Data("🚫 Cancel", "cancel_pay")

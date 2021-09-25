@@ -12,24 +12,6 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const (
-// inlineSendMessage              = "Press ✅ to receive payment from %s.\n\n💸 Amount: %d sat"
-// inlineSendAppendMemo           = "\n✉️ %s"
-// inlineSendUpdateMessageAccept  = "💸 %d sat sent from %s to %s."
-// inlineSendCreateWalletMessage  = "Chat with %s 👈 to manage your wallet."
-// sendYourselfMessage            = "📖 You can't pay to yourself."
-// inlineSendFailedMessage        = "🚫 Send failed."
-// inlineSendInvalidAmountMessage = "🚫 Amount must be larger than 0."
-// inlineSendBalanceLowMessage    = "🚫 Your balance is too low (👑 %d sat)."
-)
-
-const (
-// inlineQuerySendTitle        = "💸 Send payment to a chat."
-// inlineQuerySendDescription  = "Usage: @%s send <amount> [<memo>]"
-// inlineResultSendTitle       = "💸 Send %d sat."
-// inlineResultSendDescription = "👉 Click to send %d sat to this chat."
-)
-
 var (
 	inlineSendMenu      = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	btnCancelInlineSend = inlineSendMenu.Data("🚫 Cancel", "cancel_send_inline")

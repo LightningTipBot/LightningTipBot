@@ -12,21 +12,7 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const (
-// inlineReceiveMessage             = "Press 💸 to pay to %s.\n\n💸 Amount: %d sat"
-// inlineReceiveAppendMemo          = "\n✉️ %s"
-// inlineReceiveUpdateMessageAccept = "💸 %d sat sent from %s to %s."
-// inlineReceiveCreateWalletMessage = "Chat with %s 👈 to manage your wallet."
-// inlineReceiveYourselfMessage     = "📖 You can't pay to yourself."
-// inlineReceiveFailedMessage       = "🚫 Receive failed."
-// inlineReceiveCancelledMessage    = "🚫 Receive cancelled."
-)
-
 var (
-	// inlineQueryReceiveTitle        = "🏅 Request a payment in a chat."
-	// inlineQueryReceiveDescription  = "Usage: @%s receive <amount> [<memo>]"
-	// inlineResultReceiveTitle       = "🏅 Receive %d sat."
-	// inlineResultReceiveDescription = "👉 Click to request a payment of %d sat."
 	inlineReceiveMenu      = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	btnCancelInlineReceive = inlineReceiveMenu.Data("🚫 Cancel", "cancel_receive_inline")
 	btnAcceptInlineReceive = inlineReceiveMenu.Data("💸 Pay", "confirm_receive_inline")

@@ -13,29 +13,6 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const (
-// inlineFaucetMessage                     = "Press ✅ to collect %d sat from this faucet.\n\n🚰 Remaining: %d/%d sat (given to %d/%d users)\n%s"
-// inlineFaucetEndedMessage                = "🏅 Faucet empty 🏅\n\n🚰 %d sat given to %d users."
-// inlineFaucetAppendMemo                  = "\n✉️ %s"
-// inlineFaucetCreateWalletMessage         = "Chat with %s 👈 to manage your wallet."
-// inlineFaucetCancelledMessage            = "🚫 Faucet cancelled."
-// inlineFaucetInvalidPeruserAmountMessage = "🚫 Peruser amount not divisor of capacity."
-// inlineFaucetInvalidAmountMessage        = "🚫 Invalid amount."
-// inlineFaucetSentMessage                 = "🚰 %d sat sent to %s."
-// inlineFaucetReceivedMessage             = "🚰 %s sent you %d sat."
-// inlineFaucetHelpFaucetInGroup           = "Create a faucet in a group with the bot inside or use 👉 inline command (/advanced for more)."
-// inlineFaucetHelpText                    = "📖 Oops, that didn't work. %s\n\n" +
-// 	"*Usage:* `/faucet <capacity> <per_user>`\n" +
-// 	"*Example:* `/faucet 210 21`"
-)
-
-const (
-// inlineQueryFaucetTitle        = "🚰 Create a faucet."
-// inlineQueryFaucetDescription  = "Usage: @%s faucet <capacity> <per_user>"
-// inlineResultFaucetTitle       = "💸 Create a %d sat faucet."
-// inlineResultFaucetDescription = "👉 Click here to create a faucet worth %d sat in this chat."
-)
-
 var (
 	inlineFaucetMenu      = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	btnCancelInlineFaucet = inlineFaucetMenu.Data("🚫 Cancel", "cancel_faucet_inline")

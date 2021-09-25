@@ -20,20 +20,6 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const (
-// lnurlReceiveInfoText           = "👇 You can use this LNURL to receive payments."
-// lnurlResolvingUrlMessage       = "🧮 Resolving address..."
-// lnurlGettingUserMessage        = "🧮 Preparing payment..."
-// lnurlPaymentFailed             = "🚫 Payment failed: %s"
-// lnurlInvalidAmountMessage      = "🚫 Invalid amount."
-// lnurlInvalidAmountRangeMessage = "🚫 Amount must be between %d and %d sat."
-// lnurlNoUsernameMessage         = "🚫 You need to set a Telegram username to receive via LNURL."
-// lnurlEnterAmountMessage        = "⌨️ Enter an amount between %d and %d sat."
-// lnurlHelpText                  = "📖 Oops, that didn't work. %s\n\n" +
-// 	"*Usage:* `/lnurl [amount] <lnurl>`\n" +
-// 	"*Example:* `/lnurl LNURL1DP68GUR...`"
-)
-
 // lnurlHandler is invoked on /lnurl command
 func (bot TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 	// commands:

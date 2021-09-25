@@ -3,7 +3,7 @@
 helpCommandStr = """hilfe"""
 basicsCommandStr = """grundlagen"""
 tipCommandStr = """tip"""
-balanceCommandStr = """kontostand"""
+balanceCommandStr = """guthaben"""
 sendCommandStr = """sende"""
 invoiceCommandStr = """invoice"""
 payCommandStr = """bezahle"""
@@ -32,7 +32,7 @@ infoCommandStr = """info"""
 
 cantDoThatMessage = """Du kannst das nicht tun."""
 cantClickMessage = """Du kannst diesen Knopf nicht drücken."""
-balanceTooLowMessage = """Dein Kontostand ist zu niedrig."""
+balanceTooLowMessage = """Dein Guthaben ist zu niedrig."""
 
 # BUTTONS
 
@@ -69,7 +69,7 @@ _Dieser Bot erhebt keine Gebühren, kostet aber Satoshis um betrieben zu werden.
 
 ⚙️ *Befehle*
 */tip* 🏅 Antworte auf eine Nachricht um einen Tip zu senden: `/tip <betrag> [<memo>]`
-*/balance* 👑 Überprüfe deinen Kontostand: `/balance`
+*/balance* 👑 Frage dein Guthaben ab: `/balance`
 */send* 💸 Sende an einen Benutzer: `/send <betrag> @user oder user@ln.tips [<memo>]`
 */invoice* ⚡️ Empfange mit Lightning: `/invoice <betrag> [<memo>]`
 */pay* ⚡️ Bezahle mit Lightning: `/pay <invoice>`
@@ -79,7 +79,6 @@ _Dieser Bot erhebt keine Gebühren, kostet aber Satoshis um betrieben zu werden.
 
 infoHelpMessage = """ℹ️ *Info*"""
 infoYourLightningAddress = """Deine Lightning Adresse ist `%s`"""
-
 
 basicsMessage = """🧡 *Bitcoin*
 _Bitcoin ist die Währung des Internets. Es ist offen für jeden, dezentral und es gibt niemanden, der Bitcoin kontrolliert. Bitcoin ist hartes Geld, was schneller, sicherer, und fairer ist, als das klassische Finanzsystem._
@@ -131,8 +130,8 @@ startNoUsernameMessage = """☝️ Es sieht so aus, als hättest du noch keinen 
 
 # BALANCE
 
-balanceMessage      = """👑 *Dein Kontostand:* %d sat"""
-balanceErrorMessage = """🚫 Konnte deinen Kontostand nicht abfragen. Bitte versuche es später noch ein mal."""
+balanceMessage      = """👑 *Dein Guthaben:* %d sat"""
+balanceErrorMessage = """🚫 Konnte dein Guthaben nicht abfragen. Bitte versuche es später noch ein mal."""
 
 # TIP
 
@@ -185,8 +184,8 @@ invoicePaidMessage = """⚡️ Zahlung gesendet."""
 invoicePublicPaidMessage = """⚡️ Zahlung gesendet von %s."""
 invalidInvoiceHelpMessage = """Hast du eine gültige Lightning Invoice eingegeben? Versuche den /send Befehl, falls du an einen Telegram Nutzer oder eine Lightning Adresse senden willst."""
 invoiceNoAmountMessage = """🚫 Kann keine Invoices ohne Betrag bezahlen."""
-insufficientFundsMessage = """🚫 Kontostand zu niedrig. Du hast %d sat aber brauchst mindestens %d sat."""
-feeReserveMessage = """⚠️ Deinen gesamten Kontostand zu senden könnte wegen den Netzwerkgebühren fehlschlagen. Falls das passiert, versuche es mit einem etwas geringeren Betrag."""
+insufficientFundsMessage = """🚫 Guthaben zu niedrig. Du hast %d sat aber brauchst mindestens %d sat."""
+feeReserveMessage = """⚠️ Dein gesamtes Guthaben zu senden könnte wegen den Netzwerkgebühren fehlschlagen. Falls das passiert, versuche es mit einem etwas geringeren Betrag."""
 invoicePaymentFailedMessage = """🚫 Zahlung fehlgeschlagen: %s"""
 invoiceUndefinedErrorMessage = """Konnte Invoice nicht bezahlen."""
 confirmPayInvoiceMessage = """Mochtest du diese Zahlung senden?\n\n💸 Betrag: %d sat"""
@@ -279,7 +278,7 @@ inlineSendCreateWalletMessage = """Chatte mit %s 👈 um dein Wallet zu verwalte
 sendYourselfMessage = """📖 Du kannst dich nicht selbst bezahlen."""
 inlineSendFailedMessage = """🚫 Senden fehlgeschlagen."""
 inlineSendInvalidAmountMessage = """🚫 Betrag muss größer als 0 sein."""
-inlineSendBalanceLowMessage = """🚫 Dein Kontostand ist zu niedrig (%d sat)."""
+inlineSendBalanceLowMessage = """🚫 Dein Guthaben ist zu niedrig (%d sat)."""
 
 # INLINE RECEIVE
 

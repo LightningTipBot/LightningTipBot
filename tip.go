@@ -10,21 +10,6 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const (
-// tipDidYouReplyMessage = "Did you reply to a message to tip? To reply to any message, right-click -> Reply on your computer or swipe the message on your phone. If you want to send directly to another user, use the /send command."
-// tipInviteGroupMessage = "ℹ️ By the way, you can invite this bot to any group to start tipping there."
-// tipEnterAmountMessage = "Did you enter an amount?"
-// tipValidAmountMessage = "Did you enter a valid amount?"
-// tipYourselfMessage    = "📖 You can't tip yourself."
-// tipSentMessage        = "💸 %d sat sent to %s."
-// tipReceivedMessage    = "🏅 %s has tipped you %d sat."
-// tipErrorMessage       = "🚫 Tip failed."
-// tipUndefinedErrorMsg  = "please try again later"
-// tipHelpText           = "📖 Oops, that didn't work. %s\n\n" +
-// 	"*Usage:* `/tip <amount> [<memo>]`\n" +
-// 	"*Example:* `/tip 1000 Dank meme!`"
-)
-
 func helpTipUsage(ctx context.Context, errormsg string) string {
 	if len(errormsg) > 0 {
 		return fmt.Sprintf(Translate(ctx, "tipHelpText"), fmt.Sprintf("%s", errormsg))
