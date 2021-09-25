@@ -60,7 +60,7 @@ infoButtonMessage = """Info"""
 # HELP
 
 helpMessage = """⚡️ *Wallet*
-_Dieser Bot ist ein Bitcoin Lightning Wallet der Tips (kleine Beträge) auf Telegram senden kann. Up einen Tip zu senden, füge den Bot in einen Gruppenchat hinzu. Die grundlegende Einheit von Tips sind Satoshis (sat). 100,000,000 sat = 1 Bitcoin. Gebe 📚 /basics ein für mehr Informationen._
+_Dieser Bot ist ein Bitcoin Lightning Wallet der Tips (kleine Beträge) auf Telegram senden kann. Um ein Tip zu senden, füge den Bot in einen Gruppenchat hinzu. Die grundlegende Einheit von Tips sind Satoshis (sat). 100,000,000 sat = 1 Bitcoin. Gebe 📚 /basics ein für mehr Informationen._
 
 ❤️ *Spenden*
 _Dieser Bot erhebt keine Gebühren, kostet aber Satoshis um betrieben zu werden. Wenn du den Bot magst, kannst das Projekt mit eine Spende unterstützen. Um zu spenden, gebe ein: _ `/donate 1000`
@@ -74,7 +74,7 @@ _Dieser Bot erhebt keine Gebühren, kostet aber Satoshis um betrieben zu werden.
 */invoice* ⚡️ Empfange mit Lightning: `/invoice <betrag> [<memo>]`
 */pay* ⚡️ Bezahle mit Lightning: `/pay <invoice>`
 */donate* ❤️ Spende an das Projekt: `/donate 1000`
-*/advanced* 🤖 Fortgerschittene Funktionen.
+*/advanced* 🤖 Fortgeschrittene Funktionen.
 */help* 📖 Rufe die Hilfe auf."""
 
 infoHelpMessage = """ℹ️ *Info*"""
@@ -99,12 +99,12 @@ _Dieser Bot ist kostenlose_ [Open Source](https://github.com/LightningTipBot/Lig
 _Füge den Bot in deine Telegram Gruppenchats hinzu, um Nachrichten ein /tip zu senden. Wenn der Bot Admin der Gruppe ist, wird er auch den Chat aufräumen, indem er manche Befehle nach Ausführung löscht._
 
 🏛 *Bedingungen*
-_Wir sind keine Verwalter deines Geldes. Wir werden in deinem besten Interesse handeln, aber sind uns auch dessen bewusst, dass die Situation ohne KYC etwas kompliziert ist. Solange wir keine andere Lösung gefunden haben, werden wir alle Beträge auf diesem Bot als Spenden betrachten. Gebe uns nicht dein ganzes Geld. Sei dir dessen bewusst, dass dieser Bot immernoch in der Betaphase ist. Benutzung auf eigene Gefahr._
+_Wir sind keine Verwalter deines Geldes. Wir werden in deinem besten Interesse handeln, aber sind uns auch dessen bewusst, dass die Situation ohne KYC etwas kompliziert ist. Solange wir keine andere Lösung gefunden haben, werden wir alle Beträge auf diesem Bot als Spenden betrachten. Gebe uns nicht dein ganzes Geld. Sei dir dessen bewusst, dass dieser Bot immer noch in der Betaphase ist. Benutzung auf eigene Gefahr._
 
 ❤️ *Spenden*
 _Dieser Bot erhebt keine Gebühren, kostet aber Satoshis um betrieben zu werden. Wenn du den Bot magst, kannst das Projekt mit eine Spende unterstützen. Um zu spenden, gebe ein: _ `/donate 1000`"""
 
-helpNoUsernameMessage = """👋 Bitte seteze einen Telegram Nutzernamen."""
+helpNoUsernameMessage = """👋 Bitte setze einen Telegram Benutzernamen."""
 
 advancedMessage = """%s
 
@@ -125,13 +125,13 @@ advancedMessage = """%s
 startSettingWalletMessage = """🧮 Richte dein Wallet ein..."""
 startWalletCreatedMessage = """🧮 Wallet erstellt."""
 startWalletReadyMessage = """✅ *Dein Wallet ist bereit.*"""
-startWalletErrorMessage = """🚫 Fehler beim einrichten deines Wallets. Bitte versuche es später noch ein mal."""
+startWalletErrorMessage = """🚫 Fehler beim einrichten deines Wallets. Bitte versuche es später noch einmal."""
 startNoUsernameMessage = """☝️ Es sieht so aus, als hättest du noch keinen Telegram @usernamen. Das ist ok, du brauchst keinen, um diesen Bot zu verwenden. Um jedoch alle Funktionen verwenden zu können, solltest du dir einen Usernamen in den Telegram Einstellungen setzen. Gebe danach ein mal /balance ein, damit der Bot seine Informationen über dich aktualisieren kann."""
 
 # BALANCE
 
 balanceMessage      = """👑 *Dein Guthaben:* %d sat"""
-balanceErrorMessage = """🚫 Konnte dein Guthaben nicht abfragen. Bitte versuche es später noch ein mal."""
+balanceErrorMessage = """🚫 Konnte dein Guthaben nicht abfragen. Bitte versuche es später noch einmal."""
 
 # TIP
 
@@ -143,7 +143,7 @@ tipYourselfMessage = """📖 Du kannst dir nicht selbst Tips senden."""
 tipSentMessage = """💸 %d sat an %s gesendet."""
 tipReceivedMessage = """🏅 %s hat dir ein Tip von %d sat gesendet."""
 tipErrorMessage = """🚫 Tip fehlgeschlagen."""
-tipUndefinedErrorMsg = """bitte versuche es später noch ein mal."""
+tipUndefinedErrorMsg = """bitte versuche es später noch einmal."""
 tipHelpText = """📖 Ups, das hat nicht geklappt. %s
 
 *Befehl:* `/tip <betrag> [<memo>]`
@@ -160,7 +160,7 @@ sendErrorMessage = """🚫 Senden fehlgeschlagen."""
 confirmSendMessage = """Möchtest eine Zahlung an %s senden?\n\n💸 Betrag: %d sat"""
 confirmSendAppendMemo = """\n✉️ %s"""
 sendCancelledMessage = """🚫 Senden abgebrochen."""
-errorTryLaterMessage = """🚫 Fehler. Bitte versuche es später noch ein mal."""
+errorTryLaterMessage = """🚫 Fehler. Bitte versuche es später noch einmal."""
 sendSyntaxErrorMessage = """Hast du einen gültigen Betrag und Empfänger eingegeben? Du kannst den /send Befehl verwenden, um entweder an Telegram Nutzer zu senden, wie z.B. %s oder an eine Lightning Adresse, wie LightningTipBot@ln.tips."""
 sendHelpText = """📖 Ups, das hat nicht geklappt. %s
 
@@ -188,7 +188,7 @@ insufficientFundsMessage = """🚫 Guthaben zu niedrig. Du hast %d sat aber brau
 feeReserveMessage = """⚠️ Dein gesamtes Guthaben zu senden könnte wegen den Netzwerkgebühren fehlschlagen. Falls das passiert, versuche es mit einem etwas geringeren Betrag."""
 invoicePaymentFailedMessage = """🚫 Zahlung fehlgeschlagen: %s"""
 invoiceUndefinedErrorMessage = """Konnte Invoice nicht bezahlen."""
-confirmPayInvoiceMessage = """Mochtest du diese Zahlung senden?\n\n💸 Betrag: %d sat"""
+confirmPayInvoiceMessage = """Möchtest du diese Zahlung senden?\n\n💸 Betrag: %d sat"""
 confirmPayAppendMemo = """\n✉️ %s"""
 payHelpText = """📖 Ups, das hat nicht geklappt. %s
 
@@ -237,7 +237,7 @@ walletConnectMessage = """🔗 *Verbinde dein Wallet*
 
 - *BlueWallet:* Drücke *New wallet*, *Import wallet*, *Scan or import a file*, und scanne den QR Code.
 - *Zeus:* Kiere die URL unten, drücke *Add a new node*, *Import* (die URL), *Save Node Config*."""
-couldNotLinkMessage = """🚫 Konnte dein Wallet nicht verbinden. Bitte versuche es später noch ein mal."""
+couldNotLinkMessage = """🚫 Konnte dein Wallet nicht verbinden. Bitte versuche es später noch einmal."""
 
 # FAUCET
 

@@ -259,7 +259,7 @@ func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 			err = fmt.Errorf(bot.Translate(payData.LanguageCode, "invoiceUndefinedErrorMessage"))
 		}
 		// bot.trySendMessage(c.Sender, fmt.Sprintf(invoicePaymentFailedMessage, err))
-		bot.tryEditMessage(c.Message, fmt.Sprintf(bot.Translate(payData.LanguageCode, "invoicePaymentFailedMessage"), err), &tb.ReplyMarkup{})
+		bot.tryEditMessage(c.Message, fmt.Sprintf(bot.Translate(payData.LanguageCode, "invoicePaymentFailedMessage"), MarkdownEscape(err.Error())), &tb.ReplyMarkup{})
 		log.Errorln(errmsg)
 		return
 	}

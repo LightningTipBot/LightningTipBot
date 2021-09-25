@@ -132,7 +132,9 @@ func tipTooltipHandler(m *tb.Message, bot *TipBot, amount int, initializedWallet
 		}
 		msg, err := bot.telegram.Reply(m.ReplyTo, tipmsg, tb.Silent)
 		if err != nil {
-			print(err)
+			log.Errorf("[tipTooltipHandler Reply] %s", err.Error())
+			// todo: in case of error we should do something better than just return 0
+			return false
 		}
 		message := NewTipTooltip(msg, TipAmount(amount), Tips(1))
 		message.Tippers = appendUinqueUsersToSlice(message.Tippers, m.Sender)
