@@ -59,7 +59,7 @@ func GetLnbitsUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 	user := &lnbits.User{Name: strconv.Itoa(u.ID)}
 	tx := bot.database.First(user)
 	if tx.Error != nil {
-		errmsg := fmt.Sprintf("[GetUser] Couldn't fetch %s's info from database.", GetUserStr(u))
+		errmsg := fmt.Sprintf("[GetUser] Couldn't fetch %s from database: %s", GetUserStr(u), tx.Error.Error())
 		log.Warnln(errmsg)
 		user.Telegram = u
 		return user, tx.Error
@@ -70,6 +70,9 @@ func GetLnbitsUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 // GetUser from telegram user. Update the user if user information changed.
 func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 	user, err := GetLnbitsUser(u, bot)
+	if err != nil {
+		return nil, err
+	}
 	go func() {
 		userCopy := bot.copyLowercaseUser(u)
 		if !reflect.DeepEqual(userCopy, user.Telegram) {
