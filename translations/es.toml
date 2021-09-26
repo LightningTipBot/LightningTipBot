@@ -157,7 +157,7 @@ sendSentMessage            = """💸 %d sat enviado a %s."""
 sendPublicSentMessage      = """💸 %d sat enviado(s) de %s a %s."""
 sendReceivedMessage        = """🏅 %s te envió %d sat."""
 sendErrorMessage           = """🚫 Envío fallido."""
-confirmSendMessage         = """¿Desea pagar a %s?\n\n💸 Monto: %d sat?"""
+confirmSendMessage         = """¿Desea pagar a %s?\n\n💸 Monto: %d sat"""
 confirmSendAppendMemo      = """\n✉️ %s"""
 sendCancelledMessage       = """🚫 Envío cancelado."""
 errorTryLaterMessage       = """🚫 Error. Por favor, inténtelo de nuevo más tarde."""
@@ -188,7 +188,7 @@ insufficientFundsMessage     = """🚫 Fondos insuficientes. Tienes %d sat pero 
 feeReserveMessage            = """⚠️ El envío de todo el saldo puede fallar debido a las tarifas de la red. Si falla, intenta enviar un poco menos."""
 invoicePaymentFailedMessage  = """🚫 Pago fallido: %s"""
 invoiceUndefinedErrorMessage = """No se pudo pagar la factura."""
-confirmPayInvoiceMessage     = """¿Desea pagar a %s?\n\n💸 Monto: %d sat?"""
+confirmPayInvoiceMessage     = """¿Quieres enviar este pago?\n\n💸 Monto: %d sat"""
 confirmPayAppendMemo         = """\n✉️ %s"""
 payHelpText                  = """📖 Oops, eso no funcionó. %s
 
