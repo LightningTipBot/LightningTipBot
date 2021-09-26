@@ -94,7 +94,7 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{Type: MessageInterceptor},
 		},
 		{
-			Endpoints: []interface{}{"/faucet", "/zapfhahn", "/kraan"},
+			Endpoints: []interface{}{"/faucet", "/zapfhahn", "/kraan", "/grifo"},
 			Handler:   bot.faucetHandler,
 			Interceptor: &Interceptor{
 				Type:   MessageInterceptor,

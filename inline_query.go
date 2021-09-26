@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
@@ -88,6 +89,25 @@ func (bot TipBot) anyChosenInlineHandler(q *tb.ChosenInlineResult) {
 	fmt.Printf(q.Query)
 }
 
+func (bot TipBot) commandTranslationMap(ctx context.Context, command string) context.Context {
+	switch command {
+	// is default, we don't have to check it
+	// case "faucet":
+	// 	ctx = context.WithValue(ctx, "publicLanguageCode", "en")
+	// 	ctx = context.WithValue(ctx, "publicLocalizer", i18n.NewLocalizer(bot.bundle, "en"))
+	case "zapfhahn":
+		ctx = context.WithValue(ctx, "publicLanguageCode", "de")
+		ctx = context.WithValue(ctx, "publicLocalizer", i18n.NewLocalizer(bot.bundle, "de"))
+	case "kraan":
+		ctx = context.WithValue(ctx, "publicLanguageCode", "nl")
+		ctx = context.WithValue(ctx, "publicLocalizer", i18n.NewLocalizer(bot.bundle, "nl"))
+	case "grifo":
+		ctx = context.WithValue(ctx, "publicLanguageCode", "es")
+		ctx = context.WithValue(ctx, "publicLocalizer", i18n.NewLocalizer(bot.bundle, "es"))
+	}
+	return ctx
+}
+
 func (bot TipBot) anyQueryHandler(ctx context.Context, q *tb.Query) {
 	if q.Text == "" {
 		bot.inlineQueryInstructions(ctx, q)
@@ -102,7 +122,11 @@ func (bot TipBot) anyQueryHandler(ctx context.Context, q *tb.Query) {
 		bot.handleInlineSendQuery(ctx, q)
 	}
 
-	if strings.HasPrefix(q.Text, "faucet") || strings.HasPrefix(q.Text, "giveaway") || strings.HasPrefix(q.Text, "zapfhahn") || strings.HasPrefix(q.Text, "kraan") {
+	if strings.HasPrefix(q.Text, "faucet") || strings.HasPrefix(q.Text, "zapfhahn") || strings.HasPrefix(q.Text, "kraan") || strings.HasPrefix(q.Text, "grifo") {
+		if len(strings.Split(q.Text, " ")) > 1 {
+			c := strings.Split(q.Text, " ")[0]
+			ctx = bot.commandTranslationMap(ctx, c)
+		}
 		bot.handleInlineFaucetQuery(ctx, q)
 	}
 

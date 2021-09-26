@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -107,12 +108,21 @@ func (bot *TipBot) getInlineFaucet(c *tb.Callback) (*InlineFaucet, error) {
 
 }
 
+func (bot TipBot) mapFaucetLanguage(ctx context.Context, command string) context.Context {
+	if len(strings.Split(command, " ")) > 1 {
+		c := strings.Split(command, " ")[0][1:] // cut the /
+		ctx = bot.commandTranslationMap(ctx, c)
+	}
+	return ctx
+}
+
 func (bot TipBot) faucetHandler(ctx context.Context, m *tb.Message) {
 	bot.anyTextHandler(ctx, m)
 	if m.Private() {
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "inlineFaucetHelpText"), Translate(ctx, "inlineFaucetHelpFaucetInGroup")))
 		return
 	}
+	ctx = bot.mapFaucetLanguage(ctx, m.Text)
 	inlineFaucet := NewInlineFaucet()
 	var err error
 	inlineFaucet.Amount, err = decodeAmountFromCommand(m.Text)
