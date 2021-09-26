@@ -216,7 +216,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 	}
 }
 
-func (bot *TipBot) cancelInlineSendHandler(c *tb.Callback) {
+func (bot *TipBot) cancelInlineSendHandler(ctx context.Context, c *tb.Callback) {
 	tx := NewInlineSend()
 	tx.ID = c.Data
 	sn, err := storage.GetTransaction(tx, tx.Transaction, bot.bunt)
