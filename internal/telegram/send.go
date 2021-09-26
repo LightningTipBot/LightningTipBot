@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"strings"
 	"time"
@@ -15,7 +17,6 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
-	"strings"
 )
 
 var (
@@ -48,8 +49,6 @@ type SendData struct {
 	Memo           string       `json:"memo"`
 	Message        string       `json:"message"`
 	Amount         int64        `json:"amount"`
-	InTransaction  bool         `json:"intransaction"`
-	Active         bool         `json:"active"`
 	LanguageCode   string       `json:"languagecode"`
 }
 

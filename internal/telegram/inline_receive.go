@@ -210,7 +210,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	}
 }
 
-func (bot *TipBot) cancelInlineReceiveHandler(c *tb.Callback) {
+func (bot *TipBot) cancelInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
 	tx := NewInlineReceive()
 	tx.ID = c.Data
 	rn, err := storage.GetTransaction(tx, tx.Transaction, bot.bunt)
