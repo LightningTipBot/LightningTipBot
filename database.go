@@ -71,7 +71,7 @@ func GetLnbitsUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 	user, err := GetLnbitsUser(u, bot)
 	if err != nil {
-		return nil, err
+		return user, err
 	}
 	go func() {
 		userCopy := bot.copyLowercaseUser(u)
