@@ -59,7 +59,7 @@ infoButtonMessage = """Info"""
 
 # HELP
 
-helpMessage = """*Monedero* ⚡️
+helpMessage = """⚡️ *Monedero*
 _Este bot es un monedero Bitcoin Lightning que puede enviar tips (propinas) vía Telegram. Para dar tips, añade el bot a un chat de grupo. La unidad básica de los tips son los Satoshis (sat). 100.000.000 sat = 1 Bitcoin. Escribe 📚 /basics para saber más._
 
 ❤️ *Donar*
