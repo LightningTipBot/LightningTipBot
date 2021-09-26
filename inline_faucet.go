@@ -391,8 +391,8 @@ func (bot *TipBot) accpetInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 		// register new inline buttons
 		inlineFaucetMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
-		acceptInlineFaucetButton := inlineFaucetMenu.Data(Translate(ctx, "collectButtonMessage"), "confirm_faucet_inline")
-		cancelInlineFaucetButton := inlineFaucetMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_faucet_inline")
+		acceptInlineFaucetButton := inlineFaucetMenu.Data(bot.Translate(inlineFaucet.LanguageCode, "collectButtonMessage"), "confirm_faucet_inline")
+		cancelInlineFaucetButton := inlineFaucetMenu.Data(bot.Translate(inlineFaucet.LanguageCode, "cancelButtonMessage"), "cancel_faucet_inline")
 		acceptInlineFaucetButton.Data = inlineFaucet.ID
 		cancelInlineFaucetButton.Data = inlineFaucet.ID
 
