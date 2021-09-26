@@ -1,7 +1,7 @@
 # COMMANDS
 
 helpCommandStr = """ayuda"""
-basicsCommandStr = """basico"""
+basicsCommandStr = """fundamentos"""
 tipCommandStr = """tip"""
 balanceCommandStr = """saldo"""
 sendCommandStr = """enviar"""
@@ -31,7 +31,7 @@ infoCommandStr = """info"""
 # NOTIFICATIONS
 
 cantDoThatMessage = """No puedes hacer eso."""
-cantClickMessage = """No puedes clicar este botón."""
+cantClickMessage = """No puedes dar click en este botón."""
 balanceTooLowMessage = """Tu saldo es muy bajo."""
 
 # BUTTONS
@@ -59,8 +59,8 @@ infoButtonMessage = """Info"""
 
 # HELP
 
-helpMessage = """⚡️ *Monedero*
-_Este bot es un monedero Bitcoin Lightning que puede enviar tips vía Telegram. Para dar tips, añade el bot a un chat de grupo. La unidad básica de los tips son los Satoshis (sat). 100.000.000 sat = 1 Bitcoin. Escribe 📚 /basics para saber más._
+helpMessage = """*Monedero* ⚡️
+_Este bot es un monedero Bitcoin Lightning que puede enviar tips (propinas) vía Telegram. Para dar tips, añade el bot a un chat de grupo. La unidad básica de los tips son los Satoshis (sat). 100.000.000 sat = 1 Bitcoin. Escribe 📚 /basics para saber más._
 
 ❤️ *Donar*
 _Este bot no cobra ninguna comisión, pero su funcionamiento cuesta Satoshis. Si te gusta el bot, por favor considera apoyar este proyecto con una donación. Para donar, usa_ `/donate 1000`.
@@ -84,10 +84,10 @@ basicsMessage = """🧡 *Bitcoin*
 _Bitcoin es la moneda de Internet. Es una moneda sin permisos y descentralizada que no tiene dueños ni autoridad que la controle. Bitcoin es un dinero sólido que es más rápido, más seguro y más inclusivo que el sistema financiero fiduciario._
 
 🧮 *Economía*
-_La unidad más pequeña de Bitcoin son los Satoshis (sat) y 100.000.000 sat = 1 Bitcoin. Sólo habrá 21 millones de Bitcoin. El valor de Bitcoin en moneda fiduciaria puede cambiar diariamente. Sin embargo, si usted vive en un patrón Bitcoin, 1 sat siempre será igual a 1 sat._
+_La unidad más pequeña de Bitcoin son los Satoshis (sat) y 100.000.000 sat = 1 Bitcoin. Sólo habrá 21 millones de Bitcoin. El valor de Bitcoin en moneda fiduciaria puede cambiar diariamente. Sin embargo, si vives en el patrón Bitcoin, 1 sat siempre será igual a 1 sat._
 
 ⚡️ *La Red Lightning*
-_La red Lightning es un protocolo de pago que permite realizar pagos con Bitcoin de forma rápida y barata, sin apenas consumo de energía. Es lo que hace escalar Bitcoin a miles de millones de personas en todo el mundo._
+_La red Lightning es un protocolo de pago que permite realizar pagos con Bitcoin de forma rápida y barata, con mínimo consumo de energía. Es lo que hace escalar Bitcoin a miles de millones de personas en todo el mundo._
 
 📲 *Monederos Lightning*
 _Tus fondos en este bot pueden ser enviados a cualquier otro monedero Lightning y viceversa. Los monederos Lightning recomendados para su teléfono son_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (sin custodia), o_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(fácil)_.
@@ -99,7 +99,7 @@ _Este bot es gratuito y de_ [Código abierto](https://github.com/LightningTipBot
 _Añade este bot al chat de tu grupo de Telegram para enviar fondos usando /tip. Si haces al bot administrador del grupo, también limpiará los comandos para mantener el chat ordenado._
 
 🏛 *Términos*
-_No somos custodios de tus fondos. Actuaremos en su mejor interés, pero también somos conscientes de que la situación sin KYC es complicada hasta que resolvamos algo. Cualquier cantidad que pongas en tu monedero se considerará una donación. No nos des todo tu dinero.  Ten en cuenta que este bot está en desarrollo beta. Utilízalo bajo tu propio riesgo._
+_No somos custodios de tus fondos. Actuaremos en su mejor interés, pero también somos conscientes de que la situación sin KYC es complicada hasta que demos con una solución óptima. Cualquier cantidad que pongas en tu monedero se considerará una donación. No nos des todo tu dinero.  Ten en cuenta que este bot está en desarrollo beta. Utilízalo bajo tu propio riesgo._
 
 ❤️ *Donar*
 _Este bot no cobra ninguna comisión, pero su funcionamiento cuesta satoshis. Si te gusta el bot, por favor considera apoyar este proyecto con una donación. Para donar, use_ `/donate 1000`"""
@@ -242,7 +242,7 @@ couldNotLinkMessage = """🚫 No se ha podido vincular su monedero. Por favor, i
 # FAUCET
 
 inlineQueryFaucetTitle        = """🚰 Crea un grifo."""
-inlineQueryFaucetDescription  = """Uso: @%s grifo <capacidad> <por_usuario>"""
+inlineQueryFaucetDescription  = """Uso: @%s faucet <capacidad> <por_usuario>"""
 inlineResultFaucetTitle       = """🚰 Crear un grifo %d sat."""
 inlineResultFaucetDescription = """👉 Haz clic aquí para crear un grifo en este chat."""
 
@@ -254,7 +254,7 @@ inlineFaucetEndedMessage                = """🚰 Grifo vacío 🍺\n\n🏅 %d s
 inlineFaucetAppendMemo                  = """\n✉️ %s"""
 inlineFaucetCreateWalletMessage         = """Chatea con %s 👈 para gestionar tu cartera."""
 inlineFaucetCancelledMessage            = """🚫 Grifo cancelado."""
-inlineFaucetInvalidPeruserAmountMessage = """🚫 El monto del usuario no es divisor de la capacidad."""
+inlineFaucetInvalidPeruserAmountMessage = """🚫 El monto por usuario no es divisor de la capacidad."""
 inlineFaucetInvalidAmountMessage        = """🚫 Monto inválido."""
 inlineFaucetSentMessage                 = """🚰 %d sat enviado(s) a %s."""
 inlineFaucetReceivedMessage             = """🚰 %s te envió %d sat."""
@@ -283,7 +283,7 @@ inlineSendBalanceLowMessage    = """🚫 Tu saldo es demasiado bajo (%d sat)."""
 # INLINE RECEIVE
 
 inlineQueryReceiveTitle        = """🏅 Solicita un pago en un chat."""
-inlineQueryReceiveDescription  = """Uso: @%s recibir <monto> [<memo>]"""
+inlineQueryReceiveDescription  = """Uso: @%s receive <monto> [<memo>]"""
 inlineResultReceiveTitle       = """🏅 Recibir %d sat."""
 inlineResultReceiveDescription = """👉 Haga clic para solicitar un pago de %d sat."""
 
