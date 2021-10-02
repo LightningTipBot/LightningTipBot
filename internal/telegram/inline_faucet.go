@@ -19,7 +19,7 @@ var (
 )
 
 type InlineFaucet struct {
-	*storage.Transaction
+	*storage.BaseTransaction
 	Message         string       `json:"inline_faucet_message"`
 	Amount          int          `json:"inline_faucet_amount"`
 	RemainingAmount int          `json:"inline_faucet_remainingamount"`
@@ -38,9 +38,11 @@ func NewInlineFaucet() *InlineFaucet {
 		Message:         "",
 		NTaken:          0,
 		UserNeedsWallet: false,
-		Transaction: &storage.Transaction{
+		BaseTransaction: &storage.BaseTransaction{
 			InTransaction: false,
 			Active:        true,
+			CreatedAt:     time.Now(),
+			UpdatedAt:     time.Now(),
 		},
 	}
 	return inlineFaucet
@@ -233,14 +235,14 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	to := LoadUser(ctx)
 	tx := NewInlineFaucet()
 	tx.ID = c.Data
-	fn, err := storage.GetTransaction(tx, tx.Transaction, bot.bunt)
+	fn, err := storage.GetTransaction(tx, tx.BaseTransaction, bot.bunt)
 	if err != nil {
 		log.Errorf("[faucet] %s", err)
 		return
 	}
 	inlineFaucet := fn.(*InlineFaucet)
 	from := inlineFaucet.From
-	err = storage.Lock(inlineFaucet, inlineFaucet.Transaction, bot.bunt)
+	err = storage.Lock(inlineFaucet, inlineFaucet.BaseTransaction, bot.bunt)
 	if err != nil {
 		log.Errorf("[faucet] LockFaucet %s error: %s", inlineFaucet.ID, err)
 		return
@@ -250,7 +252,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		return
 	}
 	// release faucet no matter what
-	defer storage.Lock(inlineFaucet, inlineFaucet.Transaction, bot.bunt)
+	defer storage.Lock(inlineFaucet, inlineFaucet.BaseTransaction, bot.bunt)
 
 	if from.Telegram.ID == to.Telegram.ID {
 		bot.trySendMessage(from.Telegram, Translate(ctx, "sendYourselfMessage"))
@@ -353,7 +355,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback) {
 	tx := NewInlineFaucet()
 	tx.ID = c.Data
-	fn, err := storage.GetTransaction(tx, tx.Transaction, bot.bunt)
+	fn, err := storage.GetTransaction(tx, tx.BaseTransaction, bot.bunt)
 
 	if err != nil {
 		log.Errorf("[cancelInlineSendHandler] %s", err)

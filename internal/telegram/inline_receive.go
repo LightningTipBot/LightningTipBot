@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -20,7 +21,7 @@ var (
 )
 
 type InlineReceive struct {
-	*storage.Transaction
+	*storage.BaseTransaction
 	Message      string       `json:"inline_receive_message"`
 	Amount       int          `json:"inline_receive_amount"`
 	From         *lnbits.User `json:"inline_receive_from"`
@@ -32,9 +33,11 @@ type InlineReceive struct {
 func NewInlineReceive() *InlineReceive {
 	inlineReceive := &InlineReceive{
 		Message: "",
-		Transaction: &storage.Transaction{
+		BaseTransaction: &storage.BaseTransaction{
 			Active:        true,
 			InTransaction: false,
+			CreatedAt:     time.Now(),
+			UpdatedAt:     time.Now(),
 		},
 	}
 	return inlineReceive
@@ -122,14 +125,14 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
 	tx := NewInlineReceive()
 	tx.ID = c.Data
-	rn, err := storage.GetTransaction(tx, tx.Transaction, bot.bunt)
+	rn, err := storage.GetTransaction(tx, tx.BaseTransaction, bot.bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[getInlineReceive] %s", err)
 		return
 	}
 	inlineReceive := rn.(*InlineReceive)
-	err = storage.Lock(inlineReceive, inlineReceive.Transaction, bot.bunt)
+	err = storage.Lock(inlineReceive, inlineReceive.BaseTransaction, bot.bunt)
 	if err != nil {
 		log.Errorf("[acceptInlineReceiveHandler] %s", err)
 		return
@@ -140,7 +143,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 		return
 	}
 
-	defer storage.Release(inlineReceive, inlineReceive.Transaction, bot.bunt)
+	defer storage.Release(inlineReceive, inlineReceive.BaseTransaction, bot.bunt)
 
 	// user `from` is the one who is SENDING
 	// user `to` is the one who is RECEIVING
@@ -173,7 +176,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	}
 
 	// set inactive to avoid double-sends
-	storage.Inactivate(inlineReceive, inlineReceive.Transaction, bot.bunt)
+	storage.Inactivate(inlineReceive, inlineReceive.BaseTransaction, bot.bunt)
 
 	// todo: user new get username function to get userStrings
 	transactionMemo := fmt.Sprintf("InlineReceive from %s to %s (%d sat).", fromUserStr, toUserStr, inlineReceive.Amount)
@@ -213,7 +216,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 func (bot *TipBot) cancelInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
 	tx := NewInlineReceive()
 	tx.ID = c.Data
-	rn, err := storage.GetTransaction(tx, tx.Transaction, bot.bunt)
+	rn, err := storage.GetTransaction(tx, tx.BaseTransaction, bot.bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[cancelInlineReceiveHandler] %s", err)

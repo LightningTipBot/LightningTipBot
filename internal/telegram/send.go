@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"strings"
@@ -42,7 +43,7 @@ func (bot *TipBot) SendCheckSyntax(ctx context.Context, m *tb.Message) (bool, st
 }
 
 type SendData struct {
-	*storage.Transaction
+	*storage.BaseTransaction
 	From           *lnbits.User `json:"from"`
 	ToTelegramId   int          `json:"to_telegram_id"`
 	ToTelegramUser string       `json:"to_telegram_user"`
@@ -54,9 +55,11 @@ type SendData struct {
 
 func NewSend() *SendData {
 	sendData := &SendData{
-		Transaction: &storage.Transaction{
+		BaseTransaction: &storage.BaseTransaction{
 			Active:        true,
 			InTransaction: false,
+			CreatedAt:     time.Now(),
+			UpdatedAt:     time.Now(),
 		},
 	}
 	return sendData
@@ -166,7 +169,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	id := fmt.Sprintf("send-%d-%d-%s", m.Sender.ID, amount, RandStringRunes(5))
 	sendData := SendData{
 		From: user,
-		Transaction: &storage.Transaction{
+		BaseTransaction: &storage.BaseTransaction{
 			ID:            id,
 			Active:        true,
 			InTransaction: false,
@@ -212,7 +215,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	tx := NewSend()
 	tx.ID = c.Data
-	sn, err := storage.GetTransaction(tx, tx.Transaction, bot.bunt)
+	sn, err := storage.GetTransaction(tx, tx.BaseTransaction, bot.bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
 		return
@@ -223,7 +226,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 	// immediatelly set intransaction to block duplicate calls
-	err = storage.Lock(sendData, sendData.Transaction, bot.bunt)
+	err = storage.Lock(sendData, sendData.BaseTransaction, bot.bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
 		bot.tryDeleteMessage(c.Message)
@@ -234,7 +237,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 		bot.tryDeleteMessage(c.Message)
 		return
 	}
-	defer storage.Release(sendData, sendData.Transaction, bot.bunt)
+	defer storage.Release(sendData, sendData.BaseTransaction, bot.bunt)
 
 	// // remove buttons from confirmation message
 	// bot.tryEditMessage(c.Message, MarkdownEscape(sendData.Message), &tb.ReplyMarkup{})
@@ -305,7 +308,7 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	ResetUserState(user, *bot)
 	tx := NewSend()
 	tx.ID = c.Data
-	sn, err := storage.GetTransaction(tx, tx.Transaction, bot.bunt)
+	sn, err := storage.GetTransaction(tx, tx.BaseTransaction, bot.bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
 		return
@@ -318,5 +321,5 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	// remove buttons from confirmation message
 	bot.tryEditMessage(c.Message, i18n.Translate(sendData.LanguageCode, "sendCancelledMessage"), &tb.ReplyMarkup{})
 	sendData.InTransaction = false
-	storage.Inactivate(sendData, sendData.Transaction, bot.bunt)
+	storage.Inactivate(sendData, sendData.BaseTransaction, bot.bunt)
 }

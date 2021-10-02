@@ -1,6 +1,8 @@
 package lnbits
 
 import (
+	"time"
+
 	"github.com/imroc/req"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
@@ -20,6 +22,8 @@ type User struct {
 	Wallet      *Wallet      `gorm:"embedded;embeddedPrefix:wallet_"`
 	StateKey    UserStateKey `json:"stateKey"`
 	StateData   string       `json:"stateData"`
+	CreatedAt   time.Time    `json:"created"`
+	UpdatedAt   time.Time    `json:"updated"`
 }
 
 const (

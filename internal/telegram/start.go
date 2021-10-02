@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"strconv"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -97,6 +98,7 @@ func (bot TipBot) createWallet(user *lnbits.User) error {
 	}
 	user.Wallet = &wallet[0]
 	user.Initialized = false
+	user.CreatedAt = time.Now()
 	err = UpdateUserRecord(user, bot)
 	if err != nil {
 		errormsg := fmt.Sprintf("[createWallet] Update user record error: %s", err)

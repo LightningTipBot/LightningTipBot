@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -90,6 +91,7 @@ func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 
 func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
 	user.Telegram = bot.copyLowercaseUser(user.Telegram)
+	user.UpdatedAt = time.Now()
 	tx := bot.Database.Save(user)
 	if tx.Error != nil {
 		errmsg := fmt.Sprintf("[UpdateUserRecord] Error: Couldn't update %s's info in Database.", GetUserStr(user.Telegram))
