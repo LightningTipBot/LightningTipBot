@@ -5,18 +5,21 @@ import (
 	"time"
 )
 
-type Transaction struct {
-	ID            string `json:"id"`
-	Active        bool   `json:"active"`
-	InTransaction bool   `json:"intransaction"`
+type BaseTransaction struct {
+	ID            string    `json:"id"`
+	Active        bool      `json:"active"`
+	InTransaction bool      `json:"intransaction"`
+	CreatedAt     time.Time `json:"created"`
+	UpdatedAt     time.Time `json:"updated"`
 }
 
-func (msg Transaction) Key() string {
+func (msg BaseTransaction) Key() string {
 	return msg.ID
 }
-func Lock(s Storable, tx *Transaction, db *DB) error {
+func Lock(s Storable, tx *BaseTransaction, db *DB) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = true
+	tx.UpdatedAt = time.Now()
 	err := db.Set(s)
 	if err != nil {
 		return err
@@ -24,9 +27,10 @@ func Lock(s Storable, tx *Transaction, db *DB) error {
 	return nil
 }
 
-func Release(s Storable, tx *Transaction, db *DB) error {
+func Release(s Storable, tx *BaseTransaction, db *DB) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = false
+	tx.UpdatedAt = time.Now()
 	err := db.Set(s)
 	if err != nil {
 		return err
@@ -34,8 +38,9 @@ func Release(s Storable, tx *Transaction, db *DB) error {
 	return nil
 }
 
-func Inactivate(s Storable, tx *Transaction, db *DB) error {
+func Inactivate(s Storable, tx *BaseTransaction, db *DB) error {
 	tx.Active = false
+	tx.UpdatedAt = time.Now()
 	err := db.Set(s)
 	if err != nil {
 		return err
@@ -43,9 +48,8 @@ func Inactivate(s Storable, tx *Transaction, db *DB) error {
 	return nil
 }
 
-func GetTransaction(s Storable, tx *Transaction, db *DB) (Storable, error) {
+func GetTransaction(s Storable, tx *BaseTransaction, db *DB) (Storable, error) {
 	err := db.Get(s)
-
 	// to avoid race conditions, we block the call if there is
 	// already an active transaction by loop until InTransaction is false
 	ticker := time.NewTicker(time.Second * 10)
