@@ -166,7 +166,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 		LanguageCode:   ctx.Value("publicLanguageCode").(string),
 	}
 	// save persistent struct
-	runtime.IgnoreError(bot.bunt.Set(sendData))
+	runtime.IgnoreError(sendData.Set(sendData, bot.bunt))
 
 	sendDataJson, err := json.Marshal(sendData)
 	if err != nil {

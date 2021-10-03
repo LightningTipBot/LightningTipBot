@@ -126,7 +126,7 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 		LanguageCode: ctx.Value("publicLanguageCode").(string),
 	}
 	// add result to persistent struct
-	runtime.IgnoreError(bot.bunt.Set(payData))
+	runtime.IgnoreError(payData.Set(payData, bot.bunt))
 
 	SetUserState(user, bot, lnbits.UserStateConfirmPayment, paymentRequest)
 
