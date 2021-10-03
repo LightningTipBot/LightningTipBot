@@ -113,7 +113,7 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 		inlineSend.From = fromUser
 		inlineSend.LanguageCode = ctx.Value("publicLanguageCode").(string)
 		// add result to persistent struct
-		runtime.IgnoreError(bot.Bunt.Set(inlineSend))
+		runtime.IgnoreError(inlineSend.Set(inlineSend, bot.bunt))
 	}
 
 	err = bot.Telegram.Answer(q, &tb.QueryResponse{
@@ -231,7 +231,7 @@ func (bot *TipBot) cancelInlineSendHandler(ctx context.Context, c *tb.Callback) 
 		// set the inlineSend inactive
 		inlineSend.Active = false
 		inlineSend.InTransaction = false
-		runtime.IgnoreError(bot.Bunt.Set(inlineSend))
+		runtime.IgnoreError(inlineSend.Set(inlineSend, bot.bunt))
 	}
 	return
 }

@@ -103,7 +103,7 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 		// add result to persistent struct
 		inlineReceive.Message = inlineMessage
 		inlineReceive.LanguageCode = ctx.Value("publicLanguageCode").(string)
-		runtime.IgnoreError(bot.Bunt.Set(inlineReceive))
+		runtime.IgnoreError(inlineReceive.Set(inlineReceive, bot.bunt))
 	}
 
 	err = bot.Telegram.Answer(q, &tb.QueryResponse{
@@ -223,7 +223,7 @@ func (bot *TipBot) cancelInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 		// set the inlineReceive inactive
 		inlineReceive.Active = false
 		inlineReceive.InTransaction = false
-		runtime.IgnoreError(bot.Bunt.Set(inlineReceive))
+		runtime.IgnoreError(inlineReceive.Set(inlineReceive, bot.bunt))
 	}
 	return
 }

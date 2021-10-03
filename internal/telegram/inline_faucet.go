@@ -121,6 +121,7 @@ func (bot TipBot) faucetHandler(ctx context.Context, m *tb.Message) {
 	inlineFaucet.RemainingAmount = inlineFaucet.Amount
 	inlineFaucet.LanguageCode = ctx.Value("publicLanguageCode").(string)
 	runtime.IgnoreError(bot.Bunt.Set(inlineFaucet))
+	runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.bunt))
 
 }
 
@@ -212,7 +213,7 @@ func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) {
 		inlineFaucet.RemainingAmount = inlineFaucet.Amount
 		inlineFaucet.Memo = memo
 		inlineFaucet.LanguageCode = ctx.Value("publicLanguageCode").(string)
-		runtime.IgnoreError(bot.Bunt.Set(inlineFaucet))
+		runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.bunt))
 	}
 
 	err = bot.Telegram.Answer(q, &tb.QueryResponse{
@@ -361,7 +362,7 @@ func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		// set the inlineFaucet inactive
 		inlineFaucet.Active = false
 		inlineFaucet.InTransaction = false
-		runtime.IgnoreError(bot.Bunt.Set(inlineFaucet))
+		runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.bunt))
 	}
 	return
 }

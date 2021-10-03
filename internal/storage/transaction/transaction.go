@@ -93,3 +93,8 @@ func (tx Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error)
 
 	return s, nil
 }
+
+func (tx *Base) Set(s storage.Storable, db *storage.DB) error {
+	tx.UpdatedAt = time.Now()
+	return db.Set(s)
+}
