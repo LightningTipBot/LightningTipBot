@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
 
@@ -27,96 +28,77 @@ type InlineReceive struct {
 	LanguageCode string `json:"languagecode"`
 }
 
-func NewInlineReceive() *InlineReceive {
-	inlineReceive := &InlineReceive{
-		Message: "",
-		Base:    transaction.New(),
-	}
-	return inlineReceive
-
+func (bot TipBot) makeReceiveKeyboard(ctx context.Context, id string) *tb.ReplyMarkup {
+	acceptInlineReceiveButton := inlineReceiveMenu.Data(Translate(ctx, "payReceiveButtonMessage"), "confirm_receive_inline")
+	cancelInlineReceiveButton := inlineReceiveMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_receive_inline")
+	acceptInlineReceiveButton.Data = id
+	cancelInlineReceiveButton.Data = id
+	inlineReceiveMenu.Inline(
+		inlineReceiveMenu.Row(
+			acceptInlineReceiveButton,
+			cancelInlineReceiveButton),
+	)
+	return inlineFaucetMenu
 }
 
 func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 	from := LoadUser(ctx)
-	inlineReceive := NewInlineReceive()
-	var err error
-	inlineReceive.Amount, err = decodeAmountFromCommand(q.Text)
+	amount, err := decodeAmountFromCommand(q.Text)
 	if err != nil {
 		bot.inlineQueryReplyWithError(q, Translate(ctx, "inlineQueryReceiveTitle"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.telegram.Me.Username))
 		return
 	}
-	if inlineReceive.Amount < 1 {
+	if amount < 1 {
 		bot.inlineQueryReplyWithError(q, Translate(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.telegram.Me.Username))
 		return
 	}
-
 	fromUserStr := GetUserStr(&q.From)
-
 	// check for memo in command
-	inlineReceive.Memo = GetMemoFromCommand(q.Text, 2)
-
+	memo := GetMemoFromCommand(q.Text, 2)
 	urls := []string{
 		queryImage,
 	}
 	results := make(tb.Results, len(urls)) // []tb.Result
 	for i, url := range urls {
-
-		inlineMessage := fmt.Sprintf(Translate(ctx, "inlineReceiveMessage"), fromUserStr, inlineReceive.Amount)
-
-		if len(inlineReceive.Memo) > 0 {
-			inlineMessage = inlineMessage + fmt.Sprintf(Translate(ctx, "inlineReceiveAppendMemo"), inlineReceive.Memo)
+		inlineMessage := fmt.Sprintf(Translate(ctx, "inlineReceiveMessage"), fromUserStr, amount)
+		if len(memo) > 0 {
+			inlineMessage = inlineMessage + fmt.Sprintf(Translate(ctx, "inlineReceiveAppendMemo"), amount)
 		}
-
 		result := &tb.ArticleResult{
 			// URL:         url,
 			Text:        inlineMessage,
-			Title:       fmt.Sprintf(TranslateUser(ctx, "inlineResultReceiveTitle"), inlineReceive.Amount),
-			Description: fmt.Sprintf(TranslateUser(ctx, "inlineResultReceiveDescription"), inlineReceive.Amount),
+			Title:       fmt.Sprintf(TranslateUser(ctx, "inlineResultReceiveTitle"), amount),
+			Description: fmt.Sprintf(TranslateUser(ctx, "inlineResultReceiveDescription"), amount),
 			// required for photos
 			ThumbURL: url,
 		}
-		id := fmt.Sprintf("inl-receive-%d-%d-%s", q.From.ID, inlineReceive.Amount, RandStringRunes(5))
-		acceptInlineReceiveButton := inlineReceiveMenu.Data(Translate(ctx, "payReceiveButtonMessage"), "confirm_receive_inline")
-		cancelInlineReceiveButton := inlineReceiveMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_receive_inline")
-		acceptInlineReceiveButton.Data = id
-		cancelInlineReceiveButton.Data = id
-
-		inlineReceiveMenu.Inline(
-			inlineReceiveMenu.Row(
-				acceptInlineReceiveButton,
-				cancelInlineReceiveButton),
-		)
-		result.ReplyMarkup = &tb.InlineKeyboardMarkup{InlineKeyboard: inlineReceiveMenu.InlineKeyboard}
-
+		id := fmt.Sprintf("inl-receive-%d-%d-%s", q.From.ID, amount, RandStringRunes(5))
+		result.ReplyMarkup = &tb.InlineKeyboardMarkup{InlineKeyboard: bot.makeReceiveKeyboard(ctx, id).InlineKeyboard}
 		results[i] = result
-
 		// needed to set a unique string ID for each result
 		results[i].SetResultID(id)
-
 		// create persistend inline send struct
-		// add data to persistent object
-		inlineReceive.ID = id
-		inlineReceive.To = from // The user who wants to receive
-		// add result to persistent struct
-		inlineReceive.Message = inlineMessage
-		inlineReceive.LanguageCode = ctx.Value("publicLanguageCode").(string)
+		inlineReceive := InlineReceive{
+			Base:         transaction.New(transaction.ID(id)),
+			Message:      inlineMessage,
+			To:           from,
+			Memo:         memo,
+			LanguageCode: ctx.Value("publicLanguageCode").(string),
+		}
 		runtime.IgnoreError(inlineReceive.Set(inlineReceive, bot.bunt))
 	}
-
 	err = bot.telegram.Answer(q, &tb.QueryResponse{
 		Results:   results,
 		CacheTime: 1, // 60 == 1 minute, todo: make higher than 1 s in production
 
 	})
-
 	if err != nil {
 		log.Errorln(err)
 	}
 }
 
 func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
-	tx := NewInlineReceive()
-	tx.ID = c.Data
+	tx := &InlineReceive{Base: transaction.New(transaction.ID(c.Data))}
 	rn, err := tx.Get(tx, bot.bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
@@ -203,8 +185,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 }
 
 func (bot *TipBot) cancelInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
-	tx := NewInlineReceive()
-	tx.ID = c.Data
+	tx := &InlineReceive{Base: transaction.New(transaction.ID(c.Data))}
 	rn, err := tx.Get(tx, bot.bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {

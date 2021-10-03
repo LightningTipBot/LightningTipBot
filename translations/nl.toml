@@ -278,7 +278,7 @@ inlineSendCreateWalletMessage  = """Chat met %s 👈 om uw wallet te beheren."""
 sendYourselfMessage            = """📖 Je kunt niet aan jezelf betalen."""
 inlineSendFailedMessage        = """🚫 verzenden mislukt."""
 inlineSendInvalidAmountMessage = """🚫 Bedrag moet groter zijn dan 0."""
-inlineSendBalanceLowMessage    = """🚫 Uw saldo is te laag (%d zat)."""
+inlineSendBalanceLowMessage    = """🚫 Uw saldo is te laag."""
 
 # INLINE RECEIVE
 
