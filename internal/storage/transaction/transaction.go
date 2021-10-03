@@ -41,8 +41,7 @@ func (tx Base) Key() string {
 func (tx *Base) Lock(s storage.Storable, db *storage.DB) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = true
-	tx.UpdatedAt = time.Now()
-	err := db.Set(s)
+	err := tx.Set(s, db)
 	if err != nil {
 		return err
 	}
@@ -52,8 +51,7 @@ func (tx *Base) Lock(s storage.Storable, db *storage.DB) error {
 func (tx *Base) Release(s storage.Storable, db *storage.DB) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = false
-	tx.UpdatedAt = time.Now()
-	err := db.Set(s)
+	err := tx.Set(s, db)
 	if err != nil {
 		return err
 	}
@@ -62,8 +60,7 @@ func (tx *Base) Release(s storage.Storable, db *storage.DB) error {
 
 func (tx *Base) Inactivate(s storage.Storable, db *storage.DB) error {
 	tx.Active = false
-	tx.UpdatedAt = time.Now()
-	err := db.Set(s)
+	err := tx.Set(s, db)
 	if err != nil {
 		return err
 	}
@@ -95,6 +92,5 @@ func (tx Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error)
 }
 
 func (tx *Base) Set(s storage.Storable, db *storage.DB) error {
-	tx.UpdatedAt = time.Now()
-	return db.Set(s)
+	return tx.Set(s, db)
 }
