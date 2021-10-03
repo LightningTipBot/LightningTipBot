@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	"github.com/tidwall/buntdb"
 	"github.com/tidwall/gjson"
 
@@ -160,8 +159,8 @@ func (ttt *TipTooltip) updateTooltip(bot *TipBot, user *tb.User, amount int, not
 // tipTooltipInitializedHandler is called when the user initializes the wallet
 func tipTooltipInitializedHandler(user *tb.User, bot TipBot) {
 	runtime.IgnoreError(bot.bunt.View(func(tx *buntdb.Tx) error {
-		err := tx.Ascend(storage.MessageOrderedByReplyToFrom, func(key, value string) bool {
-			replyToUserId := gjson.Get(value, storage.MessageOrderedByReplyToFrom)
+		err := tx.Ascend(MessageOrderedByReplyToFrom, func(key, value string) bool {
+			replyToUserId := gjson.Get(value, MessageOrderedByReplyToFrom)
 			if replyToUserId.String() == strconv.Itoa(user.ID) {
 				log.Debugln("loading persistent tip tool tip messages")
 				ttt := &TipTooltip{}
@@ -182,7 +181,7 @@ func tipTooltipInitializedHandler(user *tb.User, bot TipBot) {
 }
 
 func (ttt TipTooltip) Key() string {
-	return strconv.Itoa(ttt.Message.Message.ReplyTo.ID)
+	return fmt.Sprintf("tip-tool-tip:%s", strconv.Itoa(ttt.Message.Message.ReplyTo.ID))
 }
 
 // editTooltip updates the tooltip message with the new tip amount and tippers and edits it

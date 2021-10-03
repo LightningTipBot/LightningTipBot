@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"github.com/tidwall/buntdb"
 	"reflect"
 	"strconv"
 	"strings"
@@ -14,6 +16,22 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
+
+const (
+	MessageOrderedByReplyToFrom = "message.reply_to_message.from.id"
+	TipTooltipKeyPattern        = "tip-tool-tip:*"
+)
+
+func createBunt() *storage.DB {
+	// create bunt database
+	bunt := storage.NewBunt(Configuration.Database.BuntDbPath)
+	// create bunt database index for ascending (searching) TipTooltips
+	err := bunt.CreateIndex(MessageOrderedByReplyToFrom, TipTooltipKeyPattern, buntdb.IndexJSON(MessageOrderedByReplyToFrom))
+	if err != nil {
+		panic(err)
+	}
+	return bunt
+}
 
 func migration() (db *gorm.DB, txLogger *gorm.DB) {
 	txLogger, err := gorm.Open(sqlite.Open(Configuration.Database.TransactionsPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})

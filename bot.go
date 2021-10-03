@@ -32,11 +32,12 @@ var (
 
 // NewBot migrates data and creates a new bot
 func NewBot() TipBot {
+	// create sqlite databases
 	db, txLogger := migration()
 	return TipBot{
 		database: db,
 		logger:   txLogger,
-		bunt:     storage.NewBunt(Configuration.Database.BuntDbPath),
+		bunt:     createBunt(),
 		bundle:   i18n.RegisterLanguages(),
 	}
 }
