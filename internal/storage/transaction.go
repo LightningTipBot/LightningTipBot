@@ -50,6 +50,9 @@ func Inactivate(s Storable, tx *BaseTransaction, db *DB) error {
 
 func GetTransaction(s Storable, tx *BaseTransaction, db *DB) (Storable, error) {
 	err := db.Get(s)
+	if err != nil {
+		return s, err
+	}
 	// to avoid race conditions, we block the call if there is
 	// already an active transaction by loop until InTransaction is false
 	ticker := time.NewTicker(time.Second * 10)
