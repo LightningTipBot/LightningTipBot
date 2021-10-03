@@ -35,10 +35,10 @@ func New(opts ...Option) *Base {
 	return btx
 }
 
-func (msg Base) Key() string {
-	return msg.ID
+func (tx Base) Key() string {
+	return tx.ID
 }
-func Lock(s storage.Storable, tx *Base, db *storage.DB) error {
+func (tx *Base) Lock(s storage.Storable, db *storage.DB) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = true
 	tx.UpdatedAt = time.Now()
@@ -49,7 +49,7 @@ func Lock(s storage.Storable, tx *Base, db *storage.DB) error {
 	return nil
 }
 
-func Release(s storage.Storable, tx *Base, db *storage.DB) error {
+func (tx *Base) Release(s storage.Storable, db *storage.DB) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = false
 	tx.UpdatedAt = time.Now()
@@ -60,7 +60,7 @@ func Release(s storage.Storable, tx *Base, db *storage.DB) error {
 	return nil
 }
 
-func Inactivate(s storage.Storable, tx *Base, db *storage.DB) error {
+func (tx *Base) Inactivate(s storage.Storable, db *storage.DB) error {
 	tx.Active = false
 	tx.UpdatedAt = time.Now()
 	err := db.Set(s)
@@ -70,7 +70,7 @@ func Inactivate(s storage.Storable, tx *Base, db *storage.DB) error {
 	return nil
 }
 
-func Get(s storage.Storable, tx *Base, db *storage.DB) (storage.Storable, error) {
+func (tx Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error) {
 	err := db.Get(s)
 	if err != nil {
 		return s, err

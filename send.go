@@ -199,7 +199,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	tx := NewSend()
 	tx.ID = c.Data
-	sn, err := transaction.Get(tx, tx.Base, bot.bunt)
+	sn, err := tx.Get(tx, bot.bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
 		return
@@ -210,7 +210,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 	// immediatelly set intransaction to block duplicate calls
-	err = transaction.Lock(sendData, sendData.Base, bot.bunt)
+	err = sendData.Lock(sendData, bot.bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
 		bot.tryDeleteMessage(c.Message)
@@ -221,7 +221,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 		bot.tryDeleteMessage(c.Message)
 		return
 	}
-	defer transaction.Release(sendData, sendData.Base, bot.bunt)
+	defer sendData.Release(sendData, bot.bunt)
 
 	// // remove buttons from confirmation message
 	// bot.tryEditMessage(c.Message, MarkdownEscape(sendData.Message), &tb.ReplyMarkup{})
@@ -292,7 +292,7 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	ResetUserState(user, *bot)
 	tx := NewSend()
 	tx.ID = c.Data
-	sn, err := transaction.Get(tx, tx.Base, bot.bunt)
+	sn, err := tx.Get(tx, bot.bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
 		return
@@ -305,5 +305,5 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	// remove buttons from confirmation message
 	bot.tryEditMessage(c.Message, bot.Translate(sendData.LanguageCode, "sendCancelledMessage"), &tb.ReplyMarkup{})
 	sendData.InTransaction = false
-	transaction.Inactivate(sendData, sendData.Base, bot.bunt)
+	sendData.Inactivate(sendData, bot.bunt)
 }

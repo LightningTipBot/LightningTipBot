@@ -148,7 +148,7 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 	tx := NewPay()
 	tx.ID = c.Data
-	sn, err := transaction.Get(tx, tx.Base, bot.bunt)
+	sn, err := tx.Get(tx, bot.bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[confirmPayHandler] %s", err)
@@ -161,7 +161,7 @@ func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 	// immediatelly set intransaction to block duplicate calls
-	err = transaction.Lock(payData, payData.Base, bot.bunt)
+	err = payData.Lock(payData, bot.bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
 		bot.tryDeleteMessage(c.Message)
@@ -172,7 +172,7 @@ func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 		bot.tryDeleteMessage(c.Message)
 		return
 	}
-	defer transaction.Release(payData, payData.Base, bot.bunt)
+	defer payData.Release(payData, bot.bunt)
 
 	// remove buttons from confirmation message
 	// bot.tryEditMessage(c.Message, MarkdownEscape(payData.Message), &tb.ReplyMarkup{})
@@ -224,7 +224,7 @@ func (bot TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 	ResetUserState(user, bot)
 	tx := NewPay()
 	tx.ID = c.Data
-	sn, err := transaction.Get(tx, tx.Base, bot.bunt)
+	sn, err := tx.Get(tx, bot.bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[cancelPaymentHandler] %s", err)
@@ -237,5 +237,5 @@ func (bot TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 	}
 	bot.tryEditMessage(c.Message, bot.Translate(payData.LanguageCode, "paymentCancelledMessage"), &tb.ReplyMarkup{})
 	payData.InTransaction = false
-	transaction.Inactivate(payData, payData.Base, bot.bunt)
+	payData.Inactivate(payData, bot.bunt)
 }
