@@ -1,11 +1,12 @@
-package storage
+package transaction
 
 import (
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	"time"
 )
 
-type BaseTransaction struct {
+type Base struct {
 	ID            string    `json:"id"`
 	Active        bool      `json:"active"`
 	InTransaction bool      `json:"intransaction"`
@@ -13,10 +14,31 @@ type BaseTransaction struct {
 	UpdatedAt     time.Time `json:"updated"`
 }
 
-func (msg BaseTransaction) Key() string {
+type Option func(b *Base)
+
+func ID(id string) Option {
+	return func(btx *Base) {
+		btx.ID = id
+	}
+}
+
+func New(opts ...Option) *Base {
+	btx := &Base{
+		Active:        true,
+		InTransaction: false,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
+	}
+	for _, opt := range opts {
+		opt(btx)
+	}
+	return btx
+}
+
+func (msg Base) Key() string {
 	return msg.ID
 }
-func Lock(s Storable, tx *BaseTransaction, db *DB) error {
+func Lock(s storage.Storable, tx *Base, db *storage.DB) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = true
 	tx.UpdatedAt = time.Now()
@@ -27,7 +49,7 @@ func Lock(s Storable, tx *BaseTransaction, db *DB) error {
 	return nil
 }
 
-func Release(s Storable, tx *BaseTransaction, db *DB) error {
+func Release(s storage.Storable, tx *Base, db *storage.DB) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = false
 	tx.UpdatedAt = time.Now()
@@ -38,7 +60,7 @@ func Release(s Storable, tx *BaseTransaction, db *DB) error {
 	return nil
 }
 
-func Inactivate(s Storable, tx *BaseTransaction, db *DB) error {
+func Inactivate(s storage.Storable, tx *Base, db *storage.DB) error {
 	tx.Active = false
 	tx.UpdatedAt = time.Now()
 	err := db.Set(s)
@@ -48,7 +70,7 @@ func Inactivate(s Storable, tx *BaseTransaction, db *DB) error {
 	return nil
 }
 
-func GetTransaction(s Storable, tx *BaseTransaction, db *DB) (Storable, error) {
+func Get(s storage.Storable, tx *Base, db *storage.DB) (storage.Storable, error) {
 	err := db.Get(s)
 	if err != nil {
 		return s, err

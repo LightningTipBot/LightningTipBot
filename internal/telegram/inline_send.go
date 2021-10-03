@@ -7,7 +7,7 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"
@@ -21,7 +21,7 @@ var (
 )
 
 type InlineSend struct {
-	*storage.BaseTransaction
+	*transaction.Base
 	Message      string       `json:"inline_send_message"`
 	Amount       int          `json:"inline_send_amount"`
 	From         *lnbits.User `json:"inline_send_from"`
@@ -33,12 +33,7 @@ type InlineSend struct {
 func NewInlineSend() *InlineSend {
 	inlineSend := &InlineSend{
 		Message: "",
-		BaseTransaction: &storage.BaseTransaction{
-			Active:        true,
-			InTransaction: false,
-			CreatedAt:     time.Now(),
-			UpdatedAt:     time.Now(),
-		},
+		Base:    transaction.New(),
 	}
 	return inlineSend
 
@@ -135,7 +130,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 	to := LoadUser(ctx)
 	tx := NewInlineSend()
 	tx.ID = c.Data
-	sn, err := storage.GetTransaction(tx, tx.BaseTransaction, bot.bunt)
+	sn, err := transaction.Get(tx, tx.Base, bot.bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[acceptInlineSendHandler] %s", err)
@@ -145,7 +140,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 
 	fromUser := inlineSend.From
 	// immediatelly set intransaction to block duplicate calls
-	err = storage.Lock(inlineSend, inlineSend.BaseTransaction, bot.bunt)
+	err = transaction.Lock(inlineSend, inlineSend.Base, bot.bunt)
 	if err != nil {
 		log.Errorf("[getInlineSend] %s", err)
 		return
@@ -155,7 +150,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 		return
 	}
 
-	defer storage.Release(inlineSend, inlineSend.BaseTransaction, bot.bunt)
+	defer transaction.Release(inlineSend, inlineSend.Base, bot.bunt)
 
 	amount := inlineSend.Amount
 
@@ -183,7 +178,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 		}
 	}
 	// set inactive to avoid double-sends
-	storage.Inactivate(inlineSend, inlineSend.BaseTransaction, bot.bunt)
+	transaction.Inactivate(inlineSend, inlineSend.Base, bot.bunt)
 
 	// todo: user new get username function to get userStrings
 	transactionMemo := fmt.Sprintf("InlineSend from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
@@ -223,7 +218,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 func (bot *TipBot) cancelInlineSendHandler(ctx context.Context, c *tb.Callback) {
 	tx := NewInlineSend()
 	tx.ID = c.Data
-	sn, err := storage.GetTransaction(tx, tx.BaseTransaction, bot.bunt)
+	sn, err := transaction.Get(tx, tx.Base, bot.bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[cancelInlineSendHandler] %s", err)
