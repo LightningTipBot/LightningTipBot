@@ -130,7 +130,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 	to := LoadUser(ctx)
 	tx := NewInlineSend()
 	tx.ID = c.Data
-	sn, err := transaction.Get(tx, tx.Base, bot.bunt)
+	sn, err := tx.Get(tx, bot.bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[acceptInlineSendHandler] %s", err)
@@ -140,7 +140,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 
 	fromUser := inlineSend.From
 	// immediatelly set intransaction to block duplicate calls
-	err = transaction.Lock(inlineSend, inlineSend.Base, bot.bunt)
+	err = inlineSend.Lock(inlineSend, bot.bunt)
 	if err != nil {
 		log.Errorf("[getInlineSend] %s", err)
 		return
@@ -150,7 +150,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 		return
 	}
 
-	defer transaction.Release(inlineSend, inlineSend.Base, bot.bunt)
+	defer inlineSend.Release(inlineSend, bot.bunt)
 
 	amount := inlineSend.Amount
 
@@ -178,7 +178,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 		}
 	}
 	// set inactive to avoid double-sends
-	transaction.Inactivate(inlineSend, inlineSend.Base, bot.bunt)
+	inlineSend.Inactivate(inlineSend, bot.bunt)
 
 	// todo: user new get username function to get userStrings
 	transactionMemo := fmt.Sprintf("InlineSend from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
@@ -218,7 +218,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 func (bot *TipBot) cancelInlineSendHandler(ctx context.Context, c *tb.Callback) {
 	tx := NewInlineSend()
 	tx.ID = c.Data
-	sn, err := transaction.Get(tx, tx.Base, bot.bunt)
+	sn, err := tx.Get(tx, bot.bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[cancelInlineSendHandler] %s", err)

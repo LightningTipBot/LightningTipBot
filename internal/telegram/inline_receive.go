@@ -120,14 +120,14 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
 	tx := NewInlineReceive()
 	tx.ID = c.Data
-	rn, err := transaction.Get(tx, tx.Base, bot.bunt)
+	rn, err := tx.Get(tx, bot.bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[getInlineReceive] %s", err)
 		return
 	}
 	inlineReceive := rn.(*InlineReceive)
-	err = transaction.Lock(inlineReceive, inlineReceive.Base, bot.bunt)
+	err = inlineReceive.Lock(inlineReceive, bot.bunt)
 	if err != nil {
 		log.Errorf("[acceptInlineReceiveHandler] %s", err)
 		return
@@ -138,7 +138,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 		return
 	}
 
-	defer transaction.Release(inlineReceive, inlineReceive.Base, bot.bunt)
+	defer inlineReceive.Release(inlineReceive, bot.bunt)
 
 	// user `from` is the one who is SENDING
 	// user `to` is the one who is RECEIVING
@@ -171,7 +171,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	}
 
 	// set inactive to avoid double-sends
-	transaction.Inactivate(inlineReceive, inlineReceive.Base, bot.bunt)
+	inlineReceive.Inactivate(inlineReceive, bot.bunt)
 
 	// todo: user new get username function to get userStrings
 	transactionMemo := fmt.Sprintf("InlineReceive from %s to %s (%d sat).", fromUserStr, toUserStr, inlineReceive.Amount)
@@ -211,7 +211,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 func (bot *TipBot) cancelInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
 	tx := NewInlineReceive()
 	tx.ID = c.Data
-	rn, err := transaction.Get(tx, tx.Base, bot.bunt)
+	rn, err := tx.Get(tx, bot.bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[cancelInlineReceiveHandler] %s", err)
