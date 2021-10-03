@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	"github.com/tidwall/buntdb"
 	"github.com/tidwall/gjson"
 
@@ -182,7 +181,7 @@ func tipTooltipInitializedHandler(user *tb.User, bot TipBot) {
 }
 
 func (ttt TipTooltip) Key() string {
-	return strconv.Itoa(ttt.Message.Message.ReplyTo.ID)
+	return fmt.Sprintf("tip-tool-tip:%s", strconv.Itoa(ttt.Message.Message.ReplyTo.ID))
 }
 
 // editTooltip updates the tooltip message with the new tip amount and tippers and edits it

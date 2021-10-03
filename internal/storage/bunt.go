@@ -16,23 +16,10 @@ type DB struct {
 	*buntdb.DB
 }
 
-const (
-	MessageOrderedByReplyToFrom = "message.reply_to_message.from.id"
-	MessageOrderedByReplyTo     = "message.reply_to_message.id"
-)
-
 func NewBunt(filePath string) *DB {
 	db, err := buntdb.Open(filePath)
 	if err != nil {
 		log.Fatal(err)
-	}
-	err = db.CreateIndex(MessageOrderedByReplyToFrom, "*", buntdb.IndexJSON(MessageOrderedByReplyToFrom))
-	if err != nil {
-		panic(err)
-	}
-	err = db.CreateIndex(MessageOrderedByReplyTo, "*", buntdb.IndexJSON(MessageOrderedByReplyTo))
-	if err != nil {
-		panic(err)
 	}
 
 	return &DB{db}
@@ -110,5 +97,4 @@ func (db *DB) Delete(index string, object Storable) error {
 		}
 		return nil
 	})
-
 }

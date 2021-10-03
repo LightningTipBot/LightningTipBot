@@ -29,6 +29,7 @@ var (
 
 // NewBot migrates data and creates a new bot
 func NewBot() TipBot {
+	// create sqlite databases
 	db, txLogger := migration()
 	return TipBot{
 		Database: db,
