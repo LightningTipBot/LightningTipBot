@@ -2,6 +2,8 @@ package telegram
 
 import (
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/limiter"
+	"golang.org/x/time/rate"
 	"sync"
 	"time"
 
@@ -21,12 +23,19 @@ type TipBot struct {
 	Database *gorm.DB
 	Bunt     *storage.DB
 	logger   *gorm.DB
+<<<<<<< HEAD:internal/telegram/bot.go
 	Telegram *telebot.Bot
 	Client   *lnbits.Client
 	Cache
 }
 type Cache struct {
 	*store.GoCacheStore
+=======
+	telegram *telebot.Bot
+	client   *lnbits.Client
+	bundle   *i18n2.Bundle
+	limiter  *limiter.ChatIDRateLimiter
+>>>>>>> 2dc80c7 (add rate limiter per chat):bot.go
 }
 
 var (
@@ -44,9 +53,15 @@ func NewBot() TipBot {
 		Database: db,
 		Client:   lnbits.NewClient(internal.Configuration.Lnbits.AdminKey, internal.Configuration.Lnbits.Url),
 		logger:   txLogger,
+<<<<<<< HEAD:internal/telegram/bot.go
 		Bunt:     createBunt(),
 		Telegram: newTelegramBot(),
 		Cache:    Cache{GoCacheStore: gocacheStore},
+=======
+		bunt:     storage.NewBunt(Configuration.Database.BuntDbPath),
+		bundle:   i18n.RegisterLanguages(),
+		limiter:  limiter.NewChatIDRateLimiter(rate.Limit(30), 30),
+>>>>>>> 2dc80c7 (add rate limiter per chat):bot.go
 	}
 }
 
