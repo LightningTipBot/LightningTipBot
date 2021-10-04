@@ -96,13 +96,13 @@ _I tuoi fondi conservati in questo bot possono essere mandati a un altro wallet 
 _Questo bot è software libero e_ [open source](https://github.com/LightningTipBot/LightningTipBot) _. Puoi farlo girare sul tuo computer e usarlo per la tua comunità._
 
 ✈️ *Telegram*
-_Aggiungi questo bot a una chat di gruppo Telegram per inviare una /mancia. Se concedi al bot i privilegi di amministratore della chat, il bot si occuperà automaticamente di eliminare i comandi inviati per tenere la chat pulita._
+_Aggiungi questo bot a una chat di gruppo Telegram per inviare una /tip. Se concedi al bot i privilegi di amministratore della chat, il bot si occuperà automaticamente di eliminare i comandi inviati per tenere la chat pulita._
 
 🏛 *Termini e condizioni*
 _Noi non siamo custodi dei tuoi fondi. Agiremo sempre nel tuo migliore interesse, ma siamo consapevoli che operare senza il riconoscimento formale dei Clienti (KYC) è un terreno accidentato finché non troviamo qualche soluzione alternativa. Qualsiasi ammontare caricato nel wallet sarà formalmente considerato una donazione. Non inviarci tutto il tuo denaro! Sii consapevole che questo bot è ancora in fase di sviluppo, e puoi usarlo a tuo rischio e pericolo._
 
 ❤️ *Dona*
-_Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirlo. Se ti piace, valuta se sostenere questo progetto con una donazione. Per donare, usa il comando_ `/dona 1000`"""
+_Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirlo. Se ti piace, valuta se sostenere questo progetto con una donazione. Per donare, usa il comando_ `/donate 1000`"""
 
 helpNoUsernameMessage = """👋 Per favore imposta un nome utente Telegram."""
 
@@ -124,9 +124,9 @@ advancedMessage = """%s
 
 startSettingWalletMessage = """🧮 Sto creando il tuo wallet..."""
 startWalletCreatedMessage = """🧮 Wallet creato."""
-startWalletReadyMessage   = """✅ *il tuo wallet è pronto.*"""
+startWalletReadyMessage   = """✅ *Il tuo wallet è pronto.*"""
 startWalletErrorMessage   = """🚫 Errore di inizializzazione del wallet. Riprova più tardi."""
-startNoUsernameMessage    = """☝️ Sembra che tu non abbia un nome utente Telegram @username. Non è obbligatorio per utilizzare questo bot, ma consente di abilitare ulteriori funzioni. Per usare al meglio il tuo wallet, imposta un nome utente nelle impostazioni Telegram e poi inserisci /saldo in modo che il bot possa aggiornarsi."""
+startNoUsernameMessage    = """☝️ Sembra che tu non abbia un nome utente Telegram @username. Non è obbligatorio per utilizzare questo bot, ma consente di abilitare ulteriori funzioni. Per usare al meglio il tuo wallet, imposta un nome utente nelle impostazioni Telegram e poi inserisci /balance in modo che il bot possa aggiornarsi."""
 
 # BALANCE
 
@@ -135,7 +135,7 @@ balanceErrorMessage = """🚫 Non riesco a recupare il tuo saldo. Per favore rip
 
 # TIP
 
-tipDidYouReplyMessage = """Hai risposto a un messaggio per inviare una mancia? Per rispondere a un messaggio, clicca con il tasto destro -> Rispondi sul tuo computer o fai swipe sul tuo smartphone. Se vuoi inviare direttamente a un altro utente, usa il comando /invia."""
+tipDidYouReplyMessage = """Hai risposto a un messaggio per inviare una mancia? Per rispondere a un messaggio, clicca con il tasto destro -> Rispondi sul tuo computer o fai swipe sul tuo smartphone. Se vuoi inviare direttamente a un altro utente, usa il comando /send."""
 tipInviteGroupMessage = """ℹ️ In ogni caso, puoi invitare questo bot in qualsiasi chat di gruppo per incominciare a inviare mance."""
 tipEnterAmountMessage = """Hai inserito un ammontare?"""
 tipValidAmountMessage = """Hai inserito un ammontare valido?"""
@@ -165,7 +165,7 @@ sendSyntaxErrorMessage     = """Hai specificato un ammontare e un destinatario? 
 sendHelpText               = """📖 Ops, non ha funzionato. %s
 
 *Sintassi:* `/send <ammontare> <utente> [<descrizione>]`
-*Esempio:* `/send 1000 @LightningTipBot Amo questo BOT ❤️`
+*Esempio:* `/send 1000 @LightningTipBot Amo questo bot ❤️`
 *Esempio:* `/send 1234 LightningTipBot@ln.tips`"""
 
 # INVOICE
@@ -182,7 +182,7 @@ invoiceHelpText           = """📖 Ops, non ha funzionato. %s
 paymentCancelledMessage     = """🚫 Pagamento cancellato."""
 invoicePaidMessage          = """⚡️ Pagamento inviato."""
 invoicePublicPaidMessage    = """⚡️ Pagamento inviato da %s."""
-invalidInvoiceHelpMessage    = """Hai inserito una invoice Lightning valida? Prova /invia se vuoi inviare fondi a un utente Telegram o a un indirizzo Lightning."""
+invalidInvoiceHelpMessage    = """Hai inserito una invoice Lightning valida? Prova /send se vuoi inviare fondi a un utente Telegram o a un indirizzo Lightning."""
 invoiceNoAmountMessage       = """🚫 Non è possibile pagare questa invoice senza specificare un ammontare."""
 insufficientFundsMessage     = """🚫 Fondi insufficienti. Hai in portafoglio %d sat ma servono almeno %d sat per l'invio."""
 feeReserveMessage            = """⚠️ Inviare il tuo intero saldo potrebbe non essere possibile a causa della incidenza delle commissioni di rete. Se l'invio non va a buon fine, prova a inviare un ammontare leggermente inferiore."""
@@ -258,7 +258,7 @@ inlineFaucetInvalidPeruserAmountMessage = """🚫 Ammontare per utente non è un
 inlineFaucetInvalidAmountMessage        = """🚫 Ammontare non valido."""
 inlineFaucetSentMessage                 = """🚰 %d sat inviati a %s."""
 inlineFaucetReceivedMessage             = """🚰 %s ti ha inviato %d sat."""
-inlineFaucetHelpFaucetInGroup           = """Crea una distribuzione in un gruppo in cui sia presente il bot oppure usa il 👉 comando in linea (/avanzate per ulteriori funzionalità)."""
+inlineFaucetHelpFaucetInGroup           = """Crea una distribuzione in un gruppo in cui sia presente il bot oppure usa il 👉 comando in linea (/advanced per ulteriori funzionalità)."""
 inlineFaucetHelpText                    = """📖 Ops, non ha funzionato. %s
 
 *Sintassi:* `/faucet <ammontare_totale> <per_utente>`
