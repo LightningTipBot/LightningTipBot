@@ -16,6 +16,7 @@ func RegisterLanguages() *i18n.Bundle {
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 	bundle.MustLoadMessageFile("translations/en.toml")
 	bundle.LoadMessageFile("translations/de.toml")
+	bundle.LoadMessageFile("translations/it.toml")
 	bundle.LoadMessageFile("translations/es.toml")
 	bundle.LoadMessageFile("translations/nl.toml")
 

@@ -17,7 +17,7 @@ linkCommandStr = """link"""
 lnurlCommandStr = """lnurl"""
 faucetCommandStr = """distribuzione"""
 
-tipjarCommandStr = """salvadanaio""
+tipjarCommandStr = """salvadanaio"""
 receiveCommandStr = """ricevi"""
 hideCommandStr = """nascondi"""
 volcanoCommandStr = """vulcano"""
