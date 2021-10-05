@@ -60,7 +60,7 @@ infoButtonMessage = """Info"""
 # HELP
 
 helpMessage = """⚡️ *Wallet*
-_Questo bot è un Wallet Bitcoin Lightning con cui puoi inviare mance via Telegram. Per inviare, aggiungi il bot a una chat di gruppo. L'unità di conto per questi invii di piccolo importo è il Satoshi (sat). 100,000,000 sat = 1 Bitcoin. Digita 📚 /basics for more._
+_Questo bot è un Wallet Bitcoin Lightning con cui puoi inviare ricompense via Telegram. Per inviare, aggiungi il bot come partecipante a una chat di gruppo. L'unità di conto per questi invii di piccolo importo è il Satoshi (sat). 100,000,000 sat = 1 Bitcoin. Digita 📚 /basics per maggiori informazioni._
 
 ❤️ *Dona*
 _Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirlo. Se ti piace, valuta se sostenere questo progetto con una donazione. Per donare, usa il comando_ `/donate 1000`
@@ -69,7 +69,7 @@ _Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirl
 
 ⚙️ *Comandi*
 */tip* 🏅 Rispondi così a un messaggio per inviare una mancia: `/tip <ammontare> [<descrizione>]`
-*/balance* 👑 Verifica il tuo saldo residio: `/balance`
+*/balance* 👑 Verifica il tuo saldo residuo: `/balance`
 */send* 💸 Invia fondi a un utente: `/send <ammontare> @utente o utente@ln.tips [<descrizione>]`
 */invoice* ⚡️ Ricevi attraverso Lightning: `/invoice <ammontare> [<descrizione>]`
 */pay* ⚡️ Paga attraverso Lightning: `/pay <invoice>`
@@ -198,7 +198,7 @@ payHelpText                  = """📖 Ops, non ha funzionato. %s
 # DONATE
 
 donationSuccess          = """🙏 Grazie per la donazione."""
-donationErrorMessage     = """🚫 Oh no. La donazione non è andata a buon fine."""
+donationErrorMessage     = """🚫 Oh no, la tua donazione non è andata a buon fine."""
 donationProgressMessage  = """🧮 Sto preparando la donazione..."""
 donationFailedMessage    = """🚫 La donazione non è andata a buon fine: %s"""
 donateEnterAmountMessage = """Hai inserito un ammontare?"""
@@ -277,7 +277,7 @@ inlineSendUpdateMessageAccept  = """💸 %d sat inviati da %s a %s."""
 inlineSendCreateWalletMessage  = """Chatta con %s 👈 per gestire il tuo wallet."""
 sendYourselfMessage            = """📖 Non puoi inviare un pagamento a te stesso."""
 inlineSendFailedMessage        = """🚫 Invio non riuscito."""
-inlineSendInvalidAmountMessage = """🚫 L'ammonmtare deve essere maggiore di 0."""
+inlineSendInvalidAmountMessage = """🚫 L'ammontare deve essere maggiore di 0."""
 inlineSendBalanceLowMessage    = """🚫 Il tuo saldo è insufficiente (%d sat)."""
 
 # INLINE RECEIVE
