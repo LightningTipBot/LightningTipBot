@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+<<<<<<< HEAD:internal/telegram/bot.go
 	"github.com/LightningTipBot/LightningTipBot/internal/limiter"
 	"golang.org/x/time/rate"
 	"sync"
@@ -11,12 +12,20 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+=======
+	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
+	"github.com/LightningTipBot/LightningTipBot/internal/rate"
+>>>>>>> 51bd3ea (differentiate between global and chat rate limiting):bot.go
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	gocache "github.com/patrickmn/go-cache"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/lightningtipbot/telebot.v2"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 	"gorm.io/gorm"
+	"sync"
+	"time"
 )
 
 type TipBot struct {
@@ -34,8 +43,12 @@ type Cache struct {
 	telegram *telebot.Bot
 	client   *lnbits.Client
 	bundle   *i18n2.Bundle
+<<<<<<< HEAD:internal/telegram/bot.go
 	limiter  *limiter.ChatIDRateLimiter
 >>>>>>> 2dc80c7 (add rate limiter per chat):bot.go
+=======
+	limiter  *rate.Limiter
+>>>>>>> 51bd3ea (differentiate between global and chat rate limiting):bot.go
 }
 
 var (
@@ -60,8 +73,12 @@ func NewBot() TipBot {
 =======
 		bunt:     storage.NewBunt(Configuration.Database.BuntDbPath),
 		bundle:   i18n.RegisterLanguages(),
+<<<<<<< HEAD:internal/telegram/bot.go
 		limiter:  limiter.NewChatIDRateLimiter(rate.Limit(30), 30),
 >>>>>>> 2dc80c7 (add rate limiter per chat):bot.go
+=======
+		limiter:  rate.NewLimiter(),
+>>>>>>> 51bd3ea (differentiate between global and chat rate limiting):bot.go
 	}
 }
 

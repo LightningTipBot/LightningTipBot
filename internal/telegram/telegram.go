@@ -1,21 +1,17 @@
 package telegram
 
 import (
-	"github.com/LightningTipBot/LightningTipBot/internal/limiter"
+	"github.com/LightningTipBot/LightningTipBot/internal/rate"
 	log "github.com/sirupsen/logrus"
+<<<<<<< HEAD:internal/telegram/telegram.go
 	tb "gopkg.in/lightningtipbot/telebot.v2"
+=======
+	tb "gopkg.in/tucnak/telebot.v2"
+>>>>>>> 51bd3ea (differentiate between global and chat rate limiting):telegram.go
 )
 
-func checkLimit(limiter *limiter.ChatIDRateLimiter, chatId string) {
-	rl := limiter.GetLimiter(chatId)
-	if !rl.Allow() {
-		time.Sleep(1)
-		checkLimit(limiter, chatId)
-	}
-}
-
 func (bot TipBot) tryForwardMessage(to tb.Recipient, what tb.Editable, options ...interface{}) (msg *tb.Message) {
-	checkLimit(bot.limiter, to.Recipient())
+	rate.CheckLimit(to, bot.limiter)
 	msg, err := bot.telegram.Forward(to, what, options...)
 	if err != nil {
 		log.Warnln(err.Error())
@@ -23,7 +19,7 @@ func (bot TipBot) tryForwardMessage(to tb.Recipient, what tb.Editable, options .
 	return
 }
 func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...interface{}) (msg *tb.Message) {
-	checkLimit(bot.limiter, to.Recipient())
+	rate.CheckLimit(to, bot.limiter)
 	msg, err := bot.telegram.Send(to, what, options...)
 	if err != nil {
 		log.Warnln(err.Error())
@@ -32,7 +28,7 @@ func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...i
 }
 
 func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...interface{}) (msg *tb.Message) {
-	checkLimit(bot.limiter, strconv.FormatInt(to.Chat.ID, 10))
+	rate.CheckLimit(to, bot.limiter)
 	msg, err := bot.telegram.Reply(to, what, options...)
 	if err != nil {
 		log.Warnln(err.Error())
