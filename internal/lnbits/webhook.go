@@ -9,6 +9,13 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
+
+	"net/http"
+
 	"github.com/gorilla/mux"
 	tb "gopkg.in/tucnak/telebot.v2"
 
@@ -26,9 +33,10 @@ type WebhookServer struct {
 	bot        *tb.Bot
 	c          *Client
 	database   *gorm.DB
+	buntdb     *storage.DB
 }
 
-func NewWebhookServer(addr *url.URL, bot *tb.Bot, client *Client, database *gorm.DB) *WebhookServer {
+func NewWebhookServer(addr *url.URL, bot *tb.Bot, client *Client, database *gorm.DB, buntdb *storage.DB) *WebhookServer {
 	srv := &http.Server{
 		Addr: addr.Host,
 		// Good practice: enforce timeouts for servers you create!
@@ -40,6 +48,7 @@ func NewWebhookServer(addr *url.URL, bot *tb.Bot, client *Client, database *gorm
 		database:   database,
 		bot:        bot,
 		httpServer: srv,
+		buntdb:     buntdb,
 	}
 	apiServer.httpServer.Handler = apiServer.newRouter()
 	go apiServer.httpServer.ListenAndServe()
@@ -64,6 +73,7 @@ func (w *WebhookServer) newRouter() *mux.Router {
 
 func (w WebhookServer) receive(writer http.ResponseWriter, request *http.Request) {
 	depositEvent := Webhook{}
+	// need to delete the header otherwise the Decode will fail
 	request.Header.Del("content-length")
 	err := json.NewDecoder(request.Body).Decode(&depositEvent)
 	if err != nil {
@@ -79,6 +89,18 @@ func (w WebhookServer) receive(writer http.ResponseWriter, request *http.Request
 	_, err = w.bot.Send(user.Telegram, fmt.Sprintf(i18n.Translate(user.Telegram.LanguageCode, "invoiceReceivedMessage"), depositEvent.Amount/1000))
 	if err != nil {
 		log.Errorln(err)
+	}
+
+	// if this invoice is saved in bunt.db, we load it and display the comment from an LNURL invoice
+	tx := &lnurl.LNURLInvoice{PaymentHash: depositEvent.PaymentHash}
+	err = w.buntdb.Get(tx)
+	if err != nil {
+		log.Errorln(err)
+	} else {
+		_, err = w.bot.Send(user.Telegram, tx.Comment)
+		if err != nil {
+			log.Errorln(err)
+		}
 	}
 	writer.WriteHeader(200)
 }

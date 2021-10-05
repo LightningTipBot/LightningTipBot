@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -19,19 +20,21 @@ type Server struct {
 	c                *lnbits.Client
 	database         *gorm.DB
 	callbackHostname *url.URL
+	buntdb           *storage.DB
 	WebhookServer    string
 }
 
 const (
-	statusError   = "ERROR"
-	statusOk      = "OK"
-	payRequestTag = "payRequest"
-	lnurlEndpoint = ".well-known/lnurlp"
-	minSendable   = 1000 // mSat
-	MaxSendable   = 1000000000
+	statusError    = "ERROR"
+	statusOk       = "OK"
+	payRequestTag  = "payRequest"
+	lnurlEndpoint  = ".well-known/lnurlp"
+	minSendable    = 1000 // mSat
+	MaxSendable    = 1000000000
+	CommentAllowed = 256
 )
 
-func NewServer(addr, callbackHostname *url.URL, webhookServer string, bot *tb.Bot, client *lnbits.Client, database *gorm.DB) *Server {
+func NewServer(addr, callbackHostname *url.URL, webhookServer string, bot *tb.Bot, client *lnbits.Client, database *gorm.DB, buntdb *storage.DB) *Server {
 	srv := &http.Server{
 		Addr: addr.Host,
 		// Good practice: enforce timeouts for servers you create!
@@ -45,6 +48,7 @@ func NewServer(addr, callbackHostname *url.URL, webhookServer string, bot *tb.Bo
 		httpServer:       srv,
 		callbackHostname: callbackHostname,
 		WebhookServer:    webhookServer,
+		buntdb:           buntdb,
 	}
 
 	apiServer.httpServer.Handler = apiServer.newRouter()
