@@ -1,8 +1,9 @@
-package lnbits
+package webhook
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"net/url"
 	"time"
 
@@ -31,12 +32,29 @@ const (
 type WebhookServer struct {
 	httpServer *http.Server
 	bot        *tb.Bot
-	c          *Client
+	c          *lnbits.Client
 	database   *gorm.DB
 	buntdb     *storage.DB
 }
 
-func NewWebhookServer(addr *url.URL, bot *tb.Bot, client *Client, database *gorm.DB, buntdb *storage.DB) *WebhookServer {
+type Webhook struct {
+	CheckingID  string `json:"checking_id"`
+	Pending     int    `json:"pending"`
+	Amount      int    `json:"amount"`
+	Fee         int    `json:"fee"`
+	Memo        string `json:"memo"`
+	Time        int    `json:"time"`
+	Bolt11      string `json:"bolt11"`
+	Preimage    string `json:"preimage"`
+	PaymentHash string `json:"payment_hash"`
+	Extra       struct {
+	} `json:"extra"`
+	WalletID      string      `json:"wallet_id"`
+	Webhook       string      `json:"webhook"`
+	WebhookStatus interface{} `json:"webhook_status"`
+}
+
+func NewServer(addr *url.URL, bot *tb.Bot, client *lnbits.Client, database *gorm.DB, buntdb *storage.DB) *WebhookServer {
 	srv := &http.Server{
 		Addr: addr.Host,
 		// Good practice: enforce timeouts for servers you create!
@@ -56,8 +74,8 @@ func NewWebhookServer(addr *url.URL, bot *tb.Bot, client *Client, database *gorm
 	return apiServer
 }
 
-func (w *WebhookServer) GetUserByWalletId(walletId string) (*User, error) {
-	user := &User{}
+func (w *WebhookServer) GetUserByWalletId(walletId string) (*lnbits.User, error) {
+	user := &lnbits.User{}
 	tx := w.database.Where("wallet_id = ?", walletId).First(user)
 	if tx.Error != nil {
 		return user, tx.Error

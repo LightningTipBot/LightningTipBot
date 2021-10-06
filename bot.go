@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits/webhook"
 	"sync"
 	"time"
 
@@ -76,12 +77,12 @@ func (bot TipBot) Start() {
 		log.Errorf("Could not initialize bot wallet: %s", err.Error())
 	}
 	bot.registerTelegramHandlers()
-	lnbits.NewWebhookServer(
-		Configuration.Lnbits.WebhookServerUrl, 
-		bot.telegram, 
-		bot.client, 
+	webhook.NewServer(
+		Configuration.Lnbits.WebhookServerUrl,
+		bot.telegram,
+		bot.client,
 		bot.database,
-		bot.bunt
+		bot.bunt,
 	)
 	lnurl.NewServer(
 		Configuration.Bot.LNURLServerUrl,
