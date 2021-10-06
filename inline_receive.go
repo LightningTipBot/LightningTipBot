@@ -201,6 +201,9 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	// user `from` is the one who is SENDING
 	// user `to` is the one who is RECEIVING
 	from := LoadUser(ctx)
+	if from.Wallet == nil {
+		return
+	}
 	to := inlineReceive.To
 	toUserStrMd := GetUserStrMd(to.Telegram)
 	fromUserStrMd := GetUserStrMd(from.Telegram)
