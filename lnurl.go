@@ -74,12 +74,31 @@ func (bot TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 
 		bot.tryDeleteMessage(msg)
 		// Let the user enter an amount and return
-		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlEnterAmountMessage"), payParams.MinSendable/1000, payParams.MaxSendable/1000), tb.ForceReply)
+		bot.trySendMessage(m.Sender,
+			fmt.Sprintf(Translate(ctx, "lnurlEnterAmountMessage"), payParams.MinSendable/1000, payParams.MaxSendable/1000),
+			tb.ForceReply)
 	} else {
 		// amount is already present in the command
+		// amount not in allowed range from LNURL
+		if int64(amount) > (payParams.MaxSendable/1000) || int64(amount) < (payParams.MinSendable/1000) {
+			err = fmt.Errorf("amount not in range")
+			log.Errorln(err)
+			bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), payParams.MinSendable/1000, payParams.MaxSendable/1000))
+			ResetUserState(user, bot)
+			return
+		}
 		// set also amount in the state of the user
-		// todo: this is repeated code, could be shorter
 		payParams.Amount = amount
+
+		// check if comment is presentin lnrul-p
+		memo := GetMemoFromCommand(m.Text, 3)
+		// shorten comment to allowed length
+		if len(memo) > int(payParams.CommentAllowed) {
+			memo = memo[:payParams.CommentAllowed]
+		}
+		// save it
+		payParams.Comment = memo
+
 		paramsJson, err := json.Marshal(payParams)
 		if err != nil {
 			log.Errorln(err)
@@ -137,6 +156,7 @@ func (bot TipBot) lnurlReceiveHandler(ctx context.Context, m *tb.Message) {
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lnurlEncode)})
 }
 
+// lnurlEnterAmountHandler is invoked if the user didn't deliver an amount for the lnurl payment
 func (bot TipBot) lnurlEnterAmountHandler(ctx context.Context, m *tb.Message) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
@@ -182,7 +202,8 @@ func (bot TipBot) lnurlEnterAmountHandler(ctx context.Context, m *tb.Message) {
 // LnurlStateResponse saves the state of the user for an LNURL payment
 type LnurlStateResponse struct {
 	lnurl.LNURLPayResponse1
-	Amount int `json:"amount"`
+	Amount  int    `json:"amount"`
+	Comment string `json:"comment"`
 }
 
 // lnurlPayHandler is invoked when the user has delivered an amount and is ready to pay
@@ -218,7 +239,13 @@ func (bot TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
 			return
 		}
 		qs := callbackUrl.Query()
+		// add amount to query string
 		qs.Set("amount", strconv.Itoa(stateResponse.Amount*1000))
+		// add comment to query string
+		if len(stateResponse.Comment) > 0 {
+			qs.Set("comment", stateResponse.Comment)
+		}
+
 		callbackUrl.RawQuery = qs.Encode()
 
 		res, err := client.Get(callbackUrl.String())
@@ -366,7 +393,19 @@ func (bot *TipBot) sendToLightningAddress(ctx context.Context, m *tb.Message, ad
 
 	if amount > 0 {
 		m.Text = fmt.Sprintf("/lnurl %d %s", amount, lnurl)
+		// only when amount is given, we will also add a comment to the command
+		// we do this because if the amount is not given, we will have to ask for it later
+		// in the lnurl handler and we don't want to add another step where we ask for a comment
+		// the command to pay to lnurl with comment is /lnurl <amount> <lnurl> <comment>
+		// check if comment is presentin lnrul-p
+		memo := GetMemoFromCommand(m.Text, 3)
+		// shorten comment to allowed length
+		if len(memo) > 0 {
+			m.Text = m.Text + " " + memo
+		}
 	} else {
+		// no amount was given so we will just send the lnurl
+		// this will invoke the "enter amount" dialog in the lnurl handler
 		m.Text = fmt.Sprintf("/lnurl %s", lnurl)
 	}
 	bot.lnurlHandler(ctx, m)
