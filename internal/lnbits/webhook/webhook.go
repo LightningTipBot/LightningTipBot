@@ -24,7 +24,7 @@ const (
 // invoiceReceivedMessage = "⚡️ You received %d sat."
 )
 
-type WebhookServer struct {
+type Server struct {
 	httpServer *http.Server
 	bot        *tb.Bot
 	c          *lnbits.Client
@@ -49,14 +49,14 @@ type Webhook struct {
 	WebhookStatus interface{} `json:"webhook_status"`
 }
 
-func NewServer(addr *url.URL, bot *tb.Bot, client *lnbits.Client, database *gorm.DB, buntdb *storage.DB) *WebhookServer {
+func NewServer(addr *url.URL, bot *tb.Bot, client *lnbits.Client, database *gorm.DB, buntdb *storage.DB) *Server {
 	srv := &http.Server{
 		Addr: addr.Host,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
-	apiServer := &WebhookServer{
+	apiServer := &Server{
 		c:          client,
 		database:   database,
 		bot:        bot,
@@ -69,7 +69,7 @@ func NewServer(addr *url.URL, bot *tb.Bot, client *lnbits.Client, database *gorm
 	return apiServer
 }
 
-func (w *WebhookServer) GetUserByWalletId(walletId string) (*lnbits.User, error) {
+func (w *Server) GetUserByWalletId(walletId string) (*lnbits.User, error) {
 	user := &lnbits.User{}
 	tx := w.database.Where("wallet_id = ?", walletId).First(user)
 	if tx.Error != nil {
@@ -78,13 +78,13 @@ func (w *WebhookServer) GetUserByWalletId(walletId string) (*lnbits.User, error)
 	return user, nil
 }
 
-func (w *WebhookServer) newRouter() *mux.Router {
+func (w *Server) newRouter() *mux.Router {
 	router := mux.NewRouter()
 	router.HandleFunc("/", w.receive).Methods(http.MethodPost)
 	return router
 }
 
-func (w WebhookServer) receive(writer http.ResponseWriter, request *http.Request) {
+func (w Server) receive(writer http.ResponseWriter, request *http.Request) {
 	depositEvent := Webhook{}
 	// need to delete the header otherwise the Decode will fail
 	request.Header.Del("content-length")
