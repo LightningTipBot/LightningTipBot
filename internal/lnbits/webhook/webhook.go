@@ -12,15 +12,10 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
-	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
-
 	"net/http"
 
 	"github.com/gorilla/mux"
 	tb "gopkg.in/tucnak/telebot.v2"
-
-	"net/http"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 )
