@@ -275,7 +275,7 @@ func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 		bot.trySendMessage(c.Sender, i18n.Translate(payData.LanguageCode, "invoicePaidMessage"))
 		bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(payData.LanguageCode, "invoicePublicPaidMessage"), userStr), &tb.ReplyMarkup{})
 	}
-	log.Printf("[pay] User %s paid invoice %d (%d sat)", userStr, payData.ID, payData.Amount)
+	log.Printf("[pay] User %s paid invoice %s (%d sat)", userStr, payData.ID, payData.Amount)
 	return
 }
 
