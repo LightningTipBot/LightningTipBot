@@ -1,4 +1,4 @@
-package main
+package telegram
 
 import (
 	"errors"
@@ -16,12 +16,12 @@ import (
 func SetUserState(user *lnbits.User, bot TipBot, stateKey lnbits.UserStateKey, stateData string) {
 	user.StateKey = stateKey
 	user.StateData = stateData
-	bot.database.Table("users").Where("name = ?", user.Name).Update("state_key", user.StateKey).Update("state_data", user.StateData)
+	bot.Database.Table("users").Where("name = ?", user.Name).Update("state_key", user.StateKey).Update("state_data", user.StateData)
 }
 
 func ResetUserState(user *lnbits.User, bot TipBot) {
 	user.ResetState()
-	bot.database.Table("users").Where("name = ?", user.Name).Update("state_key", 0).Update("state_data", "")
+	bot.Database.Table("users").Where("name = ?", user.Name).Update("state_key", 0).Update("state_data", "")
 }
 
 func GetUserStr(user *tb.User) string {
@@ -61,7 +61,7 @@ func appendUinqueUsersToSlice(slice []*tb.User, i *tb.User) []*tb.User {
 
 func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int, err error) {
 
-	wallet, err := bot.client.Info(*user.Wallet)
+	wallet, err := bot.Client.Info(*user.Wallet)
 	if err != nil {
 		errmsg := fmt.Sprintf("[GetUserBalance] Error: Couldn't fetch user %s's info from LNbits: %s", GetUserStr(user.Telegram), err)
 		log.Errorln(errmsg)
@@ -96,7 +96,7 @@ func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) (*lnbits.User, e
 		log.Errorln(errmsg)
 		return user, err
 	}
-	tx := bot.database.Save(user)
+	tx := bot.Database.Save(user)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

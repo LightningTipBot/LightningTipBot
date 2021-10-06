@@ -2,6 +2,8 @@ package lnurl
 
 import (
 	"encoding/json"
+	"github.com/LightningTipBot/LightningTipBot/internal"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	"net/http"
 	"net/url"
 	"time"
@@ -10,13 +12,12 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/tucnak/telebot.v2"
 	"gorm.io/gorm"
 )
 
 type Server struct {
 	httpServer       *http.Server
-	bot              *tb.Bot
+	bot              *telegram.TipBot
 	c                *lnbits.Client
 	database         *gorm.DB
 	callbackHostname *url.URL
@@ -34,26 +35,26 @@ const (
 	CommentAllowed = 256
 )
 
-func NewServer(addr, callbackHostname *url.URL, webhookServer string, bot *tb.Bot, client *lnbits.Client, database *gorm.DB, buntdb *storage.DB) *Server {
+func NewServer(bot *telegram.TipBot) *Server {
 	srv := &http.Server{
-		Addr: addr.Host,
+		Addr: internal.Configuration.Bot.LNURLServerUrl.Host,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 	apiServer := &Server{
-		c:                client,
-		database:         database,
+		c:                bot.Client,
+		database:         bot.Database,
 		bot:              bot,
 		httpServer:       srv,
-		callbackHostname: callbackHostname,
-		WebhookServer:    webhookServer,
-		buntdb:           buntdb,
+		callbackHostname: internal.Configuration.Bot.LNURLHostUrl,
+		WebhookServer:    internal.Configuration.Lnbits.WebhookServer,
+		buntdb:           bot.Bunt,
 	}
 
 	apiServer.httpServer.Handler = apiServer.newRouter()
 	go apiServer.httpServer.ListenAndServe()
-	log.Infof("[LNURL] Server started at %s", addr.Host)
+	log.Infof("[LNURL] Server started at %s", internal.Configuration.Bot.LNURLServerUrl.Host)
 	return apiServer
 }
 

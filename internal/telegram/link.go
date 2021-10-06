@@ -1,9 +1,10 @@
-package main
+package telegram
 
 import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
@@ -11,7 +12,7 @@ import (
 )
 
 func (bot TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
-	if Configuration.Lnbits.LnbitsPublicUrl == "" {
+	if internal.Configuration.Lnbits.LnbitsPublicUrl == "" {
 		bot.trySendMessage(m.Sender, Translate(ctx, "couldNotLinkMessage"))
 		return
 	}
@@ -20,13 +21,13 @@ func (bot TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
 	// reply only in private message
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
-		NewMessage(m, WithDuration(0, bot.telegram))
+		NewMessage(m, WithDuration(0, bot.Telegram))
 	}
 	// first check whether the user is initialized
 	fromUser := LoadUser(ctx)
 	bot.trySendMessage(m.Sender, Translate(ctx, "walletConnectMessage"))
 
-	lndhubUrl := fmt.Sprintf("lndhub://admin:%s@%slndhub/ext/", fromUser.Wallet.Adminkey, Configuration.Lnbits.LnbitsPublicUrl)
+	lndhubUrl := fmt.Sprintf("lndhub://admin:%s@%slndhub/ext/", fromUser.Wallet.Adminkey, internal.Configuration.Lnbits.LnbitsPublicUrl)
 
 	// create qr code
 	qr, err := qrcode.Encode(lndhubUrl, qrcode.Medium, 256)

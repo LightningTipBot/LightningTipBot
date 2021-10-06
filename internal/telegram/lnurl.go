@@ -1,4 +1,4 @@
-package main
+package telegram
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -114,7 +115,7 @@ func (bot TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 
 func (bot *TipBot) UserGetLightningAddress(user *tb.User) (string, error) {
 	if len(user.Username) > 0 {
-		return fmt.Sprintf("%s@%s", strings.ToLower(user.Username), strings.ToLower(Configuration.Bot.LNURLHostUrl.Hostname())), nil
+		return fmt.Sprintf("%s@%s", strings.ToLower(user.Username), strings.ToLower(internal.Configuration.Bot.LNURLHostUrl.Hostname())), nil
 	} else {
 		return "", fmt.Errorf("user has no username")
 	}
@@ -125,7 +126,7 @@ func UserGetLNURL(user *tb.User) (string, error) {
 	if len(name) == 0 {
 		return "", fmt.Errorf("user has no username.")
 	}
-	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", Configuration.Bot.LNURLHostName, name)
+	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, name)
 	log.Debugf("[lnurlReceiveHandler] %s's LNURL: %s", GetUserStr(user), callback)
 
 	lnurlEncode, err := lnurl.LNURLEncode(callback)
@@ -141,7 +142,7 @@ func (bot TipBot) lnurlReceiveHandler(ctx context.Context, m *tb.Message) {
 	if err != nil {
 		errmsg := fmt.Sprintf("[lnurlReceiveHandler] Failed to get LNURL: %s", err)
 		log.Errorln(errmsg)
-		bot.telegram.Send(m.Sender, Translate(ctx, "lnurlNoUsernameMessage"))
+		bot.Telegram.Send(m.Sender, Translate(ctx, "lnurlNoUsernameMessage"))
 	}
 	// create qr code
 	qr, err := qrcode.Encode(lnurlEncode, qrcode.Medium, 256)
@@ -269,7 +270,7 @@ func (bot TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
 			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), "could not receive invoice (wrong address?)."))
 			return
 		}
-		bot.telegram.Delete(msg)
+		bot.Telegram.Delete(msg)
 		c.Text = fmt.Sprintf("/pay %s", response2.PR)
 		bot.payHandler(ctx, c)
 	}
@@ -277,8 +278,8 @@ func (bot TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
 
 func getHttpClient() (*http.Client, error) {
 	client := http.Client{}
-	if Configuration.Bot.HttpProxy != "" {
-		proxyUrl, err := url.Parse(Configuration.Bot.HttpProxy)
+	if internal.Configuration.Bot.HttpProxy != "" {
+		proxyUrl, err := url.Parse(internal.Configuration.Bot.HttpProxy)
 		if err != nil {
 			log.Errorln(err)
 			return nil, err

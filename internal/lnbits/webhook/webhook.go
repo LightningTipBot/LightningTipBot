@@ -3,19 +3,18 @@ package webhook
 import (
 	"encoding/json"
 	"fmt"
-	"net/url"
-	"time"
-
+	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 
-	"net/http"
-
 	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"net/http"
 
 	"github.com/gorilla/mux"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -52,23 +51,23 @@ type Webhook struct {
 	WebhookStatus interface{} `json:"webhook_status"`
 }
 
-func NewServer(addr *url.URL, bot *tb.Bot, client *lnbits.Client, database *gorm.DB, buntdb *storage.DB) *Server {
+func NewServer(bot *telegram.TipBot) *Server {
 	srv := &http.Server{
-		Addr: addr.Host,
+		Addr: internal.Configuration.Lnbits.WebhookServerUrl.Host,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 	apiServer := &Server{
-		c:          client,
-		database:   database,
-		bot:        bot,
+		c:          bot.Client,
+		database:   bot.Database,
+		bot:        bot.Telegram,
 		httpServer: srv,
-		buntdb:     buntdb,
+		buntdb:     bot.Bunt,
 	}
 	apiServer.httpServer.Handler = apiServer.newRouter()
 	go apiServer.httpServer.ListenAndServe()
-	log.Infof("[Webhook] Server started at %s", addr)
+	log.Infof("[Webhook] Server started at %s", internal.Configuration.Lnbits.WebhookServerUrl)
 	return apiServer
 }
 

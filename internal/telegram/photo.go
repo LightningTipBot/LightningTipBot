@@ -1,4 +1,4 @@
-package main
+package telegram
 
 import (
 	"context"
@@ -42,8 +42,8 @@ func (bot TipBot) photoHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 
-	// get file reader closer from telegram api
-	reader, err := bot.telegram.GetFile(m.Photo.MediaFile())
+	// get file reader closer from Telegram api
+	reader, err := bot.Telegram.GetFile(m.Photo.MediaFile())
 	if err != nil {
 		log.Errorf("[photoHandler] getfile error: %v\n", err)
 		return

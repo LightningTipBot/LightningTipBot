@@ -1,4 +1,4 @@
-package main
+package telegram
 
 import (
 	"context"
@@ -51,7 +51,7 @@ func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 	// command is valid
 	msg := bot.trySendMessage(m.Sender, Translate(ctx, "donationProgressMessage"))
 	// get invoice
-	resp, err := http.Get(fmt.Sprintf(donationEndpoint, amount, GetUserStr(m.Sender), GetUserStr(bot.telegram.Me)))
+	resp, err := http.Get(fmt.Sprintf(donationEndpoint, amount, GetUserStr(m.Sender), GetUserStr(bot.Telegram.Me)))
 	if err != nil {
 		log.Errorln(err)
 		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
@@ -67,7 +67,7 @@ func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 	// send donation invoice
 	user := LoadUser(ctx)
 	// bot.trySendMessage(user.Telegram, string(body))
-	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: string(body)}, bot.client)
+	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: string(body)}, bot.Client)
 	if err != nil {
 		userStr := GetUserStr(m.Sender)
 		errmsg := fmt.Sprintf("[/donate] Donation failed for user %s: %s", userStr, err)
@@ -117,13 +117,13 @@ func (bot TipBot) parseCmdDonHandler(ctx context.Context, m *tb.Message) error {
 	arg := ""
 	if strings.HasPrefix(strings.ToLower(m.Text), "/send") {
 		arg, _ = getArgumentFromCommand(m.Text, 2)
-		if arg != "@"+bot.telegram.Me.Username {
+		if arg != "@"+bot.Telegram.Me.Username {
 			return fmt.Errorf("err")
 		}
 	}
 	if strings.HasPrefix(strings.ToLower(m.Text), "/tip") {
 		arg = GetUserStr(m.ReplyTo.Sender)
-		if arg != "@"+bot.telegram.Me.Username {
+		if arg != "@"+bot.Telegram.Me.Username {
 			return fmt.Errorf("err")
 		}
 	}

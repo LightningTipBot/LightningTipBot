@@ -1,4 +1,4 @@
-package main
+package telegram
 
 import (
 	"context"
@@ -15,7 +15,7 @@ type Handler struct {
 	Interceptor *Interceptor
 }
 
-// registerTelegramHandlers will register all telegram handlers.
+// registerTelegramHandlers will register all Telegram handlers.
 func (bot TipBot) registerTelegramHandlers() {
 	telegramHandlerRegistration.Do(func() {
 		// Set up handlers
@@ -54,27 +54,27 @@ func (bot TipBot) registerHandlerWithInterceptor(h Handler) {
 	}
 }
 
-// handle accepts an endpoint and handler for telegram handler registration.
+// handle accepts an endpoint and handler for Telegram handler registration.
 // function will automatically register string handlers as uppercase and first letter uppercase.
 func (bot TipBot) handle(endpoint interface{}, handler interface{}) {
 	// register the endpoint
-	bot.telegram.Handle(endpoint, handler)
+	bot.Telegram.Handle(endpoint, handler)
 	switch endpoint.(type) {
 	case string:
 		// check if this is a string endpoint
 		sEndpoint := endpoint.(string)
 		if strings.HasPrefix(sEndpoint, "/") {
 			// Uppercase endpoint registration, because starting with slash
-			bot.telegram.Handle(strings.ToUpper(sEndpoint), handler)
+			bot.Telegram.Handle(strings.ToUpper(sEndpoint), handler)
 			if len(sEndpoint) > 2 {
 				// Also register endpoint with first letter uppercase
-				bot.telegram.Handle(fmt.Sprintf("/%s%s", strings.ToUpper(string(sEndpoint[1])), sEndpoint[2:]), handler)
+				bot.Telegram.Handle(fmt.Sprintf("/%s%s", strings.ToUpper(string(sEndpoint[1])), sEndpoint[2:]), handler)
 			}
 		}
 	}
 }
 
-// register registers a handler, so that telegram can handle the endpoint correctly.
+// register registers a handler, so that Telegram can handle the endpoint correctly.
 func (bot TipBot) register(h Handler) {
 	if h.Interceptor != nil {
 		bot.registerHandlerWithInterceptor(h)
@@ -85,7 +85,7 @@ func (bot TipBot) register(h Handler) {
 	}
 }
 
-// getHandler returns a list of all handlers, that need to be registered with telegram
+// getHandler returns a list of all handlers, that need to be registered with Telegram
 func (bot TipBot) getHandler() []Handler {
 	return []Handler{
 		{

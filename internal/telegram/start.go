@@ -1,9 +1,10 @@
-package main
+package telegram
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
@@ -21,7 +22,7 @@ func (bot TipBot) startHandler(ctx context.Context, m *tb.Message) {
 	// WILL RESULT IN AN ENDLESS LOOP OTHERWISE
 	// bot.helpHandler(m)
 	log.Printf("[/start] User: %s (%d)\n", m.Sender.Username, m.Sender.ID)
-	walletCreationMsg, err := bot.telegram.Send(m.Sender, Translate(ctx, "startSettingWalletMessage"))
+	walletCreationMsg, err := bot.Telegram.Send(m.Sender, Translate(ctx, "startSettingWalletMessage"))
 	user, err := bot.initWallet(m.Sender)
 	if err != nil {
 		log.Errorln(fmt.Sprintf("[startHandler] Error with initWallet: %s", err.Error()))
@@ -76,9 +77,9 @@ func (bot TipBot) initWallet(tguser *tb.User) (*lnbits.User, error) {
 
 func (bot TipBot) createWallet(user *lnbits.User) error {
 	UserStr := GetUserStr(user.Telegram)
-	u, err := bot.client.CreateUserWithInitialWallet(strconv.Itoa(user.Telegram.ID),
+	u, err := bot.Client.CreateUserWithInitialWallet(strconv.Itoa(user.Telegram.ID),
 		fmt.Sprintf("%d (%s)", user.Telegram.ID, UserStr),
-		Configuration.Lnbits.AdminId,
+		internal.Configuration.Lnbits.AdminId,
 		UserStr)
 	if err != nil {
 		errormsg := fmt.Sprintf("[createWallet] Create wallet error: %s", err)
@@ -88,7 +89,7 @@ func (bot TipBot) createWallet(user *lnbits.User) error {
 	user.Wallet = &lnbits.Wallet{}
 	user.ID = u.ID
 	user.Name = u.Name
-	wallet, err := bot.client.Wallets(*user)
+	wallet, err := bot.Client.Wallets(*user)
 	if err != nil {
 		errormsg := fmt.Sprintf("[createWallet] Get wallet error: %s", err)
 		log.Errorln(errormsg)

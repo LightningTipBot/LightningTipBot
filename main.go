@@ -1,6 +1,9 @@
 package main
 
 import (
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits/webhook"
+	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	log "github.com/sirupsen/logrus"
 	"runtime/debug"
 )
@@ -18,7 +21,9 @@ func main() {
 	// set logger
 	setLogger()
 	defer withRecovery()
-	bot := NewBot()
+	bot := telegram.NewBot()
+	webhook.NewServer(&bot)
+	lnurl.NewServer(&bot)
 	bot.Start()
 }
 

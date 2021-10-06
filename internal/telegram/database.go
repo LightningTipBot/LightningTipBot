@@ -1,7 +1,8 @@
-package main
+package telegram
 
 import (
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal"
 	"reflect"
 	"strconv"
 	"strings"
@@ -15,12 +16,12 @@ import (
 )
 
 func migration() (db *gorm.DB, txLogger *gorm.DB) {
-	txLogger, err := gorm.Open(sqlite.Open(Configuration.Database.TransactionsPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
+	txLogger, err := gorm.Open(sqlite.Open(internal.Configuration.Database.TransactionsPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
 	if err != nil {
 		panic("Initialize orm failed.")
 	}
 
-	orm, err := gorm.Open(sqlite.Open(Configuration.Database.DbPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
+	orm, err := gorm.Open(sqlite.Open(internal.Configuration.Database.DbPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
 	if err != nil {
 		panic("Initialize orm failed.")
 	}
@@ -38,7 +39,7 @@ func migration() (db *gorm.DB, txLogger *gorm.DB) {
 
 func GetUserByTelegramUsername(toUserStrWithoutAt string, bot TipBot) (*lnbits.User, error) {
 	toUserDb := &lnbits.User{}
-	tx := bot.database.Where("telegram_username = ?", strings.ToLower(toUserStrWithoutAt)).First(toUserDb)
+	tx := bot.Database.Where("telegram_username = ?", strings.ToLower(toUserStrWithoutAt)).First(toUserDb)
 	if tx.Error != nil || toUserDb.Wallet == nil {
 		err := tx.Error
 		if toUserDb.Wallet == nil {
@@ -49,7 +50,7 @@ func GetUserByTelegramUsername(toUserStrWithoutAt string, bot TipBot) (*lnbits.U
 	return toUserDb, nil
 }
 
-// GetLnbitsUser will not update the user in database.
+// GetLnbitsUser will not update the user in Database.
 // this is required, because fetching lnbits.User from a incomplete tb.User
 // will update the incomplete (partial) user in storage.
 // this function will accept users like this:
@@ -57,9 +58,9 @@ func GetUserByTelegramUsername(toUserStrWithoutAt string, bot TipBot) (*lnbits.U
 // without updating the user in storage.
 func GetLnbitsUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 	user := &lnbits.User{Name: strconv.Itoa(u.ID)}
-	tx := bot.database.First(user)
+	tx := bot.Database.First(user)
 	if tx.Error != nil {
-		errmsg := fmt.Sprintf("[GetUser] Couldn't fetch %s from database: %s", GetUserStr(u), tx.Error.Error())
+		errmsg := fmt.Sprintf("[GetUser] Couldn't fetch %s from Database: %s", GetUserStr(u), tx.Error.Error())
 		log.Warnln(errmsg)
 		user.Telegram = u
 		return user, tx.Error
@@ -67,7 +68,7 @@ func GetLnbitsUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 	return user, nil
 }
 
-// GetUser from telegram user. Update the user if user information changed.
+// GetUser from Telegram user. Update the user if user information changed.
 func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 	user, err := GetLnbitsUser(u, bot)
 	if err != nil {
@@ -76,7 +77,7 @@ func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 	go func() {
 		userCopy := bot.copyLowercaseUser(u)
 		if !reflect.DeepEqual(userCopy, user.Telegram) {
-			// update possibly changed user details in database
+			// update possibly changed user details in Database
 			user.Telegram = userCopy
 			err = UpdateUserRecord(user, bot)
 			if err != nil {
@@ -89,9 +90,9 @@ func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 
 func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
 	user.Telegram = bot.copyLowercaseUser(user.Telegram)
-	tx := bot.database.Save(user)
+	tx := bot.Database.Save(user)
 	if tx.Error != nil {
-		errmsg := fmt.Sprintf("[UpdateUserRecord] Error: Couldn't update %s's info in database.", GetUserStr(user.Telegram))
+		errmsg := fmt.Sprintf("[UpdateUserRecord] Error: Couldn't update %s's info in Database.", GetUserStr(user.Telegram))
 		log.Errorln(errmsg)
 		return tx.Error
 	}

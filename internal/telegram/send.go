@@ -1,4 +1,4 @@
-package main
+package telegram
 
 import (
 	"context"
@@ -33,7 +33,7 @@ func helpSendUsage(ctx context.Context, errormsg string) string {
 func (bot *TipBot) SendCheckSyntax(ctx context.Context, m *tb.Message) (bool, string) {
 	arguments := strings.Split(m.Text, " ")
 	if len(arguments) < 2 {
-		return false, fmt.Sprintf(Translate(ctx, "sendSyntaxErrorMessage"), GetUserStrMd(bot.telegram.Me))
+		return false, fmt.Sprintf(Translate(ctx, "sendSyntaxErrorMessage"), GetUserStrMd(bot.Telegram.Me))
 	}
 	return true, ""
 }
@@ -66,7 +66,7 @@ func (msg SendData) Key() string {
 func (bot *TipBot) LockSend(tx *SendData) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = true
-	err := bot.bunt.Set(tx)
+	err := bot.Bunt.Set(tx)
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func (bot *TipBot) LockSend(tx *SendData) error {
 func (bot *TipBot) ReleaseSend(tx *SendData) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = false
-	err := bot.bunt.Set(tx)
+	err := bot.Bunt.Set(tx)
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func (bot *TipBot) ReleaseSend(tx *SendData) error {
 
 func (bot *TipBot) InactivateSend(tx *SendData) error {
 	tx.Active = false
-	err := bot.bunt.Set(tx)
+	err := bot.Bunt.Set(tx)
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func (bot *TipBot) getSend(c *tb.Callback) (*SendData, error) {
 	sendData := NewSend()
 	sendData.ID = c.Data
 
-	err := bot.bunt.Get(sendData)
+	err := bot.Bunt.Get(sendData)
 
 	// to avoid race conditions, we block the call if there is
 	// already an active transaction by loop until InTransaction is false
@@ -109,7 +109,7 @@ func (bot *TipBot) getSend(c *tb.Callback) (*SendData, error) {
 		default:
 			log.Infoln("[send] in transaction")
 			time.Sleep(time.Duration(500) * time.Millisecond)
-			err = bot.bunt.Get(sendData)
+			err = bot.Bunt.Get(sendData)
 		}
 	}
 	if err != nil {
@@ -141,7 +141,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 
 	if ok, errstr := bot.SendCheckSyntax(ctx, m); !ok {
 		bot.trySendMessage(m.Sender, helpSendUsage(ctx, errstr))
-		NewMessage(m, WithDuration(0, bot.telegram))
+		NewMessage(m, WithDuration(0, bot.Telegram))
 		return
 	}
 
@@ -177,7 +177,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 		errmsg := fmt.Sprintf("[/send] Error: Send amount not valid.")
 		log.Errorln(errmsg)
 		// immediately delete if the amount is bullshit
-		NewMessage(m, WithDuration(0, bot.telegram))
+		NewMessage(m, WithDuration(0, bot.Telegram))
 		bot.trySendMessage(m.Sender, helpSendUsage(ctx, Translate(ctx, "sendValidAmountMessage")))
 		return
 	}
@@ -210,7 +210,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 
 	toUserDb, err := GetUserByTelegramUsername(toUserStrWithoutAt, *bot)
 	if err != nil {
-		NewMessage(m, WithDuration(0, bot.telegram))
+		NewMessage(m, WithDuration(0, bot.Telegram))
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "sendUserHasNoWalletMessage"), toUserStrMention))
 		return
 	}
@@ -235,16 +235,16 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 		LanguageCode:   ctx.Value("publicLanguageCode").(string),
 	}
 	// save persistent struct
-	runtime.IgnoreError(bot.bunt.Set(sendData))
+	runtime.IgnoreError(bot.Bunt.Set(sendData))
 
 	sendDataJson, err := json.Marshal(sendData)
 	if err != nil {
-		NewMessage(m, WithDuration(0, bot.telegram))
+		NewMessage(m, WithDuration(0, bot.Telegram))
 		log.Printf("[/send] Error: %s\n", err.Error())
 		bot.trySendMessage(m.Sender, fmt.Sprint(Translate(ctx, "errorTryLaterMessage")))
 		return
 	}
-	// save the send data to the database
+	// save the send data to the Database
 	// log.Debug(sendData)
 	SetUserState(user, *bot, lnbits.UserStateConfirmSend, string(sendDataJson))
 	sendButton := sendConfirmationMenu.Data(Translate(ctx, "sendButtonMessage"), "confirm_send")

@@ -1,4 +1,4 @@
-package main
+package telegram
 
 import (
 	log "github.com/sirupsen/logrus"
@@ -6,14 +6,14 @@ import (
 )
 
 func (bot TipBot) tryForwardMessage(to tb.Recipient, what tb.Editable, options ...interface{}) (msg *tb.Message) {
-	msg, err := bot.telegram.Forward(to, what, options...)
+	msg, err := bot.Telegram.Forward(to, what, options...)
 	if err != nil {
 		log.Errorln(err.Error())
 	}
 	return
 }
 func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...interface{}) (msg *tb.Message) {
-	msg, err := bot.telegram.Send(to, what, options...)
+	msg, err := bot.Telegram.Send(to, what, options...)
 	if err != nil {
 		log.Errorln(err.Error())
 	}
@@ -21,7 +21,7 @@ func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...i
 }
 
 func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...interface{}) (msg *tb.Message) {
-	msg, err := bot.telegram.Reply(to, what, options...)
+	msg, err := bot.Telegram.Reply(to, what, options...)
 	if err != nil {
 		log.Errorln(err.Error())
 	}
@@ -29,7 +29,7 @@ func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...i
 }
 
 func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...interface{}) (msg *tb.Message) {
-	msg, err := bot.telegram.Edit(to, what, options...)
+	msg, err := bot.Telegram.Edit(to, what, options...)
 	if err != nil {
 		log.Errorln(err.Error())
 	}
@@ -37,7 +37,7 @@ func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...in
 }
 
 func (bot TipBot) tryDeleteMessage(msg tb.Editable) {
-	err := bot.telegram.Delete(msg)
+	err := bot.Telegram.Delete(msg)
 	if err != nil {
 		log.Errorln(err.Error())
 	}

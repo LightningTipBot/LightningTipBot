@@ -1,13 +1,12 @@
-package main
+package telegram
 
 import (
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits/webhook"
+	"github.com/LightningTipBot/LightningTipBot/internal"
 	"sync"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/tucnak/telebot.v2"
@@ -16,11 +15,11 @@ import (
 )
 
 type TipBot struct {
-	database *gorm.DB
-	bunt     *storage.DB
+	Database *gorm.DB
+	Bunt     *storage.DB
 	logger   *gorm.DB
-	telegram *telebot.Bot
-	client   *lnbits.Client
+	Telegram *telebot.Bot
+	Client   *lnbits.Client
 }
 
 var (
@@ -32,16 +31,18 @@ var (
 func NewBot() TipBot {
 	db, txLogger := migration()
 	return TipBot{
-		database: db,
+		Database: db,
+		Client:   lnbits.NewClient(internal.Configuration.Lnbits.AdminKey, internal.Configuration.Lnbits.Url),
 		logger:   txLogger,
-		bunt:     storage.NewBunt(Configuration.Database.BuntDbPath),
+		Bunt:     storage.NewBunt(internal.Configuration.Database.BuntDbPath),
+		Telegram: newTelegramBot(),
 	}
 }
 
-// newTelegramBot will create a new telegram bot.
+// newTelegramBot will create a new Telegram bot.
 func newTelegramBot() *tb.Bot {
 	tgb, err := tb.NewBot(tb.Settings{
-		Token:     Configuration.Telegram.ApiKey,
+		Token:     internal.Configuration.Telegram.ApiKey,
 		Poller:    &tb.LongPoller{Timeout: 60 * time.Second},
 		ParseMode: tb.ModeMarkdown,
 	})
@@ -55,7 +56,7 @@ func newTelegramBot() *tb.Bot {
 // todo -- may want to derive user wallets from this specific bot wallet (master wallet), since lnbits usermanager extension is able to do that.
 func (bot TipBot) initBotWallet() error {
 	botWalletInitialisation.Do(func() {
-		_, err := bot.initWallet(bot.telegram.Me)
+		_, err := bot.initWallet(bot.Telegram.Me)
 		if err != nil {
 			log.Errorln(fmt.Sprintf("[initBotWallet] Could not initialize bot wallet: %s", err.Error()))
 			return
@@ -64,33 +65,14 @@ func (bot TipBot) initBotWallet() error {
 	return nil
 }
 
-// Start will initialize the telegram bot and lnbits.
+// Start will initialize the Telegram bot and lnbits.
 func (bot TipBot) Start() {
-	// set up lnbits api
-	bot.client = lnbits.NewClient(Configuration.Lnbits.AdminKey, Configuration.Lnbits.Url)
-	// set up telebot
-	bot.telegram = newTelegramBot()
-	log.Infof("[Telegram] Authorized on account @%s", bot.telegram.Me.Username)
+	log.Infof("[Telegram] Authorized on account @%s", bot.Telegram.Me.Username)
 	// initialize the bot wallet
 	err := bot.initBotWallet()
 	if err != nil {
 		log.Errorf("Could not initialize bot wallet: %s", err.Error())
 	}
 	bot.registerTelegramHandlers()
-	webhook.NewServer(
-		Configuration.Lnbits.WebhookServerUrl,
-		bot.telegram,
-		bot.client,
-		bot.database,
-		bot.bunt,
-	)
-	lnurl.NewServer(
-		Configuration.Bot.LNURLServerUrl,
-		Configuration.Bot.LNURLHostUrl,
-		Configuration.Lnbits.WebhookServer,
-		bot.telegram,
-		bot.client,
-		bot.database,
-		bot.bunt)
-	bot.telegram.Start()
+	bot.Telegram.Start()
 }

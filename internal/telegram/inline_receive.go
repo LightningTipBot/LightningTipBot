@@ -1,4 +1,4 @@
-package main
+package telegram
 
 import (
 	"context"
@@ -48,7 +48,7 @@ func (msg InlineReceive) Key() string {
 func (bot *TipBot) LockReceive(tx *InlineReceive) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = true
-	err := bot.bunt.Set(tx)
+	err := bot.Bunt.Set(tx)
 	if err != nil {
 		return err
 	}
@@ -58,7 +58,7 @@ func (bot *TipBot) LockReceive(tx *InlineReceive) error {
 func (bot *TipBot) ReleaseReceive(tx *InlineReceive) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = false
-	err := bot.bunt.Set(tx)
+	err := bot.Bunt.Set(tx)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (bot *TipBot) ReleaseReceive(tx *InlineReceive) error {
 
 func (bot *TipBot) inactivateReceive(tx *InlineReceive) error {
 	tx.Active = false
-	err := bot.bunt.Set(tx)
+	err := bot.Bunt.Set(tx)
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (bot *TipBot) inactivateReceive(tx *InlineReceive) error {
 func (bot *TipBot) getInlineReceive(c *tb.Callback) (*InlineReceive, error) {
 	inlineReceive := NewInlineReceive()
 	inlineReceive.ID = c.Data
-	err := bot.bunt.Get(inlineReceive)
+	err := bot.Bunt.Get(inlineReceive)
 	// to avoid race conditions, we block the call if there is
 	// already an active transaction by loop until InTransaction is false
 	ticker := time.NewTicker(time.Second * 10)
@@ -90,7 +90,7 @@ func (bot *TipBot) getInlineReceive(c *tb.Callback) (*InlineReceive, error) {
 		default:
 			log.Warnf("[getInlineReceive] %s in transaction", inlineReceive.ID)
 			time.Sleep(time.Duration(500) * time.Millisecond)
-			err = bot.bunt.Get(inlineReceive)
+			err = bot.Bunt.Get(inlineReceive)
 		}
 	}
 	if err != nil {
@@ -106,11 +106,11 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 	var err error
 	inlineReceive.Amount, err = decodeAmountFromCommand(q.Text)
 	if err != nil {
-		bot.inlineQueryReplyWithError(q, Translate(ctx, "inlineQueryReceiveTitle"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.telegram.Me.Username))
+		bot.inlineQueryReplyWithError(q, Translate(ctx, "inlineQueryReceiveTitle"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.Telegram.Me.Username))
 		return
 	}
 	if inlineReceive.Amount < 1 {
-		bot.inlineQueryReplyWithError(q, Translate(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.telegram.Me.Username))
+		bot.inlineQueryReplyWithError(q, Translate(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.Telegram.Me.Username))
 		return
 	}
 
@@ -164,10 +164,10 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 		// add result to persistent struct
 		inlineReceive.Message = inlineMessage
 		inlineReceive.LanguageCode = ctx.Value("publicLanguageCode").(string)
-		runtime.IgnoreError(bot.bunt.Set(inlineReceive))
+		runtime.IgnoreError(bot.Bunt.Set(inlineReceive))
 	}
 
-	err = bot.telegram.Answer(q, &tb.QueryResponse{
+	err = bot.Telegram.Answer(q, &tb.QueryResponse{
 		Results:   results,
 		CacheTime: 1, // 60 == 1 minute, todo: make higher than 1 s in production
 
@@ -252,13 +252,13 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	}
 
 	if !to.Initialized {
-		inlineReceive.Message += "\n\n" + fmt.Sprintf(i18n.Translate(inlineReceive.LanguageCode, "inlineSendCreateWalletMessage"), GetUserStrMd(bot.telegram.Me))
+		inlineReceive.Message += "\n\n" + fmt.Sprintf(i18n.Translate(inlineReceive.LanguageCode, "inlineSendCreateWalletMessage"), GetUserStrMd(bot.Telegram.Me))
 	}
 
 	bot.tryEditMessage(c.Message, inlineReceive.Message, &tb.ReplyMarkup{})
 	// notify users
-	_, err = bot.telegram.Send(to.Telegram, fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "sendReceivedMessage"), fromUserStrMd, inlineReceive.Amount))
-	_, err = bot.telegram.Send(from.Telegram, fmt.Sprintf(i18n.Translate(from.Telegram.LanguageCode, "sendSentMessage"), inlineReceive.Amount, toUserStrMd))
+	_, err = bot.Telegram.Send(to.Telegram, fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "sendReceivedMessage"), fromUserStrMd, inlineReceive.Amount))
+	_, err = bot.Telegram.Send(from.Telegram, fmt.Sprintf(i18n.Translate(from.Telegram.LanguageCode, "sendSentMessage"), inlineReceive.Amount, toUserStrMd))
 	if err != nil {
 		errmsg := fmt.Errorf("[acceptInlineReceiveHandler] Error: Receive message to %s: %s", toUserStr, err)
 		log.Errorln(errmsg)
@@ -277,7 +277,7 @@ func (bot *TipBot) cancelInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 		// set the inlineReceive inactive
 		inlineReceive.Active = false
 		inlineReceive.InTransaction = false
-		runtime.IgnoreError(bot.bunt.Set(inlineReceive))
+		runtime.IgnoreError(bot.Bunt.Set(inlineReceive))
 	}
 	return
 }

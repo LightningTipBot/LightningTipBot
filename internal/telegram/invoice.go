@@ -1,9 +1,10 @@
-package main
+package telegram
 
 import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -26,7 +27,7 @@ func (bot TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 	bot.anyTextHandler(ctx, m)
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
-		NewMessage(m, WithDuration(0, bot.telegram))
+		NewMessage(m, WithDuration(0, bot.Telegram))
 		return
 	}
 	if len(strings.Split(m.Text, " ")) < 2 {
@@ -69,8 +70,8 @@ func (bot TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 			Out:     false,
 			Amount:  int64(amount),
 			Memo:    memo,
-			Webhook: Configuration.Lnbits.WebhookServer},
-		bot.client)
+			Webhook: internal.Configuration.Lnbits.WebhookServer},
+		bot.Client)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err)
 		log.Errorln(errmsg)

@@ -1,4 +1,4 @@
-package main
+package telegram
 
 import (
 	"context"
@@ -59,7 +59,7 @@ func (msg PayData) Key() string {
 func (bot *TipBot) LockPay(tx *PayData) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = true
-	err := bot.bunt.Set(tx)
+	err := bot.Bunt.Set(tx)
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (bot *TipBot) LockPay(tx *PayData) error {
 func (bot *TipBot) ReleasePay(tx *PayData) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = false
-	err := bot.bunt.Set(tx)
+	err := bot.Bunt.Set(tx)
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (bot *TipBot) ReleasePay(tx *PayData) error {
 
 func (bot *TipBot) InactivatePay(tx *PayData) error {
 	tx.Active = false
-	err := bot.bunt.Set(tx)
+	err := bot.Bunt.Set(tx)
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (bot *TipBot) getPay(c *tb.Callback) (*PayData, error) {
 	payData := NewPay()
 	payData.ID = c.Data
 
-	err := bot.bunt.Get(payData)
+	err := bot.Bunt.Get(payData)
 
 	// to avoid race conditions, we block the call if there is
 	// already an active transaction by loop until InTransaction is false
@@ -102,7 +102,7 @@ func (bot *TipBot) getPay(c *tb.Callback) (*PayData, error) {
 		default:
 			log.Infoln("[pay] in transaction")
 			time.Sleep(time.Duration(500) * time.Millisecond)
-			err = bot.bunt.Get(payData)
+			err = bot.Bunt.Get(payData)
 		}
 	}
 	if err != nil {
@@ -122,14 +122,14 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 	if len(strings.Split(m.Text, " ")) < 2 {
-		NewMessage(m, WithDuration(0, bot.telegram))
+		NewMessage(m, WithDuration(0, bot.Telegram))
 		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(ctx, ""))
 		return
 	}
 	userStr := GetUserStr(m.Sender)
 	paymentRequest, err := getArgumentFromCommand(m.Text, 1)
 	if err != nil {
-		NewMessage(m, WithDuration(0, bot.telegram))
+		NewMessage(m, WithDuration(0, bot.Telegram))
 		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(ctx, Translate(ctx, "invalidInvoiceHelpMessage")))
 		errmsg := fmt.Sprintf("[/pay] Error: Could not getArgumentFromCommand: %s", err)
 		log.Errorln(errmsg)
@@ -159,13 +159,13 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 	// check user balance first
 	balance, err := bot.GetUserBalance(user)
 	if err != nil {
-		NewMessage(m, WithDuration(0, bot.telegram))
+		NewMessage(m, WithDuration(0, bot.Telegram))
 		errmsg := fmt.Sprintf("[/pay] Error: Could not get user balance: %s", err)
 		log.Errorln(errmsg)
 		return
 	}
 	if amount > balance {
-		NewMessage(m, WithDuration(0, bot.telegram))
+		NewMessage(m, WithDuration(0, bot.Telegram))
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "insufficientFundsMessage"), balance, amount))
 		return
 	}
@@ -195,7 +195,7 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 		LanguageCode:  ctx.Value("publicLanguageCode").(string),
 	}
 	// add result to persistent struct
-	runtime.IgnoreError(bot.bunt.Set(payData))
+	runtime.IgnoreError(bot.Bunt.Set(payData))
 
 	SetUserState(user, bot, lnbits.UserStateConfirmPayment, paymentRequest)
 
@@ -254,7 +254,7 @@ func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 
 	userStr := GetUserStr(c.Sender)
 	// pay invoice
-	invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoiceString}, bot.client)
+	invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoiceString}, bot.Client)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/pay] Could not pay invoice of %s: %s", userStr, err)
 		if len(err.Error()) == 0 {

@@ -1,4 +1,4 @@
-package main
+package telegram
 
 import (
 	"context"
@@ -48,7 +48,7 @@ func (msg InlineSend) Key() string {
 func (bot *TipBot) LockInlineSend(tx *InlineSend) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = true
-	err := bot.bunt.Set(tx)
+	err := bot.Bunt.Set(tx)
 	if err != nil {
 		return err
 	}
@@ -58,7 +58,7 @@ func (bot *TipBot) LockInlineSend(tx *InlineSend) error {
 func (bot *TipBot) ReleaseInlineSend(tx *InlineSend) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = false
-	err := bot.bunt.Set(tx)
+	err := bot.Bunt.Set(tx)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (bot *TipBot) ReleaseInlineSend(tx *InlineSend) error {
 
 func (bot *TipBot) InactivateInlineSend(tx *InlineSend) error {
 	tx.Active = false
-	err := bot.bunt.Set(tx)
+	err := bot.Bunt.Set(tx)
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (bot *TipBot) getInlineSend(c *tb.Callback) (*InlineSend, error) {
 	inlineSend := NewInlineSend()
 	inlineSend.ID = c.Data
 
-	err := bot.bunt.Get(inlineSend)
+	err := bot.Bunt.Get(inlineSend)
 
 	// to avoid race conditions, we block the call if there is
 	// already an active transaction by loop until InTransaction is false
@@ -91,7 +91,7 @@ func (bot *TipBot) getInlineSend(c *tb.Callback) (*InlineSend, error) {
 		default:
 			log.Warnf("[getInlineSend] %s in transaction", inlineSend.ID)
 			time.Sleep(time.Duration(500) * time.Millisecond)
-			err = bot.bunt.Get(inlineSend)
+			err = bot.Bunt.Get(inlineSend)
 		}
 	}
 	if err != nil {
@@ -107,11 +107,11 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 	var err error
 	inlineSend.Amount, err = decodeAmountFromCommand(q.Text)
 	if err != nil {
-		bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineQuerySendTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQuerySendDescription"), bot.telegram.Me.Username))
+		bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineQuerySendTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQuerySendDescription"), bot.Telegram.Me.Username))
 		return
 	}
 	if inlineSend.Amount < 1 {
-		bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(Translate(ctx, "inlineQuerySendDescription"), bot.telegram.Me.Username))
+		bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(Translate(ctx, "inlineQuerySendDescription"), bot.Telegram.Me.Username))
 		return
 	}
 	fromUser := LoadUser(ctx)
@@ -125,7 +125,7 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 	// check if fromUser has balance
 	if balance < inlineSend.Amount {
 		log.Errorf("Balance of user %s too low", fromUserStr)
-		bot.inlineQueryReplyWithError(q, fmt.Sprintf(TranslateUser(ctx, "inlineSendBalanceLowMessage"), balance), fmt.Sprintf(TranslateUser(ctx, "inlineQuerySendDescription"), bot.telegram.Me.Username))
+		bot.inlineQueryReplyWithError(q, fmt.Sprintf(TranslateUser(ctx, "inlineSendBalanceLowMessage"), balance), fmt.Sprintf(TranslateUser(ctx, "inlineQuerySendDescription"), bot.Telegram.Me.Username))
 		return
 	}
 
@@ -176,10 +176,10 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 		inlineSend.From = fromUser
 		inlineSend.LanguageCode = ctx.Value("publicLanguageCode").(string)
 		// add result to persistent struct
-		runtime.IgnoreError(bot.bunt.Set(inlineSend))
+		runtime.IgnoreError(bot.Bunt.Set(inlineSend))
 	}
 
-	err = bot.telegram.Answer(q, &tb.QueryResponse{
+	err = bot.Telegram.Answer(q, &tb.QueryResponse{
 		Results:   results,
 		CacheTime: 1, // 60 == 1 minute, todo: make higher than 1 s in production
 
@@ -260,13 +260,13 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 	}
 
 	if !to.Initialized {
-		inlineSend.Message += "\n\n" + fmt.Sprintf(i18n.Translate(inlineSend.LanguageCode, "inlineSendCreateWalletMessage"), GetUserStrMd(bot.telegram.Me))
+		inlineSend.Message += "\n\n" + fmt.Sprintf(i18n.Translate(inlineSend.LanguageCode, "inlineSendCreateWalletMessage"), GetUserStrMd(bot.Telegram.Me))
 	}
 
 	bot.tryEditMessage(c.Message, inlineSend.Message, &tb.ReplyMarkup{})
 	// notify users
-	_, err = bot.telegram.Send(to.Telegram, fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "sendReceivedMessage"), fromUserStrMd, amount))
-	_, err = bot.telegram.Send(fromUser.Telegram, fmt.Sprintf(i18n.Translate(fromUser.Telegram.LanguageCode, "sendSentMessage"), amount, toUserStrMd))
+	_, err = bot.Telegram.Send(to.Telegram, fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "sendReceivedMessage"), fromUserStrMd, amount))
+	_, err = bot.Telegram.Send(fromUser.Telegram, fmt.Sprintf(i18n.Translate(fromUser.Telegram.LanguageCode, "sendSentMessage"), amount, toUserStrMd))
 	if err != nil {
 		errmsg := fmt.Errorf("[sendInline] Error: Send message to %s: %s", toUserStr, err)
 		log.Errorln(errmsg)
@@ -285,7 +285,7 @@ func (bot *TipBot) cancelInlineSendHandler(ctx context.Context, c *tb.Callback) 
 		// set the inlineSend inactive
 		inlineSend.Active = false
 		inlineSend.InTransaction = false
-		runtime.IgnoreError(bot.bunt.Set(inlineSend))
+		runtime.IgnoreError(bot.Bunt.Set(inlineSend))
 	}
 	return
 }

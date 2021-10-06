@@ -1,4 +1,4 @@
-package main
+package telegram
 
 import (
 	"context"
@@ -14,7 +14,7 @@ func (bot TipBot) anyTextHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 
-	// check if user is in database, if not, initialize wallet
+	// check if user is in Database, if not, initialize wallet
 	user := LoadUser(ctx)
 	if user.Wallet == nil || !user.Initialized {
 		bot.startHandler(ctx, m)

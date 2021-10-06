@@ -1,4 +1,4 @@
-package main
+package telegram
 
 import (
 	"context"
@@ -23,17 +23,17 @@ func (bot TipBot) inlineQueryInstructions(ctx context.Context, q *tb.Query) {
 		{
 			url:         queryImage,
 			title:       TranslateUser(ctx, "inlineQuerySendTitle"),
-			description: fmt.Sprintf(TranslateUser(ctx, "inlineQuerySendDescription"), bot.telegram.Me.Username),
+			description: fmt.Sprintf(TranslateUser(ctx, "inlineQuerySendDescription"), bot.Telegram.Me.Username),
 		},
 		{
 			url:         queryImage,
 			title:       TranslateUser(ctx, "inlineQueryReceiveTitle"),
-			description: fmt.Sprintf(TranslateUser(ctx, "inlineQueryReceiveDescription"), bot.telegram.Me.Username),
+			description: fmt.Sprintf(TranslateUser(ctx, "inlineQueryReceiveDescription"), bot.Telegram.Me.Username),
 		},
 		{
 			url:         queryImage,
 			title:       TranslateUser(ctx, "inlineQueryFaucetTitle"),
-			description: fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.telegram.Me.Username),
+			description: fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username),
 		},
 	}
 	results := make(tb.Results, len(instructions)) // []tb.Result
@@ -51,7 +51,7 @@ func (bot TipBot) inlineQueryInstructions(ctx context.Context, q *tb.Query) {
 		results[i].SetResultID(strconv.Itoa(i))
 	}
 
-	err := bot.telegram.Answer(q, &tb.QueryResponse{
+	err := bot.Telegram.Answer(q, &tb.QueryResponse{
 		Results:    results,
 		CacheTime:  5, // a minute
 		IsPersonal: true,
@@ -76,7 +76,7 @@ func (bot TipBot) inlineQueryReplyWithError(q *tb.Query, message string, help st
 	id := fmt.Sprintf("inl-error-%d-%s", q.From.ID, RandStringRunes(5))
 	result.SetResultID(id)
 	results[0] = result
-	err := bot.telegram.Answer(q, &tb.QueryResponse{
+	err := bot.Telegram.Answer(q, &tb.QueryResponse{
 		Results:   results,
 		CacheTime: 1, // 60 == 1 minute, todo: make higher than 1 s in production
 

@@ -1,4 +1,4 @@
-package main
+package telegram
 
 import (
 	"context"
@@ -51,7 +51,7 @@ func (bot TipBot) loadUserInterceptor(ctx context.Context, i interface{}) (conte
 	return ctx, nil
 }
 
-// loadReplyToInterceptor Loading the telegram user with message intercept
+// loadReplyToInterceptor Loading the Telegram user with message intercept
 func (bot TipBot) loadReplyToInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	switch i.(type) {
 	case *tb.Message:

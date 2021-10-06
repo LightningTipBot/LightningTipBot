@@ -134,7 +134,7 @@ func (w Server) serveLNURLpSecond(username string, amount int64, comment string)
 				Reason: fmt.Sprintf("Invalid user.")},
 		}, fmt.Errorf("[GetUser] Couldn't fetch user info from database: %v", tx.Error)
 	}
-	if user.Wallet == nil || user.Initialized == false {
+	if user.Wallet == nil {
 		return &lnurl.LNURLPayResponse2{
 			LNURLResponse: lnurl.LNURLResponse{
 				Status: statusError,
