@@ -22,11 +22,3 @@ func TranslateUser(ctx context.Context, MessgeID string) string {
 	}
 	return str
 }
-
-func (bot *TipBot) Translate(languageCode string, MessgeID string) string {
-	str, err := i18n.NewLocalizer(bot.bundle, languageCode).Localize(&i18n.LocalizeConfig{MessageID: MessgeID})
-	if err != nil {
-		log.Warnf("Error translating message %s: %s", MessgeID, err)
-	}
-	return str
-}

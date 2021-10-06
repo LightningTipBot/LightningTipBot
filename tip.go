@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
@@ -120,7 +121,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	log.Infof("[tip] Transaction sent from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
 
 	// notify users
-	_, err = bot.telegram.Send(from.Telegram, fmt.Sprintf(bot.Translate(from.Telegram.LanguageCode, "tipSentMessage"), amount, toUserStrMd))
+	_, err = bot.telegram.Send(from.Telegram, fmt.Sprintf(i18n.Translate(from.Telegram.LanguageCode, "tipSentMessage"), amount, toUserStrMd))
 	if err != nil {
 		errmsg := fmt.Errorf("[/tip] Error: Send message to %s: %s", toUserStr, err)
 		log.Errorln(errmsg)
@@ -131,7 +132,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	if !messageHasTip {
 		bot.tryForwardMessage(to.Telegram, m.ReplyTo, tb.Silent)
 	}
-	bot.trySendMessage(to.Telegram, fmt.Sprintf(bot.Translate(to.Telegram.LanguageCode, "tipReceivedMessage"), fromUserStrMd, amount))
+	bot.trySendMessage(to.Telegram, fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "tipReceivedMessage"), fromUserStrMd, amount))
 
 	if len(tipMemo) > 0 {
 		bot.trySendMessage(to.Telegram, fmt.Sprintf("✉️ %s", MarkdownEscape(tipMemo)))

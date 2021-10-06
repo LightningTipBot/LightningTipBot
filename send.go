@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
@@ -322,7 +323,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 		// bot.trySendMessage(c.Sender, sendErrorMessage)
 		errmsg := fmt.Sprintf("[/send] Error: Transaction failed. %s", err)
 		log.Errorln(errmsg)
-		bot.tryEditMessage(c.Message, fmt.Sprintf("%s %s", bot.Translate(sendData.LanguageCode, "sendErrorMessage"), err), &tb.ReplyMarkup{})
+		bot.tryEditMessage(c.Message, fmt.Sprintf("%s %s", i18n.Translate(sendData.LanguageCode, "sendErrorMessage"), err), &tb.ReplyMarkup{})
 		return
 	}
 
@@ -331,15 +332,15 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	sendData.InTransaction = false
 
 	// notify to user
-	bot.trySendMessage(to.Telegram, fmt.Sprintf(bot.Translate(to.Telegram.LanguageCode, "sendReceivedMessage"), fromUserStrMd, amount))
+	bot.trySendMessage(to.Telegram, fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "sendReceivedMessage"), fromUserStrMd, amount))
 	// bot.trySendMessage(from.Telegram, fmt.Sprintf(Translate(ctx, "sendSentMessage"), amount, toUserStrMd))
 	if c.Message.Private() {
 		// if the command was invoked in private chat
-		bot.tryEditMessage(c.Message, fmt.Sprintf(bot.Translate(sendData.LanguageCode, "sendSentMessage"), amount, toUserStrMd), &tb.ReplyMarkup{})
+		bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(sendData.LanguageCode, "sendSentMessage"), amount, toUserStrMd), &tb.ReplyMarkup{})
 	} else {
 		// if the command was invoked in group chat
-		bot.trySendMessage(c.Sender, fmt.Sprintf(bot.Translate(from.Telegram.LanguageCode, "sendSentMessage"), amount, toUserStrMd))
-		bot.tryEditMessage(c.Message, fmt.Sprintf(bot.Translate(sendData.LanguageCode, "sendPublicSentMessage"), amount, fromUserStrMd, toUserStrMd), &tb.ReplyMarkup{})
+		bot.trySendMessage(c.Sender, fmt.Sprintf(i18n.Translate(from.Telegram.LanguageCode, "sendSentMessage"), amount, toUserStrMd))
+		bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(sendData.LanguageCode, "sendPublicSentMessage"), amount, fromUserStrMd, toUserStrMd), &tb.ReplyMarkup{})
 	}
 	// send memo if it was present
 	if len(sendMemo) > 0 {
@@ -364,7 +365,7 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 	// remove buttons from confirmation message
-	bot.tryEditMessage(c.Message, bot.Translate(sendData.LanguageCode, "sendCancelledMessage"), &tb.ReplyMarkup{})
+	bot.tryEditMessage(c.Message, i18n.Translate(sendData.LanguageCode, "sendCancelledMessage"), &tb.ReplyMarkup{})
 	sendData.InTransaction = false
 	bot.InactivateSend(sendData)
 }

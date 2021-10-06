@@ -6,7 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
+	i18n2 "github.com/nicksnyder/go-i18n/v2/i18n"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
@@ -94,16 +95,16 @@ func (bot TipBot) commandTranslationMap(ctx context.Context, command string) con
 	// is default, we don't have to check it
 	// case "faucet":
 	// 	ctx = context.WithValue(ctx, "publicLanguageCode", "en")
-	// 	ctx = context.WithValue(ctx, "publicLocalizer", i18n.NewLocalizer(bot.bundle, "en"))
+	// 	ctx = context.WithValue(ctx, "publicLocalizer", i18n.NewLocalizer(i18n.Bundle, "en"))
 	case "zapfhahn":
 		ctx = context.WithValue(ctx, "publicLanguageCode", "de")
-		ctx = context.WithValue(ctx, "publicLocalizer", i18n.NewLocalizer(bot.bundle, "de"))
+		ctx = context.WithValue(ctx, "publicLocalizer", i18n2.NewLocalizer(i18n.Bundle, "de"))
 	case "kraan":
 		ctx = context.WithValue(ctx, "publicLanguageCode", "nl")
-		ctx = context.WithValue(ctx, "publicLocalizer", i18n.NewLocalizer(bot.bundle, "nl"))
+		ctx = context.WithValue(ctx, "publicLocalizer", i18n2.NewLocalizer(i18n.Bundle, "nl"))
 	case "grifo":
 		ctx = context.WithValue(ctx, "publicLanguageCode", "es")
-		ctx = context.WithValue(ctx, "publicLocalizer", i18n.NewLocalizer(bot.bundle, "es"))
+		ctx = context.WithValue(ctx, "publicLocalizer", i18n2.NewLocalizer(i18n.Bundle, "es"))
 	}
 	return ctx
 }

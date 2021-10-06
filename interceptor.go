@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
+	i18n2 "github.com/nicksnyder/go-i18n/v2/i18n"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
@@ -68,40 +69,36 @@ func (bot TipBot) loadReplyToInterceptor(ctx context.Context, i interface{}) (co
 }
 
 func (bot TipBot) localizerInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
-	var userLanguageCodeContext context.Context
-	var publicLanguageCodeContext context.Context
-	var userLocalizerContext context.Context
-	var publicLocalizerContext context.Context
-	var userLocalizer *i18n.Localizer
-	var publicLocalizer *i18n.Localizer
+	var userLocalizer *i18n2.Localizer
+	var publicLocalizer *i18n2.Localizer
 
 	// default language is english
-	publicLocalizer = i18n.NewLocalizer(bot.bundle, "en")
-	publicLanguageCodeContext = context.WithValue(ctx, "publicLanguageCode", "en")
-	publicLocalizerContext = context.WithValue(publicLanguageCodeContext, "publicLocalizer", publicLocalizer)
+	publicLocalizer = i18n2.NewLocalizer(i18n.Bundle, "en")
+	ctx = context.WithValue(ctx, "publicLanguageCode", "en")
+	ctx = context.WithValue(ctx, "publicLocalizer", publicLocalizer)
 
 	switch i.(type) {
 	case *tb.Message:
 		m := i.(*tb.Message)
-		userLocalizer = i18n.NewLocalizer(bot.bundle, m.Sender.LanguageCode)
-		userLanguageCodeContext = context.WithValue(publicLocalizerContext, "userLanguageCode", m.Sender.LanguageCode)
-		userLocalizerContext = context.WithValue(userLanguageCodeContext, "userLocalizer", userLocalizer)
+		userLocalizer = i18n2.NewLocalizer(i18n.Bundle, m.Sender.LanguageCode)
+		ctx = context.WithValue(ctx, "userLanguageCode", m.Sender.LanguageCode)
+		ctx = context.WithValue(ctx, "userLocalizer", userLocalizer)
 		if m.Private() {
 			// in pm overwrite public localizer with user localizer
-			publicLanguageCodeContext = context.WithValue(userLocalizerContext, "publicLanguageCode", m.Sender.LanguageCode)
-			publicLocalizerContext = context.WithValue(publicLanguageCodeContext, "publicLocalizer", userLocalizer)
+			ctx = context.WithValue(ctx, "publicLanguageCode", m.Sender.LanguageCode)
+			ctx = context.WithValue(ctx, "publicLocalizer", userLocalizer)
 		}
-		return publicLocalizerContext, nil
+		return ctx, nil
 	case *tb.Callback:
 		m := i.(*tb.Callback)
-		userLocalizer = i18n.NewLocalizer(bot.bundle, m.Sender.LanguageCode)
-		userLanguageCodeContext = context.WithValue(publicLocalizerContext, "userLanguageCode", m.Sender.LanguageCode)
-		return context.WithValue(userLanguageCodeContext, "userLocalizer", userLocalizer), nil
+		userLocalizer = i18n2.NewLocalizer(i18n.Bundle, m.Sender.LanguageCode)
+		ctx = context.WithValue(ctx, "userLanguageCode", m.Sender.LanguageCode)
+		return context.WithValue(ctx, "userLocalizer", userLocalizer), nil
 	case *tb.Query:
 		m := i.(*tb.Query)
-		userLocalizer = i18n.NewLocalizer(bot.bundle, m.From.LanguageCode)
-		userLanguageCodeContext = context.WithValue(publicLocalizerContext, "userLanguageCode", m.From.LanguageCode)
-		return context.WithValue(userLanguageCodeContext, "userLocalizer", userLocalizer), nil
+		userLocalizer = i18n2.NewLocalizer(i18n.Bundle, m.From.LanguageCode)
+		ctx = context.WithValue(ctx, "userLanguageCode", m.From.LanguageCode)
+		return context.WithValue(ctx, "userLocalizer", userLocalizer), nil
 	}
 	return ctx, nil
 }
@@ -139,31 +136,22 @@ func (bot TipBot) logMessageInterceptor(ctx context.Context, i interface{}) (con
 }
 
 // LoadUser from context
-func LoadUserLocalizer(ctx context.Context) *i18n.Localizer {
+func LoadUserLocalizer(ctx context.Context) *i18n2.Localizer {
 	u := ctx.Value("userLocalizer")
 	if u != nil {
-		return u.(*i18n.Localizer)
+		return u.(*i18n2.Localizer)
 	}
 	return nil
 }
 
 // LoadUser from context
-func LoadPublicLocalizer(ctx context.Context) *i18n.Localizer {
+func LoadPublicLocalizer(ctx context.Context) *i18n2.Localizer {
 	u := ctx.Value("publicLocalizer")
 	if u != nil {
-		return u.(*i18n.Localizer)
+		return u.(*i18n2.Localizer)
 	}
 	return nil
 }
-
-// // LoadUser from context
-// func LoadLocalizer(ctx context.Context) *i18n.Localizer {
-// 	u := ctx.Value("localizer")
-// 	if u != nil {
-// 		return u.(*i18n.Localizer)
-// 	}
-// 	return nil
-// }
 
 // LoadUser from context
 func LoadUser(ctx context.Context) *lnbits.User {

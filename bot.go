@@ -5,11 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
-	i18n2 "github.com/nicksnyder/go-i18n/v2/i18n"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/tucnak/telebot.v2"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -22,7 +20,6 @@ type TipBot struct {
 	logger   *gorm.DB
 	telegram *telebot.Bot
 	client   *lnbits.Client
-	bundle   *i18n2.Bundle
 }
 
 var (
@@ -37,7 +34,6 @@ func NewBot() TipBot {
 		database: db,
 		logger:   txLogger,
 		bunt:     storage.NewBunt(Configuration.Database.BuntDbPath),
-		bundle:   i18n.RegisterLanguages(),
 	}
 }
 
