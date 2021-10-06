@@ -80,13 +80,13 @@ func (bot TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 	} else {
 		// amount is already present in the command
 		// amount not in allowed range from LNURL
-		if int64(amount) > (payParams.MaxSendable/1000) || int64(amount) < (payParams.MinSendable/1000) {
-			err = fmt.Errorf("amount not in range")
-			log.Errorln(err)
-			bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), payParams.MinSendable/1000, payParams.MaxSendable/1000))
-			ResetUserState(user, bot)
-			return
-		}
+		// if int64(amount) > (payParams.MaxSendable/1000) || int64(amount) < (payParams.MinSendable/1000) {
+		// 	err = fmt.Errorf("amount not in range")
+		// 	log.Errorln(err)
+		// 	bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), payParams.MinSendable/1000, payParams.MaxSendable/1000))
+		// 	ResetUserState(user, bot)
+		// 	return
+		// }
 		// set also amount in the state of the user
 		payParams.Amount = amount
 
@@ -392,13 +392,13 @@ func (bot *TipBot) sendToLightningAddress(ctx context.Context, m *tb.Message, ad
 	}
 
 	if amount > 0 {
-		m.Text = fmt.Sprintf("/lnurl %d %s", amount, lnurl)
 		// only when amount is given, we will also add a comment to the command
 		// we do this because if the amount is not given, we will have to ask for it later
 		// in the lnurl handler and we don't want to add another step where we ask for a comment
 		// the command to pay to lnurl with comment is /lnurl <amount> <lnurl> <comment>
 		// check if comment is presentin lnrul-p
 		memo := GetMemoFromCommand(m.Text, 3)
+		m.Text = fmt.Sprintf("/lnurl %d %s", amount, lnurl)
 		// shorten comment to allowed length
 		if len(memo) > 0 {
 			m.Text = m.Text + " " + memo
