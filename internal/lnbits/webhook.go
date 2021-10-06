@@ -15,7 +15,6 @@ import (
 	"net/http"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
-	i18n2 "github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 const (
@@ -27,7 +26,6 @@ type WebhookServer struct {
 	bot        *tb.Bot
 	c          *Client
 	database   *gorm.DB
-	bundle     *i18n2.Bundle
 }
 
 func NewWebhookServer(addr *url.URL, bot *tb.Bot, client *Client, database *gorm.DB) *WebhookServer {
@@ -42,7 +40,6 @@ func NewWebhookServer(addr *url.URL, bot *tb.Bot, client *Client, database *gorm
 		database:   database,
 		bot:        bot,
 		httpServer: srv,
-		bundle:     i18n.RegisterLanguages(),
 	}
 	apiServer.httpServer.Handler = apiServer.newRouter()
 	go apiServer.httpServer.ListenAndServe()
