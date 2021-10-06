@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -21,27 +22,6 @@ func SetUserState(user *lnbits.User, bot TipBot, stateKey lnbits.UserStateKey, s
 func ResetUserState(user *lnbits.User, bot TipBot) {
 	user.ResetState()
 	bot.database.Table("users").Where("name = ?", user.Name).Update("state_key", 0).Update("state_data", "")
-}
-
-var markdownV2Escapes = []string{"_", "[", "]", "(", ")", "~", "`", ">", "#", "+", "-", "=", "|", "{", "}", ".", "!"}
-var markdownEscapes = []string{"_", "*", "`", "["}
-
-func MarkdownV2Escape(s string) string {
-	for _, esc := range markdownV2Escapes {
-		if strings.Contains(s, esc) {
-			s = strings.Replace(s, esc, fmt.Sprintf("\\%s", esc), -1)
-		}
-	}
-	return s
-}
-
-func MarkdownEscape(s string) string {
-	for _, esc := range markdownEscapes {
-		if strings.Contains(s, esc) {
-			s = strings.Replace(s, esc, fmt.Sprintf("\\%s", esc), -1)
-		}
-	}
-	return s
 }
 
 func GetUserStr(user *tb.User) string {
@@ -66,7 +46,7 @@ func GetUserStrMd(user *tb.User) string {
 		return userStr
 	} else {
 		// escape only if user has a username
-		return MarkdownEscape(userStr)
+		return str.MarkdownEscape(userStr)
 	}
 }
 

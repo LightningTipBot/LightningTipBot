@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"strings"
 	"time"
 
@@ -135,7 +136,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	bot.trySendMessage(to.Telegram, fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "tipReceivedMessage"), fromUserStrMd, amount))
 
 	if len(tipMemo) > 0 {
-		bot.trySendMessage(to.Telegram, fmt.Sprintf("✉️ %s", MarkdownEscape(tipMemo)))
+		bot.trySendMessage(to.Telegram, fmt.Sprintf("✉️ %s", str.MarkdownEscape(tipMemo)))
 	}
 	return
 }

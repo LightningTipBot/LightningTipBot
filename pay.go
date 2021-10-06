@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"strings"
 	"time"
 
@@ -175,7 +176,7 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 
 	confirmText := fmt.Sprintf(Translate(ctx, "confirmPayInvoiceMessage"), amount)
 	if len(bolt11.Description) > 0 {
-		confirmText = confirmText + fmt.Sprintf(Translate(ctx, "confirmPayAppendMemo"), MarkdownEscape(bolt11.Description))
+		confirmText = confirmText + fmt.Sprintf(Translate(ctx, "confirmPayAppendMemo"), str.MarkdownEscape(bolt11.Description))
 	}
 
 	log.Printf("[/pay] User: %s, amount: %d sat.", userStr, amount)
@@ -260,7 +261,7 @@ func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 			err = fmt.Errorf(i18n.Translate(payData.LanguageCode, "invoiceUndefinedErrorMessage"))
 		}
 		// bot.trySendMessage(c.Sender, fmt.Sprintf(invoicePaymentFailedMessage, err))
-		bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(payData.LanguageCode, "invoicePaymentFailedMessage"), MarkdownEscape(err.Error())), &tb.ReplyMarkup{})
+		bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(payData.LanguageCode, "invoicePaymentFailedMessage"), str.MarkdownEscape(err.Error())), &tb.ReplyMarkup{})
 		log.Errorln(errmsg)
 		return
 	}

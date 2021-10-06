@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"strings"
 	"time"
 
@@ -215,9 +216,9 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	}
 
 	// entire text of the inline object
-	confirmText := fmt.Sprintf(Translate(ctx, "confirmSendMessage"), MarkdownEscape(toUserStrMention), amount)
+	confirmText := fmt.Sprintf(Translate(ctx, "confirmSendMessage"), str.MarkdownEscape(toUserStrMention), amount)
 	if len(sendMemo) > 0 {
-		confirmText = confirmText + fmt.Sprintf(Translate(ctx, "confirmSendAppendMemo"), MarkdownEscape(sendMemo))
+		confirmText = confirmText + fmt.Sprintf(Translate(ctx, "confirmSendAppendMemo"), str.MarkdownEscape(sendMemo))
 	}
 	// object that holds all information about the send payment
 	id := fmt.Sprintf("send-%d-%d-%s", m.Sender.ID, amount, RandStringRunes(5))
@@ -344,7 +345,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	}
 	// send memo if it was present
 	if len(sendMemo) > 0 {
-		bot.trySendMessage(to.Telegram, fmt.Sprintf("✉️ %s", MarkdownEscape(sendMemo)))
+		bot.trySendMessage(to.Telegram, fmt.Sprintf("✉️ %s", str.MarkdownEscape(sendMemo)))
 	}
 
 	return

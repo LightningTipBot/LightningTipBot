@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -142,7 +143,7 @@ func (bot TipBot) parseCmdDonHandler(ctx context.Context, m *tb.Message) error {
 	}
 	donationInterceptMessage := sb.String()
 
-	bot.trySendMessage(m.Sender, MarkdownEscape(donationInterceptMessage))
+	bot.trySendMessage(m.Sender, str.MarkdownEscape(donationInterceptMessage))
 	m.Text = fmt.Sprintf("/donate %d", amount)
 	bot.donationHandler(ctx, m)
 	// returning nil here will abort the parent handler (/pay or /tip)

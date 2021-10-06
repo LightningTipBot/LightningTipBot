@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"net/url"
 	"time"
 
@@ -110,7 +111,7 @@ func (w Server) receive(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		log.Errorln(err)
 	} else {
-		_, err = w.bot.Send(user.Telegram, tx.Comment)
+		_, err = w.bot.Send(user.Telegram, fmt.Sprintf(`✉️ %s`, str.MarkdownEscape(tx.Comment)))
 		if err != nil {
 			log.Errorln(err)
 		}
