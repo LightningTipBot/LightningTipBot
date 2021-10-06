@@ -18,7 +18,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type LNURLInvoice struct {
+type Invoice struct {
 	PaymentRequest string       `json:"payment_request"`
 	PaymentHash    string       `json:"payment_hash"`
 	Amount         int64        `json:"amount"`
@@ -29,8 +29,8 @@ type LNURLInvoice struct {
 	PaidAt         time.Time    `json:"paid_at"`
 }
 
-func (msg LNURLInvoice) Key() string {
-	return msg.PaymentHash
+func (msg Invoice) Key() string {
+	return fmt.Sprintf("payment-hash:%s", msg.PaymentHash)
 }
 
 func (w Server) handleLnUrl(writer http.ResponseWriter, request *http.Request) {
@@ -170,7 +170,7 @@ func (w Server) serveLNURLpSecond(username string, amount int64, comment string)
 	}
 	// save invoice struct for later use
 	runtime.IgnoreError(w.buntdb.Set(
-		LNURLInvoice{
+		Invoice{
 			ToUser:         user,
 			Amount:         amount,
 			Comment:        comment,

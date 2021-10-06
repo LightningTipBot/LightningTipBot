@@ -105,7 +105,7 @@ func (w Server) receive(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// if this invoice is saved in bunt.db, we load it and display the comment from an LNURL invoice
-	tx := &lnurl.LNURLInvoice{PaymentHash: depositEvent.PaymentHash}
+	tx := &lnurl.Invoice{PaymentHash: depositEvent.PaymentHash}
 	err = w.buntdb.Get(tx)
 	if err != nil {
 		log.Errorln(err)
