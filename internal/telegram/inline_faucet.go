@@ -34,7 +34,6 @@ type InlineFaucet struct {
 	NTotal          int          `json:"inline_faucet_ntotal"`
 	NTaken          int          `json:"inline_faucet_ntaken"`
 	UserNeedsWallet bool         `json:"inline_faucet_userneedswallet"`
-	InTransaction   bool         `json:"inline_faucet_intransaction"`
 	LanguageCode    string       `json:"languagecode"`
 }
 
@@ -328,7 +327,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		return
 	}
 	// release faucet no matter what
-	defer inlineFaucet.Lock(inlineFaucet, bot.Bunt)
+	defer inlineFaucet.Release(inlineFaucet, bot.Bunt)
 
 	if from.Telegram.ID == to.Telegram.ID {
 		bot.trySendMessage(from.Telegram, Translate(ctx, "sendYourselfMessage"))
