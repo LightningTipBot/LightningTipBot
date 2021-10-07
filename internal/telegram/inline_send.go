@@ -40,7 +40,7 @@ func (bot TipBot) makeSendKeyboard(ctx context.Context, id string) *tb.ReplyMark
 			acceptInlineSendButton,
 			cancelInlineSendButton),
 	)
-	return inlineFaucetMenu
+	return inlineSendMenu
 }
 
 func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
@@ -100,6 +100,7 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 			Message:      inlineMessage,
 			From:         fromUser,
 			Memo:         memo,
+			Amount:       amount,
 			LanguageCode: ctx.Value("publicLanguageCode").(string),
 		}
 

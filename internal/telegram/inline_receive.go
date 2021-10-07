@@ -39,7 +39,7 @@ func (bot TipBot) makeReceiveKeyboard(ctx context.Context, id string) *tb.ReplyM
 			acceptInlineReceiveButton,
 			cancelInlineReceiveButton),
 	)
-	return inlineFaucetMenu
+	return inlineReceiveMenu
 }
 
 func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
@@ -80,10 +80,13 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 		results[i].SetResultID(id)
 		// create persistend inline send struct
 		inlineReceive := InlineReceive{
-			Base:         transaction.New(transaction.ID(id)),
-			Message:      inlineMessage,
-			To:           from,
-			Memo:         memo,
+			Base:    transaction.New(transaction.ID(id)),
+			Message: inlineMessage,
+			To:      from,
+			Memo:    memo,
+			Amount:  amount,
+			From:    from,
+
 			LanguageCode: ctx.Value("publicLanguageCode").(string),
 		}
 		runtime.IgnoreError(inlineReceive.Set(inlineReceive, bot.Bunt))
