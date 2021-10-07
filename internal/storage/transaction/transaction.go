@@ -67,7 +67,7 @@ func (tx *Base) Inactivate(s storage.Storable, db *storage.DB) error {
 	return nil
 }
 
-func (tx Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error) {
+func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error) {
 	err := db.Get(s)
 	if err != nil {
 		return s, err
