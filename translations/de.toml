@@ -279,7 +279,7 @@ inlineSendCreateWalletMessage = """Chatte mit %s 👈 um dein Wallet zu verwalte
 sendYourselfMessage = """📖 Du kannst dich nicht selbst bezahlen."""
 inlineSendFailedMessage = """🚫 Senden fehlgeschlagen."""
 inlineSendInvalidAmountMessage = """🚫 Betrag muss größer als 0 sein."""
-inlineSendBalanceLowMessage = """🚫 Dein Guthaben ist zu niedrig."""
+inlineSendBalanceLowMessage = """🚫 Dein Guthaben reicht nicht aus."""
 
 # INLINE RECEIVE
 
