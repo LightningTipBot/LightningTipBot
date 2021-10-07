@@ -170,6 +170,7 @@ sendHelpText = """📖 Ups, das hat nicht geklappt. %s
 
 # INVOICE
 
+invoiceReceivedMessage    = """⚡️ Du hast %d sat erhalten."""
 invoiceEnterAmountMessage = """Hast du einen Betrag eingegeben?"""
 invoiceValidAmountMessage = """Hast du einen gültigen Betrag eingegeben?"""
 invoiceHelpText           = """📖 Ups, das hat nicht geklappt. %s

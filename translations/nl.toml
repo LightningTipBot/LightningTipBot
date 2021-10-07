@@ -36,26 +36,26 @@ balanceTooLowMessage = """Uw saldo is te laag."""
 
 # BUTTONS
 
-sendButtonMessage = """✅ verzenden"""
-payButtonMessage = """✅ betalen"""
-payReceiveButtonMessage = """💸 betalen"""
-receiveButtonMessage = """✅ ontvangen"""
-cancelButtonMessage = """🚫 annuleren"""
-collectButtonMessage = """✅ verzamelen"""
-nextButtonMessage = """volgende"""
-backButtonMessage = """terug"""
-acceptButtonMessage = """accepteren"""
-denyButtonMessage = """weigeren"""
-tipButtonMessage = """tip"""
-revealButtonMessage = """laat zijn"""
-showButtonMessage = """toon"""
-hideButtonMessage = """verbergen"""
-joinButtonMessage = """deelnemen"""
-optionsButtonMessage = """opties"""
-settingsButtonMessage = """instellingen"""
-saveButtonMessage = """save"""
-deleteButtonMessage = """verwijderen"""
-infoButtonMessage = """info"""
+sendButtonMessage = """✅ Verzenden"""
+payButtonMessage = """✅ Betalen"""
+payReceiveButtonMessage = """💸 Betalen"""
+receiveButtonMessage = """✅ Ontvangen"""
+cancelButtonMessage = """🚫 Annuleren"""
+collectButtonMessage = """✅ Verzamelen"""
+nextButtonMessage = """Volgende"""
+backButtonMessage = """Terug"""
+acceptButtonMessage = """Accepteren"""
+denyButtonMessage = """Weigeren"""
+tipButtonMessage = """Tip"""
+revealButtonMessage = """Laat zijn"""
+showButtonMessage = """Toon"""
+hideButtonMessage = """Verbergen"""
+joinButtonMessage = """Deelnemen"""
+optionsButtonMessage = """Ppties"""
+settingsButtonMessage = """Instellingen"""
+saveButtonMessage = """Save"""
+deleteButtonMessage = """Serwijderen"""
+infoButtonMessage = """Info"""
 
 # HELP
 
@@ -170,6 +170,7 @@ sendHelpText               = """📖 Oeps, dat werkte niet. %s
 
 # INVOICE
 
+invoiceReceivedMessage    = """⚡️ Je hebt %d sat ontvangen ."""
 invoiceEnterAmountMessage = """Heb je een bedrag ingevoerd?"""
 invoiceValidAmountMessage = """Heeft u een geldig bedrag ingevoerd?"""
 invoiceHelpText           = """📖 Oeps, dat werkte niet. %s

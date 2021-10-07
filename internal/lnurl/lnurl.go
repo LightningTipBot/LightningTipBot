@@ -9,12 +9,29 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/fiatjaf/go-lnurl"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )
+
+type Invoice struct {
+	PaymentRequest string       `json:"payment_request"`
+	PaymentHash    string       `json:"payment_hash"`
+	Amount         int64        `json:"amount"`
+	Comment        string       `json:"comment"`
+	ToUser         *lnbits.User `json:"to_user"`
+	CreatedAt      time.Time    `json:"created_at"`
+	Paid           bool         `json:"paid"`
+	PaidAt         time.Time    `json:"paid_at"`
+}
+
+func (msg Invoice) Key() string {
+	return fmt.Sprintf("payment-hash:%s", msg.PaymentHash)
+}
 
 func (w Server) handleLnUrl(writer http.ResponseWriter, request *http.Request) {
 	var err error
@@ -33,7 +50,12 @@ func (w Server) handleLnUrl(writer http.ResponseWriter, request *http.Request) {
 			NotFoundHandler(writer, fmt.Errorf("[serveLNURLpSecond] Couldn't cast amount to int %v", parseError))
 			return
 		}
-		response, err = w.serveLNURLpSecond(username, int64(amount))
+		comment := request.FormValue("comment")
+		if len(comment) > CommentAllowed {
+			NotFoundHandler(writer, fmt.Errorf("[serveLNURLpSecond] Comment is too long"))
+			return
+		}
+		response, err = w.serveLNURLpSecond(username, int64(amount), comment)
 	}
 	// check if error was returned from first or second handlers
 	if err != nil {
@@ -77,12 +99,13 @@ func (w Server) serveLNURLpFirst(username string) (*lnurl.LNURLPayResponse1, err
 		MinSendable:     minSendable,
 		MaxSendable:     MaxSendable,
 		EncodedMetadata: string(jsonMeta),
+		CommentAllowed:  CommentAllowed,
 	}, nil
 
 }
 
 // serveLNURLpSecond serves the second LNURL response with the payment request with the correct description hash
-func (w Server) serveLNURLpSecond(username string, amount int64) (*lnurl.LNURLPayResponse2, error) {
+func (w Server) serveLNURLpSecond(username string, amount int64, comment string) (*lnurl.LNURLPayResponse2, error) {
 	log.Infof("[LNURL] Serving invoice for user %s", username)
 	if amount < minSendable || amount > MaxSendable {
 		// amount is not ok
@@ -92,16 +115,33 @@ func (w Server) serveLNURLpSecond(username string, amount int64) (*lnurl.LNURLPa
 				Reason: fmt.Sprintf("Amount out of bounds (min: %d mSat, max: %d mSat).", minSendable, MaxSendable)},
 		}, fmt.Errorf("amount out of bounds")
 	}
-	// amount is ok now check for the user
+	// check comment length
+	if len(comment) > CommentAllowed {
+		return &lnurl.LNURLPayResponse2{
+			LNURLResponse: lnurl.LNURLResponse{
+				Status: statusError,
+				Reason: fmt.Sprintf("Comment too long (max: %d characters).", CommentAllowed)},
+		}, fmt.Errorf("comment too long")
+	}
+
+	// now check for the user
 	user := &lnbits.User{}
 	tx := w.database.Where("telegram_username = ?", strings.ToLower(username)).First(user)
 	if tx.Error != nil {
-		return nil, fmt.Errorf("[GetUser] Couldn't fetch user info from database: %v", tx.Error)
+		return &lnurl.LNURLPayResponse2{
+			LNURLResponse: lnurl.LNURLResponse{
+				Status: statusError,
+				Reason: fmt.Sprintf("Invalid user.")},
+		}, fmt.Errorf("[GetUser] Couldn't fetch user info from database: %v", tx.Error)
 	}
-	if user.Wallet == nil || user.Initialized == false {
-		return nil, fmt.Errorf("[serveLNURLpSecond] invalid user data")
+	if user.Wallet == nil {
+		return &lnurl.LNURLPayResponse2{
+			LNURLResponse: lnurl.LNURLResponse{
+				Status: statusError,
+				Reason: fmt.Sprintf("Invalid user.")},
+		}, fmt.Errorf("[serveLNURLpSecond] user %s not found", username)
 	}
-
+	// user is ok now create invoice
 	// set wallet lnbits client
 
 	var resp *lnurl.LNURLPayResponse2
@@ -128,6 +168,17 @@ func (w Server) serveLNURLpSecond(username string, amount int64) (*lnurl.LNURLPa
 		}
 		return resp, err
 	}
+	// save invoice struct for later use
+	runtime.IgnoreError(w.buntdb.Set(
+		Invoice{
+			ToUser:         user,
+			Amount:         amount,
+			Comment:        comment,
+			PaymentRequest: invoice.PaymentRequest,
+			PaymentHash:    invoice.PaymentHash,
+			CreatedAt:      time.Now(),
+		}))
+
 	return &lnurl.LNURLPayResponse2{
 		LNURLResponse: lnurl.LNURLResponse{Status: statusOk},
 		PR:            invoice.PaymentRequest,

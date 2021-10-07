@@ -2,6 +2,13 @@
 
 Thank you for helping to translate this bot into many different languages. If you chose to translate this bot, please try to test every possible case that you can think of. As time passes, new features will be added and your translation could become out of date. It would be great, if you could update your language's translation if you notice any weird changes. 
 
+## Quick and dirty summary
+* Duplicate `en.toml` to your localization and edit string by string.
+* Do not translate commands in the text! I.e. `/balance` stays `/balance`.
+* Pay attention to every single `"""` and `%s` or `%d`. 
+* Your end resiult should have exactly the same number of lines as `en.toml`.
+* Start sentences with `C`apital letters, end them with a full stop`.`
+
 ## General 
 * The bot checks the language settings of each Telegram user and translate the interaction with the user (private chats, **inline commands?**) to the user's language, if a translation is available. Otherwise, it will default to english. All messages in groups will be english. If the user does not have a language setting, it will default to english.
 * For now, all `/commands` are in english. That means that all `/command` references in the help messages should remain english for now. We plan to implement localized commands, which is why you will find the strings in the translation files. Please chose simple, single-worded, lower-case, for the command translations.

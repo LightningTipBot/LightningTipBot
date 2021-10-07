@@ -92,5 +92,6 @@ func (tx Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error)
 }
 
 func (tx *Base) Set(s storage.Storable, db *storage.DB) error {
-	return tx.Set(s, db)
+	tx.UpdatedAt = time.Now()
+	return db.Set(s)
 }
