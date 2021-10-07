@@ -256,7 +256,8 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 		bot.tryEditMessage(c.Message, fmt.Sprintf("%s %s", i18n.Translate(sendData.LanguageCode, "sendErrorMessage"), err), &tb.ReplyMarkup{})
 		return
 	}
-	sendData.Active = false
+	sendData.Inactivate(sendData, bot.Bunt)
+
 	log.Infof("[send] Transaction sent from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
 
 	// notify to user
