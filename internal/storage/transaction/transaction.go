@@ -2,8 +2,9 @@ package transaction
 
 import (
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 )
 
 type Base struct {

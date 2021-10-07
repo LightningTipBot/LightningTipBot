@@ -213,7 +213,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	}
 	if !sendData.Active {
 		log.Errorf("[acceptSendHandler] send not active anymore")
-		bot.tryDeleteMessage(c.Message)
+		// bot.tryDeleteMessage(c.Message)
 		return
 	}
 	defer sendData.Release(sendData, bot.Bunt)
@@ -256,10 +256,8 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 		bot.tryEditMessage(c.Message, fmt.Sprintf("%s %s", i18n.Translate(sendData.LanguageCode, "sendErrorMessage"), err), &tb.ReplyMarkup{})
 		return
 	}
-
+	sendData.Active = false
 	log.Infof("[send] Transaction sent from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
-
-	sendData.InTransaction = false
 
 	// notify to user
 	bot.trySendMessage(to.Telegram, fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "sendReceivedMessage"), fromUserStrMd, amount))
