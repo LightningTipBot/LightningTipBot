@@ -37,17 +37,6 @@ type InlineFaucet struct {
 	LanguageCode    string       `json:"languagecode"`
 }
 
-func NewInlineFaucet() *InlineFaucet {
-	inlineFaucet := &InlineFaucet{
-		Message:         "",
-		NTaken:          0,
-		UserNeedsWallet: false,
-		Base:            transaction.New(),
-	}
-	return inlineFaucet
-
-}
-
 func (bot TipBot) mapFaucetLanguage(ctx context.Context, command string) context.Context {
 	if len(strings.Split(command, " ")) > 1 {
 		c := strings.Split(command, " ")[0][1:] // cut the /
@@ -189,7 +178,6 @@ func (bot TipBot) faucetHandler(ctx context.Context, m *tb.Message) {
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "inlineFaucetHelpText"), Translate(ctx, "inlineFaucetHelpFaucetInGroup")))
 		return
 	}
-	// inlineFaucet := NewInlineFaucet()
 	ctx = bot.mapFaucetLanguage(ctx, m.Text)
 	inlineFaucet, err := bot.makeFaucet(ctx, m, false)
 	if err != nil {
