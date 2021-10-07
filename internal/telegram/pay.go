@@ -3,6 +3,8 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
@@ -11,7 +13,6 @@ import (
 	decodepay "github.com/fiatjaf/ln-decodepay"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
-	"strings"
 )
 
 var (
@@ -38,13 +39,6 @@ type PayData struct {
 	Message      string       `json:"message"`
 	Amount       int64        `json:"amount"`
 	LanguageCode string       `json:"languagecode"`
-}
-
-func NewPay() *PayData {
-	payData := &PayData{
-		Base: transaction.New(),
-	}
-	return payData
 }
 
 // payHandler invoked on "/pay lnbc..." command
@@ -147,8 +141,7 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 
 // confirmPayHandler when user clicked pay on payment confirmation
 func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
-	tx := NewPay()
-	tx.ID = c.Data
+	tx := &PayData{Base: transaction.New(transaction.ID(c.Data))}
 	sn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
@@ -221,10 +214,8 @@ func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 func (bot TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 	// reset state immediately
 	user := LoadUser(ctx)
-
 	ResetUserState(user, bot)
-	tx := NewPay()
-	tx.ID = c.Data
+	tx := &PayData{Base: transaction.New(transaction.ID(c.Data))}
 	sn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
