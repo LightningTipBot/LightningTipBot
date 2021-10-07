@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
@@ -12,7 +14,6 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
-	"strings"
 )
 
 var (
@@ -46,13 +47,6 @@ type SendData struct {
 	Message        string       `json:"message"`
 	Amount         int64        `json:"amount"`
 	LanguageCode   string       `json:"languagecode"`
-}
-
-func NewSend() *SendData {
-	sendData := &SendData{
-		Base: transaction.New(),
-	}
-	return sendData
 }
 
 // sendHandler invoked on "/send 123 @user" command
@@ -199,8 +193,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 
 // sendHandler invoked when user clicked send on payment confirmation
 func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
-	tx := NewSend()
-	tx.ID = c.Data
+	tx := &SendData{Base: transaction.New(transaction.ID(c.Data))}
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
@@ -292,8 +285,7 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	// reset state immediately
 	user := LoadUser(ctx)
 	ResetUserState(user, *bot)
-	tx := NewSend()
-	tx.ID = c.Data
+	tx := &SendData{Base: transaction.New(transaction.ID(c.Data))}
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
