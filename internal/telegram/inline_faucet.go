@@ -1,4 +1,4 @@
-package telegram
+package main
 
 import (
 	"context"
@@ -32,6 +32,7 @@ type InlineFaucet struct {
 	NTotal          int          `json:"inline_faucet_ntotal"`
 	NTaken          int          `json:"inline_faucet_ntaken"`
 	UserNeedsWallet bool         `json:"inline_faucet_userneedswallet"`
+	InTransaction   bool         `json:"inline_faucet_intransaction"`
 	LanguageCode    string       `json:"languagecode"`
 }
 
