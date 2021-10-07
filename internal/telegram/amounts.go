@@ -4,6 +4,9 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/price"
+	log "github.com/sirupsen/logrus"
 )
 
 func getArgumentFromCommand(input string, which int) (output string, err error) {
@@ -35,6 +38,20 @@ func getAmount(input string) (amount int, err error) {
 		return amount, err
 	}
 
+	// convert fiat currencies to satoshis
+	for currency, symbol := range price.P.Currencies {
+		if strings.Contains(input, symbol) {
+			fmount, err := strconv.ParseFloat(strings.Replace(input, symbol, "", 1), 64)
+			if err != nil {
+				log.Errorln(err)
+				return 0, err
+			}
+			amount = int(fmount / price.Price[currency] * float64(100_000_000))
+			return amount, nil
+		}
+	}
+
+	// use plain integer as satoshis
 	amount, err = strconv.Atoi(input)
 	if err != nil {
 		return 0, err
