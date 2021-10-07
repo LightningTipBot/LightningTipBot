@@ -3,8 +3,6 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"time"
-
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -54,7 +52,7 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 		return
 	}
 	if amount < 1 {
-		bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(Translate(ctx, "inlineQuerySendDescription"), bot.telegram.Me.Username))
+		bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(Translate(ctx, "inlineQuerySendDescription"), bot.Telegram.Me.Username))
 		return
 	}
 	fromUser := LoadUser(ctx)
@@ -68,7 +66,7 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 	// check if fromUser has balance
 	if balance < amount {
 		log.Errorf("Balance of user %s too low", fromUserStr)
-		bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineSendBalanceLowMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQuerySendDescription"), bot.telegram.Me.Username))
+		bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineSendBalanceLowMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQuerySendDescription"), bot.Telegram.Me.Username))
 		return
 	}
 	// check for memo in command
@@ -106,7 +104,7 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 		}
 
 		// add result to persistent struct
-		runtime.IgnoreError(inlineSend.Set(inlineSend, bot.bunt))
+		runtime.IgnoreError(inlineSend.Set(inlineSend, bot.Bunt))
 	}
 
 	err = bot.Telegram.Answer(q, &tb.QueryResponse{
@@ -122,7 +120,7 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) {
 	to := LoadUser(ctx)
 	tx := &InlineSend{Base: transaction.New(transaction.ID(c.Data))}
-	sn, err := tx.Get(tx, bot.bunt)
+	sn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[acceptInlineSendHandler] %s", err)
@@ -132,7 +130,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 
 	fromUser := inlineSend.From
 	// immediatelly set intransaction to block duplicate calls
-	err = inlineSend.Lock(inlineSend, bot.bunt)
+	err = inlineSend.Lock(inlineSend, bot.Bunt)
 	if err != nil {
 		log.Errorf("[getInlineSend] %s", err)
 		return
@@ -142,7 +140,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 		return
 	}
 
-	defer inlineSend.Release(inlineSend, bot.bunt)
+	defer inlineSend.Release(inlineSend, bot.Bunt)
 
 	amount := inlineSend.Amount
 
@@ -170,7 +168,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 		}
 	}
 	// set inactive to avoid double-sends
-	inlineSend.Inactivate(inlineSend, bot.bunt)
+	inlineSend.Inactivate(inlineSend, bot.Bunt)
 
 	// todo: user new get username function to get userStrings
 	transactionMemo := fmt.Sprintf("InlineSend from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
@@ -207,7 +205,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 
 func (bot *TipBot) cancelInlineSendHandler(ctx context.Context, c *tb.Callback) {
 	tx := &InlineSend{Base: transaction.New(transaction.ID(c.Data))}
-	sn, err := tx.Get(tx, bot.bunt)
+	sn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[cancelInlineSendHandler] %s", err)
@@ -219,7 +217,7 @@ func (bot *TipBot) cancelInlineSendHandler(ctx context.Context, c *tb.Callback) 
 		// set the inlineSend inactive
 		inlineSend.Active = false
 		inlineSend.InTransaction = false
-		runtime.IgnoreError(inlineSend.Set(inlineSend, bot.bunt))
+		runtime.IgnoreError(inlineSend.Set(inlineSend, bot.Bunt))
 	}
 	return
 }

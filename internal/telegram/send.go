@@ -4,17 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
-	"time"
-
-	"github.com/LightningTipBot/LightningTipBot/internal/str"
-	"strings"
-	"time"
-
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -174,7 +168,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 		LanguageCode:   ctx.Value("publicLanguageCode").(string),
 	}
 	// save persistent struct
-	runtime.IgnoreError(sendData.Set(sendData, bot.bunt))
+	runtime.IgnoreError(sendData.Set(sendData, bot.Bunt))
 
 	sendDataJson, err := json.Marshal(sendData)
 	if err != nil {
@@ -207,7 +201,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	tx := NewSend()
 	tx.ID = c.Data
-	sn, err := tx.Get(tx, bot.bunt)
+	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
 		return
@@ -218,7 +212,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 	// immediatelly set intransaction to block duplicate calls
-	err = sendData.Lock(sendData, bot.bunt)
+	err = sendData.Lock(sendData, bot.Bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
 		bot.tryDeleteMessage(c.Message)
@@ -229,7 +223,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 		bot.tryDeleteMessage(c.Message)
 		return
 	}
-	defer sendData.Release(sendData, bot.bunt)
+	defer sendData.Release(sendData, bot.Bunt)
 
 	// // remove buttons from confirmation message
 	// bot.tryEditMessage(c.Message, MarkdownEscape(sendData.Message), &tb.ReplyMarkup{})
@@ -300,7 +294,7 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	ResetUserState(user, *bot)
 	tx := NewSend()
 	tx.ID = c.Data
-	sn, err := tx.Get(tx, bot.bunt)
+	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
 		return
@@ -313,5 +307,5 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	// remove buttons from confirmation message
 	bot.tryEditMessage(c.Message, i18n.Translate(sendData.LanguageCode, "sendCancelledMessage"), &tb.ReplyMarkup{})
 	sendData.InTransaction = false
-	sendData.Inactivate(sendData, bot.bunt)
+	sendData.Inactivate(sendData, bot.Bunt)
 }

@@ -1,9 +1,10 @@
-package main
+package telegram
 
 import (
 	"context"
 	"fmt"
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
+	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
@@ -158,13 +159,7 @@ func (bot TipBot) faucetHandler(ctx context.Context, m *tb.Message) {
 	fromUserStr := GetUserStr(m.Sender)
 	bot.trySendMessage(m.Chat, inlineFaucet.Message, bot.makeFaucetKeyboard(ctx, inlineFaucet.ID))
 	log.Infof("[faucet] %s created faucet %s: %d sat (%d per user)", fromUserStr, inlineFaucet.ID, inlineFaucet.Amount, inlineFaucet.PerUserAmount)
-	inlineFaucet.Message = inlineMessage
-	inlineFaucet.From = fromUser
-	inlineFaucet.Memo = memo
-	inlineFaucet.RemainingAmount = inlineFaucet.Amount
-	inlineFaucet.LanguageCode = ctx.Value("publicLanguageCode").(string)
-	runtime.IgnoreError(bot.Bunt.Set(inlineFaucet))
-	runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.bunt))
+	runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.Bunt))
 }
 
 func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) {
@@ -254,7 +249,7 @@ func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) {
 			LanguageCode:    ctx.Value("publicLanguageCode").(string),
 		}
 
-		runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.bunt))
+		runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.Bunt))
 		log.Infof("[faucet] %s created inline faucet %s: %d sat (%d per user)", GetUserStr(faucet.From.Telegram), inlineFaucet.ID, inlineFaucet.Amount, inlineFaucet.PerUserAmount)
 	}
 
@@ -270,14 +265,14 @@ func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) {
 func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback) {
 	to := LoadUser(ctx)
 	tx := &InlineFaucet{Base: transaction.New(transaction.ID(c.Data))}
-	fn, err := tx.Get(tx, bot.bunt)
+	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[faucet] %s", err)
 		return
 	}
 	inlineFaucet := fn.(*InlineFaucet)
 	from := inlineFaucet.From
-	err = inlineFaucet.Lock(inlineFaucet, bot.bunt)
+	err = inlineFaucet.Lock(inlineFaucet, bot.Bunt)
 	if err != nil {
 		log.Errorf("[faucet] LockFaucet %s error: %s", inlineFaucet.ID, err)
 		return
@@ -287,7 +282,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		return
 	}
 	// release faucet no matter what
-	defer inlineFaucet.Lock(inlineFaucet, bot.bunt)
+	defer inlineFaucet.Lock(inlineFaucet, bot.Bunt)
 
 	if from.Telegram.ID == to.Telegram.ID {
 		bot.trySendMessage(from.Telegram, Translate(ctx, "sendYourselfMessage"))
@@ -376,7 +371,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback) {
 	tx := &InlineFaucet{Base: transaction.New(transaction.ID(c.Data))}
-	fn, err := tx.Get(tx, bot.bunt)
+	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[cancelInlineSendHandler] %s", err)
 		return
@@ -387,7 +382,7 @@ func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		// set the inlineFaucet inactive
 		inlineFaucet.Active = false
 		inlineFaucet.InTransaction = false
-		runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.bunt))
+		runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.Bunt))
 	}
 	return
 }
