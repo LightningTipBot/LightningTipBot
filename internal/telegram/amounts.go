@@ -40,8 +40,13 @@ func getAmount(input string) (amount int, err error) {
 
 	// convert fiat currencies to satoshis
 	for currency, symbol := range price.P.Currencies {
-		if strings.HasPrefix(input, symbol) || strings.HasSuffix(input, symbol) {
-			fmount, err := strconv.ParseFloat(strings.Replace(input, symbol, "", 1), 64)
+		if strings.HasPrefix(input, symbol) || strings.HasSuffix(input, symbol) || // for 1$ and $1
+			strings.HasPrefix(strings.ToLower(input), strings.ToLower(currency)) || // for USD1
+			strings.HasSuffix(strings.ToLower(input), strings.ToLower(currency)) { // for 1USD
+			numeric_string := ""
+			numeric_string = strings.Replace(input, symbol, "", 1)                                              // for symbol like $
+			numeric_string = strings.Replace(strings.ToLower(numeric_string), strings.ToLower(currency), "", 1) // for 1USD
+			fmount, err := strconv.ParseFloat(numeric_string, 64)
 			if err != nil {
 				log.Errorln(err)
 				return 0, err

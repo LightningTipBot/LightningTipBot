@@ -31,7 +31,18 @@ func NewPriceWatcher() *PriceWatcher {
 		client: &http.Client{
 			Timeout: time.Second * time.Duration(5),
 		},
-		Currencies:     map[string]string{"EUR": "€", "GBP": "£", "JPY": "¥", "BRL": "R$", "USD": "$", "RUB": "₽", "TRY": "₺", "INR": "₹"},
+		// attention: $ must come after other $-denominated currencies like R$
+		Currencies: map[string]string{
+			"EUR": "€",
+			"GBP": "£",
+			"JPY": "¥",
+			"BRL": "R$",
+			"MXN": "MX$",
+			"USD": "$",
+			"RUB": "₽",
+			"TRY": "₺",
+			"INR": "₹",
+		},
 		Exchanges:      make(map[string]func(string) (float64, error), 0),
 		UpdateInterval: time.Second * time.Duration(30),
 	}
@@ -92,7 +103,7 @@ func (p *PriceWatcher) GetCoinbasePrice(currency string) (float64, error) {
 }
 
 func (p *PriceWatcher) GetBitfinexPrice(currency string) (float64, error) {
-	var bitfinexCurrencyToPair = map[string]string{"USD": "btcusd", "EUR": "btceur", "GBP": "btcusd", "JPY": "btcjpy", "BRL": "btcbrl", "RUB": "btcrub", "TRY": "btctry", "INR": "btcinr"}
+	var bitfinexCurrencyToPair = map[string]string{"USD": "btcusd", "EUR": "btceur", "GBP": "btcusd", "JPY": "btcjpy"}
 	pair := bitfinexCurrencyToPair[currency]
 	bitfinexEndpoint, err := url.Parse(fmt.Sprintf("https://api.bitfinex.com/v1/pubticker/%s", pair))
 	response, err := p.client.Get(bitfinexEndpoint.String())
