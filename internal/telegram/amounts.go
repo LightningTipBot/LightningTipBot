@@ -29,7 +29,7 @@ func decodeAmountFromCommand(input string) (amount int, err error) {
 
 func getAmount(input string) (amount int, err error) {
 	// convert something like 1.2k into 1200
-	if strings.HasSuffix(input, "k") {
+	if strings.HasSuffix(strings.ToLower(input), "k") {
 		fmount, err := strconv.ParseFloat(strings.TrimSpace(input[:len(input)-1]), 64)
 		if err != nil {
 			return 0, err
@@ -40,7 +40,7 @@ func getAmount(input string) (amount int, err error) {
 
 	// convert fiat currencies to satoshis
 	for currency, symbol := range price.P.Currencies {
-		if strings.Contains(input, symbol) {
+		if strings.HasPrefix(input, symbol) || strings.HasSuffix(input, symbol) {
 			fmount, err := strconv.ParseFloat(strings.Replace(input, symbol, "", 1), 64)
 			if err != nil {
 				log.Errorln(err)
