@@ -51,6 +51,9 @@ func getAmount(input string) (amount int, err error) {
 				log.Errorln(err)
 				return 0, err
 			}
+			if price.Price[currency] == 0 {
+				return 0, errors.New("price is zero")
+			}
 			amount = int(fmount / price.Price[currency] * float64(100_000_000))
 			return amount, nil
 		}
