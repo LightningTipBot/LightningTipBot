@@ -81,7 +81,7 @@ infoHelpMessage = """ℹ️ *Info*"""
 infoYourLightningAddress = """Uw Lightning adres is `%s`"""
 
 basicsMessage = """🧡 *Bitcoin*
-_Bitcoin is de munteenheid van het internet. Het functioneerd zonder toestemming, is gedecentraliseerd en heeft geen meesters of een controlerende autoriteit. Bitcoin is gezond geld dat sneller, veiliger en inclusiever is dan het oude financiële systeem.
+_Bitcoin is de munteenheid van het internet. Het functioneert zonder toestemming, is gedecentraliseerd en heeft geen meesters of een controlerende autoriteit. Bitcoin is gezond geld dat sneller, veiliger en inclusiever is dan het oude financiële systeem.
 
 🧮 *Economie*
 _De kleinste eenheid van Bitcoin zijn Satoshis (sat) en 100.000.000 sat = 1 Bitcoin. Er zullen ooit maar 21 miljoen Bitcoin zijn. De fiatvalutawaarde van Bitcoin kan dagelijks veranderen. Echter, als u leeft op een Bitcoin-standaard zal 1 sat altijd gelijk zijn aan 1 sat._
@@ -102,7 +102,7 @@ _Voeg deze bot toe aan je Telegram groep chat om berichten te /tip. Als je de bo
 _Wij zijn geen bewaarder van uw fondsen. Wij zullen in uw belang handelen, maar we zijn ons er ook van bewust dat de situatie zonder KYC lastig is totdat we iets hebben uitgezocht. Elk bedrag dat u in uw portemonnee laadt, wordt beschouwd als een donatie. Geef ons niet al uw geld.  Wees ervan bewust dat deze bot in beta ontwikkeling is. Gebruik op eigen risico.
 
 ❤️ *Doneren*
-_Deze bot brengt geen kosten in rekening maar kost satoshis om te werken. Als je de bot leuk vindt, overweeg dan om dit project te steunen met een donatie. Om te doneren, gebruik `/donate 1000`"""
+_Deze bot brengt geen kosten in rekening maar kost satoshis om te werken. Als je de bot leuk vindt, overweeg dan om dit project te steunen met een donatie. Om te doneren, gebruik_ `/donate 1000`"""
 
 helpNoUsernameMessage = """👋 Stel alstublieft een Telegram gebruikersnaam in."""
 
