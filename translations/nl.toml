@@ -51,10 +51,10 @@ revealButtonMessage = """Laat zijn"""
 showButtonMessage = """Toon"""
 hideButtonMessage = """Verbergen"""
 joinButtonMessage = """Deelnemen"""
-optionsButtonMessage = """Ppties"""
+optionsButtonMessage = """Opties"""
 settingsButtonMessage = """Instellingen"""
 saveButtonMessage = """Save"""
-deleteButtonMessage = """Serwijderen"""
+deleteButtonMessage = """Verwijderen"""
 infoButtonMessage = """Info"""
 
 # HELP
@@ -68,10 +68,10 @@ _Deze bot brengt geen kosten in rekening maar kost Satoshis om te werken. Als je
 %s
 
 ⚙️ *opdrachten*
-*/tip* 🏅 Antwoord op een bericht aan tip: `/tip <amount> [<memo>]`
+*/tip* 🏅 Antwoord op een bericht aan tip: `/tip <bedrag> [<memo>]`
 */balance* 👑 Controleer uw saldo: `/balance`
-*/send* 💸 Stuur geld naar een gebruiker: `/send <amount> @user or user@ln.tips [<memo>]`
-*/invoice* ⚡️ Ontvang met Lightning: `/invoice <amount> [<memo>]`
+*/send* 💸 Stuur geld naar een gebruiker: `/send <bedrag> @user of user@ln.tips [<memo>]`
+*/invoice* ⚡️ Ontvang met Lightning: `/invoice <bedrag> [<memo>]`
 */pay* ⚡️ Betaal met Lightning: `/pay <invoice>`
 */donate* ❤️ Doneer aan het project: `/donate 1000`
 */advanced* 🤖 Geavanceerde functies.
@@ -81,7 +81,7 @@ infoHelpMessage = """ℹ️ *Info*"""
 infoYourLightningAddress = """Uw Lightning adres is `%s`"""
 
 basicsMessage = """🧡 *Bitcoin*
-_Bitcoin is de munteenheid van het internet. Het is zonder toestemming en gedecentraliseerd en heeft geen meesters en geen controlerende autoriteit. Bitcoin is gezond geld dat sneller, veiliger en inclusiever is dan het oude financiële systeem.
+_Bitcoin is de munteenheid van het internet. Het functioneerd zonder toestemming, is gedecentraliseerd en heeft geen meesters of een controlerende autoriteit. Bitcoin is gezond geld dat sneller, veiliger en inclusiever is dan het oude financiële systeem.
 
 🧮 *Economie*
 _De kleinste eenheid van Bitcoin zijn Satoshis (sat) en 100.000.000 sat = 1 Bitcoin. Er zullen ooit maar 21 miljoen Bitcoin zijn. De fiatvalutawaarde van Bitcoin kan dagelijks veranderen. Echter, als u leeft op een Bitcoin-standaard zal 1 sat altijd gelijk zijn aan 1 sat._
@@ -102,7 +102,7 @@ _Voeg deze bot toe aan je Telegram groep chat om berichten te /tip. Als je de bo
 _Wij zijn geen bewaarder van uw fondsen. Wij zullen in uw belang handelen, maar we zijn ons er ook van bewust dat de situatie zonder KYC lastig is totdat we iets hebben uitgezocht. Elk bedrag dat u in uw portemonnee laadt, wordt beschouwd als een donatie. Geef ons niet al uw geld.  Wees ervan bewust dat deze bot in beta ontwikkeling is. Gebruik op eigen risico.
 
 ❤️ *Doneren*
-_Deze bot brengt geen kosten in rekening maar kost satoshis om te werken. Als je de bot leuk vindt, overweeg dan om dit project te steunen met een donatie. Om te doneren, gebruik_ `/donate 1000`"""
+_Deze bot brengt geen kosten in rekening maar kost satoshis om te werken. Als je de bot leuk vindt, overweeg dan om dit project te steunen met een donatie. Om te doneren, gebruik `/donate 1000`"""
 
 helpNoUsernameMessage = """👋 Stel alstublieft een Telegram gebruikersnaam in."""
 
@@ -146,14 +146,14 @@ tipErrorMessage       = """🚫 Tip mislukt."""
 tipUndefinedErrorMsg  = """probeer het later nog eens"""
 tipHelpText           = """📖 Oeps, dat werkte niet. %s
 
-*Usage:* `/tip <betrag> [<memo>]`
+*Usage:* `/tip <bedrag> [<memo>]`
 *Example:* `/tip 1000 Dank meme!`"""
 
 # SEND
 
 sendValidAmountMessage     = """Heb je een geldig bedrag ingevoerd?"""
 sendUserHasNoWalletMessage = """🚫 Gebruiker %s heeft nog geen portemonnee aangemaakt."""
-sendSentMessage            = """💸 %d zat verstuurd naar %s."""
+sendSentMessage            = """💸 %d sat verstuurd naar %s."""
 sendPublicSentMessage      = """💸 %d sat verstuurd van %s naar %s."""
 sendReceivedMessage        = """🏅 %s stuurde u %d sat."""
 sendErrorMessage           = """🚫 Verzenden mislukt."""
@@ -164,7 +164,7 @@ errorTryLaterMessage       = """🚫 Fout. Probeer het later nog eens."""
 sendSyntaxErrorMessage     = """Heb je een bedrag en een ontvanger ingevoerd? U kunt het /send commando gebruiken om ofwel naar Telegram gebruikers te sturen zoals %s of naar een Lightning adres zoals LightningTipBot@ln.tips."""
 sendHelpText               = """📖 Oeps, dat werkte niet. %s
 
-*Usage:* `/send <amount> <user> [<memo>]`
+*Usage:* `/send <bedrag> <user> [<memo>]`
 *Example:* `/send 1000 @LightningTipBot Ik hou gewoon van de bot ❤️`
 *Example:* `/send 1234 LightningTipBot@ln.tips`"""
 
@@ -175,7 +175,7 @@ invoiceEnterAmountMessage = """Heb je een bedrag ingevoerd?"""
 invoiceValidAmountMessage = """Heeft u een geldig bedrag ingevoerd?"""
 invoiceHelpText           = """📖 Oeps, dat werkte niet. %s
 
-*Usage:* `/invoice <betrag> [<memo>]`
+*Usage:* `/invoice <bedrag> [<memo>]`
 *Example:* `/invoice 1000 Dank je!`"""
 
 # PAY
@@ -218,11 +218,11 @@ photoQrRecognizedMessage = """✅ QR code:
 # LNURL
 
 lnurlReceiveInfoText           = """👇 U kunt deze statische LNURL gebruiken om betalingen te ontvangen."""
-lnurlResolvingUrlMessage       = """🧮 Oplossen adres..."""
+lnurlResolvingUrlMessage       = """🧮 Opzoeken adres..."""
 lnurlGettingUserMessage        = """🧮 Voorbereiding van betaling..."""
 lnurlPaymentFailed             = """🚫 Betaling mislukt: %s"""
 lnurlInvalidAmountMessage      = """🚫 Ongeldig bedrag."""
-lnurlInvalidAmountRangeMessage = """🚫 Bedrag moet liggen tussen %d en %d zat."""
+lnurlInvalidAmountRangeMessage = """🚫 Bedrag moet liggen tussen %d en %d sat."""
 lnurlNoUsernameMessage         = """🚫 U moet een Telegram gebruikersnaam instellen om betalingen te ontvangen via LNURL."""
 lnurlEnterAmountMessage        = """⌨️ Voer een bedrag in tussen %d en %d sat."""
 lnurlHelpText                  = """📖 Oeps, dat werkte niet. %s
@@ -243,7 +243,7 @@ couldNotLinkMessage = """🚫 Uw wallet kon niet gelinkt worden. Probeer het lat
 # FAUCET
 
 inlineQueryFaucetTitle        = """🚰 Maak een kraan."""
-inlineQueryFaucetDescription  = """Gebruik: @%s tapkrann <capacity> <per_user>"""
+inlineQueryFaucetDescription  = """Gebruik: @%s faucet <capacity> <per_user>"""
 inlineResultFaucetTitle       = """🚰 Maak een %d sat kraan."""
 inlineResultFaucetDescription = """👉 Klik hier om een kraan in deze chat te maken.."""
 
@@ -251,19 +251,19 @@ inlineFaucetMessage                     = """Druk op ✅ om %d sat te verzamelen
 
 🚰 Remaining: %d/%d sat (given to %d/%d users)
 %s"""
-inlineFaucetEndedMessage                = """🚰 kraan leeg 🍺🏅 %d zat gegeven aan %d gebruikers."""
+inlineFaucetEndedMessage                = """🚰 kraan leeg 🍺🏅 %d sat gegeven aan %d gebruikers."""
 inlineFaucetAppendMemo                  = """\n✉️ %s"""
 inlineFaucetCreateWalletMessage         = """Chat met %s 👈 om uw wallet te beheren."""
 inlineFaucetCancelledMessage            = """🚫 kraan geannuleerd."""
 inlineFaucetInvalidPeruserAmountMessage = """🚫 Per gebruiker bedrag niet deelbaar van capaciteit."""
 inlineFaucetInvalidAmountMessage        = """🚫 Ongeldig bedrag."""
-inlineFaucetSentMessage                 = """🚰 %d zat gestuurd naar %s."""
+inlineFaucetSentMessage                 = """🚰 %d sat gestuurd naar %s."""
 inlineFaucetReceivedMessage             = """🚰 %s stuurde je %d sat."""
 inlineFaucetHelpFaucetInGroup           = """Maak een kraan in een groep met de bot erin of gebruik 👉 inline commando (/advanced voor meer)."""
 inlineFaucetHelpText                    = """📖 Oeps, dat werkte niet. %s
 
-*Usage:* `/kraan <capaciteit> <per_gebruiker>`
-*Example:* `/kraan 210 21`"""
+*Usage:* `/faucet <capaciteit> <per_gebruiker>`
+*Example:* `/faucet 210 21`"""
 
 # INLINE VERZENDEN
 
@@ -284,8 +284,8 @@ inlineSendBalanceLowMessage    = """🚫 Uw saldo is te laag."""
 # INLINE RECEIVE
 
 inlineQueryReceiveTitle        = """🏅 Vraag een betaling in een chat."""
-inlineQueryReceiveDescription  = """Gebruik: @%s ontvangt <bedrag> [<memo>]"""
-inlineResultReceiveTitle       = """🏅 Ontvang %d zat."""
+inlineQueryReceiveDescription  = """Gebruik: @%s receive <bedrag> [<memo>]"""
+inlineResultReceiveTitle       = """🏅 Ontvang %d sat."""
 inlineResultReceiveDescription = """👉 Klik om een betaling van %d sat aan te vragen."""
 
 inlineReceiveMessage             = """Druk op 💸 om te betalen aan %s.\n💸 Bedrag: %d sat"""
