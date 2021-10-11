@@ -6,7 +6,7 @@ Thank you for helping to translate this bot into many different languages. If yo
 * Duplicate `en.toml` to your localization and edit string by string.
 * Do not translate commands in the text! I.e. `/balance` stays `/balance`.
 * Pay attention to every single `"""` and `%s` or `%d`. 
-* Your end resiult should have exactly the same number of lines as `en.toml`.
+* Your end result should have exactly the same number of lines as `en.toml`.
 * Start sentences with `C`apital letters, end them with a full stop`.`
 
 ## General 
