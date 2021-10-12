@@ -1,0 +1,297 @@
+# COMMANDS
+
+helpCommandStr = """ajuda"""
+basicsCommandStr = """conceitos"""
+tipCommandStr = """gorjeta"""
+balanceCommandStr = """saldo"""
+sendCommandStr = """enviar"""
+invoiceCommandStr = """fatura"""
+payCommandStr = """pagar"""
+donateCommandStr = """doar"""
+advancedCommandStr = """avançado"""
+transactionsCommandStr = """transações"""
+logCommandStr = """log"""
+listCommandStr = """lista"""
+
+linkCommandStr = """enlace"""
+lnurlCommandStr = """lnurl"""
+faucetCommandStr = """torneira"""
+
+tipjarCommandStr = """cofrinho"""
+receiveCommandStr = """receber"""
+hideCommandStr = """ocultar"""
+volcanoCommandStr = """vulcão"""
+showCommandStr = """mostrar"""
+optionsCommandStr = """opções"""
+settingsCommandStr = """configurações"""
+saveCommandStr = """salvar"""
+deleteCommandStr = """apagar"""
+infoCommandStr = """info"""
+
+# NOTIFICATIONS
+
+cantDoThatMessage = """Não se pode fazer isso."""
+cantClickMessage = """Não se pode clicar neste botão."""
+balanceTooLowMessage = """Seu saldo é muito baixo."""
+
+# BUTTONS
+
+sendButtonMessage = """✅ Enviar"""
+payButtonMessage = """✅ Pagar"""
+payReceiveButtonMessage = """💸 Pagar"""
+receiveButtonMessage = """✅ Receber"""
+cancelButtonMessage = """🚫 Cancelar"""
+collectButtonMessage = """✅ Cobrar"""
+nextButtonMessage = """Seguinte"""
+backButtonMessage = """Voltar"""
+acceptButtonMessage = """Aceitar"""
+denyButtonMessage = """Negar"""
+tipButtonMessage = """Gorjeta"""
+revealButtonMessage = """Revelar"""
+showButtonMessage = """Mostrar"""
+hideButtonMessage = """Ocultar"""
+joinButtonMessage = """Unir"""
+optionsButtonMessage = """Opções"""
+settingsButtonMessage = """Configurações"""
+saveButtonMessage = """Salvar"""
+deleteButtonMessage = """Apagar"""
+infoButtonMessage = """Info"""
+
+# HELP
+
+helpMessage = """⚡️ *Carteira*
+_Este bot é uma carteira Bitcoin Lightning que pode enviar gorjetas via Telegram. Para dar gorjetas, adicione o bot a um bate-papo em grupo. A unidade básica das gorjetas é Satoshis (sat). 100.000.000 sat = 1 Bitcoin. Digite 📚 /basics para saber mais._
+
+❤️ *Doar*
+_Este bot não cobra nenhuma comissão, mas custa Satoshis para funcionar. Se você gosta do bot, por favor, considere apoiar este projeto com uma doação. Para doar, utilize_ `/donate 1000`.
+
+%s
+
+⚙️ *Comandos*
+*/tip* 🏅 Responder uma mensagem para dar uma gorjeta: `/tip <quantidade> [<memo>]`
+*/balance* 👑 Confira seu saldo: `/balance`.
+*/send* 💸 Enviar dinheiro para um usuário: `/send <quantidade> @user ou user@ln.tips [<memo>]`
+*/invoice* ⚡️ Receber com Lightning: `/invoice <quantidade> [<memo>]`
+*/pay* ⚡️ Pagar com Lightning: `/pay <fatura>`
+*/donate* ❤️ Doar ao projeto: `/donate 1000`
+*/advanced* 🤖 Funções avançadas.
+*/help* 📖 Ler esta ajuda."""
+
+infoHelpMessage = """ℹ️ *Info*"""
+infoYourLightningAddress = """Seu Lightning Address _(Endereço Lightning)_ é `%s`."""
+
+basicsMessage = """🧡 *Bitcoin*
+_Bitcoin é a moeda da Internet. É uma moeda sem permissão, descentralizada, sem proprietários e sem autoridade de controle. Bitcoin é dinheiro sólido, mais rápido, mais seguro e mais inclusivo do que o sistema financeiro fiat._
+
+🧮 *Economia*
+_A menor unidade de Bitcoin é Satoshis (sat) e 100.000.000 sat = 1 Bitcoin. Haverá apenas 21 milhões de Bitcoin. O valor do Bitcoin em moeda fiduciária pode mudar diariamente. No entanto, se você vive no padrão Bitcoin, 1 sat será sempre 1 sat._
+
+⚡️ *A Rede Lightning (Relâmpago)*
+_A rede Lightning é um protocolo de pagamento que permite que os pagamentos Bitcoin sejam feitos de forma rápida e econômica, com consumo mínimo de energia. É o que faz o Bitcoin escalar para bilhões de pessoas em todo o mundo._
+
+📲 *Carteiras Lightning (Relâmpago)*
+_Seu dinheiro neste bot pode ser enviado para qualquer outra carteira da Lightning e vice versa. As carteiras Lightning recomendadas para seu telefone são_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (não-custodial), ou_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(fácil)_.
+
+📄 *Código aberto*
+_Este bot é gratuito e de_ [Código aberto](https://github.com/LightningTipBot/LightningTipBot)_. Você pode executá-lo no seu próprio computador e utilizá-lo na sua própria comunidade._
+
+✈️ *Telegram*
+_Adicione este bot ao seu bate-papo de grupo de Telegram para enviar dinheiro usando o comando /tip. Se você fizer do bot o administrador do grupo, ele também limpará os comandos para manter o bate-papo arrumado._
+
+🏛 *Termos*
+_Nós não somos custódios do seu dinheiro. Atuaremos no seu melhor interesse, mas também estamos conscientes de que a situação sem KYC é complicada até encontrarmos uma solução ótima. Qualquer quantia que você colocar na sua carteira será considerada uma doação. Não ponha todo o seu dinheiro.  Favor observar que este bot está em desenvolvimento beta. Use-o pela sua própria conta e risco._
+
+❤️ *Doar*
+_Este bot não cobra nenhuma comissão, mas custa satoshis para funcionar. Se você gosta do bot, por favor, considere apoiar este projeto com uma doação. Para doar, utilize_ `/donate 1000`."""
+
+helpNoUsernameMessage = """👋 Por favor, digite um nome de usuário do Telegram."""
+
+advancedMessage = """%s
+
+👉 *Comandos Inline*
+*send* 💸 Enviar sats ao bate-papo: `%s send <quantidade> [<memo>]`
+*receive* 🏅 Solicite um pagamento: `%s receive <quantidade> [<memo>]`.
+*faucet* 🚰 Criar uma torneira: `%s faucet <capacidade> <por_usuário>`.
+
+📖 Você pode usar comandos _inline_ em todas as conversas, mesmo em conversas privadas. Espere um segundo após inserir um comando _inline_ e *clique* no resultado, não pressione enter.
+
+⚙️ *Comandos avançados*
+*/link* 🔗 Vincule sua carteira a [ BlueWallet ](https://bluewallet.io/) ou [ Zeus ](https://zeusln.app/)
+*/lnurl* ⚡️ Receber ou pagar com lnurl: `/lnurl` o `/lnurl <lnurl>`
+*/faucet* 🚰 Criar uma torneira: `%s faucet <capacidade> <por_usuário>`"""
+
+# START
+
+startSettingWalletMessage = """🧮 Preparando sua carteira..."""
+startWalletCreatedMessage = """🧮 Carteira criada."""
+startWalletReadyMessage   = """✅ *Sua carteira está pronta.*"""
+startWalletErrorMessage   = """🚫 Erro ao iniciar sua carteira.  Por favor, tente novamente mais tarde."""
+startNoUsernameMessage    = """☝️ Parece que você ainda não tem um @nomedeusuário no Telegram. Tudo bem, você não precisa de um para usar este bot. Porém, para fazer melhor uso de sua carteira, defina um nome de usuário nas suas configurações de Telegram. Depois, entre /balance para que o bot possa atualizar seu registro de você."""
+
+# BALANCE
+
+balanceMessage      = """👑 *Seu saldo:* %d sat"""
+balanceErrorMessage = """🚫 Seu saldo não pôde ser recuperado. Por favor, tente novamente mais tarde."""
+
+# TIP
+
+tipDidYouReplyMessage = """Você já respondeu em uma mensagem para dar gorjeta? Para responder qualquer mensagem, clique com o botão direito do mouse -> Responder no seu computador ou deslize a mensagem no seu telefone. Se você quiser enviar diretamente para outro usuário, use o comando /send."""
+tipInviteGroupMessage = """ℹ️ A propósito, você pode convidar este bot a qualquer grupo para começar a dar gorjetas lá."""
+tipEnterAmountMessage = """Você inseriu uma quantia?"""
+tipValidAmountMessage = """Você inseriu uma quantia válida?"""
+tipYourselfMessage    = """📖 Você não pode se dar gorjetas."""
+tipSentMessage        = """💸 %d sat enviado a %s."""
+tipReceivedMessage    = """🏅 %s lhe deu uma gorjeta de %d sat."""
+tipErrorMessage       = """🚫 A gorjeta falhou."""
+tipUndefinedErrorMsg  = """Por favor, tente mais tarde"""
+tipHelpText           = """📖 Opa, isso não funcionou. %s
+
+*Uso:* `/tip <quantidade> [<memo>]`
+*Exemplo:* `/tip 1000 Meme ruim!`"""
+
+# SEND
+
+sendValidAmountMessage     = """Você inseriu uma quantia válida?"""
+sendUserHasNoWalletMessage = """🚫 O usuário %s ainda não criou uma carteira."""
+sendSentMessage            = """💸 %d sat enviado a %s."""
+sendPublicSentMessage      = """💸 %d sat enviado(s) de %s a %s."""
+sendReceivedMessage        = """🏅 %s lhe enviou %d sat."""
+sendErrorMessage           = """🚫 Envio sem sucesso."""
+confirmSendMessage         = """Deseja pagar %s?\n\n💸 Quantia: %d sat"""
+confirmSendAppendMemo      = """\n✉️ %s"""
+sendCancelledMessage       = """🚫 Envio cancelado."""
+errorTryLaterMessage       = """🚫 Erro. Por favor, tente mais tarde."""
+sendSyntaxErrorMessage     = """Você já inseriu uma quantia e um destinatário? Você pode usar o comando /send para enviar aos usuários de Telegram como %s ou para um Endereço Lightning como LightningTipBot@ln.tips."""
+sendHelpText               = """📖 Opa, isso não funcionou. %s
+
+*Uso:* `/send <quantidade> <usuário> [<memo>]`
+*Exemplo:* `/send 1000 @LightningTipBot Gosto do bot ❤️`.
+*Exemplo:* `/send 1234 LightningTipBot@ln.tips`"""
+
+# INVOICE
+
+invoiceReceivedMessage    = """⚡️ Recebeu %d sat."""
+invoiceEnterAmountMessage = """Você inseriu uma quantia?"""
+invoiceValidAmountMessage = """Você inseriu uma quantia válida?"""
+invoiceHelpText           = """📖 Opa, isso não funcionou. %s
+
+*Uso:* `/invoice <quantidade> [<memo>]`
+*Exemplo:* `/invoice 1000 Obrigado!`"""
+
+# PAY
+
+paymentCancelledMessage     = """🚫 Pagamento cancelado."""
+invoicePaidMessage          = """⚡️ Pagamento enviado."""
+invoicePublicPaidMessage    = """⚡️ Pagamento enviado por %s."""
+invalidInvoiceHelpMessage    = """Você já inseriu uma fatura Lightning válida? Tente /send se você quiser enviar a um usuário de Telegram ou a um endereço de Lightning."""
+invoiceNoAmountMessage       = """🚫 As contas não podem ser pagas sem um valor."""
+insufficientFundsMessage     = """🚫 Dinheiro insuficiente. Tem %d sat mas precisa pelo menos %d sat."""
+feeReserveMessage            = """⚠️ O envio de todo o saldo pode falhar devido às taxas de rede. Se falhar, tente enviar um pouco menos."""
+invoicePaymentFailedMessage  = """🚫 Falha no pagamento: %s"""
+invoiceUndefinedErrorMessage = """A fatura não pôde ser paga."""
+confirmPayInvoiceMessage     = """Você quer enviar este pagamento?\n\n💸 Quantia: %d sat"""
+confirmPayAppendMemo         = """\n✉️ %s"""
+payHelpText                  = """📖 Opa, isso não funcionou. %s
+
+*Uso:* `/pay <fatura>`
+*Exemplo:* `/pay lnbc20n1psscehd...`"""
+
+# DONATE
+
+donationSuccess          = """🙏 Obrigado pela sua doação."""
+donationErrorMessage     = """🚫 Ó, não. Doação sem sucesso."""
+donationProgressMessage  = """🧮 Preparando sua doação..."""
+donationFailedMessage    = """🚫 Doação sem sucesso: %s"""
+donateEnterAmountMessage = """Você inseriu uma quantia?"""
+donateValidAmountMessage = """Você inseriu uma quantia válida?"""
+donateHelpText           = """📖 Opa, isso não funcionou. %s
+
+*Uso:* `/donate <quantidade>`
+*Exemplo:* `/donate 1000`"""
+
+# PHOTO
+
+photoQrNotRecognizedMessage = """🚫 Uma fatura de Lightning ou LNURL não pôde ser reconhecida. Tente centralizar o código QR, cortando ou aumentando a foto."""
+photoQrRecognizedMessage = """✅ Código QR:
+`%s`"""
+
+# LNURL
+
+lnurlReceiveInfoText           = """👇 Você pode usar este LNURL estático para receber pagamentos."""
+lnurlResolvingUrlMessage       = """🧮 Solucionando o endereço..."""
+lnurlGettingUserMessage        = """🧮 Preparando o pagamento..."""
+lnurlPaymentFailed             = """🚫 Falha no pagamento: %s"""
+lnurlInvalidAmountMessage      = """🚫 Quantia inválida."""
+lnurlInvalidAmountRangeMessage = """🚫 A quantia deve estar entre %d e %d sat."""
+lnurlNoUsernameMessage         = """🚫 Você precisa configurar um nome de usuário de Telegram para receber pagamentos através do LNURL."""
+lnurlEnterAmountMessage        = """⌨️ Insira uma quantia entre %d e %d sat."""
+lnurlHelpText                  = """📖 Opa, isso não funcionou. %s
+
+*Uso:* `/lnurl [quantidade] <lnurl>`
+*Exemplo:* `/lnurl LNURL1DP68GUR...`"""
+
+# LINK
+
+walletConnectMessage = """🔗 *Vincule sua carteira*
+
+⚠️ Nunca compartilhe a URL ou o código QR com ninguém ou eles poderão acessar seus fundos..
+
+- *BlueWallet:* Toque em *Nova carteira*, *Importar carteira*, *Escanear ou importar um arquivo*, e escanear o código QR.
+- *Zeus:* Copie a URL abaixo, clique *Adicionar um novo nodo*, *Importar* (a URL), *Salvar configuração do nodo*."""
+couldNotLinkMessage = """🚫 Sua carteira não poderia ser ligada. Por favor, tente novamente mais tarde."""
+
+# FAUCET
+
+inlineQueryFaucetTitle        = """🚰 Crie uma torneira."""
+inlineQueryFaucetDescription  = """Use: @%s faucet <capacidade> <por_usuário>"""
+inlineResultFaucetTitle       = """🚰 Criar uma torneira %d sat."""
+inlineResultFaucetDescription = """👉 Aperte aqui para criar uma torneira neste chat."""
+
+inlineFaucetMessage                     = """Aperte ✅ para coletar %d sat desta torneira.
+
+🚰 Restante: %d/%d sat (para %d/%d usuários)
+%s"""
+inlineFaucetEndedMessage                = """🚰 Torneira vazia 🍺\n\n🏅 %d sat para %d usuários."""
+inlineFaucetAppendMemo                  = """\n✉️ %s"""
+inlineFaucetCreateWalletMessage         = """Bate-papo com %s 👈 para administrar sua carteira."""
+inlineFaucetCancelledMessage            = """🚫 Torneira cancelada."""
+inlineFaucetInvalidPeruserAmountMessage = """🚫 A quantia por usuário não é divisória da capacidade."""
+inlineFaucetInvalidAmountMessage        = """🚫 Quantia inválida."""
+inlineFaucetSentMessage                 = """🚰 %d sat enviado(s) a %s."""
+inlineFaucetReceivedMessage             = """🚰 %s lhe enviou %d sat."""
+inlineFaucetHelpFaucetInGroup           = """Criar uma torneira em grupo com o bot dentro ou usar o 👉 comando_inline_ (/advanced para mais)."""
+inlineFaucetHelpText                    = """📖 Opa, isso não funcionou. %s
+
+*Uso:* `/faucet <capacidad> <por_usuário>`
+*Exemplo:* `/faucet 210 21`"""
+
+# INLINE SEND
+
+inlineQuerySendTitle            = """💸 Enviar pagamento para um bate-papo."""
+inlineQuerySendDescription      = """Uso: @%s send <quantia> [<memo>]"""
+inlineResultSendTitle           = """💸 Enviar %d sat."""
+inlineResultSendDescription     = """👉 Clique para enviar %d sat neste bate-papo."""
+
+inlineSendMessage              = """Clique ✅ para receber o pagamento de %s.\n\n💸 Quantidade: %d sat"""
+inlineSendAppendMemo           = """\n✉️ %s"""
+inlineSendUpdateMessageAccept  = """💸 %d sat enviado de %s a %s."""
+inlineSendCreateWalletMessage  = """Bate-papo com %s 👈 para administrar sua carteira."""
+sendYourselfMessage            = """📖 Você não pode pagar a si mesmo."""
+inlineSendFailedMessage        = """🚫 Envio sem sucesso."""
+inlineSendInvalidAmountMessage = """🚫 A quantia deve ser maior do que 0."""
+inlineSendBalanceLowMessage    = """🚫 Seu saldo é muito baixo."""
+
+# INLINE RECEIVE
+
+inlineQueryReceiveTitle        = """🏅 Solicite um pagamento em um bate-papo."""
+inlineQueryReceiveDescription  = """Use: @%s receive <quantidade> [<memo>]"""
+inlineResultReceiveTitle       = """🏅 Receber %d sat."""
+inlineResultReceiveDescription = """👉 Clique para solicitar um pagamento de %d sat."""
+
+inlineReceiveMessage             = """Clique 💸 para pagar a %s.\n\n💸 Quantia: %d sat"""
+inlineReceiveAppendMemo          = """\n✉️ %s"""
+inlineReceiveUpdateMessageAccept = """💸 %d sat enviado de %s a %s."""
+inlineReceiveCreateWalletMessage = """Bate-papo com %s 👈 para administrar sua carteira."""
+inlineReceiveYourselfMessage     = """📖 Você não pode pagar a si mesmo."""
+inlineReceiveFailedMessage       = """🚫 O recebimento falhou."""
+inlineReceiveCancelledMessage    = """🚫 Recepção cancelada."""
