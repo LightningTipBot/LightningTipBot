@@ -143,7 +143,7 @@ tipYourselfMessage    = """📖 You can't tip yourself."""
 tipSentMessage        = """💸 %d sat sent to %s."""
 tipReceivedMessage    = """🏅 %s has tipped you %d sat."""
 tipErrorMessage       = """🚫 Tip failed."""
-tipUndefinedErrorMsg  = """please try again later"""
+tipUndefinedErrorMsg  = """please try again later."""
 tipHelpText           = """📖 Oops, that didn't work. %s
 
 *Usage:* `/tip <amount> [<memo>]`

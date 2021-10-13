@@ -21,6 +21,7 @@ func RegisterLanguages() *i18n.Bundle {
 	bundle.LoadMessageFile("translations/it.toml")
 	bundle.LoadMessageFile("translations/es.toml")
 	bundle.LoadMessageFile("translations/nl.toml")
+	bundle.LoadMessageFile("translations/fr.toml")
 	return bundle
 }
 func Translate(languageCode string, MessgeID string) string {

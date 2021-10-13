@@ -70,7 +70,7 @@ _Ce bot ne vous facture pas de frais mais nous coûte des Satoshis à opérerer.
 ⚙️ *Commandes*
 */tip* 🏅 Répondre à un message pour envoyer un pourboire : `/tip <montant> [<memo>]`
 */balance* 👑 Afficher votre solde: `/balance`
-*/send* 💸 Envoyer un pourboire à un utilisateur: `/send <montant> @user or user@ln.tips [<memo>]`
+*/send* 💸 Envoyer un pourboire à un utilisateur: `/send <montant> @user ou user@ln.tips [<memo>]`
 */invoice* ⚡️ Recevoir avec Lightning : `/invoice <montant> [<memo>]`
 */pay* ⚡️ Payer avec Lightning : `/pay <invoice>`
 */donate* ❤️ Faire une donation au projet : `/donate 1000`
@@ -90,10 +90,10 @@ _La plus petite unité du Bitcoin est un Satoshis (sat). 100,000,000 sat = 1 Bit
 _Le Lightning Network est un protocole de paiement qui permet d'envoyer et de recevoir rapidement du Bitcoin, à moindre coût et sans grande consommation d'énergie. Ce réseau rend accessible Bitcoin à des milliards de personnes._
 
 📲 *Lightning Wallets*
-_Vos fonds sur ce bot peuvent être envoyés à n'importe quel Lightning Wallet. Nous recommandons de télécharger sur votre téléphone les wallets suivant_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), or_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(facile)_.
+_Vos fonds sur ce bot peuvent être envoyés à n'importe quel Lightning Wallet. Nous recommandons de télécharger sur votre téléphone les wallets suivant_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), ou_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(facile)_.
 
 📄 *Logiciel libre*
-_Ce bot est gratuit et_ [libre de droits](https://github.com/LightningTipBot/LightningTipBot). Vous pouvez éxecuter le bot sur votre ordinateur et l'utiliser dans votre communauté._
+_Ce bot est gratuit et_ [libre de droits](https://github.com/LightningTipBot/LightningTipBot)_. Vous pouvez éxecuter le bot sur votre ordinateur et l'utiliser dans votre communauté._
 
 ✈️ *Telegram*
 _Ajoutez ce bot à un groupe Telegram pour envoyer des pourboires en répondant à des messages. Si vous faites de ce bot un adminstrateur d'un groupe, il va réorganiser les commandes pour plus de lisibilité._
@@ -111,14 +111,14 @@ advancedMessage = """%s
 👉 *Inline commands*
 *send* 💸 Envoyer des sats : `%s send <montant> [<memo>]`
 *receive* 🏅 Demander un paiement : `%s receive <montant> [<memo>]`
-*faucet* 🚰 Créer un faucet: `%s faucet <capacity> <per_user>`
+*faucet* 🚰 Créer un faucet: `%s faucet <capacité> <par_utilisateur>`
 
 📖 Vous pouvez utiliser ces commandes dans tous les chats et même dans les conversations privées. Attendez une seconde après avoir tapé une commandé puis *click* sur le résultat, n'appuyez pas sur entrée.
 
 ⚙️ *Commandes avancées*
-*/link* 🔗 Lier votre wallet à [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)
-*/lnurl* ⚡️ Lnurl recevoir ou payer: `/lnurl` or `/lnurl <lnurl>`
-*/faucet* 🚰 Créer un faucet `/faucet <capacity> <per_user>`"""
+*/link* 🔗 Lier votre wallet à [BlueWallet](https://bluewallet.io/) ou [Zeus](https://zeusln.app/)
+*/lnurl* ⚡️ Lnurl recevoir ou payer: `/lnurl` ou `/lnurl <lnurl>`
+*/faucet* 🚰 Créer un faucet `/faucet <capacité> <par_utilisateur>`"""
 
 # START
 
@@ -143,11 +143,11 @@ tipYourselfMessage    = """📖 Vous ne pouvez pas vous envoyer de pourboire."""
 tipSentMessage        = """💸 %d sat envoyé à %s."""
 tipReceivedMessage    = """🏅 %s vous a envoyé un pourboire de %d sat."""
 tipErrorMessage       = """🚫 Erreur lors de l'envoi."""
-tipUndefinedErrorMsg  = """Réessayez s'il vous plaît"""
+tipUndefinedErrorMsg  = """réessayez s'il vous plaît."""
 tipHelpText           = """📖 Oops, cela n'a pas fonctionné. %s
 
 *Usage:* `/tip <montant> [<memo>]`
-*Example:* `/tip 1000 Dank meme!`"""
+*Exemple:* `/tip 1000 Dank meme!`"""
 
 # SEND
 
@@ -165,8 +165,8 @@ sendSyntaxErrorMessage     = """Avez-vous ajouté un montant et un destinataire 
 sendHelpText               = """📖 Oops, cela n'a pas fonctionné. %s
 
 *Usage:* `/send <montant> <utilisateur> [<memo>]`
-*Example:* `/send 1000 @LightningTipBot J'adore le bot ! ❤️`
-*Example:* `/send 1234 LightningTipBot@ln.tips`"""
+*Exemple:* `/send 1000 @LightningTipBot J'adore le bot ! ❤️`
+*Exemple:* `/send 1234 LightningTipBot@ln.tips`"""
 
 # INVOICE
 
@@ -176,7 +176,7 @@ invoiceValidAmountMessage = """Avez-vous choisi un montant correct ?"""
 invoiceHelpText           = """📖 Oops, cela n'a pas fonctionné. %s
 
 *Usage:* `/invoice <montant> [<memo>]`
-*Example:* `/invoice 1000 Merci beaucoup !`"""
+*Exemple:* `/invoice 1000 Merci beaucoup !`"""
 
 # PAY
 
@@ -194,7 +194,7 @@ confirmPayAppendMemo         = """\n✉️ %s"""
 payHelpText                  = """📖 Oops, cela n'a pas fonctionné. %s
 
 *Usage:* `/pay <invoice>`
-*Example:* `/pay lnbc20n1psscehd...`"""
+*Exemple:* `/pay lnbc20n1psscehd...`"""
 
 # DONATE
 
@@ -207,7 +207,7 @@ donateValidAmountMessage = """Avez-vous choisi un montant correct ?"""
 donateHelpText           = """📖 Oops, cela n'a pas fonctionné. %s
 
 *Usage:* `/donate <montant>`
-*Example:* `/donate 1000`"""
+*Exemple:* `/donate 1000`"""
 
 # PHOTO
 
@@ -228,7 +228,7 @@ lnurlEnterAmountMessage        = """⌨️ Choisissez un montant entre %d et %d 
 lnurlHelpText                  = """📖 Oops, cela n'a pas fonctionné. %s
 
 *Usage:* `/lnurl [montant] <lnurl>`
-*Example:* `/lnurl LNURL1DP68GUR...`"""
+*Exemple:* `/lnurl LNURL1DP68GUR...`"""
 
 # LINK
 
@@ -237,19 +237,19 @@ walletConnectMessage = """🔗 *Lier votre wallet*
 ⚠️ Ne partagez jamais cet URL ou ce QR code au risque de donner accès à vos fonds à un tiers.
 
 - *BlueWallet:* Appuyez sur *New wallet*, *Import wallet*, *Scan or import a file*, puis scanner le QR code.
-- *Zeus:* Copier l'URL, appuyez sur *Add a new node*, *Import* (the URL), *Save Node Config*."""
+- *Zeus:* Copier l'URL, appuyez sur *Add a new node*, *Import* (l'URL), *Save Node Config*."""
 couldNotLinkMessage = """🚫 Impossible de lier votre wallet. Merci de réésayer."""
 
 # FAUCET
 
 inlineQueryFaucetTitle        = """🚰 Création d'un faucet."""
-inlineQueryFaucetDescription  = """Usage: @%s faucet <capacity> <per_user>"""
+inlineQueryFaucetDescription  = """Usage: @%s faucet <capacité> <par_utilisateur>"""
 inlineResultFaucetTitle       = """🚰 Création d'un %d sat faucet."""
 inlineResultFaucetDescription = """👉 Appuyez ici pour créer un faucet dans ce chat."""
 
 inlineFaucetMessage                     = """Appuyez sur ✅ pour collecter %d sat de ce faucet.
 
-🚰 Remaining: %d/%d sat (given to %d/%d users)
+🚰 Restant: %d/%d sat (envoyé à %d/%d utilisateurs)
 %s"""
 inlineFaucetEndedMessage                = """🚰 Faucet vide 🍺\n\n🏅 %d sat envoyé à %d utilisateurs."""
 inlineFaucetAppendMemo                  = """\n✉️ %s"""
@@ -259,16 +259,16 @@ inlineFaucetInvalidPeruserAmountMessage = """🚫 Le montant de l'utilisateur n'
 inlineFaucetInvalidAmountMessage        = """🚫 Montant incorrect."""
 inlineFaucetSentMessage                 = """🚰 %d sat envoyé à %s."""
 inlineFaucetReceivedMessage             = """🚰 %s vous a envoyé %d sat."""
-inlineFaucetHelpFaucetInGroup           = """Créez un faucet dans un groupe avec le bot ou utilisez 👉 les commandes (/advanced for more)."""
+inlineFaucetHelpFaucetInGroup           = """Créez un faucet dans un groupe avec le bot ou utilisez 👉 les commandes (/advanced pour plus)."""
 inlineFaucetHelpText                    = """📖 Oops, cela n'a pas fonctionné. %s
 
-*Usage:* `/faucet <capacity> <per_user>`
-*Example:* `/faucet 210 21`"""
+*Usage:* `/faucet <capacité> <par_utilisateur>`
+*Exemple:* `/faucet 210 21`"""
 
 # INLINE SEND
 
 inlineQuerySendTitle            = """💸 Envoyez des paiements dans un chat."""
-inlineQuerySendDescription      = """Usage: @%s envoyer <montant> [<memo>]"""
+inlineQuerySendDescription      = """Usage: @%s send <montant> [<memo>]"""
 inlineResultSendTitle           = """💸 Envoyé %d sat."""
 inlineResultSendDescription     = """👉 Clique pour envoyer %d sat sur ce chat."""
 
@@ -284,7 +284,7 @@ inlineSendBalanceLowMessage    = """🚫 Votre solde est trop bas."""
 # INLINE RECEIVE
 
 inlineQueryReceiveTitle        = """🏅 Demander un paiement dans un chat."""
-inlineQueryReceiveDescription  = """Usage: @%s recevoir <montant> [<memo>]"""
+inlineQueryReceiveDescription  = """Usage: @%s receive <montant> [<memo>]"""
 inlineResultReceiveTitle       = """🏅 Recevoir %d sat."""
 inlineResultReceiveDescription = """👉 Cliquez ici pour recevoir un paiement de %d sat."""
 
