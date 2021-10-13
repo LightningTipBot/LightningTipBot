@@ -123,7 +123,7 @@ advancedMessage = """%s
 # START
 
 startSettingWalletMessage = """🧮 Richte dein Wallet ein..."""
-startWalletCreatedMessage = """🧮 Wallet erstellt."""
+startWalletCreatedMessage = """🧮 Wallet erzeugt."""
 startWalletReadyMessage = """✅ *Dein Wallet ist bereit.*"""
 startWalletErrorMessage = """🚫 Fehler beim einrichten deines Wallets. Bitte versuche es später noch einmal."""
 startNoUsernameMessage = """☝️ Es sieht so aus, als hättest du noch keinen Telegram @usernamen. Das ist ok, du brauchst keinen, um diesen Bot zu verwenden. Um jedoch alle Funktionen verwenden zu können, solltest du dir einen Usernamen in den Telegram Einstellungen setzen. Gebe danach ein mal /balance ein, damit der Bot seine Informationen über dich aktualisieren kann."""
