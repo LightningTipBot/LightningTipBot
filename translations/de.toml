@@ -81,7 +81,7 @@ infoHelpMessage = """ℹ️ *Info*"""
 infoYourLightningAddress = """Deine Lightning Adresse ist `%s`"""
 
 basicsMessage = """🧡 *Bitcoin*
-_Bitcoin ist die Währung des Internets. Es ist offen für jeden, ist dezentral, und es gibt niemanden, der Bitcoin kontrolliert. Bitcoin ist hartes Geld, welches schneller, sicherer, und fairer ist, als das klassische Finanzsystem._
+_Bitcoin ist die Währung des Internets. Bitcoin ist offen für jeden, ist dezentral, und es gibt niemanden, der Bitcoin kontrolliert. Bitcoin ist hartes Geld, welches schneller, sicherer, und fairer ist, als das klassische Finanzsystem._
 
 🧮 *Ökonomie*
 _Die kleinste Einheit von Bitcoin sind Satoshis (sat) und 100,000,000 sat = 1 Bitcoin. Es wird niemals mehr als 21 Millionen Bitcoin geben. Der Fiatgeld-Wert von Bitcoin kann sich täglich ändern. Wenn du jedoch auf einem Bitcoin-Standard lebst, wird 1 sat für immer 1 sat Wert sein._
