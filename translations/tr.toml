@@ -1,0 +1,297 @@
+# COMMANDS
+
+helpCommandStr = """yardım"""
+basicsCommandStr = """temelbilgi"""
+tipCommandStr = """bahşiş"""
+balanceCommandStr = """kredi"""
+sendCommandStr = """gönder"""
+invoiceCommandStr = """fatura"""
+payCommandStr = """öde"""
+donateCommandStr = """bağış"""
+advancedCommandStr = """gelişmiş"""
+transactionsCommandStr = """işlemler"""
+logCommandStr = """kayıt"""
+listCommandStr = """liste"""
+
+linkCommandStr = """bağlan"""
+lnurlCommandStr = """lnurl"""
+faucetCommandStr = """fıçı"""
+
+tipjarCommandStr = """bağışkutusu"""
+receiveCommandStr = """iste"""
+hideCommandStr = """sakla"""
+volcanoCommandStr = """volkan"""
+showCommandStr = """göster"""
+optionsCommandStr = """seçenekler"""
+settingsCommandStr = """ayarlar"""
+saveCommandStr = """kaydet"""
+deleteCommandStr = """sil"""
+infoCommandStr = """info"""
+
+# NOTIFICATIONS
+
+cantDoThatMessage = """Bunu yapamazsın."""
+cantClickMessage = """Bu butona basamazsın."""
+balanceTooLowMessage = """Kredin yetersiz."""
+
+# BUTTONS
+
+sendButtonMessage = """✅ Gönder"""
+payButtonMessage = """✅ Öde"""
+payReceiveButtonMessage = """💸 Öde"""
+receiveButtonMessage = """✅ İste"""
+cancelButtonMessage = """🚫 İptal"""
+collectButtonMessage = """✅ Topla"""
+nextButtonMessage = """İleri"""
+backButtonMessage = """Geri"""
+acceptButtonMessage = """Onayla"""
+denyButtonMessage = """Reddet"""
+tipButtonMessage = """Bahşiş"""
+revealButtonMessage = """Göster"""
+showButtonMessage = """Göster"""
+hideButtonMessage = """Sakla"""
+joinButtonMessage = """Katıl"""
+optionsButtonMessage = """Seçenekler"""
+settingsButtonMessage = """Ayarlar"""
+saveButtonMessage = """Kaydet"""
+deleteButtonMessage = """Sil"""
+infoButtonMessage = """Info"""
+
+# HELP
+
+helpMessage = """⚡️ *Cüzdan*
+_Bitcoin Lightning Cüzdan botu ile Telegram üzerinden bahşiş gönderebilirsin. Bahşiş göndermek için botu bir grup sohbetine ekle. Temel bahşiş birimi Satoshi’dir (sat). 100,000,000 sat = 1 Bitcoin. Daha fazla bilgi için 📚 /basics gir._
+
+❤️ *Bağış yap*
+_Bu bot ücretsizdir, ancak çalıştırılması için Satoshi gerekir. Botu beğendiysen bağış yaparak projeye destek olabilirsin. Bağış yapmak için şunu gir: _ `/donate 1000`
+
+%s
+
+⚙️ *Komutlar*
+*/tip* 🏅 Bağış yapmak için mesajı cevapla: `/tip <miktar> [<bildirim>]`
+*/balance* 👑 Kredini sorgula: `/balance`
+*/send* 💸 Bir kullanıcıya gönder: `/send <miktar> @user veya user@ln.tips [<bildirim>]`
+*/invoice* ⚡️ Lightning ile iste: `/invoice <miktar> [<bildirim>]`
+*/pay* ⚡️ Lightning ile öde: `/pay <invoice>`
+*/donate* ❤️ Projeye bağış yap: `/donate 1000`
+*/advanced* 🤖 Gelişmiş fonksiyonlar.
+*/help* 📖 Yardım."""
+
+infoHelpMessage = """ℹ️ *Info*"""
+infoYourLightningAddress = """Lightning adresin `%s`"""
+
+basicsMessage = """🧡 *Bitcoin*
+_Bitcoin internetin para birimidir. Herkese açık, merkezi olmayan, kontrol edeni olmayan, klasik finansal sistemden daha hızlı, daha güvenli ve daha adil olan sağlam bir paradır._
+
+🧮 *Ekonomi*
+_En küçük Bitcoin birimi Satoshi’dir (sat). 100.000.000 sat = 1 Bitcoin. Asla 21 milyondan fazla Bitcoin üretilmeyecek. Bitcoin'in itibari para değeri günlük olarak değişebilir. Ancak Bitcoin Standardı kullanıyorsan, 1 sat sonsuza kadar 1 sat değerinde olacaktır._
+
+⚡️ *Lightning Network*
+_Lightning Network neredeyse hiç enerji gerektirmeyen hızlı ve ucuz Bitcoin ödemelerine izin veren bir protokolüdür. Böylece Bitcoin dünya çapında milyarlarca insana ulaşır._
+
+📲 *Lightning Cüzdanlar*
+_Bu bottaki paranı dünyadaki herhangi bir Lightning cüzdanına gönderebilirsin. Cep telefonunun için önerilen Lightning cüzdanları şunlardır:_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (emanet edilmeyen), veya_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(kolay)_.
+
+📄 *Açık Kaynak*
+_Bu bot ücretsiz ve_ [açık kaynak](https://github.com/LightningTipBot/LightningTipBot) _yazılım. Kendi bilgisayarında çalıştırabilir ve topluluğun için kullanabilirsin._
+
+✈️ *Telegram*
+_/tip göndermek için botu Telegram grubunuza ekle. Bot grubun yöneticisiyse, yürütmeden sonra bazı komutları silerek sohbeti de temizleyecektir._
+
+🏛 *Kullanım Şartları*
+_Biz senin paranın emanetçisi değiliz. Senin faydanı gözetiyoruz. Ancak KYC'siz durumun biraz karmaşık olduğunun da farkındayız. Başka bir çözüm bulana kadar bu bottaki tüm tutarları bağış olarak kabul ediyoruz. Tüm paranı bize verme. Bu botun hala beta aşamasında olduğunu unutma. Kullanımın senin sorumluluğundadır._
+
+❤️ *Bağış yap*
+_Bu bot ücretsizdir, ancak çalıştırılması için Satoshi gerekir. Botu beğendiysen bağış yaparak projeye destek olabilirsin. Bağış yapmak için şunu gir:_ `/donate 1000`"""
+
+helpNoUsernameMessage = """👋 Ayarlarda bir Telegram kullanıcı adı seç."""
+
+advancedMessage = """%s
+
+👉 *Inline komutlar*
+*send* 💸 Bir sohbete sat gönder: `%s send <miktar> [<bildirim>]`
+*receive* 🏅 Ödeme iste: `%s receive <miktar> [<bildirim>]`
+*faucet* 🚰 Bir fıçı oluştur: `%s faucet <toplam> <kullanıcı_başına>`
+
+📖 İnline komutları her sohbette ve hatta özel mesajlarda kullanabilirsin. Komutu yazdıktan sonra bir saniye bekle ve Enter yazmak yerine sonuca *tıkla*.
+
+⚙️ *Gelişmiş komutlar*
+*/link* 🔗 Cüzdanını bağla: [BlueWallet](https://bluewallet.io/) veya [Zeus](https://zeusln.app/) 
+*/lnurl* ⚡️ Lnurl iste veya gönder: `/lnurl` veya `/lnurl <lnurl>`
+*/faucet* 🚰 Bir fıçı oluştur: `/faucet <toplam> <kullanıcı_başına>`"""
+
+# START
+
+startSettingWalletMessage = """🧮 Cüzdanın hazırlanıyor…"""
+startWalletCreatedMessage = """🧮 Cüzdanın hazır."""
+startWalletReadyMessage = """✅ *Cüzdanın hazır.*"""
+startWalletErrorMessage = """🚫 Cüzdanın hazırlanırken bir hata oluştu. Lütfen daha sonra tekrar dene."""
+startNoUsernameMessage = """☝️ Henüz bir Telegram kullanıcı @adın yok gibi görünüyor. Sorun değil, bu botu kullanmak için kullanıcı adına ihtiyacın yok. Ancak tüm fonksiyonları kullanabilmek için Telegram ayarlarında bir kullanıcı adı belirlemelisin. Ardından botun seninle ilgili bilgilerini güncelleyebilmesi için bir kez /balance gir."""
+
+# BALANCE
+
+balanceMessage      = """👑 *Kredin:* %d sat"""
+balanceErrorMessage = """🚫 Şu an kredini okuyamıyorum. Lütfen daha sonra tekrar dene."""
+
+# TIP
+
+tipDidYouReplyMessage = """Birine bahşiş göndermek için bir mesajı yanıtladın mı? Yanıtlamak için bilgisayarında mesaja sağ tıklayarak Yanıtla. Telefonda ise mesajı kaydır. Ödemeyi doğrudan başka bir kullanıcıya göndermek istiyorsan /send komutunu kullan."""
+tipInviteGroupMessage = """ℹ️ Bu arada, bu botu herhangi bir grup sohbetine davet edebilir ve orada bahşiş dağıtabilirsin."""
+tipEnterAmountMessage = """Miktar girdin mi?"""
+tipValidAmountMessage = """Geçerli bir miktar girdin mi?"""
+tipYourselfMessage = """📖 Kendi kendine bahşiş gönderemezsin."""
+tipSentMessage = """💸 %d sat %s a gönderildi."""
+tipReceivedMessage = """🏅 %s sana %d sat bahşiş gönderdi."""
+tipErrorMessage = """🚫 Bahşiş gönderilemedi."""
+tipUndefinedErrorMsg = """lütfen daha sonra tekrar dene."""
+tipHelpText = """📖 Hoppalaa… olmadı. %s
+
+*Komut:* `/tip <miktar> [<bildirim>]`
+*Örnek:* `/tip 1000 Çok iyi yaa!`"""
+
+# SEND
+
+sendValidAmountMessage = """Geçerli bir miktar girdin mi?"""
+sendUserHasNoWalletMessage = """🚫 %s henüz bir cüzdan oluşturmadı."""
+sendSentMessage = """💸 %d sat %s a gönderildi."""
+sendPublicSentMessage = """💸 %d sat %s dan %s a gönderildi."""
+sendReceivedMessage = """🏅 %s sana %d sat gönderdi."""
+sendErrorMessage = """🚫 Gönderim başarılı olmadı."""
+confirmSendMessage = """%s a ödeme göndermek istiyor musun?\n\n💸 Miktar: %d sat"""
+confirmSendAppendMemo = """\n✉️ %s"""
+sendCancelledMessage = """🚫 Gönderim iptal edildi."""
+errorTryLaterMessage = """🚫 Hata. Lütfen daha sonra tekrar dene."""
+sendSyntaxErrorMessage = """Geçerli bir miktar ve kullanıcı girdin mi? /send komutu ile bir Telegram kullanıcısına, örnek %s, veya bir Lightning adrese, örnek LightningTipBot@ln.tips, gönderilebilir."""
+sendHelpText = """📖 Hoppalaa… olmadı. %s
+
+*Komut:* `/send <miktar> <kullanıcı> [<bildirim>]`
+*Örnek:* `/send 1000 @LightningTipBot Bot harika kanka! ❤️`
+*Örnek:* `/send 1234 LightningTipBot@ln.tips`"""
+
+# INVOICE
+
+invoiceReceivedMessage    = """⚡️ %d sat sana geldi."""
+invoiceEnterAmountMessage = """Miktar girdin mi?"""
+invoiceValidAmountMessage = """Geçerli bir miktar girdin mi?"""
+invoiceHelpText           = """📖 Hoppalaa… olmadı. %s
+
+*Komut:* `/invoice <miktar> [<bildirim>]`
+*Örnek:* `/invoice 1000 Şimdiden teşekkürler!`"""
+
+# PAY
+
+paymentCancelledMessage = """🚫 Ödeme iptal edildi."""
+invoicePaidMessage = """⚡️ Ödeme gönderildi."""
+invoicePublicPaidMessage = """⚡️ %s ödeme gönderdi."""
+invalidInvoiceHelpMessage = """Geçerli bir Lightning Invoice girdin mi? Telegram kullanıcısına veya Lightning adrese ödeme yapmak için /send komutunu kullan."""
+invoiceNoAmountMessage = """🚫 Miktar belirtilmemiş Invoice ödenemez."""
+insufficientFundsMessage = """🚫 Kredin yetersiz. Şu an cüzdanında %d sat var. Ancak en az %d sat gerekiyor."""
+feeReserveMessage = """⚠️ Cüzdanındaki tüm miktarı göndermek istiyorsun. Ancak Lightning ücreti ödenemeyeceği için gönderim başarısız olabilir. Bu durumda daha az bir miktar dene."""
+invoicePaymentFailedMessage = """🚫 Ödeme başarısız: %s"""
+invoiceUndefinedErrorMessage = """Invoice ödenemedi."""
+confirmPayInvoiceMessage = """Bu ödemeyi göndermek istiyor musun?\n\n💸 Miktar: %d sat"""
+confirmPayAppendMemo = """\n✉️ %s"""
+payHelpText = """📖 Hoppalaa… olmadı. %s
+
+*Komut:* `/pay <invoice>`
+*Örnek:* `/pay lnbc20n1psscehd...`"""
+
+# DONATE
+
+donationSuccess          = """🙏 Bağış için teşekkürler."""
+donationErrorMessage     = """🚫 Bağış yapılamadı."""
+donationProgressMessage  = """🧮 Bağışın hazırlanıyor…"""
+donationFailedMessage    = """🚫 Bağış yapılamadı: %s"""
+donateEnterAmountMessage = """Miktar girdin mi?"""
+donateValidAmountMessage = """Geçerli bir miktar girdin mi?"""
+donateHelpText           = """📖 Hoppalaa… olmadı. %s
+
+*Komut:* `/donate <miktar>`
+*Örnek:* `/donate 1000`"""
+
+# PHOTO
+
+photoQrNotRecognizedMessage = """🚫 Lightning Invoice veya LNURL tanımlanamadı. QR Kodunu ortalayarak, boyutlandırarak veya büyüterek tekrar dene."""
+photoQrRecognizedMessage = """✅ QR Code:
+`%s`"""
+
+# LNURL
+
+lnurlReceiveInfoText = """👇 Bu LNURL kodunu ödeme almak için kullanabilirsin."""
+lnurlResolvingUrlMessage = """🧮 Adres çözümleniyor…"""
+lnurlGettingUserMessage = """🧮 Ödeme hazırlanıyor..."""
+lnurlPaymentFailed = """🚫 Ödeme başarısız: %s"""
+lnurlInvalidAmountMessage = """🚫 Geçersiz miktar."""
+lnurlInvalidAmountRangeMessage = """🚫 Miktar %d ve %d sat arasında olmalı."""
+lnurlNoUsernameMessage = """🚫 LNURL ödemesi almak için bir Telegram kullanıcı ismi seçmelisin."""
+lnurlEnterAmountMessage = """⌨️ %d ve %d sat arasında bir miktar gir."""
+lnurlHelpText = """📖 Hoppalaa… olmadı. %s
+
+*Komut:* `/lnurl [miktar] <lnurl>`
+*Örnek:* `/lnurl LNURL1DP68GUR...`"""
+
+# LINK
+
+walletConnectMessage = """🔗 *Cüzdanını bağla*
+
+⚠️ Bu URL yi veya QR kodunu kimseyle paylaşma. Bu bilgiye ulaşan biri hesabına da ulaşabilir.
+
+- *BlueWallet:* *New wallet*, *Import wallet*, *Scan or import a file* tıkla ve QR kodunu tarat.
+- *Zeus:* Aşağıdaki URL’yi kopyala ve *Add a new node*, *Import* (URL’yi), *Save Node Config* tıkla."""
+couldNotLinkMessage = """🚫 Cüzdanın bağlanamadı. Lütfen daha sonra tekrar dene."""
+
+# FAUCET
+
+inlineQueryFaucetTitle = """🚰 Bir Fıçı oluştur."""
+inlineQueryFaucetDescription = """Komut: @%s faucet <toplam> <kullanıcı_başına>"""
+inlineResultFaucetTitle = """🚰 Bir %d sat Fıçı oluştur."""
+inlineResultFaucetDescription = """👉 Fıçı’yı bu sohbete göndermek için tıkla."""
+
+inlineFaucetMessage = """✅ butonuna basarak Fıçıdan %d sat çek.
+
+🚰 Kalan: %d/%d sat (%d/%d çekildi)
+%s"""
+inlineFaucetEndedMessage = """🚰 Fıçı boşaldı 🍺\n\n🏅 %d sat %d kullanıcıya dağıtıldı."""
+inlineFaucetAppendMemo = """\n✉️ %s"""
+inlineFaucetCreateWalletMessage = """%s 👈 ile cüzdanı kullanmak için sohbete başla."""
+inlineFaucetCancelledMessage = """🚫 Fıçı iptal edildi."""
+inlineFaucetInvalidPeruserAmountMessage = """🚫 Toplam miktar bölü kullanıcı başına miktar tam sayı olmalı. Bu sayı küsuratlı olmaz."""
+inlineFaucetInvalidAmountMessage = """🚫 Geçersiz miktar."""
+inlineFaucetSentMessage = """🚰 %d sat %s a gönderildi."""
+inlineFaucetReceivedMessage = """🚰 %s sana %d sat gönderdi."""
+inlineFaucetHelpFaucetInGroup = """Fıçıyı İçinde bot olan bir grupta oluştur veya 👉 Inline komutunu kullan (/advanced daha fazla bilgi)."""
+inlineFaucetHelpText = """📖 Hoppalaa… olmadı. %s
+
+*Komut:* `/faucet <toplam> <kullanıcı_başına>`
+*Örnek:* `/faucet 210 21`"""
+
+# INLINE SEND
+
+inlineQuerySendTitle = """💸 Sohbete ödeme gönder."""
+inlineQuerySendDescription = """Komut: @%s send <miktar> [<bildirim>]"""
+inlineResultSendTitle = """💸 %d sat gönder."""
+inlineResultSendDescription = """👉 Sohbete %d sat göndermek için tıkla."""
+
+inlineSendMessage = """✅ Butona basarak %s dan ödeme al.\n\n💸 Miktar: %d sat"""
+inlineSendAppendMemo = """\n✉️ %s"""
+inlineSendUpdateMessageAccept = """💸 %d sat %s dan %s ye gönderildi."""
+inlineSendCreateWalletMessage = """%s 👈 ile cüzdanı kullanmak için sohbete başla."""
+sendYourselfMessage = """📖 Kendi kendine ödeme yapamazsın."""
+inlineSendFailedMessage = """🚫 Gönderim başarısız."""
+inlineSendInvalidAmountMessage = """🚫 Miktar 0 dan büyük olmalı."""
+inlineSendBalanceLowMessage = """🚫 Kredin yetersiz."""
+
+# INLINE RECEIVE
+
+inlineQueryReceiveTitle = """🏅 Sohbetten ödeme iste."""
+inlineQueryReceiveDescription = """Komut: @%s receive <miktar> [<bildirim>]"""
+inlineResultReceiveTitle = """🏅 %d sat iste."""
+inlineResultReceiveDescription = """👉%d sat istemek için tıkla."""
+
+inlineReceiveMessage = """💸 butonuna basarak %s a öde.\n\n💸 Miktar: %d sat"""
+inlineReceiveAppendMemo = """\n✉️ %s"""
+inlineReceiveUpdateMessageAccept = """💸 %d sat %s dan %s ye gönderildi."""
+inlineReceiveCreateWalletMessage = """%s 👈 ile cüzdanı kullanmak için sohbete başla."""
+inlineReceiveYourselfMessage = """📖 Kendi kendine ödeme yapamazsın."""
+inlineReceiveFailedMessage = """🚫 İstek başarısız."""
+inlineReceiveCancelledMessage = """🚫 İstek iptal edildi."""
