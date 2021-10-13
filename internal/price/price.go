@@ -94,12 +94,16 @@ func (p *PriceWatcher) GetCoinbasePrice(currency string) (float64, error) {
 		return 0, err
 	}
 	price := gjson.Get(string(bodyBytes), "data.amount")
-	fprice, err := strconv.ParseFloat(strings.TrimSpace(price.String()), 64)
-	if err != nil {
-		log.Debug(err)
-		return 0, err
+	if len(price.String()) > 0 {
+		fprice, err := strconv.ParseFloat(strings.TrimSpace(price.String()), 64)
+		if err != nil {
+			log.Debug(err)
+			return 0, err
+		}
+		return fprice, nil
+	} else {
+		return 0, fmt.Errorf("no price")
 	}
-	return fprice, nil
 }
 
 func (p *PriceWatcher) GetBitfinexPrice(currency string) (float64, error) {
@@ -116,10 +120,14 @@ func (p *PriceWatcher) GetBitfinexPrice(currency string) (float64, error) {
 		return 0, err
 	}
 	price := gjson.Get(string(bodyBytes), "last_price")
-	fprice, err := strconv.ParseFloat(strings.TrimSpace(price.String()), 64)
-	if err != nil {
-		log.Debug(err)
-		return 0, err
+	if len(price.String()) > 0 {
+		fprice, err := strconv.ParseFloat(strings.TrimSpace(price.String()), 64)
+		if err != nil {
+			log.Debug(err)
+			return 0, err
+		}
+		return fprice, nil
+	} else {
+		return 0, fmt.Errorf("no price")
 	}
-	return fprice, nil
 }

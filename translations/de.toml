@@ -81,7 +81,7 @@ infoHelpMessage = """ℹ️ *Info*"""
 infoYourLightningAddress = """Deine Lightning Adresse ist `%s`"""
 
 basicsMessage = """🧡 *Bitcoin*
-_Bitcoin ist die Währung des Internets. Es ist offen für jeden, dezentral und es gibt niemanden, der Bitcoin kontrolliert. Bitcoin ist hartes Geld, was schneller, sicherer, und fairer ist, als das klassische Finanzsystem._
+_Bitcoin ist die Währung des Internets. Es ist offen für jeden, ist dezentral, und es gibt niemanden, der Bitcoin kontrolliert. Bitcoin ist hartes Geld, welches schneller, sicherer, und fairer ist, als das klassische Finanzsystem._
 
 🧮 *Ökonomie*
 _Die kleinste Einheit von Bitcoin sind Satoshis (sat) und 100,000,000 sat = 1 Bitcoin. Es wird niemals mehr als 21 Millionen Bitcoin geben. Der Fiatgeld-Wert von Bitcoin kann sich täglich ändern. Wenn du jedoch auf einem Bitcoin-Standard lebst, wird 1 sat für immer 1 sat Wert sein._
@@ -90,7 +90,7 @@ _Die kleinste Einheit von Bitcoin sind Satoshis (sat) und 100,000,000 sat = 1 Bi
 _Das Lightning Netzwerk ist ein Bezahlprotokoll, das schnelle und günstige Bitcoin Zahlungen erlaubt, die fast keine Energie kosten. Dadurch skaliert Bitcoin auf Milliarden von Menschen weltweit._
 
 📲 *Lightning Wallets*
-_Dein Geld auf diesem Bot kannst du an jedes andere Lightning Wallet der Welt versenden. Empfholene Lightning Wallets für dein Handy sind _ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), or_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(einfach)_.
+_Dein Geld auf diesem Bot kannst du an jedes andere Lightning Wallet der Welt versenden. Empfohlene Lightning Wallets für dein Handy sind _ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (eigene Verwahrung), oder_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(einfach)_.
 
 📄 *Open Source*
 _Dieser Bot ist kostenlose_ [Open Source](https://github.com/LightningTipBot/LightningTipBot) _Software. Du kannst ihn auf deinem eigenen Rechner laufen lassen und für deine eigene Community betreiben._
@@ -99,12 +99,12 @@ _Dieser Bot ist kostenlose_ [Open Source](https://github.com/LightningTipBot/Lig
 _Füge den Bot in deine Telegram Gruppenchats hinzu, um Nachrichten ein /tip zu senden. Wenn der Bot Admin der Gruppe ist, wird er auch den Chat aufräumen, indem er manche Befehle nach Ausführung löscht._
 
 🏛 *Bedingungen*
-_Wir sind keine Verwalter deines Geldes. Wir werden in deinem besten Interesse handeln, aber sind uns auch dessen bewusst, dass die Situation ohne KYC etwas kompliziert ist. Solange wir keine andere Lösung gefunden haben, werden wir alle Beträge auf diesem Bot als Spenden betrachten. Gebe uns nicht dein ganzes Geld. Sei dir dessen bewusst, dass dieser Bot immer noch in der Betaphase ist. Benutzung auf eigene Gefahr._
+_Wir sind keine Verwahrer deines Geldes. Wir werden in deinem besten Interesse handeln, aber sind uns auch dessen bewusst, dass die Situation ohne KYC etwas kompliziert ist. Solange wir keine andere Lösung gefunden haben, werden wir alle Beträge auf diesem Bot als Spenden betrachten. Gebe uns nicht dein ganzes Geld. Sei dir dessen bewusst, dass dieser Bot immer noch in der Betaphase ist. Benutzung auf eigene Gefahr._
 
 ❤️ *Spenden*
 _Dieser Bot erhebt keine Gebühren, kostet aber Satoshis um betrieben zu werden. Wenn du den Bot magst, kannst das Projekt mit eine Spende unterstützen. Um zu spenden, gebe ein: _ `/donate 1000`"""
 
-helpNoUsernameMessage = """👋 Bitte setze einen Telegram Benutzernamen."""
+helpNoUsernameMessage = """👋 Wähle einen Telegram Benutzernamen in den Einstellungen."""
 
 advancedMessage = """%s
 
@@ -175,7 +175,7 @@ invoiceEnterAmountMessage = """Hast du einen Betrag eingegeben?"""
 invoiceValidAmountMessage = """Hast du einen gültigen Betrag eingegeben?"""
 invoiceHelpText           = """📖 Ups, das hat nicht geklappt. %s
 
-*Befehl:* `/invoice <amount> [<memo>]`
+*Befehl:* `/invoice <betrag> [<memo>]`
 *Beispiel:* `/invoice 1000 Thank you!`"""
 
 # PAY
@@ -237,7 +237,7 @@ walletConnectMessage = """🔗 *Verbinde dein Wallet*
 ⚠️ Teile diese URL und den QR code mit niemandem! Jeder, der darauf Zugriff hat, hat auch Zugriff auf dein Konto.
 
 - *BlueWallet:* Drücke *New wallet*, *Import wallet*, *Scan or import a file*, und scanne den QR Code.
-- *Zeus:* Kiere die URL unten, drücke *Add a new node*, *Import* (die URL), *Save Node Config*."""
+- *Zeus:* Kopiere die URL unten, drücke *Add a new node*, *Import* (die URL), *Save Node Config*."""
 couldNotLinkMessage = """🚫 Konnte dein Wallet nicht verbinden. Bitte versuche es später noch einmal."""
 
 # FAUCET
@@ -259,7 +259,7 @@ inlineFaucetInvalidPeruserAmountMessage = """🚫 Die Pro-User Menge muss ein na
 inlineFaucetInvalidAmountMessage = """🚫 Ungültige Menge."""
 inlineFaucetSentMessage = """🚰 %d sat an %s gesendet."""
 inlineFaucetReceivedMessage = """🚰 %s hat dir %d sat gesendet."""
-inlineFaucetHelpFaucetInGroup = """Erzuge einen Zapfhahn in einer Gruppe, wo der Bot eingeladen ist oder benutze einen 👉 Inline Bommand (/advanced für mehr)."""
+inlineFaucetHelpFaucetInGroup = """Erzeuge einen Zapfhahn in einer Gruppe, wo der Bot eingeladen ist oder benutze einen 👉 Inline Befehl (/advanced für mehr)."""
 inlineFaucetHelpText = """📖 Ups, das hat nicht geklappt. %s
 
 *Befehl:* `/faucet <gesamt> <pro_user>`
