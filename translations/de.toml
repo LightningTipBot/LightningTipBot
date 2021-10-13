@@ -104,7 +104,7 @@ _Wir sind keine Verwahrer deines Geldes. Wir werden in deinem besten Interesse h
 ❤️ *Spenden*
 _Dieser Bot erhebt keine Gebühren, kostet aber Satoshis um betrieben zu werden. Wenn du den Bot magst, kannst das Projekt mit eine Spende unterstützen. Um zu spenden, gebe ein: _ `/donate 1000`"""
 
-helpNoUsernameMessage = """👋 Wähle einen Telegram Benutzernamen in den Einstellungen."""
+helpNoUsernameMessage = """👋 Wähle einen Benutzernamen in den Telegram Einstellungen."""
 
 advancedMessage = """%s
 
