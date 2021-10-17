@@ -3,6 +3,8 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -21,12 +23,13 @@ var (
 
 type InlineSend struct {
 	*transaction.Base
-	Message      string       `json:"inline_send_message"`
-	Amount       int          `json:"inline_send_amount"`
-	From         *lnbits.User `json:"inline_send_from"`
-	To           *tb.User     `json:"inline_send_to"`
-	Memo         string       `json:"inline_send_memo"`
-	LanguageCode string       `json:"languagecode"`
+	Message         string       `json:"inline_send_message"`
+	Amount          int          `json:"inline_send_amount"`
+	From            *lnbits.User `json:"inline_send_from"`
+	To              *lnbits.User `json:"inline_send_to"`
+	To_SpecificUser bool         `json:"to_specific_user"`
+	Memo            string       `json:"inline_send_memo"`
+	LanguageCode    string       `json:"languagecode"`
 }
 
 func (bot TipBot) makeSendKeyboard(ctx context.Context, id string) *tb.ReplyMarkup {
@@ -69,14 +72,44 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 		bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineSendBalanceLowMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQuerySendDescription"), bot.Telegram.Me.Username))
 		return
 	}
+
+	// check whether the 3rd argument is a username
+	// command is "@LightningTipBot send 123 @to_user This is the memo"
+	memo_argn := 2 // argument index at which the memo starts, will be 3 if there is a to_username in command
+	toUserDb := &lnbits.User{}
+	to_SpecificUser := false
+	if len(strings.Split(q.Text, " ")) > 2 {
+		to_username := strings.Split(q.Text, " ")[2]
+		if strings.HasPrefix(to_username, "@") {
+			toUserDb, err = GetUserByTelegramUsername(to_username[1:], bot) // must be without the @
+			if err != nil {
+				//NewMessage(m, WithDuration(0, bot.Telegram))
+				//bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "sendUserHasNoWalletMessage"), toUserStrMention))
+				bot.inlineQueryReplyWithError(q,
+					fmt.Sprintf(TranslateUser(ctx, "sendUserHasNoWalletMessage"), to_username),
+					fmt.Sprintf(TranslateUser(ctx, "inlineQuerySendDescription"),
+						bot.Telegram.Me.Username))
+				return
+			}
+			memo_argn = 3 // assume that memo starts after the to_username
+			to_SpecificUser = true
+		}
+	}
+
 	// check for memo in command
-	memo := GetMemoFromCommand(q.Text, 2)
+	memo := GetMemoFromCommand(q.Text, memo_argn)
 	urls := []string{
 		queryImage,
 	}
 	results := make(tb.Results, len(urls)) // []tb.Result
 	for i, url := range urls {
 		inlineMessage := fmt.Sprintf(Translate(ctx, "inlineSendMessage"), fromUserStr, amount)
+
+		// modify message if payment is to specific user
+		if to_SpecificUser {
+			inlineMessage = fmt.Sprintf("@%s: %s", toUserDb.Telegram.Username, inlineMessage)
+		}
+
 		if len(memo) > 0 {
 			inlineMessage = inlineMessage + fmt.Sprintf(Translate(ctx, "inlineSendAppendMemo"), memo)
 		}
@@ -96,12 +129,14 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 
 		// add data to persistent object
 		inlineSend := InlineSend{
-			Base:         transaction.New(transaction.ID(id)),
-			Message:      inlineMessage,
-			From:         fromUser,
-			Memo:         memo,
-			Amount:       amount,
-			LanguageCode: ctx.Value("publicLanguageCode").(string),
+			Base:            transaction.New(transaction.ID(id)),
+			Message:         inlineMessage,
+			From:            fromUser,
+			To:              toUserDb,
+			To_SpecificUser: to_SpecificUser,
+			Memo:            memo,
+			Amount:          amount,
+			LanguageCode:    ctx.Value("publicLanguageCode").(string),
 		}
 
 		// add result to persistent struct
@@ -145,7 +180,16 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 
 	amount := inlineSend.Amount
 
-	inlineSend.To = to.Telegram
+	// check if this payment goes to a specific user
+	if inlineSend.To_SpecificUser {
+		if inlineSend.To.Telegram.ID != to.Telegram.ID {
+			// log.Infof("User %d is not User %d", inlineSend.To.Telegram.ID, to.Telegram.ID)
+			return
+		}
+	} else {
+		// otherwise, we just set it to the user who has clicked
+		inlineSend.To = to
+	}
 
 	if fromUser.Telegram.ID == to.Telegram.ID {
 		bot.trySendMessage(fromUser.Telegram, Translate(ctx, "sendYourselfMessage"))

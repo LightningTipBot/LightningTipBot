@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -20,7 +21,7 @@ func (bot TipBot) registerTelegramHandlers() {
 	telegramHandlerRegistration.Do(func() {
 		// Set up handlers
 		for _, h := range bot.getHandler() {
-			fmt.Println("registering", h.Endpoints)
+			log.Debugln("registering", h.Endpoints)
 			bot.register(h)
 		}
 

@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -21,12 +22,13 @@ var (
 
 type InlineReceive struct {
 	*transaction.Base
-	Message      string       `json:"inline_receive_message"`
-	Amount       int          `json:"inline_receive_amount"`
-	From         *lnbits.User `json:"inline_receive_from"`
-	To           *lnbits.User `json:"inline_receive_to"`
-	Memo         string
-	LanguageCode string `json:"languagecode"`
+	Message           string       `json:"inline_receive_message"`
+	Amount            int          `json:"inline_receive_amount"`
+	From              *lnbits.User `json:"inline_receive_from"`
+	To                *lnbits.User `json:"inline_receive_to"`
+	From_SpecificUser bool         `json:"from_specific_user"`
+	Memo              string       `json:"inline_receive_memo"`
+	LanguageCode      string       `json:"languagecode"`
 }
 
 func (bot TipBot) makeReceiveKeyboard(ctx context.Context, id string) *tb.ReplyMarkup {
@@ -43,7 +45,7 @@ func (bot TipBot) makeReceiveKeyboard(ctx context.Context, id string) *tb.ReplyM
 }
 
 func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
-	from := LoadUser(ctx)
+	to := LoadUser(ctx)
 	amount, err := decodeAmountFromCommand(q.Text)
 	if err != nil {
 		bot.inlineQueryReplyWithError(q, Translate(ctx, "inlineQueryReceiveTitle"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.Telegram.Me.Username))
@@ -53,15 +55,45 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 		bot.inlineQueryReplyWithError(q, Translate(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.Telegram.Me.Username))
 		return
 	}
-	fromUserStr := GetUserStr(&q.From)
+	toUserStr := GetUserStr(&q.From)
+
+	// check whether the 3rd argument is a username
+	// command is "@LightningTipBot receive 123 @from_user This is the memo"
+	memo_argn := 2 // argument index at which the memo starts, will be 3 if there is a from_username in command
+	fromUserDb := &lnbits.User{}
+	from_SpecificUser := false
+	if len(strings.Split(q.Text, " ")) > 2 {
+		from_username := strings.Split(q.Text, " ")[2]
+		if strings.HasPrefix(from_username, "@") {
+			fromUserDb, err = GetUserByTelegramUsername(from_username[1:], bot) // must be without the @
+			if err != nil {
+				//NewMessage(m, WithDuration(0, bot.Telegram))
+				//bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "sendUserHasNoWalletMessage"), toUserStrMention))
+				bot.inlineQueryReplyWithError(q,
+					fmt.Sprintf(TranslateUser(ctx, "sendUserHasNoWalletMessage"), from_username),
+					fmt.Sprintf(TranslateUser(ctx, "inlineQueryReceiveDescription"),
+						bot.Telegram.Me.Username))
+				return
+			}
+			memo_argn = 3 // assume that memo starts after the from_username
+			from_SpecificUser = true
+		}
+	}
+
 	// check for memo in command
-	memo := GetMemoFromCommand(q.Text, 2)
+	memo := GetMemoFromCommand(q.Text, memo_argn)
 	urls := []string{
 		queryImage,
 	}
 	results := make(tb.Results, len(urls)) // []tb.Result
 	for i, url := range urls {
-		inlineMessage := fmt.Sprintf(Translate(ctx, "inlineReceiveMessage"), fromUserStr, amount)
+		inlineMessage := fmt.Sprintf(Translate(ctx, "inlineReceiveMessage"), toUserStr, amount)
+
+		// modify message if payment is to specific user
+		if from_SpecificUser {
+			inlineMessage = fmt.Sprintf("@%s: %s", fromUserDb.Telegram.Username, inlineMessage)
+		}
+
 		if len(memo) > 0 {
 			inlineMessage = inlineMessage + fmt.Sprintf(Translate(ctx, "inlineReceiveAppendMemo"), memo)
 		}
@@ -80,14 +112,14 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 		results[i].SetResultID(id)
 		// create persistend inline send struct
 		inlineReceive := InlineReceive{
-			Base:    transaction.New(transaction.ID(id)),
-			Message: inlineMessage,
-			To:      from,
-			Memo:    memo,
-			Amount:  amount,
-			From:    from,
-
-			LanguageCode: ctx.Value("publicLanguageCode").(string),
+			Base:              transaction.New(transaction.ID(id)),
+			Message:           inlineMessage,
+			To:                to,
+			Memo:              memo,
+			Amount:            amount,
+			From:              fromUserDb,
+			From_SpecificUser: from_SpecificUser,
+			LanguageCode:      ctx.Value("publicLanguageCode").(string),
 		}
 		runtime.IgnoreError(inlineReceive.Set(inlineReceive, bot.Bunt))
 	}
@@ -130,6 +162,17 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	if from.Wallet == nil {
 		return
 	}
+	// check if this payment is requested from a specific user
+	if inlineReceive.From_SpecificUser {
+		if inlineReceive.From.Telegram.ID != from.Telegram.ID {
+			// log.Infof("User %d is not User %d", inlineReceive.From.Telegram.ID, from.Telegram.ID)
+			return
+		}
+	} else {
+		// otherwise, we just set it to the user who has clicked
+		inlineReceive.From = from
+	}
+
 	to := inlineReceive.To
 	toUserStrMd := GetUserStrMd(to.Telegram)
 	fromUserStrMd := GetUserStrMd(from.Telegram)

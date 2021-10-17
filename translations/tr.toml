@@ -268,7 +268,7 @@ inlineFaucetHelpText = """📖 Hoppalaa… olmadı. %s
 # INLINE SEND
 
 inlineQuerySendTitle = """💸 Sohbete ödeme gönder."""
-inlineQuerySendDescription = """Komut: @%s send <miktar> [<bildirim>]"""
+inlineQuerySendDescription = """Komut: @%s send <miktar> [<kullanıcı>] [<bildirim>]"""
 inlineResultSendTitle = """💸 %d sat gönder."""
 inlineResultSendDescription = """👉 Sohbete %d sat göndermek için tıkla."""
 
@@ -284,7 +284,7 @@ inlineSendBalanceLowMessage = """🚫 Kredin yetersiz."""
 # INLINE RECEIVE
 
 inlineQueryReceiveTitle = """🏅 Sohbetten ödeme iste."""
-inlineQueryReceiveDescription = """Komut: @%s receive <miktar> [<bildirim>]"""
+inlineQueryReceiveDescription = """Komut: @%s receive <miktar> [<kullanıcı>] [<bildirim>]"""
 inlineResultReceiveTitle = """🏅 %d sat iste."""
 inlineResultReceiveDescription = """👉%d sat istemek için tıkla."""
 

@@ -268,7 +268,7 @@ inlineFaucetHelpText                    = """📖 Ops, non ha funzionato. %s
 # INLINE SEND
 
 inlineQuerySendTitle            = """💸 Invia pagamento in una chat."""
-inlineQuerySendDescription      = """Sintassi: @%s send <ammontare> [<descrizione>]"""
+inlineQuerySendDescription      = """Sintassi: @%s send <ammontare> [<utente>] [<descrizione>]"""
 inlineResultSendTitle           = """💸 Invio %d sat."""
 inlineResultSendDescription     = """👉 Clicca per inviare %d sat in questa chat."""
 
@@ -284,7 +284,7 @@ inlineSendBalanceLowMessage    = """🚫 Il tuo saldo è insufficiente (%d sat).
 # INLINE RECEIVE
 
 inlineQueryReceiveTitle        = """🏅 Richiedi un pagamento in una chat."""
-inlineQueryReceiveDescription  = """Sintassi: @%s receive <ammontare> [<descrizione>]"""
+inlineQueryReceiveDescription  = """Sintassi: @%s receive <ammontare> [<utente>] [<descrizione>]"""
 inlineResultReceiveTitle       = """🏅 Ricevi %d sat."""
 inlineResultReceiveDescription = """👉 Clicca per richiedere un pagamento di %d sat."""
 

@@ -268,7 +268,7 @@ inlineFaucetHelpText                    = """📖 Oops, cela n'a pas fonctionné
 # INLINE SEND
 
 inlineQuerySendTitle            = """💸 Envoyez des paiements dans un chat."""
-inlineQuerySendDescription      = """Usage: @%s send <montant> [<memo>]"""
+inlineQuerySendDescription      = """Usage: @%s send <montant> [<utilisateur>] [<memo>]"""
 inlineResultSendTitle           = """💸 Envoyé %d sat."""
 inlineResultSendDescription     = """👉 Clique pour envoyer %d sat sur ce chat."""
 
@@ -284,7 +284,7 @@ inlineSendBalanceLowMessage    = """🚫 Votre solde est trop bas."""
 # INLINE RECEIVE
 
 inlineQueryReceiveTitle        = """🏅 Demander un paiement dans un chat."""
-inlineQueryReceiveDescription  = """Usage: @%s receive <montant> [<memo>]"""
+inlineQueryReceiveDescription  = """Usage: @%s receive <montant> [<utilisateur>] [<memo>]"""
 inlineResultReceiveTitle       = """🏅 Recevoir %d sat."""
 inlineResultReceiveDescription = """👉 Cliquez ici pour recevoir un paiement de %d sat."""
 
