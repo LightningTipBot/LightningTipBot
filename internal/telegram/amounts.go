@@ -1,12 +1,18 @@
 package telegram
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"strconv"
 	"strings"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/price"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
 	log "github.com/sirupsen/logrus"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 func getArgumentFromCommand(input string, which int) (output string, err error) {
@@ -70,4 +76,100 @@ func getAmount(input string) (amount int, err error) {
 		return 0, errors.New(errmsg)
 	}
 	return amount, err
+}
+
+type EnterAmountStateData struct {
+	ID     string `json:"ID"`     // holds the ID of the tx object in bunt db
+	Type   string `json:"Type"`   // holds type of the tx in bunt db (needed for type checking)
+	Amount int64  `json:"Amount"` // holds the amount entered by the user
+}
+
+// enterAmountHandler is invoked in anyTextHandler when the user needs to enter an amount
+// the amount is then stored as an entry in the user's stateKey in the user database
+// any other handler that relies on this, needs to load the resulting amount from the database
+func (bot TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return // errors.New("user has no wallet"), 0
+	}
+
+	if !(user.StateKey == lnbits.UserEnterAmount) {
+		ResetUserState(user, bot)
+		return // errors.New("user state does not match"), 0
+	}
+
+	var EnterAmountStateData EnterAmountStateData
+	err := json.Unmarshal([]byte(user.StateData), &EnterAmountStateData)
+	if err != nil {
+		log.Errorln(err)
+		ResetUserState(user, bot)
+		return
+	}
+
+	amount, err := getAmount(m.Text)
+	if err != nil {
+		log.Errorln(err)
+		bot.trySendMessage(m.Sender, Translate(ctx, "lnurlInvalidAmountMessage"))
+		ResetUserState(user, bot)
+		return //err, 0
+	}
+
+	// find out which type the object in bunt has waiting for an amount
+	// we stored this in the EnterAmountStateData before
+	switch EnterAmountStateData.Type {
+	case "LnurlPayState":
+		tx := &LnurlPayState{Base: transaction.New(transaction.ID(EnterAmountStateData.ID))}
+		sn, err := tx.Get(tx, bot.Bunt)
+		if err != nil {
+			return
+		}
+		LnurlPayState := sn.(*LnurlPayState)
+		LnurlPayState.Amount = amount
+		// add result to persistent struct
+		runtime.IgnoreError(LnurlPayState.Set(LnurlPayState, bot.Bunt))
+		bot.lnurlPayHandler(ctx, m)
+	default:
+		ResetUserState(user, bot)
+		return
+	}
+
+	// reset database entry
+	ResetUserState(user, bot)
+
+	// tx := &PayData{Base: transaction.New(transaction.ID(EnterAmountStateData.ID))}
+	// sn, err := tx.Get(tx, bot.Bunt)
+	// switch sn.(type) {
+	// case LnurlPayState:
+	// 	payData := sn.(*PayData)
+	// default:
+	// 	ResetUserState(user, bot)
+	// 	return
+	// }
+
+	// var stateResponse LnurlPayState
+	// err = json.Unmarshal([]byte(user.StateData), &stateResponse)
+	// if err != nil {
+	// 	log.Errorln(err)
+	// 	ResetUserState(user, bot)
+	// 	return //err, 0
+	// }
+	// // amount not in allowed range from LNURL
+	// if amount > (stateResponse.MaxSendable/1000) || amount < (stateResponse.MinSendable/1000) {
+	// 	err = fmt.Errorf("amount not in range")
+	// 	log.Errorln(err)
+	// 	bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), stateResponse.MinSendable/1000, stateResponse.MaxSendable/1000))
+	// 	ResetUserState(user, bot)
+	// 	return
+	// }
+
+	// we used to store the amount in the state, but it's not necessayr since we put it in the bunt struct
+	// EnterAmountStateData.Amount = int64(amount)
+	// state, err := json.Marshal(EnterAmountStateData)
+	// if err != nil {
+	// 	log.Errorln(err)
+	// 	ResetUserState(user, bot)
+	// 	return //err, 0
+	// }
+	// SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(state))
+	//bot.lnurlPayHandler(ctx, m)
 }
