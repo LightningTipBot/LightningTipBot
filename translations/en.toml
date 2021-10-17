@@ -104,14 +104,14 @@ _We are not custodian of your funds. We will act in your best interest but we're
 ❤️ *Donate*
 _This bot charges no fees but costs satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/donate 1000`"""
 
-helpNoUsernameMessage = """👋 Please set a Telegram username."""
+helpNoUsernameMessage = """👋 Please, set a Telegram username."""
 
 advancedMessage = """%s
 
 👉 *Inline commands*
-*send* 💸 Send sats to chat: `%s send <amount> [<memo>]`
-*receive* 🏅 Request a payment: `%s receive <amount> [<memo>]`
-*faucet* 🚰 Create a faucet: `%s faucet <capacity> <per_user>`
+*send* 💸 Send sats to chat: `%s send <amount> [<user>] [<memo>]`
+*receive* 🏅 Request a payment: `%s receive <amount> [<user>] [<memo>]`
+*faucet* 🚰 Create a faucet: `%s faucet <capacity> <per_user> [<memo>]`
 
 📖 You can use inline commands in every chat, even in private conversations. Wait a second after entering an inline command and *click* the result, don't press enter.
 

@@ -109,9 +109,9 @@ helpNoUsernameMessage = """👋 Por favor, digite um nome de usuário do Telegra
 advancedMessage = """%s
 
 👉 *Comandos Inline*
-*send* 💸 Enviar sats ao bate-papo: `%s send <quantidade> [<memo>]`
-*receive* 🏅 Solicite um pagamento: `%s receive <quantidade> [<memo>]`.
-*faucet* 🚰 Criar uma torneira: `%s faucet <capacidade> <por_usuário>`.
+*send* 💸 Enviar sats ao bate-papo: `%s send <quantidade> [<usuário>] [<memo>]`
+*receive* 🏅 Solicite um pagamento: `%s receive <quantidade> [<usuário>] [<memo>]`.
+*faucet* 🚰 Criar uma torneira: `%s faucet <capacidade> <por_usuário> [<memo>]`.
 
 📖 Você pode usar comandos _inline_ em todas as conversas, mesmo em conversas privadas. Espere um segundo após inserir um comando _inline_ e *clique* no resultado, não pressione enter.
 

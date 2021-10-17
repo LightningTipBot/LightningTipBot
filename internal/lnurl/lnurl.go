@@ -126,7 +126,17 @@ func (w Server) serveLNURLpSecond(username string, amount int64, comment string)
 
 	// now check for the user
 	user := &lnbits.User{}
-	tx := w.database.Where("telegram_username = ?", strings.ToLower(username)).First(user)
+	// check if "username" is actually the user ID
+	id, err := strconv.Atoi(username)
+	tx := w.database
+	if err == nil {
+		// asume it's a user ID
+		tx = w.database.Where("telegram_id = ?", fmt.Sprint(id)).First(user)
+	} else {
+		// assume it's a string @username
+		tx = w.database.Where("telegram_username = ?", strings.ToLower(username)).First(user)
+	}
+
 	if tx.Error != nil {
 		return &lnurl.LNURLPayResponse2{
 			LNURLResponse: lnurl.LNURLResponse{

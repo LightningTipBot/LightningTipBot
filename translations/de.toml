@@ -109,9 +109,9 @@ helpNoUsernameMessage = """👋 Wähle einen Benutzernamen in den Telegram Einst
 advancedMessage = """%s
 
 👉 *Inline Befehle*
-*send* 💸 Sende sats an einen Chat: `%s send <betrag> [<memo>]`
-*receive* 🏅 Bitte um Zahlung: `%s receive <betrag> [<memo>]`
-*faucet* 🚰 Erzeuge einen Zapfhahn: `%s faucet <gesamt> <pro_user>`
+*send* 💸 Sende sats an einen Chat: `%s send <betrag> [<user>] [<memo>]`
+*receive* 🏅 Bitte um Zahlung: `%s receive <betrag> [<user>] [<memo>]`
+*faucet* 🚰 Erzeuge einen Zapfhahn: `%s faucet <gesamt> <pro_user> [<memo>]`
 
 📖 Du kannst Inline Befehle in jedem Chat verwenden, sogar in privaten Nachrichten. Warte eine Sekunde, nachdem du den Befehl eingegeben hast und *klicke* auf das Ergebnis, statt Enter einzugeben.
 

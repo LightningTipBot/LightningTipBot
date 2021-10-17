@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	lnurl "github.com/fiatjaf/go-lnurl"
@@ -117,14 +118,16 @@ func (bot *TipBot) UserGetLightningAddress(user *tb.User) (string, error) {
 	if len(user.Username) > 0 {
 		return fmt.Sprintf("%s@%s", strings.ToLower(user.Username), strings.ToLower(internal.Configuration.Bot.LNURLHostUrl.Hostname())), nil
 	} else {
-		return "", fmt.Errorf("user has no username")
+		return fmt.Sprintf("%s@%s", fmt.Sprint(user.ID), strings.ToLower(internal.Configuration.Bot.LNURLHostUrl.Hostname())), nil
+		// return "", fmt.Errorf("user has no username")
 	}
 }
 
 func UserGetLNURL(user *tb.User) (string, error) {
 	name := strings.ToLower(strings.ToLower(user.Username))
 	if len(name) == 0 {
-		return "", fmt.Errorf("user has no username.")
+		name = fmt.Sprint(user.ID)
+		// return "", fmt.Errorf("user has no username.")
 	}
 	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, name)
 	log.Debugf("[lnurlReceiveHandler] %s's LNURL: %s", GetUserStr(user), callback)

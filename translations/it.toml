@@ -109,9 +109,9 @@ helpNoUsernameMessage = """👋 Per favore imposta un nome utente Telegram."""
 advancedMessage = """%s
 
 👉 *Comandi in linea*
-*send* 💸 Invia alcuni sat a una chat: `%s send <ammontare> [<descrizione>]`
-*receive* 🏅 Richiedi un pagamento: `%s receive <ammontare> [<descrizione>]`
-*faucet* 🚰 Eroga fondi ai partecipanti della chat: `%s faucet <ammontare_totale> <per_utente>`
+*send* 💸 Invia alcuni sat a una chat: `%s send <ammontare> [<utente>] [<descrizione>]`
+*receive* 🏅 Richiedi un pagamento: `%s receive <ammontare> [<utente>] [<descrizione>]`
+*faucet* 🚰 Eroga fondi ai partecipanti della chat: `%s faucet <ammontare_totale> <per_utente> [<descrizione>]`
 
 📖 Puoi usare i comandi in linea in ogni chat, anche nelle conversazioni private. Attendi un secondo dopo aver inviato un comando in linea e *clicca* sull'azione desiderata, non premere invio.
 

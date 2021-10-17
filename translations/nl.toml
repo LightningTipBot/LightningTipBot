@@ -109,9 +109,9 @@ helpNoUsernameMessage = """👋 Stel alstublieft een Telegram gebruikersnaam in.
 advancedMessage = """%s
 
 👉 *Inline commands*
-*send* 💸 Stuur sats naar chat: `%s send <bedrag> [<memo>]`
-*receive* 🏅 Verzoek om betaling: `%s receive <bedrag> [<memo>]`
-*faucet* 🚰 Maak een kraan: `%s faucet <capacity> <per_user>`
+*send* 💸 Stuur sats naar chat: `%s send <bedrag> [<user>] [<memo>]`
+*receive* 🏅 Verzoek om betaling: `%s receive <bedrag> [<user>] [<memo>]`
+*faucet* 🚰 Maak een kraan: `%s faucet <capacity> <per_user> [<memo>]`
 
 📖 Je kunt inline commando's in elke chat gebruiken, zelfs in privé gesprekken. Wacht een seconde na het invoeren van een inline commando en *klik* op het resultaat, druk niet op enter.
 
