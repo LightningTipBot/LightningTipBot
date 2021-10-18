@@ -243,7 +243,7 @@ couldNotLinkMessage = """🚫 Tidak dapat menghubungkan dompet mu. Silakan coba 
 # FAUCET
 
 inlineQueryFaucetTitle        = """🚰 Membuat sebuah keran."""
-inlineQueryFaucetDescription  = """Penggunaan: @%s keran <kapasitas> <per_pengguna>"""
+inlineQueryFaucetDescription  = """Penggunaan: @%s faucet <kapasitas> <per_pengguna>"""
 inlineResultFaucetTitle       = """🚰 Buat sebuah keran %d sat."""
 inlineResultFaucetDescription = """👉 Pencet disini untuk membuat sebuah keran di percakapan ini."""
 
@@ -268,7 +268,7 @@ inlineFaucetHelpText                    = """📖 Waduh, itu tidak berhasil. %s
 # INLINE SEND
 
 inlineQuerySendTitle            = """💸 Kirimkan pembayaran ke sebuah  percakapan."""
-inlineQuerySendDescription      = """Penggunaan: @%s mengirim <jumlah> [<pengguna>] [<berita>]"""
+inlineQuerySendDescription      = """Penggunaan: @%s send <jumlah> [<pengguna>] [<berita>]"""
 inlineResultSendTitle           = """💸 Kirim %d sat."""
 inlineResultSendDescription     = """👉 Pencet untuk mengirim %d sat ke percakapan ini."""
 
@@ -284,7 +284,7 @@ inlineSendBalanceLowMessage    = """🚫 Saldo mu terlalu rendah."""
 # INLINE RECEIVE
 
 inlineQueryReceiveTitle        = """🏅 Meminta pembayaran dalam sebuah percakapan."""
-inlineQueryReceiveDescription  = """Penggunaan: @%s menerima <jumlah> [<pengguna>] [<berita>]"""
+inlineQueryReceiveDescription  = """Penggunaan: @%s receive <jumlah> [<pengguna>] [<berita>]"""
 inlineResultReceiveTitle       = """🏅 Menerima %d sat."""
 inlineResultReceiveDescription = """👉 Pencet untuk permintaan pembayaran sebesar %d sat."""
 
