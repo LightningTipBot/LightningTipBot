@@ -2,12 +2,14 @@ package telegram
 
 import (
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal"
 	"sync"
 	"time"
 
+	"github.com/LightningTipBot/LightningTipBot/internal"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/tucnak/telebot.v2"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -68,6 +70,7 @@ func (bot TipBot) initBotWallet() error {
 
 // Start will initialize the Telegram bot and lnbits.
 func (bot TipBot) Start() {
+	bot.MigrateUSerDBHash()
 	log.Infof("[Telegram] Authorized on account @%s", bot.Telegram.Me.Username)
 	// initialize the bot wallet
 	err := bot.initBotWallet()
@@ -76,4 +79,14 @@ func (bot TipBot) Start() {
 	}
 	bot.registerTelegramHandlers()
 	bot.Telegram.Start()
+}
+
+func (bot TipBot) MigrateUSerDBHash() {
+	users := []lnbits.User{}
+	_ = bot.Database.Find(&users)
+	for _, u := range users {
+		log.Info(u.ID, str.Int32Hash(u.ID))
+		u.AnonID = fmt.Sprint(str.Int32Hash(u.ID))
+		UpdateUserRecord(&u, bot)
+	}
 }

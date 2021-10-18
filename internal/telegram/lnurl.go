@@ -114,23 +114,23 @@ func (bot TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 	}
 }
 
-func (bot *TipBot) UserGetLightningAddress(user *tb.User) (string, error) {
-	if len(user.Username) > 0 {
-		return fmt.Sprintf("%s@%s", strings.ToLower(user.Username), strings.ToLower(internal.Configuration.Bot.LNURLHostUrl.Hostname())), nil
+func (bot *TipBot) UserGetLightningAddress(user *lnbits.User) (string, error) {
+	if len(user.Telegram.Username) > 0 {
+		return fmt.Sprintf("%s@%s", strings.ToLower(user.Telegram.Username), strings.ToLower(internal.Configuration.Bot.LNURLHostUrl.Hostname())), nil
 	} else {
-		return fmt.Sprintf("%s@%s", fmt.Sprint(user.ID), strings.ToLower(internal.Configuration.Bot.LNURLHostUrl.Hostname())), nil
+		return fmt.Sprintf("%s@%s", fmt.Sprint(user.AnonID), strings.ToLower(internal.Configuration.Bot.LNURLHostUrl.Hostname())), nil
 		// return "", fmt.Errorf("user has no username")
 	}
 }
 
-func UserGetLNURL(user *tb.User) (string, error) {
-	name := strings.ToLower(strings.ToLower(user.Username))
+func UserGetLNURL(user *lnbits.User) (string, error) {
+	name := strings.ToLower(strings.ToLower(user.Telegram.Username))
 	if len(name) == 0 {
-		name = fmt.Sprint(user.ID)
+		name = fmt.Sprint(user.AnonID)
 		// return "", fmt.Errorf("user has no username.")
 	}
 	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, name)
-	log.Debugf("[lnurlReceiveHandler] %s's LNURL: %s", GetUserStr(user), callback)
+	log.Debugf("[lnurlReceiveHandler] %s's LNURL: %s", GetUserStr(user.Telegram), callback)
 
 	lnurlEncode, err := lnurl.LNURLEncode(callback)
 	if err != nil {
@@ -141,7 +141,8 @@ func UserGetLNURL(user *tb.User) (string, error) {
 
 // lnurlReceiveHandler outputs the LNURL of the user
 func (bot TipBot) lnurlReceiveHandler(ctx context.Context, m *tb.Message) {
-	lnurlEncode, err := UserGetLNURL(m.Sender)
+	fromUser := LoadUser(ctx)
+	lnurlEncode, err := UserGetLNURL(fromUser)
 	if err != nil {
 		errmsg := fmt.Sprintf("[lnurlReceiveHandler] Failed to get LNURL: %s", err)
 		log.Errorln(errmsg)

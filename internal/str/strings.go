@@ -2,6 +2,7 @@ package str
 
 import (
 	"fmt"
+	"hash/fnv"
 	"strings"
 )
 
@@ -24,4 +25,16 @@ func MarkdownEscape(s string) string {
 		}
 	}
 	return s
+}
+
+func Int32Hash(s string) uint32 {
+	h := fnv.New32a()
+	h.Write([]byte(s))
+	return h.Sum32()
+}
+
+func Int64Hash(s string) uint64 {
+	h := fnv.New64a()
+	h.Write([]byte(s))
+	return h.Sum64()
 }

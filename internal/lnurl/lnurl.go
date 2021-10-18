@@ -131,7 +131,7 @@ func (w Server) serveLNURLpSecond(username string, amount int64, comment string)
 	tx := w.database
 	if err == nil {
 		// asume it's a user ID
-		tx = w.database.Where("telegram_id = ?", fmt.Sprint(id)).First(user)
+		tx = w.database.Where("anon_id = ?", fmt.Sprint(id)).First(user)
 	} else {
 		// assume it's a string @username
 		tx = w.database.Where("telegram_username = ?", strings.ToLower(username)).First(user)
