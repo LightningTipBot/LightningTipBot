@@ -1,0 +1,297 @@
+# COMMANDS
+
+helpCommandStr = """bantuan"""
+basicsCommandStr = """dasar"""
+tipCommandStr = """tip"""
+balanceCommandStr = """saldo"""
+sendCommandStr = """kirim"""
+invoiceCommandStr = """invoice"""
+payCommandStr = """bayar"""
+donateCommandStr = """donasi"""
+advancedCommandStr = """lanjutan"""
+transactionsCommandStr = """transaksi"""
+logCommandStr = """log"""
+listCommandStr = """daftar"""
+
+linkCommandStr = """link"""
+lnurlCommandStr = """lnurl"""
+faucetCommandStr = """keran"""
+
+tipjarCommandStr = """tipjar"""
+receiveCommandStr = """terima"""
+hideCommandStr = """sembunyikan"""
+volcanoCommandStr = """volcano"""
+showCommandStr = """munculkan"""
+optionsCommandStr = """pilihan"""
+settingsCommandStr = """pengaturan"""
+saveCommandStr = """simpan"""
+deleteCommandStr = """hapus"""
+infoCommandStr = """info"""
+
+# NOTIFICATIONS
+
+cantDoThatMessage = """Kamu tidak bisa melakukan itu."""
+cantClickMessage = """Kamu tidak dapat menekan tombol itu."""
+balanceTooLowMessage = """Saldo mu terlalu rendah."""
+
+# BUTTONS
+
+sendButtonMessage = """✅ Kirim"""
+payButtonMessage = """✅ Bayar"""
+payReceiveButtonMessage = """💸 Bayar"""
+receiveButtonMessage = """✅ Terima"""
+cancelButtonMessage = """🚫 Batal"""
+collectButtonMessage = """✅ Ambil"""
+nextButtonMessage = """Lanjut"""
+backButtonMessage = """Kembali"""
+acceptButtonMessage = """Setuju"""
+denyButtonMessage = """Tolak"""
+tipButtonMessage = """Tip"""
+revealButtonMessage = """Perlihatkan"""
+showButtonMessage = """Munculkan"""
+hideButtonMessage = """Sembunyikan"""
+joinButtonMessage = """Bergabung"""
+optionsButtonMessage = """Pilihan"""
+settingsButtonMessage = """Pengaturan"""
+saveButtonMessage = """Simpan"""
+deleteButtonMessage = """Hapus"""
+infoButtonMessage = """Info"""
+
+# HELP
+
+helpMessage = """⚡️ *Dompet*
+_Bot ini adalah sebuah dompet Bitcoin Lightning yang dapat mengirimkan tip melalui Telegram. Untuk memberi tip, tambahkan bot ke chat grup. Unit dasar dari tip adalah Satoshi (sat). 100,000,000 sat = 1 Bitcoin. Ketik 📚 /basics untuk informasi lebih banyak._
+
+❤️ *Donasi*
+_Bot ini tidak memungut biaya tapi memerlukan Satoshi untuk bekerja. Kalau kamu menyukai bot ini, tolong pertimbangkan mendukung proyek ini dengan donasi. Untuk melakukan donasi, pakai_ `/donate 1000`
+
+%s
+
+⚙️ *Commands*
+*/tip* 🏅 Membalas sebuah pesan untuk memberi tip: `/tip <jumlah> [<berita>]`
+*/balance* 👑 Memeriksa saldo mu: `/balance`
+*/send* 💸 Mengirim dana ke seorang pengguna: `/send <jumlah> @user or user@ln.tips [<berita>]`
+*/invoice* ⚡️ Menerima menggunakan Lightning: `/invoice <jumlah> [<berita>]`
+*/pay* ⚡️ Membayar dengan Lightning: `/pay <invoice>`
+*/donate* ❤️ Memberi donasi ke proyek: `/donate 1000`
+*/advanced* 🤖 Fitur lanjutan.
+*/help* 📖 Membaca daftar bantuan."""
+
+infoHelpMessage = """ℹ️ *Info*"""
+infoYourLightningAddress = """Alamat Lightning mu adalah `%s`"""
+
+basicsMessage = """🧡 *Bitcoin*
+_Bitcoin adalah mata uang dari internet. Tidak memerlukan ijin dan terdesentralisasi dan tidak memiliki penguasa dan tidak ada otoritas yang mengatur. Bitcoin adalah uang yang tangguh yang lebih cepat, lebih aman, dan lebih inklusif dibanding sistem keuangan tradisional._
+
+🧮 *Ekonomi*
+_Unit terkecil dari Bitcoin adalah Satoshi (sat) dan 100,000,000 sat = 1 Bitcoin. Hanya akan pernah ada 21 Juta Bitcoin. Nilai Bitcoin dalam mata uang fiat dapat berubah tiap hari. Namun, jika kamu hidup dalam sebuah standar Bitcoin maka 1 sat akan selalu sama dengan 1 sat._
+
+⚡️ *The Lightning Network*
+_Lightning Network adalah sebuah protokol pembayaran yang memungkinkan pembayaran Bitcoin dengan cepat dan murah yang memerlukan hampir tidak ada energi. Ini lah yang membesarkan skala Bitcoin ke milyaran orang diseluruh dunia._
+
+📲 *Lightning Wallets*
+_Dana mu di bot ini dapat dikirim ke dompet Lightning manapun lainnya dan kebalikannya. Rekomendasi dompet Lightning untuk handphone mu adalah_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), or_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(easy)_.
+
+📄 *Open Source*
+_Bot ini gratis dan merupakan perangkat lunak_ [open source](https://github.com/LightningTipBot/LightningTipBot) _. Kamu dapat menjalankannya di komputer mu sendiri dan menggunakannya di komunitas mu._
+
+✈️ *Telegram*
+_Tambahkan bot ini ke percakapan grup Telegram mu untuk /tip postingan. Jika kamu membuat bot ini sebagai admin maka akan membersihkan perintah untuk agar percakapan tetap rapi._
+
+🏛 *Persyaratan*
+_Kami tidak menyimpan dana mu. Kami akan bertindak yang terbaik untuk kamu namun kami juga sadar bahwa situasi tanpa KYC agak sulit sampai kami bisa memikirkan sesuatu. Berapa pun jumlah yang kamu masukkan ke dompet mu akan dianggap sebagai donasi. Jangan kirim ke kami semua uang mu.  Tolong sadar bahwa bot ini masih dalam perkembangan beta. Pergunakan lah dengan resiko mu sendiri._
+
+❤️ *Donasi*
+_Bot ini tidak memungut biaya tapi memerlukan Satoshi untuk bekerja. Kalau kamu menyukai bot ini, tolong pertimbangkan mendukung proyek ini dengan donasi. Untuk melakukan donasi, pakai_ `/donate 1000`"""
+
+helpNoUsernameMessage = """👋 Silakan mengatur nama pengguna untuk Telegram."""
+
+advancedMessage = """%s
+
+👉 *Sebaris perintah*
+*send* 💸 Kirim sats ke percakapan: `%s send <jumlah> [<berita>]`
+*receive* 🏅 Permintaan pembayaran: `%s receive <jumlah> [<berita>]`
+*faucet* 🚰 Membuat sebuah keran: `%s faucet <kapasitas> <per_pengguna>`
+
+📖 Kamu dapat menggunakan sebaris perintah di tiap percakapan, bahkan di percakapan privat. Tunggu sejenak setelah memasukkan sebaris perintah lalu *pencet* hasilnya, jangan tekan enter.
+
+⚙️ *Perintah lanjutan*
+*/link* 🔗 Menghubungkan dompet mu ke [BlueWallet](https://bluewallet.io/) atau [Zeus](https://zeusln.app/)
+*/lnurl* ⚡️ Lnurl menerima atau membayar: `/lnurl` atau `/lnurl <lnurl>`
+*/faucet* 🚰 Membuat sebuah keran `/faucet <kapasitas> <per_pengguna>`"""
+
+# START
+
+startSettingWalletMessage = """🧮 Sedang menyiapkan dompet mu..."""
+startWalletCreatedMessage = """🧮 Dompet sudah dibuat."""
+startWalletReadyMessage   = """✅ *Dompet mu sudah siap.*"""
+startWalletErrorMessage   = """🚫 Ada kesalahan dalam pembuatan dompet mu. Silakan coba lagi nanti."""
+startNoUsernameMessage    = """☝️ Kelihatannya kamu belum memiliki sebuah @username Telegram. Tidak apa-apa, kamu tidak memerlukan nya untuk menggunakan bot ini. Namun, agar dompet mu bisa lebih berguna, atur nama pengguna di pengaturan Telegram. Lalu, ketik /balance agar bot dapat memperbaharui catatan nya mengenai kamu."""
+
+# BALANCE
+
+balanceMessage      = """👑 *Saldo mu:* %d sat"""
+balanceErrorMessage = """🚫 Tidak dapat memeriksa saldo mu. Tolong coba lagi nanti."""
+
+# TIP
+
+tipDidYouReplyMessage = """Apakah kamu tadi membalas pesan untuk memberikan tip? Untuk membalas pesan mana pun, klik-kanan -> Ketik balasan pada komputer mu atau geser pesan yang ada di handphone mu. Jika kamu mau mengirimkan secara langsung, gunakan perintah /send ."""
+tipInviteGroupMessage = """ℹ️ Ngomong-ngomong, kamu bisa mengundang bot ini ke grup mana saja untuk mulai memberikan tip disana."""
+tipEnterAmountMessage = """Apakah kamu sudah memasukkan jumlah?"""
+tipValidAmountMessage = """Apakah kamu memasukkan jumlah yang benar?"""
+tipYourselfMessage    = """📖 Kamu tidak dapat memberi tip ke diri sendiri."""
+tipSentMessage        = """💸 %d sat terkirim ke %s."""
+tipReceivedMessage    = """🏅 %s telah memberi tip sebanyak %d sat."""
+tipErrorMessage       = """🚫 Pengiriman tip gagal."""
+tipUndefinedErrorMsg  = """Silakan coba lagi nanti."""
+tipHelpText           = """📖 Waduh, itu tidak berhasil. %s
+
+*Usage:* `/tip <jumlah> [<berita>]`
+*Example:* `/tip 1000 Makasih!`"""
+
+# SEND
+
+sendValidAmountMessage     = """Apakah kamu memasukkan jumlah yang benar?"""
+sendUserHasNoWalletMessage = """🚫 Pengguna %s belum membuat dompet."""
+sendSentMessage            = """💸 %d sat terkirim ke %s."""
+sendPublicSentMessage      = """💸 %d sat terkirim dari %s ke %s."""
+sendReceivedMessage        = """🏅 %s mengirimkan kamu %d sat."""
+sendErrorMessage           = """🚫 Pengiriman gagal."""
+confirmSendMessage         = """Apakah kamu ingin membayar ke %s?\n\n💸 Jumlah: %d sat"""
+confirmSendAppendMemo      = """\n✉️ %s"""
+sendCancelledMessage       = """🚫 Pengiriman dibatalkan."""
+errorTryLaterMessage       = """🚫 Error. Silakan coba lagi nanti."""
+sendSyntaxErrorMessage     = """Apakah kamu sudah memasukkan jumlah dan penerima? Kamu dapat menggunakan perintah /send untuk ke pengguna Telegram seperti %s atau ke alamat Lightning seperti LightningTipBot@ln.tips."""
+sendHelpText               = """📖 Waduh, itu tidak berhasil. %s
+
+*Usage:* `/send <jumlah> <pengguna> [<berita>]`
+*Example:* `/send 1000 @LightningTipBot Gampang botnya dipakai ❤️`
+*Example:* `/send 1234 LightningTipBot@ln.tips`"""
+
+# INVOICE
+
+invoiceReceivedMessage    = """⚡️ Kamu menerima %d sat."""
+invoiceEnterAmountMessage = """Apakah kamu sudah memasukkan jumlah?"""
+invoiceValidAmountMessage = """Apakah kamu memasukkan jumlah yang benar?"""
+invoiceHelpText           = """📖 Waduh, itu tidak berhasil. %s
+
+*Usage:* `/invoice <jumlah> [<berita>]`
+*Example:* `/invoice 1000 Makasih!`"""
+
+# PAY
+
+paymentCancelledMessage     = """🚫 Pembayaran dibatalkan."""
+invoicePaidMessage          = """⚡️ Pembayaran terkirim."""
+invoicePublicPaidMessage    = """⚡️ Pembayaran dikirim oleh %s."""
+invalidInvoiceHelpMessage    = """Apakah kamu memasukan invoice Lightning yang benar? Coba /send jika kamu mau mengirimkan ke pengguna Telegram atau alamat Lightning."""
+invoiceNoAmountMessage       = """🚫 Tidak dapat membayar invoice tanpa jumlah."""
+insufficientFundsMessage     = """🚫 Kekurangan dana. Kamu memiliki %d sat namun kamu memerlukan setidaknya %d sat."""
+feeReserveMessage            = """⚠️ Mengirimkan seluruh saldo bisa gagal karena adanya biaya jaringan. Jika gagal, coba jumlah kirimnya dikurangi sedikit."""
+invoicePaymentFailedMessage  = """🚫 Pembayaran gagal: %s"""
+invoiceUndefinedErrorMessage = """Tidak dapat membayar invoice."""
+confirmPayInvoiceMessage     = """Apakah kamu mau mengirimkan pembayaran ini?\n\n💸 Jumlah: %d sat"""
+confirmPayAppendMemo         = """\n✉️ %s"""
+payHelpText                  = """📖 Waduh, itu tidak berhasil. %s
+
+*Usage:* `/pay <invoice>`
+*Example:* `/pay lnbc20n1psscehd...`"""
+
+# DONATE
+
+donationSuccess          = """🙏 Terima kasih untuk donasi mu."""
+donationErrorMessage     = """🚫 Waduh. Donasi gagal."""
+donationProgressMessage  = """🧮 Menyiapkan donasi mu..."""
+donationFailedMessage    = """🚫 Donasi gagal: %s"""
+donateEnterAmountMessage = """Apakah kamu sudah memasukkan jumlah?"""
+donateValidAmountMessage = """Apakah kamu memasukkan jumlah yang benar?"""
+donateHelpText           = """📖 Waduh, itu tidak berhasil. %s
+
+*Usage:* `/donate <jumlah>`
+*Example:* `/donate 1000`"""
+
+# PHOTO
+
+photoQrNotRecognizedMessage = """🚫 Tidak dapat mengenali sebuah invoice Lightning invoice atau sebuah LNURL. Coba arahkan ke tengah QR code, potong foto kodenya, atau zoom in."""
+photoQrRecognizedMessage = """✅ QR code:
+`%s`"""
+
+# LNURL
+
+lnurlReceiveInfoText           = """👇 Kamu dapat menggunakan LNURL statis ini untuk menerima pembayaran."""
+lnurlResolvingUrlMessage       = """🧮 Menyelesaikan alamat..."""
+lnurlGettingUserMessage        = """🧮 Mempersiapkan pembayaran..."""
+lnurlPaymentFailed             = """🚫 Pembayaran gagal: %s"""
+lnurlInvalidAmountMessage      = """🚫 Jumlah tidak benar."""
+lnurlInvalidAmountRangeMessage = """🚫 Jumlah harus diantara %d dan %d sat."""
+lnurlNoUsernameMessage         = """🚫 Kamu harus mengatur nama pengguna Telegram untuk menerima pembayaran melalui LNURL."""
+lnurlEnterAmountMessage        = """⌨️ Masukkan jumlah diantara %d dan %d sat."""
+lnurlHelpText                  = """📖 Waduh, itu tidak berhasil. %s
+
+*Usage:* `/lnurl [jumlah] <lnurl>`
+*Example:* `/lnurl LNURL1DP68GUR...`"""
+
+# LINK
+
+walletConnectMessage = """🔗 *Hubungkan dompet mu*
+
+⚠️ Jangan pernah membagikan URL atau kode QR nya dengan siapa pun karena mereka akan bisa mengakses dana mu.
+
+- *BlueWallet:* Tekan *New wallet*, *Import wallet*, *Scan atau import a file*, lalu scan kode QR nya.
+- *Zeus:* Salin URL dibawah, tekan *Add a new node*, *Import* (URL nya), *Save Node Config*."""
+couldNotLinkMessage = """🚫 Tidak dapat menghubungkan dompet mu. Silakan coba lagi nanti."""
+
+# FAUCET
+
+inlineQueryFaucetTitle        = """🚰 Membuat sebuah keran."""
+inlineQueryFaucetDescription  = """Penggunaan: @%s keran <kapasitas> <per_pengguna>"""
+inlineResultFaucetTitle       = """🚰 Buat sebuah keran %d sat."""
+inlineResultFaucetDescription = """👉 Pencet disini untuk membuat sebuah keran di percakapan ini."""
+
+inlineFaucetMessage                     = """Tekan ✅ untuk mengambil %d sat dari keran ini.
+
+🚰 Tersisa: %d/%d sat (diberikan kepada %d/%d pengguna)
+%s"""
+inlineFaucetEndedMessage                = """🚰 Keran kosong 🍺\n\n🏅 %d sat diberikan kepada %d pengguna."""
+inlineFaucetAppendMemo                  = """\n✉️ %s"""
+inlineFaucetCreateWalletMessage         = """Bercakap dengan %s 👈 untuk mengelola dompet mu."""
+inlineFaucetCancelledMessage            = """🚫 Keran dibatalkan."""
+inlineFaucetInvalidPeruserAmountMessage = """🚫 Jumlah untuk tiap pengguna tidak terbagi dari kapasitas."""
+inlineFaucetInvalidAmountMessage        = """🚫 Jumlah tidak benar."""
+inlineFaucetSentMessage                 = """🚰 %d sat terkirim ke %s."""
+inlineFaucetReceivedMessage             = """🚰 %s mengirimkan kamu %d sat."""
+inlineFaucetHelpFaucetInGroup           = """Buat sebuah keran dalam sebuah grup dengan bot nya didalam atau gunakan 👉 perintah sebaris (/advanced untuk lebih lagi)."""
+inlineFaucetHelpText                    = """📖 Waduh, itu tidak berhasil. %s
+
+*Usage:* `/faucet <kapasitas> <per_pengguna>`
+*Example:* `/faucet 210 21`"""
+
+# INLINE SEND
+
+inlineQuerySendTitle            = """💸 Kirimkan pembayaran ke sebuah  percakapan."""
+inlineQuerySendDescription      = """Penggunaan: @%s mengirim <jumlah> [<pengguna>] [<berita>]"""
+inlineResultSendTitle           = """💸 Kirim %d sat."""
+inlineResultSendDescription     = """👉 Pencet untuk mengirim %d sat ke percakapan ini."""
+
+inlineSendMessage              = """Tekan ✅ untuk menerima pembayaran dari %s.\n\n💸 Jumlah: %d sat"""
+inlineSendAppendMemo           = """\n✉️ %s"""
+inlineSendUpdateMessageAccept  = """💸 %d sat terkirim dari %s ke %s."""
+inlineSendCreateWalletMessage  = """Bercakap dengan %s 👈 untuk mengelola dompet mu."""
+sendYourselfMessage            = """📖 Kamu tidak dapat membayar diri mu sendiri."""
+inlineSendFailedMessage        = """🚫 Pengiriman tidak berhasil."""
+inlineSendInvalidAmountMessage = """🚫 Jumlah harus lebih besar dari 0."""
+inlineSendBalanceLowMessage    = """🚫 Saldo mu terlalu rendah."""
+
+# INLINE RECEIVE
+
+inlineQueryReceiveTitle        = """🏅 Meminta pembayaran dalam sebuah percakapan."""
+inlineQueryReceiveDescription  = """Penggunaan: @%s menerima <jumlah> [<pengguna>] [<berita>]"""
+inlineResultReceiveTitle       = """🏅 Menerima %d sat."""
+inlineResultReceiveDescription = """👉 Pencet untuk permintaan pembayaran sebesar %d sat."""
+
+inlineReceiveMessage             = """Tekan 💸 untuk membayar ke %s.\n\n💸 Jumlah: %d sat"""
+inlineReceiveAppendMemo          = """\n✉️ %s"""
+inlineReceiveUpdateMessageAccept = """💸 %d sat terkirim oleh %s ke %s."""
+inlineReceiveCreateWalletMessage = """Bercakap dengan %s 👈 untuk mengelola dompet mu."""
+inlineReceiveYourselfMessage     = """📖 Kamu tidak dapat membayar diri mu sendiri."""
+inlineReceiveFailedMessage       = """🚫 Penerimaan gagal."""
+inlineReceiveCancelledMessage    = """🚫 Penerimaan dibatalkan."""
