@@ -1,0 +1,297 @@
+# COMMANDS
+
+helpCommandStr = """help"""
+basicsCommandStr = """basics"""
+tipCommandStr = """tip"""
+balanceCommandStr = """balance"""
+sendCommandStr = """send"""
+invoiceCommandStr = """invoice"""
+payCommandStr = """pay"""
+donateCommandStr = """donate"""
+advancedCommandStr = """advanced"""
+transactionsCommandStr = """transactions"""
+logCommandStr = """log"""
+listCommandStr = """list"""
+
+linkCommandStr = """link"""
+lnurlCommandStr = """lnurl"""
+faucetCommandStr = """faucet"""
+
+tipjarCommandStr = """tipjar"""
+receiveCommandStr = """receive"""
+hideCommandStr = """hide"""
+volcanoCommandStr = """volcano"""
+showCommandStr = """show"""
+optionsCommandStr = """options"""
+settingsCommandStr = """settings"""
+saveCommandStr = """save"""
+deleteCommandStr = """delete"""
+infoCommandStr = """info"""
+
+# NOTIFICATIONS
+
+cantDoThatMessage = """You can't do that."""
+cantClickMessage = """You can't click this button."""
+balanceTooLowMessage = """Your balance is too low."""
+
+# BUTTONS
+
+sendButtonMessage = """✅ Send"""
+payButtonMessage = """✅ Pay"""
+payReceiveButtonMessage = """💸 Pay"""
+receiveButtonMessage = """✅ Receive"""
+cancelButtonMessage = """🚫 Cancel"""
+collectButtonMessage = """✅ Collect"""
+nextButtonMessage = """Next"""
+backButtonMessage = """Back"""
+acceptButtonMessage = """Accept"""
+denyButtonMessage = """Deny"""
+tipButtonMessage = """Tip"""
+revealButtonMessage = """Reveal"""
+showButtonMessage = """Show"""
+hideButtonMessage = """Hide"""
+joinButtonMessage = """Join"""
+optionsButtonMessage = """Options"""
+settingsButtonMessage = """Settings"""
+saveButtonMessage = """Save"""
+deleteButtonMessage = """Delete"""
+infoButtonMessage = """Info"""
+
+# HELP
+
+helpMessage = """⚡️ *Wallet*
+_This bot is a Bitcoin Lightning wallet that can sends tips on Telegram. To tip, add the bot to a group chat. The basic unit of tips are Satoshis (sat). 100,000,000 sat = 1 Bitcoin. Type 📚 /basics for more._
+
+❤️ *Donate*
+_This bot charges no fees but costs Satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/donate 1000`
+
+%s
+
+⚙️ *Commands*
+*/tip* 🏅 Reply to a message to tip: `/tip <amount> [<memo>]`
+*/balance* 👑 Check your balance: `/balance`
+*/send* 💸 Send funds to a user: `/send <amount> @user or user@ln.tips [<memo>]`
+*/invoice* ⚡️ Receive with Lightning: `/invoice <amount> [<memo>]`
+*/pay* ⚡️ Pay with Lightning: `/pay <invoice>`
+*/donate* ❤️ Donate to the project: `/donate 1000`
+*/advanced* 🤖 Advanced features.
+*/help* 📖 Read this help."""
+
+infoHelpMessage = """ℹ️ *Info*"""
+infoYourLightningAddress = """Your Lightning Address is `%s`"""
+
+basicsMessage = """🧡 *Bitcoin*
+_Bitcoin is the currency of the internet. It is permissionless and decentralized and has no masters and no controling authority. Bitcoin is sound money that is faster, more secure, and more inclusive than the legacy financial system._
+
+🧮 *Economnics*
+_The smallest unit of Bitcoin are Satoshis (sat) and 100,000,000 sat = 1 Bitcoin. There will only ever be 21 Million Bitcoin. The fiat currency value of Bitcoin can change daily. However, if you live on a Bitcoin standard 1 sat will always equal 1 sat._
+
+⚡️ *The Lightning Network*
+_The Lightning Network is a payment protocol that enables fast and cheap Bitcoin payments that require almost no energy. It is what scales Bitcoin to the billions of people around the world._
+
+📲 *Lightning Wallets*
+_Your funds on this bot can be sent to any other Lightning wallet and vice versa. Recommended Lightning wallets for your phone are_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), or_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(easy)_.
+
+📄 *Open Source*
+_This bot is free and_ [open source](https://github.com/LightningTipBot/LightningTipBot) _software. You can run it on your own computer and use it in your own community._
+
+✈️ *Telegram*
+_Add this bot to your Telegram group chat to /tip posts. If you make the bot admin of the group it will also clean up commands to keep the chat tidy._
+
+🏛 *Terms*
+_We are not custodian of your funds. We will act in your best interest but we're also aware that the situation without KYC is tricky until we figure something out. Any amount you load onto your wallet will be considered a donation. Do not give us all your money.  Be aware that this bot is in beta development. Use at your own risk._
+
+❤️ *Donate*
+_This bot charges no fees but costs satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/donate 1000`"""
+
+helpNoUsernameMessage = """👋 Please, set a Telegram username."""
+
+advancedMessage = """%s
+
+👉 *Inline commands*
+*send* 💸 Send sats to chat: `%s send <amount> [<user>] [<memo>]`
+*receive* 🏅 Request a payment: `%s receive <amount> [<user>] [<memo>]`
+*faucet* 🚰 Create a faucet: `%s faucet <capacity> <per_user> [<memo>]`
+
+📖 You can use inline commands in every chat, even in private conversations. Wait a second after entering an inline command and *click* the result, don't press enter.
+
+⚙️ *Advanced commands*
+*/link* 🔗 Link your wallet to [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)
+*/lnurl* ⚡️ Lnurl receive or pay: `/lnurl` or `/lnurl <lnurl>`
+*/faucet* 🚰 Create a faucet `/faucet <capacity> <per_user>`"""
+
+# START
+
+startSettingWalletMessage = """🧮 Setting up your wallet..."""
+startWalletCreatedMessage = """🧮 Wallet created."""
+startWalletReadyMessage   = """✅ *Your wallet is ready.*"""
+startWalletErrorMessage   = """🚫 Error initializing your wallet. Try again later."""
+startNoUsernameMessage    = """☝️ It looks like you don't have a Telegram @username yet. That's ok, you don't need one to use this bot. However, to make better use of your wallet, set up a username in the Telegram settings. Then, enter /balance so the bot can update its record of you."""
+
+# BALANCE
+
+balanceMessage      = """👑 *Your balance:* %d sat"""
+balanceErrorMessage = """🚫 Could not fetch your balance. Please try again later."""
+
+# TIP
+
+tipDidYouReplyMessage = """Did you reply to a message to tip? To reply to any message, right-click -> Reply on your computer or swipe the message on your phone. If you want to send directly to another user, use the /send command."""
+tipInviteGroupMessage = """ℹ️ By the way, you can invite this bot to any group to start tipping there."""
+tipEnterAmountMessage = """Did you enter an amount?"""
+tipValidAmountMessage = """Did you enter a valid amount?"""
+tipYourselfMessage    = """📖 You can't tip yourself."""
+tipSentMessage        = """💸 %d sat sent to %s."""
+tipReceivedMessage    = """🏅 %s has tipped you %d sat."""
+tipErrorMessage       = """🚫 Tip failed."""
+tipUndefinedErrorMsg  = """please try again later."""
+tipHelpText           = """📖 Oops, that didn't work. %s
+
+*Usage:* `/tip <amount> [<memo>]`
+*Example:* `/tip 1000 Dank meme!`"""
+
+# SEND
+
+sendValidAmountMessage     = """Did you enter a valid amount?"""
+sendUserHasNoWalletMessage = """🚫 User %s hasn't created a wallet yet."""
+sendSentMessage            = """💸 %d sat sent to %s."""
+sendPublicSentMessage      = """💸 %d sat sent from %s to %s."""
+sendReceivedMessage        = """🏅 %s sent you %d sat."""
+sendErrorMessage           = """🚫 Send failed."""
+confirmSendMessage         = """Do you want to pay to %s?\n\n💸 Amount: %d sat"""
+confirmSendAppendMemo      = """\n✉️ %s"""
+sendCancelledMessage       = """🚫 Send cancelled."""
+errorTryLaterMessage       = """🚫 Error. Please try again later."""
+sendSyntaxErrorMessage     = """Did you enter an amount and a recipient? You can use the /send command to either send to Telegram users like %s or to a Lightning address like LightningTipBot@ln.tips."""
+sendHelpText               = """📖 Oops, that didn't work. %s
+
+*Usage:* `/send <amount> <user> [<memo>]`
+*Example:* `/send 1000 @LightningTipBot I just like the bot ❤️`
+*Example:* `/send 1234 LightningTipBot@ln.tips`"""
+
+# INVOICE
+
+invoiceReceivedMessage    = """⚡️ You received %d sat."""
+invoiceEnterAmountMessage = """Did you enter an amount?"""
+invoiceValidAmountMessage = """Did you enter a valid amount?"""
+invoiceHelpText           = """📖 Oops, that didn't work. %s
+
+*Usage:* `/invoice <amount> [<memo>]`
+*Example:* `/invoice 1000 Thank you!`"""
+
+# PAY
+
+paymentCancelledMessage     = """🚫 Payment cancelled."""
+invoicePaidMessage          = """⚡️ Payment sent."""
+invoicePublicPaidMessage    = """⚡️ Payment sent by %s."""
+invalidInvoiceHelpMessage    = """Did you enter a valid Lightning invoice? Try /send if you want to send to a Telegram user or Lightning address."""
+invoiceNoAmountMessage       = """🚫 Can't pay invoices without an amount."""
+insufficientFundsMessage     = """🚫 Insufficient funds. You have %d sat but you need at least %d sat."""
+feeReserveMessage            = """⚠️ Sending your entire balance might fail because of network fees. If it fails, try sending a bit less."""
+invoicePaymentFailedMessage  = """🚫 Payment failed: %s"""
+invoiceUndefinedErrorMessage = """Could not pay invoice."""
+confirmPayInvoiceMessage     = """Do you want to send this payment?\n\n💸 Amount: %d sat"""
+confirmPayAppendMemo         = """\n✉️ %s"""
+payHelpText                  = """📖 Oops, that didn't work. %s
+
+*Usage:* `/pay <invoice>`
+*Example:* `/pay lnbc20n1psscehd...`"""
+
+# DONATE
+
+donationSuccess          = """🙏 Thank you for your donation."""
+donationErrorMessage     = """🚫 Oh no. Donation failed."""
+donationProgressMessage  = """🧮 Preparing your donation..."""
+donationFailedMessage    = """🚫 Donation failed: %s"""
+donateEnterAmountMessage = """Did you enter an amount?"""
+donateValidAmountMessage = """Did you enter a valid amount?"""
+donateHelpText           = """📖 Oops, that didn't work. %s
+
+*Usage:* `/donate <amount>`
+*Example:* `/donate 1000`"""
+
+# PHOTO
+
+photoQrNotRecognizedMessage = """🚫 Could not regocognize a Lightning invoice or an LNURL. Try to center the QR code, crop the photo, or zoom in."""
+photoQrRecognizedMessage = """✅ QR code:
+`%s`"""
+
+# LNURL
+
+lnurlReceiveInfoText           = """👇 You can use this static LNURL to receive payments."""
+lnurlResolvingUrlMessage       = """🧮 Resolving address..."""
+lnurlGettingUserMessage        = """🧮 Preparing payment..."""
+lnurlPaymentFailed             = """🚫 Payment failed: %s"""
+lnurlInvalidAmountMessage      = """🚫 Invalid amount."""
+lnurlInvalidAmountRangeMessage = """🚫 Amount must be between %d and %d sat."""
+lnurlNoUsernameMessage         = """🚫 You need to set a Telegram username to receive payments via LNURL."""
+lnurlEnterAmountMessage        = """⌨️ Enter an amount between %d and %d sat."""
+lnurlHelpText                  = """📖 Oops, that didn't work. %s
+
+*Usage:* `/lnurl [amount] <lnurl>`
+*Example:* `/lnurl LNURL1DP68GUR...`"""
+
+# LINK
+
+walletConnectMessage = """🔗 *Link your wallet*
+
+⚠️ Never share the URL or the QR code with anyone or they will be able to access your funds.
+
+- *BlueWallet:* Press *New wallet*, *Import wallet*, *Scan or import a file*, and scan the QR code.
+- *Zeus:* Copy the URL below, press *Add a new node*, *Import* (the URL), *Save Node Config*."""
+couldNotLinkMessage = """🚫 Couldn't link your wallet. Please try again later."""
+
+# FAUCET
+
+inlineQueryFaucetTitle        = """🚰 Create a faucet."""
+inlineQueryFaucetDescription  = """Usage: @%s faucet <capacity> <per_user>"""
+inlineResultFaucetTitle       = """🚰 Create a %d sat faucet."""
+inlineResultFaucetDescription = """👉 Click here to create a faucet in this chat."""
+
+inlineFaucetMessage                     = """Press ✅ to collect %d sat from this faucet.
+
+🚰 Remaining: %d/%d sat (given to %d/%d users)
+%s"""
+inlineFaucetEndedMessage                = """🚰 Faucet empty 🍺\n\n🏅 %d sat given to %d users."""
+inlineFaucetAppendMemo                  = """\n✉️ %s"""
+inlineFaucetCreateWalletMessage         = """Chat with %s 👈 to manage your wallet."""
+inlineFaucetCancelledMessage            = """🚫 Faucet cancelled."""
+inlineFaucetInvalidPeruserAmountMessage = """🚫 Peruser amount not divisor of capacity."""
+inlineFaucetInvalidAmountMessage        = """🚫 Invalid amount."""
+inlineFaucetSentMessage                 = """🚰 %d sat sent to %s."""
+inlineFaucetReceivedMessage             = """🚰 %s sent you %d sat."""
+inlineFaucetHelpFaucetInGroup           = """Create a faucet in a group with the bot inside or use 👉 inline command (/advanced for more)."""
+inlineFaucetHelpText                    = """📖 Oops, that didn't work. %s
+
+*Usage:* `/faucet <capacity> <per_user>`
+*Example:* `/faucet 210 21`"""
+
+# INLINE SEND
+
+inlineQuerySendTitle            = """💸 Send payment to a chat."""
+inlineQuerySendDescription      = """Usage: @%s send <amount> [<user>] [<memo>]"""
+inlineResultSendTitle           = """💸 Send %d sat."""
+inlineResultSendDescription     = """👉 Click to send %d sat to this chat."""
+
+inlineSendMessage              = """Press ✅ to receive payment from %s.\n\n💸 Amount: %d sat"""
+inlineSendAppendMemo           = """\n✉️ %s"""
+inlineSendUpdateMessageAccept  = """💸 %d sat sent from %s to %s."""
+inlineSendCreateWalletMessage  = """Chat with %s 👈 to manage your wallet."""
+sendYourselfMessage            = """📖 You can't pay to yourself."""
+inlineSendFailedMessage        = """🚫 Send failed."""
+inlineSendInvalidAmountMessage = """🚫 Amount must be larger than 0."""
+inlineSendBalanceLowMessage    = """🚫 Your balance is too low."""
+
+# INLINE RECEIVE
+
+inlineQueryReceiveTitle        = """🏅 Request a payment in a chat."""
+inlineQueryReceiveDescription  = """Usage: @%s receive <amount> [<user>] [<memo>]"""
+inlineResultReceiveTitle       = """🏅 Receive %d sat."""
+inlineResultReceiveDescription = """👉 Click to request a payment of %d sat."""
+
+inlineReceiveMessage             = """Press 💸 to pay to %s.\n\n💸 Amount: %d sat"""
+inlineReceiveAppendMemo          = """\n✉️ %s"""
+inlineReceiveUpdateMessageAccept = """💸 %d sat sent from %s to %s."""
+inlineReceiveCreateWalletMessage = """Chat with %s 👈 to manage your wallet."""
+inlineReceiveYourselfMessage     = """📖 You can't pay to yourself."""
+inlineReceiveFailedMessage       = """🚫 Receive failed."""
+inlineReceiveCancelledMessage    = """🚫 Receive cancelled."""
