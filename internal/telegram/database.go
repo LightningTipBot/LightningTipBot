@@ -38,7 +38,7 @@ func createBunt() *storage.DB {
 
 func UserDbMigrations(db *gorm.DB) {
 	// db.Migrator().DropColumn(&lnbits.User{}, "anon_id")
-	if !db.Migrator().HasColumn(&lnbits.User{}, "anon_id") {
+	if db.Migrator().HasColumn(&lnbits.User{}, "anon_id") {
 		log.Info("Running user database migrations ...")
 		database.MigrateUSerDBHash(db)
 		log.Info("User database migrations complete.")
