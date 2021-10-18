@@ -3,8 +3,9 @@ package telegram
 import (
 	"errors"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	log "github.com/sirupsen/logrus"
@@ -78,15 +79,15 @@ func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int, err error) {
 	return
 }
 
-// copyLowercaseUser will create a coy user and cast username to lowercase.
-func (bot *TipBot) copyLowercaseUser(u *tb.User) *tb.User {
+// CopyLowercaseUser will create a coy user and cast username to lowercase.
+func (bot *TipBot) CopyLowercaseUser(u *tb.User) *tb.User {
 	userCopy := *u
 	userCopy.Username = strings.ToLower(u.Username)
 	return &userCopy
 }
 
 func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) (*lnbits.User, error) {
-	userCopy := bot.copyLowercaseUser(tbUser)
+	userCopy := bot.CopyLowercaseUser(tbUser)
 	user := &lnbits.User{Telegram: userCopy}
 	userStr := GetUserStr(tbUser)
 	log.Printf("[CreateWalletForTelegramUser] Creating wallet for user %s ... ", userStr)

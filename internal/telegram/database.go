@@ -2,13 +2,15 @@ package telegram
 
 import (
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage"
-	"github.com/tidwall/buntdb"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal"
+	"github.com/LightningTipBot/LightningTipBot/internal/database"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"github.com/tidwall/buntdb"
 
 	log "github.com/sirupsen/logrus"
 
@@ -33,20 +35,31 @@ func createBunt() *storage.DB {
 	}
 	return bunt
 }
-func migration() (db *gorm.DB, txLogger *gorm.DB) {
-	txLogger, err := gorm.Open(sqlite.Open(internal.Configuration.Database.TransactionsPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
-	if err != nil {
-		panic("Initialize orm failed.")
-	}
 
+func UserDbMigrations(db *gorm.DB) {
+	// db.Migrator().DropColumn(&lnbits.User{}, "anon_id")
+	if !db.Migrator().HasColumn(&lnbits.User{}, "anon_id") {
+		log.Info("Running user database migrations ...")
+		database.MigrateUSerDBHash(db)
+		log.Info("User database migrations complete.")
+	}
+}
+
+func AutoMigration() (db *gorm.DB, txLogger *gorm.DB) {
 	orm, err := gorm.Open(sqlite.Open(internal.Configuration.Database.DbPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
 	if err != nil {
 		panic("Initialize orm failed.")
 	}
-
 	err = orm.AutoMigrate(&lnbits.User{})
 	if err != nil {
 		panic(err)
+	}
+	// db migrations that are due to updates to the bot
+	UserDbMigrations(orm)
+
+	txLogger, err = gorm.Open(sqlite.Open(internal.Configuration.Database.TransactionsPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
+	if err != nil {
+		panic("Initialize orm failed.")
 	}
 	err = txLogger.AutoMigrate(&Transaction{})
 	if err != nil {
@@ -93,7 +106,7 @@ func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 		return user, err
 	}
 	go func() {
-		userCopy := bot.copyLowercaseUser(u)
+		userCopy := bot.CopyLowercaseUser(u)
 		if !reflect.DeepEqual(userCopy, user.Telegram) {
 			// update possibly changed user details in Database
 			user.Telegram = userCopy
@@ -107,7 +120,7 @@ func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 }
 
 func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
-	user.Telegram = bot.copyLowercaseUser(user.Telegram)
+	user.Telegram = bot.CopyLowercaseUser(user.Telegram)
 	user.UpdatedAt = time.Now()
 	tx := bot.Database.Save(user)
 	if tx.Error != nil {

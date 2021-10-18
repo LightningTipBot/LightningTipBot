@@ -56,7 +56,8 @@ func (bot TipBot) makeAdvancedHelpMessage(ctx context.Context, m *tb.Message) st
 		// return fmt.Sprintf(helpMessage, fmt.Sprintf("%s\n\n", helpNoUsernameMessage))
 		dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("%s", Translate(ctx, "helpNoUsernameMessage")) + "\n"
 	}
-	lnaddr, err := bot.UserGetLightningAddress(fromUser)
+	// we print the anonymous ln address in the advanced help
+	lnaddr, err := bot.UserGetAnonLightningAddress(fromUser)
 	if err == nil {
 		dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("Lightning Address: `%s`\n", lnaddr)
 	}
