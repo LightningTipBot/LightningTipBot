@@ -30,108 +30,108 @@ infoCommandStr = """info"""
 
 # NOTIFICATIONS
 
-cantDoThatMessage = """You can't do that."""
-cantClickMessage = """You can't click this button."""
-balanceTooLowMessage = """Your balance is too low."""
+cantDoThatMessage = """شما نمی توانید این کار را انجام دهید."""
+cantClickMessage = """این کلید برای شما قابل کلیک نیست."""
+balanceTooLowMessage = """موجودی شما کافی نیست."""
 
 # BUTTONS
 
-sendButtonMessage = """✅ Send"""
-payButtonMessage = """✅ Pay"""
-payReceiveButtonMessage = """💸 Pay"""
-receiveButtonMessage = """✅ Receive"""
-cancelButtonMessage = """🚫 Cancel"""
-collectButtonMessage = """✅ Collect"""
-nextButtonMessage = """Next"""
-backButtonMessage = """Back"""
-acceptButtonMessage = """Accept"""
-denyButtonMessage = """Deny"""
-tipButtonMessage = """Tip"""
-revealButtonMessage = """Reveal"""
-showButtonMessage = """Show"""
-hideButtonMessage = """Hide"""
-joinButtonMessage = """Join"""
-optionsButtonMessage = """Options"""
-settingsButtonMessage = """Settings"""
-saveButtonMessage = """Save"""
-deleteButtonMessage = """Delete"""
-infoButtonMessage = """Info"""
+sendButtonMessage = """ارسال ✅ """
+payButtonMessage = """پرداخت ✅"""
+payReceiveButtonMessage = """پرداخت 💸"""
+receiveButtonMessage = """دریافت ✅"""
+cancelButtonMessage = """لغو 🚫"""
+collectButtonMessage = """برداشت ✅"""
+nextButtonMessage = """بعدی"""
+backButtonMessage = """قبلی"""
+acceptButtonMessage = """تایید"""
+denyButtonMessage = """تکذیب"""
+tipButtonMessage = """Tip (_دستخوش_)"""
+revealButtonMessage = """آشکارسازی"""
+showButtonMessage = """نمایش"""
+hideButtonMessage = """مخفی سازی"""
+joinButtonMessage = """عضویت"""
+optionsButtonMessage = """سایر گزینه ها"""
+settingsButtonMessage = """تنظیمات"""
+saveButtonMessage = """ذخیره"""
+deleteButtonMessage = """حذف"""
+infoButtonMessage = """اطلاعات"""
 
 # HELP
 
-helpMessage = """⚡️ *Wallet*
-_This bot is a Bitcoin Lightning wallet that can sends tips on Telegram. To tip, add the bot to a group chat. The basic unit of tips are Satoshis (sat). 100,000,000 sat = 1 Bitcoin. Type 📚 /basics for more._
+helpMessage = """⚡️ *کیف پول*
+_این بات یک والت لایتنینگی بیتکوین هست که امکان ارسال تیپ(_دستخوش_) بر بستر تلگرام را فراهم میکند. کافیه بات را به گروه اضافه کنید. واحد مرسوم مورد استفاده ساتوشی(sat) است.    100,000,000ساتوشی = 1بیتکوین. برای اطلاعات بیشتر  📚 /basics را تایپ کنید._
 
-❤️ *Donate*
-_This bot charges no fees but costs Satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/donate 1000`
+❤️ *کمک مالی*
+_این بات کارمزد تراکنش نمیگیرد اما برای ادامه فعالیت ساتوشی نیاز دارد. اگر این بات و دوست دارید.لطفا حمایت از پروژه به وسیله کمک مالی را در نظر داشته باشید. برای ارسال کمک مالی:_  `/donate <مقدار>`
 
 %s
 
 ⚙️ *Commands*
-*/tip* 🏅 Reply to a message to tip: `/tip <amount> [<memo>]`
-*/balance* 👑 Check your balance: `/balance`
-*/send* 💸 Send funds to a user: `/send <amount> @user or user@ln.tips [<memo>]`
-*/invoice* ⚡️ Receive with Lightning: `/invoice <amount> [<memo>]`
-*/pay* ⚡️ Pay with Lightning: `/pay <invoice>`
-*/donate* ❤️ Donate to the project: `/donate 1000`
-*/advanced* 🤖 Advanced features.
-*/help* 📖 Read this help."""
+*/tip* 🏅 برای ارسال تیپ یک پیام را ریپلای کنید: `/tip <مقدار> [<memo>]`
+*/balance* 👑 چک کردن موجودی: `/balance`
+*/send* 💸 ارسال ساتوشی به یوزر یا لایتنینگ آدرس: `/send <مقدار> @user or user@ln.tips [<memo>]`
+*/invoice* ⚡️دریافت با لایتنینگ اینوویس: `/invoice <مقدار> [<memo>]`
+*/pay* ⚡️ پرداخت لایتنینگ اینوویس: `/pay <invoice>`
+*/donate* ❤️ کمک مالی به پروژه: `/donate 1000`
+*/advanced* 🤖 قابلیت های پیشرفته.
+*/help* 📖 این راهنما را مطالعه کنید."""
 
 infoHelpMessage = """ℹ️ *Info*"""
 infoYourLightningAddress = """Your Lightning Address is `%s`"""
 
-basicsMessage = """🧡 *Bitcoin*
-_Bitcoin is the currency of the internet. It is permissionless and decentralized and has no masters and no controling authority. Bitcoin is sound money that is faster, more secure, and more inclusive than the legacy financial system._
+basicsMessage = """🧡 *بیتکوین*
+_بیتکوین پول اینترنت است. بدون احتیاج به مجوز و غیرمتمرکز است و نه رییسی دارد و نه نهاد تصمیم گیری. بیتکوین پول سالم است. سریعتر و  امن تر از سیستم های پولی سنتی._
 
-🧮 *Economnics*
-_The smallest unit of Bitcoin are Satoshis (sat) and 100,000,000 sat = 1 Bitcoin. There will only ever be 21 Million Bitcoin. The fiat currency value of Bitcoin can change daily. However, if you live on a Bitcoin standard 1 sat will always equal 1 sat._
+🧮 *اقتصاد*
+_کوچکترین واحد بیتکوین ساتوشی است و هر یک بیتکوین از صد میلیون ساتوشی تشکیل شده. تعداد کل بیتکوین های که ماین میشود فقط 21میلیون است. ارزش دلاری بیتکوین روزانه در حال نوسان است. هرچند اگر با استاندارد بیتکوین زندگی کنید یک ساتوشی همیشه برابر یک ساتوشی است._
 
-⚡️ *The Lightning Network*
-_The Lightning Network is a payment protocol that enables fast and cheap Bitcoin payments that require almost no energy. It is what scales Bitcoin to the billions of people around the world._
+⚡️ *شبکه لایتنینگ*
+_شبکه لایتنینگ یک پروتکل پرداختی است که امکان پرداخت های ارزان و سریع را برای ما فراهم میکند. که بیتکوین را برای میلیاردها نفر مقیاس پذیر می کند._
 
-📲 *Lightning Wallets*
-_Your funds on this bot can be sent to any other Lightning wallet and vice versa. Recommended Lightning wallets for your phone are_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), or_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(easy)_.
+📲 *والت های لایتنینگی*
+_دارایی های شما میتواند به دیگر والت های لایتنینگی ارسال و دریافت شود به وسیله این بات. والت های لایتنینگی پیشنهادی ما برای شما:_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (غیرامانی), or_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(ساده)_.
 
-📄 *Open Source*
-_This bot is free and_ [open source](https://github.com/LightningTipBot/LightningTipBot) _software. You can run it on your own computer and use it in your own community._
+📄 *منبع باز*
+_نرم افزار این بات آزاد و_ [منبع باز](https://github.com/LightningTipBot/LightningTipBot) _است. میتوانید روی کامپیوتر خودتان اجرا کنید و از آن استفاده کنید._
 
-✈️ *Telegram*
-_Add this bot to your Telegram group chat to /tip posts. If you make the bot admin of the group it will also clean up commands to keep the chat tidy._
+✈️ *تلگرام*
+_برای تیپ دادن بات را در گروه اضافه کنید و دستور  /tip به پست مردنظر ریپلای کنید. اگر مایل بودید بات را ادمین گروه کنید تا پیام های اضافه ی مربوط به بات را پاک کند تا چت مرتب بمونه._
 
-🏛 *Terms*
-_We are not custodian of your funds. We will act in your best interest but we're also aware that the situation without KYC is tricky until we figure something out. Any amount you load onto your wallet will be considered a donation. Do not give us all your money.  Be aware that this bot is in beta development. Use at your own risk._
+🏛 *شرایط استفاده*
+_ما متولی و امانتدار دارایی شما هستیم. ما به مصلحت شما عمل میکنیم اما میدونید که بدون احراز هویت مقداری کار سخت میشه تا از صحت مسایل مطمن بشیم. پس کل سرمایه تون در اختیار ما نگهداری نکنید. و از این آگاه باشید این بات در مراحل تست بتا است پس با در نظر گرفتن ریسک ها استفاده کنید. _
 
-❤️ *Donate*
-_This bot charges no fees but costs satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/donate 1000`"""
+❤️ *کمک مالی*
+_این بات کارمزد تراکنش نمیگیرد اما برای ادامه فعالیت ساتوشی نیاز دارد. اگر این بات و دوست دارید.لطفا حمایت از پروژه به وسیله کمک مالی را در نظر داشته باشید. برای ارسال کمک مالی:_ `/donate <مقدار>`
 
-helpNoUsernameMessage = """👋 Please, set a Telegram username."""
+helpNoUsernameMessage = """👋لطفا برای اکانت تلگرام تون آیدی تعریف کنید."""
 
 advancedMessage = """%s
 
-👉 *Inline commands*
-*send* 💸 Send sats to chat: `%s send <amount> [<user>] [<memo>]`
-*receive* 🏅 Request a payment: `%s receive <amount> [<user>] [<memo>]`
-*faucet* 🚰 Create a faucet: `%s faucet <capacity> <per_user> [<memo>]`
+👉 *دستورات در خط*
+*send* 💸 ارسال ساتوشی در چت: `%s send <مقدار> [<user>] [<memo>]`
+*receive* 🏅 درخواست پرداخت: `%s receive <مقدار> [<user>] [<memo>]`
+*faucet* 🚰 ساخت فاست: `%s faucet <ظرفیت> <per_user> [<memo>]`
 
-📖 You can use inline commands in every chat, even in private conversations. Wait a second after entering an inline command and *click* the result, don't press enter.
+📖 دستورات در خط در هر گفتگویی قابل استفاده است, حتی در گفگتوهای خصوصی. بعد از وارد کردن کامل دستورات چندلحظه صبر کنید سپس بر روی نتایج کلیک کنید.
 
-⚙️ *Advanced commands*
-*/link* 🔗 Link your wallet to [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)
-*/lnurl* ⚡️ Lnurl receive or pay: `/lnurl` or `/lnurl <lnurl>`
-*/faucet* 🚰 Create a faucet `/faucet <capacity> <per_user>`"""
+⚙️ *دستورات پیشرفته*
+*/link* 🔗 اتصال والت به  [BlueWallet](https://bluewallet.io/) یا [Zeus](https://zeusln.app/)
+*/lnurl* ⚡️ دریافت و پرداخت  LNURL: `/lnurl` or `/lnurl <lnurl>`
+*/faucet* 🚰 ساخت فاست `/faucet <ظرفیت> <per_user>`"""
 
 # START
 
-startSettingWalletMessage = """🧮 Setting up your wallet..."""
-startWalletCreatedMessage = """🧮 Wallet created."""
-startWalletReadyMessage   = """✅ *Your wallet is ready.*"""
-startWalletErrorMessage   = """🚫 Error initializing your wallet. Try again later."""
-startNoUsernameMessage    = """☝️ It looks like you don't have a Telegram @username yet. That's ok, you don't need one to use this bot. However, to make better use of your wallet, set up a username in the Telegram settings. Then, enter /balance so the bot can update its record of you."""
+startSettingWalletMessage = """🧮 راه اندازی والت..."""
+startWalletCreatedMessage = """🧮 والت راه اندازی شد."""
+startWalletReadyMessage   = """✅ *والت شما آماده است.*"""
+startWalletErrorMessage   = """🚫 خطا در راه اندازی والت شما بعدا دوباره تلاش کنید."""
+startNoUsernameMessage    = """☝️  بنظر میرسه شما هنوز آیدی برای اکانت تلگرامتون تنظیم نکردید. مشکلی نیست لازم نیست حتما تعیین کنید. هرچند اگر تنظیم کنید تجربه کاربری بهتری پیدا میکنید. بعد از تنظیم آیدی یک بار دستور /balance  را بزنید تا بات آیدی شما را شناسایی کند."""
 
 # BALANCE
 
-balanceMessage      = """👑 *Your balance:* %d sat"""
-balanceErrorMessage = """🚫 Could not fetch your balance. Please try again later."""
+balanceMessage      = """👑 *موجودی شما:* %d sat"""
+balanceErrorMessage = """🚫 بررسی موجودی موفقیت آمیز نبود بعدا دوباره تلاش کنید."""
 
 # TIP
 
@@ -151,94 +151,94 @@ tipHelpText           = """📖 Oops, that didn't work. %s
 
 # SEND
 
-sendValidAmountMessage     = """Did you enter a valid amount?"""
-sendUserHasNoWalletMessage = """🚫 User %s hasn't created a wallet yet."""
-sendSentMessage            = """💸 %d sat sent to %s."""
-sendPublicSentMessage      = """💸 %d sat sent from %s to %s."""
-sendReceivedMessage        = """🏅 %s sent you %d sat."""
-sendErrorMessage           = """🚫 Send failed."""
-confirmSendMessage         = """Do you want to pay to %s?\n\n💸 Amount: %d sat"""
+sendValidAmountMessage     = """آیا مقدار درستی وارد کردید؟"""
+sendUserHasNoWalletMessage = """🚫 کابر %s هنوز والتی راه اندازی نکرده."""
+sendSentMessage            = """💸 تعداد ساتوشی %d ارسال شد به کاربر %s ."""
+sendPublicSentMessage      = """💸  تعداد %d ساتوشی از کاربر %s به %s ارسال شد."""
+sendReceivedMessage        = """🏅کاربر %s مقدار %d ساتوشی ارسال کرد."""
+sendErrorMessage           = """🚫 ارسال موفقیت آمیر نبود."""
+confirmSendMessage         = """آیا قصد پرداخت این اینویس را دارید؟ %n %n 💸مقدار: %d ساتوشی"""
 confirmSendAppendMemo      = """\n✉️ %s"""
-sendCancelledMessage       = """🚫 Send cancelled."""
-errorTryLaterMessage       = """🚫 Error. Please try again later."""
-sendSyntaxErrorMessage     = """Did you enter an amount and a recipient? You can use the /send command to either send to Telegram users like %s or to a Lightning address like LightningTipBot@ln.tips."""
-sendHelpText               = """📖 Oops, that didn't work. %s
+sendCancelledMessage       = """🚫پرداخت لغو شد."""
+errorTryLaterMessage       = """🚫 خطا. لطفا بعدا دوباره تلاش کنید."""
+sendSyntaxErrorMessage     = """آیا مقدار و مقصد را وارد کردید؟ میتونید با دستور /send به اکانت تلگرام مثل %s  یا لایتنینگ آدرس مثل LightningTipBot@ln.tips پرداخت انجام بدید."""
+sendHelpText               = """📖 ای بابا کار نکرد. %s
 
-*Usage:* `/send <amount> <user> [<memo>]`
-*Example:* `/send 1000 @LightningTipBot I just like the bot ❤️`
-*Example:* `/send 1234 LightningTipBot@ln.tips`"""
+*فرمت درست:* `/send <مقدار> <user> [<memo>]`
+*مثال:* `/send 1000 @LightningTipBot I just like the bot ❤️`
+*مثال:* `/send 1234 LightningTipBot@ln.tips`"""
 
 # INVOICE
 
-invoiceReceivedMessage    = """⚡️ You received %d sat."""
-invoiceEnterAmountMessage = """Did you enter an amount?"""
-invoiceValidAmountMessage = """Did you enter a valid amount?"""
-invoiceHelpText           = """📖 Oops, that didn't work. %s
+invoiceReceivedMessage    = """⚡️مقدار %d ساتوشی دریافت کردید."""
+invoiceEnterAmountMessage = """آیا مقدار دریافتی را وارد کردید؟"""
+invoiceValidAmountMessage = """آیا مقدار درستی وارد کردید؟"""
+invoiceHelpText           = """📖 ای بابا کار نکرد. %s
 
-*Usage:* `/invoice <amount> [<memo>]`
-*Example:* `/invoice 1000 Thank you!`"""
+*فرمت درست:* `/invoice <مقدار> [<memo>]`
+*مثال:* `/invoice 1000 Thank you!`"""
 
 # PAY
 
-paymentCancelledMessage     = """🚫 Payment cancelled."""
-invoicePaidMessage          = """⚡️ Payment sent."""
-invoicePublicPaidMessage    = """⚡️ Payment sent by %s."""
-invalidInvoiceHelpMessage    = """Did you enter a valid Lightning invoice? Try /send if you want to send to a Telegram user or Lightning address."""
-invoiceNoAmountMessage       = """🚫 Can't pay invoices without an amount."""
-insufficientFundsMessage     = """🚫 Insufficient funds. You have %d sat but you need at least %d sat."""
-feeReserveMessage            = """⚠️ Sending your entire balance might fail because of network fees. If it fails, try sending a bit less."""
-invoicePaymentFailedMessage  = """🚫 Payment failed: %s"""
-invoiceUndefinedErrorMessage = """Could not pay invoice."""
-confirmPayInvoiceMessage     = """Do you want to send this payment?\n\n💸 Amount: %d sat"""
+paymentCancelledMessage     = """🚫 پرداخت لغو شد."""
+invoicePaidMessage          = """⚡️ پرداخت انجام شد."""
+invoicePublicPaidMessage    = """⚡️پرداخت انجام شد توسط %s ."""
+invalidInvoiceHelpMessage    = """آیا اینوویس درستی ارسال کردی؟ اگر میخواهید به اکانت تلگرامی یا آدرس لایتنینگی ارسال کنید دستور /send  را امتحان کنید."""
+invoiceNoAmountMessage       = """🚫 قادر به پرداخت اینوویس های بدون مقدار تعیین شده نیستیم."""
+insufficientFundsMessage     = """🚫موجودی کم است. """
+feeReserveMessage            = """⚠️ ارسال کل دارایی موجود ممکن است بخاطر کارمزد موفقیت آمیز نباشد. اگر موفقیت آمیز نبود با مقدار کمتری از کل دارایی امتحان کنید."""
+invoicePaymentFailedMessage  = """🚫 پرداخت ناموفق: %s"""
+invoiceUndefinedErrorMessage = """اینوویس پرداخت نشد."""
+confirmPayInvoiceMessage     = """آیا میخواهید این پرداخت را انجام دهید؟ %n %n 💸مقدار: %d ساتوشی"""
 confirmPayAppendMemo         = """\n✉️ %s"""
-payHelpText                  = """📖 Oops, that didn't work. %s
+payHelpText                  = """📖 ای بابا کار نکرد. %s
 
-*Usage:* `/pay <invoice>`
-*Example:* `/pay lnbc20n1psscehd...`"""
+*فرمت درست:* `/pay <invoice>`
+*مثال:* `/pay lnbc20n1psscehd...`"""
 
 # DONATE
 
-donationSuccess          = """🙏 Thank you for your donation."""
-donationErrorMessage     = """🚫 Oh no. Donation failed."""
-donationProgressMessage  = """🧮 Preparing your donation..."""
-donationFailedMessage    = """🚫 Donation failed: %s"""
-donateEnterAmountMessage = """Did you enter an amount?"""
-donateValidAmountMessage = """Did you enter a valid amount?"""
-donateHelpText           = """📖 Oops, that didn't work. %s
+donationSuccess          = """🙏 ممنون بابت کمک مالی."""
+donationErrorMessage     = """🚫 پرداخت کمک مالی موفقیت آمیز نبود."""
+donationProgressMessage  = """🧮 در حال آماده سازی کمک مالی شما..."""
+donationFailedMessage    = """🚫 پرداخت کمک مالی موفقیت آمیز نبود: %s"""
+donateEnterAmountMessage = """آیا مقدار را وارد کردید؟"""
+donateValidAmountMessage = """آیا مقدار درستی وارد کردید؟"""
+donateHelpText           = """📖 ای بابا کار نکرد. %s
 
-*Usage:* `/donate <amount>`
+*Usage:* `/donate <مقدار>`
 *Example:* `/donate 1000`"""
 
 # PHOTO
 
-photoQrNotRecognizedMessage = """🚫 Could not regocognize a Lightning invoice or an LNURL. Try to center the QR code, crop the photo, or zoom in."""
+photoQrNotRecognizedMessage = """🚫اینوویس یا LNURL پیدا نکردیم. سعی کنید تصویر را کراپ یا زوم کنید."""
 photoQrRecognizedMessage = """✅ QR code:
 `%s`"""
 
 # LNURL
 
-lnurlReceiveInfoText           = """👇 You can use this static LNURL to receive payments."""
-lnurlResolvingUrlMessage       = """🧮 Resolving address..."""
-lnurlGettingUserMessage        = """🧮 Preparing payment..."""
-lnurlPaymentFailed             = """🚫 Payment failed: %s"""
-lnurlInvalidAmountMessage      = """🚫 Invalid amount."""
-lnurlInvalidAmountRangeMessage = """🚫 Amount must be between %d and %d sat."""
-lnurlNoUsernameMessage         = """🚫 You need to set a Telegram username to receive payments via LNURL."""
-lnurlEnterAmountMessage        = """⌨️ Enter an amount between %d and %d sat."""
-lnurlHelpText                  = """📖 Oops, that didn't work. %s
+lnurlReceiveInfoText           = """👇 شما میتوانید از این LNURL ثابت برای دریافت استفاده کنید."""
+lnurlResolvingUrlMessage       = """🧮 بررسی آدرس..."""
+lnurlGettingUserMessage        = """🧮 آماده سازی پرداخت..."""
+lnurlPaymentFailed             = """🚫 پرداخت ناموفق بود: %s"""
+lnurlInvalidAmountMessage      = """🚫 مقدار نادرست."""
+lnurlInvalidAmountRangeMessage = """🚫 مقدار باید بین %d و %d ساتوشی باشد."""
+lnurlNoUsernameMessage         = """🚫 باید آیدی تلگرام برای اکانت خودتون تنظیم کنید تا بتوانید از LNURL برای دریافت استفاده کنید."""
+lnurlEnterAmountMessage        = """⌨️ مقداری بین %d و %d ساتوشی وارد کنید."""
+lnurlHelpText                  = """📖 ای بابا کار نکرد. %s
 
-*Usage:* `/lnurl [amount] <lnurl>`
+*Usage:* `/lnurl [مقدار] <lnurl>`
 *Example:* `/lnurl LNURL1DP68GUR...`"""
 
 # LINK
 
-walletConnectMessage = """🔗 *Link your wallet*
+walletConnectMessage = """🔗 *اتصال والت*
 
-⚠️ Never share the URL or the QR code with anyone or they will be able to access your funds.
+⚠️ به هیچ وجه URL و QR code را با کسی به اشتراک نگذارید. در صورت دسترسی دیگران به این ها دارایی شما توسط آنها قابل دسترس است.
 
-- *BlueWallet:* Press *New wallet*, *Import wallet*, *Scan or import a file*, and scan the QR code.
+- *بلو والت:* در قسمت * New wallet* بر روی * import wallet* کلیک کنید. و سپس روی *scan or import a file * سپس QR code را اسکن کنید.
 - *Zeus:* Copy the URL below, press *Add a new node*, *Import* (the URL), *Save Node Config*."""
-couldNotLinkMessage = """🚫 Couldn't link your wallet. Please try again later."""
+couldNotLinkMessage = """🚫 والت متصل نشد لطفا بعدا دوباره تلاش کنید."""
 
 # FAUCET
 
