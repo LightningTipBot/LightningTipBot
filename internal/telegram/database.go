@@ -65,7 +65,6 @@ func AutoMigration() (db *gorm.DB, txLogger *gorm.DB) {
 	if err != nil {
 		panic(err)
 	}
-	// db migrations that are due to updates to the bot
 
 	txLogger, err = gorm.Open(sqlite.Open(internal.Configuration.Database.TransactionsPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
 	if err != nil {
