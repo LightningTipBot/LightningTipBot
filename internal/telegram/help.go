@@ -59,7 +59,7 @@ func (bot TipBot) makeAdvancedHelpMessage(ctx context.Context, m *tb.Message) st
 	// we print the anonymous ln address in the advanced help
 	lnaddr, err := bot.UserGetAnonLightningAddress(fromUser)
 	if err == nil {
-		dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("Lightning Address: `%s`\n", lnaddr)
+		dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("Anonymous lightning address: `%s`\n", lnaddr)
 	}
 	lnurl, err := UserGetLNURL(fromUser)
 	if err == nil {
