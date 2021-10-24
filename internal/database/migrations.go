@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func MigrateUSerDBHash(db *gorm.DB) error {
+func MigrateAnonIdHash(db *gorm.DB) error {
 	users := []lnbits.User{}
 	_ = db.Find(&users)
 	for _, u := range users {
@@ -17,7 +17,7 @@ func MigrateUSerDBHash(db *gorm.DB) error {
 		u.AnonID = fmt.Sprint(str.Int32Hash(u.ID))
 		tx := db.Save(u)
 		if tx.Error != nil {
-			errmsg := fmt.Sprintf("[MigrateUSerDBHash] Error: Couldn't migrate user %s (%d)", u.Telegram.Username, u.Telegram.ID)
+			errmsg := fmt.Sprintf("[MigrateAnonIdHash] Error: Couldn't migrate user %s (%d)", u.Telegram.Username, u.Telegram.ID)
 			log.Errorln(errmsg)
 			return tx.Error
 		}

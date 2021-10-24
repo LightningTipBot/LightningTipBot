@@ -36,13 +36,20 @@ func createBunt() *storage.DB {
 	return bunt
 }
 
-func UserDbMigrations(db *gorm.DB) {
-	// db.Migrator().DropColumn(&lnbits.User{}, "anon_id")
-	if db.Migrator().HasColumn(&lnbits.User{}, "anon_id") {
-		log.Info("Running user database migrations ...")
-		database.MigrateUSerDBHash(db)
-		log.Info("User database migrations complete.")
+func ColumnMigrationTasks(db *gorm.DB) error {
+	var err error
+	if !db.Migrator().HasColumn(&lnbits.User{}, "anon_id") {
+		// first we need to auto migrate the user. This will create anon_id column
+		err = db.AutoMigrate(&lnbits.User{})
+		if err != nil {
+			panic(err)
+		}
+		log.Info("Running ano_id database migrations ...")
+		// run the migration on anon_id
+		err = database.MigrateAnonIdHash(db)
 	}
+	// todo -- add more database field migrations here in the future
+	return err
 }
 
 func AutoMigration() (db *gorm.DB, txLogger *gorm.DB) {
@@ -50,12 +57,15 @@ func AutoMigration() (db *gorm.DB, txLogger *gorm.DB) {
 	if err != nil {
 		panic("Initialize orm failed.")
 	}
+	err = ColumnMigrationTasks(orm)
+	if err != nil {
+		panic(err)
+	}
 	err = orm.AutoMigrate(&lnbits.User{})
 	if err != nil {
 		panic(err)
 	}
 	// db migrations that are due to updates to the bot
-	UserDbMigrations(orm)
 
 	txLogger, err = gorm.Open(sqlite.Open(internal.Configuration.Database.TransactionsPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
 	if err != nil {
