@@ -4,13 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal"
 	"strconv"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"gorm.io/gorm"
 )
@@ -97,6 +99,7 @@ func (bot TipBot) createWallet(user *lnbits.User) error {
 		return err
 	}
 	user.Wallet = &wallet[0]
+	user.AnonID = fmt.Sprint(str.Int32Hash(user.ID))
 	user.Initialized = false
 	user.CreatedAt = time.Now()
 	err = UpdateUserRecord(user, bot)
