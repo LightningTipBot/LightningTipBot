@@ -127,11 +127,10 @@ func (w Server) serveLNURLpSecond(username string, amount int64, comment string)
 	// now check for the user
 	user := &lnbits.User{}
 	// check if "username" is actually the user ID
-	id, err := strconv.Atoi(username)
 	tx := w.database
-	if err == nil {
+	if _, err := strconv.ParseInt(username, 10, 64); err == nil {
 		// asume it's a user ID
-		tx = w.database.Where("anon_id = ?", fmt.Sprint(id)).First(user)
+		tx = w.database.Where("anon_id = ?", username).First(user)
 	} else {
 		// assume it's a string @username
 		tx = w.database.Where("telegram_username = ?", strings.ToLower(username)).First(user)
