@@ -278,7 +278,11 @@ func (bot TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
 		json.Unmarshal(body, &response2)
 
 		if len(response2.PR) < 1 {
-			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), "could not receive invoice (wrong address?)."))
+			error_reason := "Could not receive invoice."
+			if len(response2.Reason) > 0 {
+				error_reason = response2.Reason
+			}
+			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), error_reason))
 			return
 		}
 		bot.Telegram.Delete(msg)
