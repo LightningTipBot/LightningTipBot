@@ -13,10 +13,8 @@ require (
 	github.com/nicksnyder/go-i18n/v2 v2.1.2
 	github.com/sirupsen/logrus v1.2.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
-	github.com/tidwall/btree v0.6.1 // indirect
-	github.com/tidwall/buntdb v1.2.6
-	github.com/tidwall/gjson v1.8.1
-	github.com/tidwall/pretty v1.2.0 // indirect
+	github.com/tidwall/buntdb v1.2.7
+	github.com/tidwall/gjson v1.10.2
 	golang.org/x/text v0.3.5
 	gopkg.in/tucnak/telebot.v2 v2.3.5
 	gorm.io/driver/sqlite v1.1.4
