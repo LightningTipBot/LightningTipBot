@@ -57,6 +57,10 @@ saveButtonMessage = """Save"""
 deleteButtonMessage = """Delete"""
 infoButtonMessage = """Info"""
 
+cancelButtonEmoji = """🚫"""
+payButtonEmoji = """💸"""
+
+
 # HELP
 
 helpMessage = """⚡️ *Wallet*
@@ -295,3 +299,27 @@ inlineReceiveCreateWalletMessage = """Chat with %s 👈 to manage your wallet.""
 inlineReceiveYourselfMessage     = """📖 You can't pay to yourself."""
 inlineReceiveFailedMessage       = """🚫 Receive failed."""
 inlineReceiveCancelledMessage    = """🚫 Receive cancelled."""
+
+# TIPJAR
+
+inlineQueryTipjarTitle        = """🍯 Create a tipjar."""
+inlineQueryTipjarDescription  = """Usage: @%s tipjar <capacity> <per_user>"""
+inlineResultTipjarTitle       = """🍯 Create a %d sat tipjar."""
+inlineResultTipjarDescription = """👉 Click here to create a tipjar in this chat."""
+
+inlineTipjarMessage                     = """Press 💸 to *pay %d sat* to this tipjar.
+
+🙏 Given: *%d*/%d sat (by %d users)
+%s"""
+inlineTipjarEndedMessage                = """🍯 Tipjar full ⭐️\n\n🏅 %d sat collected with %d donations."""
+inlineTipjarAppendMemo                  = """\n✉️ %s"""
+inlineTipjarCancelledMessage            = """🚫 Tipjar cancelled."""
+inlineTipjarInvalidPeruserAmountMessage = """🚫 Peruser amount not divisor of capacity."""
+inlineTipjarInvalidAmountMessage        = """🚫 Invalid amount."""
+inlineTipjarSentMessage                 = """🍯 %d sat sent to %s."""
+inlineTipjarReceivedMessage             = """🍯 %s sent you %d sat."""
+inlineTipjarHelpTipjarInGroup           = """Create a tipjar in a group with the bot inside or use 👉 inline command (/advanced for more)."""
+inlineTipjarHelpText                    = """📖 Oops, that didn't work. %s
+
+*Usage:* `/tipjar <capacity> <per_user>`
+*Example:* `/tipjar 210 21`"""

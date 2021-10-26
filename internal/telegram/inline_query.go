@@ -35,6 +35,11 @@ func (bot TipBot) inlineQueryInstructions(ctx context.Context, q *tb.Query) {
 			title:       TranslateUser(ctx, "inlineQueryFaucetTitle"),
 			description: fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username),
 		},
+		{
+			url:         queryImage,
+			title:       TranslateUser(ctx, "inlineQueryTipjarTitle"),
+			description: fmt.Sprintf(TranslateUser(ctx, "inlineQueryTipjarDescription"), bot.Telegram.Me.Username),
+		},
 	}
 	results := make(tb.Results, len(instructions)) // []tb.Result
 	for i, instruction := range instructions {
@@ -129,6 +134,9 @@ func (bot TipBot) anyQueryHandler(ctx context.Context, q *tb.Query) {
 			ctx = bot.commandTranslationMap(ctx, c)
 		}
 		bot.handleInlineFaucetQuery(ctx, q)
+	}
+	if strings.HasPrefix(q.Text, "tipjar") {
+		bot.handleInlineTipjarQuery(ctx, q)
 	}
 
 	if strings.HasPrefix(q.Text, "receive") || strings.HasPrefix(q.Text, "get") || strings.HasPrefix(q.Text, "payme") || strings.HasPrefix(q.Text, "request") {

@@ -41,3 +41,11 @@ func MakeProgressbar(current int, total int) string {
 	progressbar += strings.Repeat("⬜️", MAX_BARS-int(progress))
 	return progressbar
 }
+
+func MakeTipjarbar(current int, total int) string {
+	MAX_BARS := 16
+	progress := math.Round((float64(current) / float64(total)) * float64(MAX_BARS))
+	progressbar := strings.Repeat("🍯", int(progress))
+	progressbar += strings.Repeat("⬜️", MAX_BARS-int(progress))
+	return progressbar
+}
