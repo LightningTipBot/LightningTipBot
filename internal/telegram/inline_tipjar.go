@@ -65,7 +65,15 @@ func (bot TipBot) createTipjar(ctx context.Context, text string, sender *tb.User
 	// // check for memo in command
 	memo := GetMemoFromCommand(text, 3)
 
-	inlineMessage := fmt.Sprintf(Translate(ctx, "inlineTipjarMessage"), perUserAmount, 0, amount, 0, MakeTipjarbar(0, amount))
+	inlineMessage := fmt.Sprintf(
+		Translate(ctx, "inlineTipjarMessage"),
+		perUserAmount,
+		GetUserStr(toUser.Telegram),
+		0,
+		amount,
+		0,
+		MakeTipjarbar(0, amount),
+	)
 	if len(memo) > 0 {
 		inlineMessage = inlineMessage + fmt.Sprintf(Translate(ctx, "inlineTipjarAppendMemo"), memo)
 	}
@@ -287,7 +295,15 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 		}
 
 		// build tipjar message
-		inlineTipjar.Message = fmt.Sprintf(i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarMessage"), inlineTipjar.PerUserAmount, inlineTipjar.GivenAmount, inlineTipjar.Amount, inlineTipjar.NGiven, MakeTipjarbar(inlineTipjar.GivenAmount, inlineTipjar.Amount))
+		inlineTipjar.Message = fmt.Sprintf(
+			i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarMessage"),
+			inlineTipjar.PerUserAmount,
+			GetUserStr(inlineTipjar.To.Telegram),
+			inlineTipjar.GivenAmount,
+			inlineTipjar.Amount,
+			inlineTipjar.NGiven,
+			MakeTipjarbar(inlineTipjar.GivenAmount, inlineTipjar.Amount),
+		)
 		memo := inlineTipjar.Memo
 		if len(memo) > 0 {
 			inlineTipjar.Message = inlineTipjar.Message + fmt.Sprintf(i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarAppendMemo"), memo)
@@ -301,7 +317,12 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 	}
 	if inlineTipjar.GivenAmount >= inlineTipjar.Amount {
 		// tipjar is full
-		inlineTipjar.Message = fmt.Sprintf(i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarEndedMessage"), inlineTipjar.Amount, inlineTipjar.NGiven)
+		inlineTipjar.Message = fmt.Sprintf(
+			i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarEndedMessage"),
+			GetUserStr(inlineTipjar.To.Telegram),
+			inlineTipjar.Amount,
+			inlineTipjar.NGiven,
+		)
 		// if inlineTipjar.UserNeedsWallet {
 		// 	inlineTipjar.Message += "\n\n" + fmt.Sprintf(i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarCreateWalletMessage"), GetUserStrMd(bot.Telegram.Me))
 		// }

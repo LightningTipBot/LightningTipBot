@@ -307,11 +307,11 @@ inlineQueryTipjarDescription  = """Usage: @%s tipjar <capacity> <per_user>"""
 inlineResultTipjarTitle       = """🍯 Create a %d sat tipjar."""
 inlineResultTipjarDescription = """👉 Click here to create a tipjar in this chat."""
 
-inlineTipjarMessage                     = """Press 💸 to *pay %d sat* to this tipjar.
+inlineTipjarMessage                     = """Press 💸 to *pay %d sat* to this tipjar by %s.
 
 🙏 Given: *%d*/%d sat (by %d users)
 %s"""
-inlineTipjarEndedMessage                = """🍯 Tipjar full ⭐️\n\n🏅 %d sat collected with %d donations."""
+inlineTipjarEndedMessage                = """🍯 %s's tipjar is full ⭐️\n\n🏅 %d sat given by %d users."""
 inlineTipjarAppendMemo                  = """\n✉️ %s"""
 inlineTipjarCancelledMessage            = """🚫 Tipjar cancelled."""
 inlineTipjarInvalidPeruserAmountMessage = """🚫 Peruser amount not divisor of capacity."""
