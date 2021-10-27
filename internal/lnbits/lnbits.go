@@ -83,7 +83,6 @@ func (c *Client) CreateWallet(userId, walletName, adminId string) (wal Wallet, e
 
 // Invoice creates an invoice associated with this wallet.
 func (w Wallet) Invoice(params InvoiceParams, c *Client) (lntx BitInvoice, err error) {
-	// c.header["X-Api-Key"] = w.Adminkey
 	// custom header with invoice key
 	invoiceHeader := req.Header{
 		"Content-Type": "application/json",
@@ -108,12 +107,11 @@ func (w Wallet) Invoice(params InvoiceParams, c *Client) (lntx BitInvoice, err e
 
 // Info returns wallet information
 func (c Client) Info(w Wallet) (wtx Wallet, err error) {
-	// c.header["X-Api-Key"] = w.Adminkey
 	// custom header with invoice key
 	invoiceHeader := req.Header{
-		// "Content-Type": "application/json",
-		// "Accept":       "application/json",
-		"X-Api-Key": w.Inkey,
+		"Content-Type": "application/json",
+		"Accept":       "application/json",
+		"X-Api-Key":    w.Inkey,
 	}
 	resp, err := req.Get(c.url+"/api/v1/wallet", invoiceHeader, nil)
 	if err != nil {
@@ -151,7 +149,6 @@ func (c Client) Wallets(w User) (wtx []Wallet, err error) {
 
 // Pay pays a given invoice with funds from the wallet.
 func (w Wallet) Pay(params PaymentParams, c *Client) (wtx BitInvoice, err error) {
-	// c.header["X-Api-Key"] = w.Adminkey
 	// custom header with admin key
 	adminHeader := req.Header{
 		"Content-Type": "application/json",
