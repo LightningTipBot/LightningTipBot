@@ -42,7 +42,7 @@ type PayData struct {
 }
 
 // payHandler invoked on "/pay lnbc..." command
-func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
+func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)
 	user := LoadUser(ctx)
@@ -50,14 +50,14 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 	if len(strings.Split(m.Text, " ")) < 2 {
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		NewMessage(m, WithDuration(0, bot))
 		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(ctx, ""))
 		return
 	}
 	userStr := GetUserStr(m.Sender)
 	paymentRequest, err := getArgumentFromCommand(m.Text, 1)
 	if err != nil {
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		NewMessage(m, WithDuration(0, bot))
 		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(ctx, Translate(ctx, "invalidInvoiceHelpMessage")))
 		errmsg := fmt.Sprintf("[/pay] Error: Could not getArgumentFromCommand: %s", err)
 		log.Errorln(errmsg)
@@ -80,20 +80,20 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 	if amount <= 0 {
 		bot.trySendMessage(m.Sender, Translate(ctx, "invoiceNoAmountMessage"))
 		errmsg := fmt.Sprint("[/pay] Error: invoice without amount")
-		log.Errorln(errmsg)
+		log.Warnln(errmsg)
 		return
 	}
 
 	// check user balance first
 	balance, err := bot.GetUserBalance(user)
 	if err != nil {
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		NewMessage(m, WithDuration(0, bot))
 		errmsg := fmt.Sprintf("[/pay] Error: Could not get user balance: %s", err)
 		log.Errorln(errmsg)
 		return
 	}
 	if amount > balance {
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		NewMessage(m, WithDuration(0, bot))
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "insufficientFundsMessage"), balance, amount))
 		return
 	}
@@ -140,7 +140,7 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 }
 
 // confirmPayHandler when user clicked pay on payment confirmation
-func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
+func (bot *TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 	tx := &PayData{Base: transaction.New(transaction.ID(c.Data))}
 	sn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
@@ -211,7 +211,7 @@ func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 }
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation
-func (bot TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
+func (bot *TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 	// reset state immediately
 	user := LoadUser(ctx)
 	ResetUserState(user, bot)

@@ -31,7 +31,7 @@ func (bot TipBot) helpHandler(ctx context.Context, m *tb.Message) {
 	bot.anyTextHandler(ctx, m)
 	if !m.Private() {
 		// delete message
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		bot.tryDeleteMessage(m)
 	}
 	bot.trySendMessage(m.Sender, bot.makeHelpMessage(ctx, m), tb.NoPreview)
 	return
@@ -42,7 +42,7 @@ func (bot TipBot) basicsHandler(ctx context.Context, m *tb.Message) {
 	bot.anyTextHandler(ctx, m)
 	if !m.Private() {
 		// delete message
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		bot.tryDeleteMessage(m)
 	}
 	bot.trySendMessage(m.Sender, Translate(ctx, "basicsMessage"), tb.NoPreview)
 	return
@@ -75,7 +75,7 @@ func (bot TipBot) advancedHelpHandler(ctx context.Context, m *tb.Message) {
 	bot.anyTextHandler(ctx, m)
 	if !m.Private() {
 		// delete message
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		bot.tryDeleteMessage(m)
 	}
 	bot.trySendMessage(m.Sender, bot.makeAdvancedHelpMessage(ctx, m), tb.NoPreview)
 	return

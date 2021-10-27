@@ -67,7 +67,7 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 		if strings.HasPrefix(from_username, "@") {
 			fromUserDb, err = GetUserByTelegramUsername(from_username[1:], bot) // must be without the @
 			if err != nil {
-				//NewMessage(m, WithDuration(0, bot.Telegram))
+				//bot.tryDeleteMessage(m)
 				//bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "sendUserHasNoWalletMessage"), toUserStrMention))
 				bot.inlineQueryReplyWithError(q,
 					fmt.Sprintf(TranslateUser(ctx, "sendUserHasNoWalletMessage"), from_username),

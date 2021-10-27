@@ -15,7 +15,7 @@ func (bot TipBot) balanceHandler(ctx context.Context, m *tb.Message) {
 	// reply only in private message
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		bot.tryDeleteMessage(m)
 	}
 	// first check whether the user is initialized
 	user := LoadUser(ctx)

@@ -122,7 +122,11 @@ func (bot TipBot) logMessageInterceptor(ctx context.Context, i interface{}) (con
 	case *tb.Message:
 		m := i.(*tb.Message)
 		if m.Text != "" {
-			log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
+			log_string := fmt.Sprintf("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
+			if m.IsReply() {
+				log_string = fmt.Sprintf("%s -> %s", log_string, GetUserStr(m.ReplyTo.Sender))
+			}
+			log.Infof(log_string)
 		} else if m.Photo != nil {
 			log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, photoTag)
 		}

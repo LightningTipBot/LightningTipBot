@@ -58,7 +58,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	}
 
 	// reset state immediately
-	ResetUserState(user, *bot)
+	ResetUserState(user, bot)
 
 	// check and print all commands
 
@@ -70,7 +70,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 
 	if ok, errstr := bot.SendCheckSyntax(ctx, m); !ok {
 		bot.trySendMessage(m.Sender, helpSendUsage(ctx, errstr))
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		NewMessage(m, WithDuration(0, bot))
 		return
 	}
 
@@ -104,9 +104,9 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	// ASSUME INTERNAL SEND TO TELEGRAM USER
 	if err != nil || amount < 1 {
 		errmsg := fmt.Sprintf("[/send] Error: Send amount not valid.")
-		log.Errorln(errmsg)
+		log.Warnln(errmsg)
 		// immediately delete if the amount is bullshit
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		NewMessage(m, WithDuration(0, bot))
 		bot.trySendMessage(m.Sender, helpSendUsage(ctx, Translate(ctx, "sendValidAmountMessage")))
 		return
 	}
@@ -139,7 +139,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 
 	toUserDb, err := GetUserByTelegramUsername(toUserStrWithoutAt, *bot)
 	if err != nil {
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		NewMessage(m, WithDuration(0, bot))
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "sendUserHasNoWalletMessage"), toUserStrMention))
 		return
 	}
@@ -166,14 +166,14 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 
 	sendDataJson, err := json.Marshal(sendData)
 	if err != nil {
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		NewMessage(m, WithDuration(0, bot))
 		log.Printf("[/send] Error: %s\n", err.Error())
 		bot.trySendMessage(m.Sender, fmt.Sprint(Translate(ctx, "errorTryLaterMessage")))
 		return
 	}
 	// save the send data to the Database
 	// log.Debug(sendData)
-	SetUserState(user, *bot, lnbits.UserStateConfirmSend, string(sendDataJson))
+	SetUserState(user, bot, lnbits.UserStateConfirmSend, string(sendDataJson))
 	sendButton := sendConfirmationMenu.Data(Translate(ctx, "sendButtonMessage"), "confirm_send")
 	cancelButton := sendConfirmationMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_send")
 	sendButton.Data = id
@@ -224,7 +224,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	// decode callback data
 	// log.Debug("[send] Callback: %s", c.Data)
 	from := LoadUser(ctx)
-	ResetUserState(from, *bot) // we don't need to check the statekey anymore like we did earlier
+	ResetUserState(from, bot) // we don't need to check the statekey anymore like we did earlier
 
 	// information about the send
 	toId := sendData.ToTelegramId
@@ -283,7 +283,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	// reset state immediately
 	user := LoadUser(ctx)
-	ResetUserState(user, *bot)
+	ResetUserState(user, bot)
 	tx := &SendData{Base: transaction.New(transaction.ID(c.Data))}
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {

@@ -14,13 +14,13 @@ import (
 	"gorm.io/gorm"
 )
 
-func SetUserState(user *lnbits.User, bot TipBot, stateKey lnbits.UserStateKey, stateData string) {
+func SetUserState(user *lnbits.User, bot *TipBot, stateKey lnbits.UserStateKey, stateData string) {
 	user.StateKey = stateKey
 	user.StateData = stateData
 	bot.Database.Table("users").Where("name = ?", user.Name).Update("state_key", user.StateKey).Update("state_data", user.StateData)
 }
 
-func ResetUserState(user *lnbits.User, bot TipBot) {
+func ResetUserState(user *lnbits.User, bot *TipBot) {
 	user.ResetState()
 	bot.Database.Table("users").Where("name = ?", user.Name).Update("state_key", 0).Update("state_data", "")
 }
@@ -64,7 +64,7 @@ func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int, err error) {
 
 	wallet, err := bot.Client.Info(*user.Wallet)
 	if err != nil {
-		errmsg := fmt.Sprintf("[GetUserBalance] Error: Couldn't fetch user %s's info from LNbits: %s", GetUserStr(user.Telegram), err)
+		errmsg := fmt.Sprintf("[GetUserBalance] Error: Couldn't fetch user %s's info from LNbits: %s", GetUserStr(user.Telegram), err.Error())
 		log.Errorln(errmsg)
 		return
 	}

@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal"
 
 	log "github.com/sirupsen/logrus"
 
@@ -27,7 +28,7 @@ func (bot TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 	bot.anyTextHandler(ctx, m)
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		bot.tryDeleteMessage(m)
 		return
 	}
 	if len(strings.Split(m.Text, " ")) < 2 {

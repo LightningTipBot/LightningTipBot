@@ -23,7 +23,7 @@ import (
 )
 
 // lnurlHandler is invoked on /lnurl command
-func (bot TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
+func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 	// commands:
 	// /lnurl
 	// /lnurl <LNURL>
@@ -169,7 +169,7 @@ func (bot TipBot) lnurlReceiveHandler(ctx context.Context, m *tb.Message) {
 }
 
 // lnurlEnterAmountHandler is invoked if the user didn't deliver an amount for the lnurl payment
-func (bot TipBot) lnurlEnterAmountHandler(ctx context.Context, m *tb.Message) {
+func (bot *TipBot) lnurlEnterAmountHandler(ctx context.Context, m *tb.Message) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return
@@ -219,7 +219,7 @@ type LnurlStateResponse struct {
 }
 
 // lnurlPayHandler is invoked when the user has delivered an amount and is ready to pay
-func (bot TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
+func (bot *TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
 	msg := bot.trySendMessage(c.Sender, Translate(ctx, "lnurlGettingUserMessage"))
 
 	user := LoadUser(ctx)

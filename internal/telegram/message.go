@@ -4,8 +4,6 @@ import (
 	"strconv"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -16,10 +14,10 @@ type Message struct {
 
 type MessageOption func(m *Message)
 
-func WithDuration(duration time.Duration, bot *tb.Bot) MessageOption {
+func WithDuration(duration time.Duration, tipBot *TipBot) MessageOption {
 	return func(m *Message) {
 		m.duration = duration
-		go m.dispose(bot)
+		go m.dispose(tipBot)
 	}
 }
 
@@ -37,17 +35,13 @@ func (msg Message) Key() string {
 	return strconv.Itoa(msg.Message.ID)
 }
 
-func (msg Message) dispose(telegram *tb.Bot) {
+func (msg Message) dispose(tipBot *TipBot) {
 	// do not delete messages from private chat
 	if msg.Message.Private() {
 		return
 	}
 	go func() {
 		time.Sleep(msg.duration)
-		err := telegram.Delete(msg.Message)
-		if err != nil {
-			log.Println(err.Error())
-			return
-		}
+		tipBot.tryDeleteMessage(msg.Message)
 	}()
 }

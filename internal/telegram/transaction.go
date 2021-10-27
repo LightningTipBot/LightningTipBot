@@ -10,10 +10,6 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const (
-	balanceTooLowMessage = "Your balance is too low."
-)
-
 type Transaction struct {
 	ID           uint         `gorm:"primarykey"`
 	Time         time.Time    `json:"time"`
@@ -112,8 +108,8 @@ func (t *Transaction) SendTransaction(bot *TipBot, from *lnbits.User, to *lnbits
 	}
 	// check if fromUser has balance
 	if balance < amount {
-		errmsg := fmt.Sprintf(balanceTooLowMessage)
-		log.Errorf("Balance of user %s too low", fromUserStr)
+		errmsg := fmt.Sprintf("balance too low.")
+		log.Warnf("Balance of user %s too low", fromUserStr)
 		return false, fmt.Errorf(errmsg)
 	}
 

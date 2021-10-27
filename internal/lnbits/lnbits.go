@@ -8,6 +8,10 @@ import (
 func NewClient(key, url string) *Client {
 	return &Client{
 		url: url,
+		// info: this header holds the ADMIN key for the entire API
+		// it can be used to create wallets for example
+		// if you want to check the balance of a user, use w.Inkey
+		// if you want to make a payment, use w.Adminkey
 		header: req.Header{
 			"Content-Type": "application/json",
 			"Accept":       "application/json",
@@ -79,8 +83,14 @@ func (c *Client) CreateWallet(userId, walletName, adminId string) (wal Wallet, e
 
 // Invoice creates an invoice associated with this wallet.
 func (w Wallet) Invoice(params InvoiceParams, c *Client) (lntx BitInvoice, err error) {
-	c.header["X-Api-Key"] = w.Adminkey
-	resp, err := req.Post(c.url+"/api/v1/payments", c.header, req.BodyJSON(&params))
+	// c.header["X-Api-Key"] = w.Adminkey
+	// custom header with invoice key
+	invoiceHeader := req.Header{
+		"Content-Type": "application/json",
+		"Accept":       "application/json",
+		"X-Api-Key":    w.Inkey,
+	}
+	resp, err := req.Post(c.url+"/api/v1/payments", invoiceHeader, req.BodyJSON(&params))
 	if err != nil {
 		return
 	}
@@ -98,8 +108,14 @@ func (w Wallet) Invoice(params InvoiceParams, c *Client) (lntx BitInvoice, err e
 
 // Info returns wallet information
 func (c Client) Info(w Wallet) (wtx Wallet, err error) {
-	c.header["X-Api-Key"] = w.Adminkey
-	resp, err := req.Get(c.url+"/api/v1/wallet", c.header, nil)
+	// c.header["X-Api-Key"] = w.Adminkey
+	// custom header with invoice key
+	invoiceHeader := req.Header{
+		// "Content-Type": "application/json",
+		// "Accept":       "application/json",
+		"X-Api-Key": w.Inkey,
+	}
+	resp, err := req.Get(c.url+"/api/v1/wallet", invoiceHeader, nil)
 	if err != nil {
 		return
 	}
@@ -135,8 +151,14 @@ func (c Client) Wallets(w User) (wtx []Wallet, err error) {
 
 // Pay pays a given invoice with funds from the wallet.
 func (w Wallet) Pay(params PaymentParams, c *Client) (wtx BitInvoice, err error) {
-	c.header["X-Api-Key"] = w.Adminkey
-	resp, err := req.Post(c.url+"/api/v1/payments", c.header, req.BodyJSON(&params))
+	// c.header["X-Api-Key"] = w.Adminkey
+	// custom header with admin key
+	adminHeader := req.Header{
+		"Content-Type": "application/json",
+		"Accept":       "application/json",
+		"X-Api-Key":    w.Adminkey,
+	}
+	resp, err := req.Post(c.url+"/api/v1/payments", adminHeader, req.BodyJSON(&params))
 	if err != nil {
 		return
 	}

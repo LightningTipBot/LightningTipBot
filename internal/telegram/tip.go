@@ -3,10 +3,11 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal"
-	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"strings"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal"
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	log "github.com/sirupsen/logrus"
@@ -31,7 +32,7 @@ func TipCheckSyntax(ctx context.Context, m *tb.Message) (bool, string) {
 
 func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	// delete the tip message after a few seconds, this is default behaviour
-	defer NewMessage(m, WithDuration(time.Second*time.Duration(internal.Configuration.Telegram.MessageDisposeDuration), bot.Telegram))
+	defer NewMessage(m, WithDuration(time.Second*time.Duration(internal.Configuration.Telegram.MessageDisposeDuration), bot))
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)
 	user := LoadUser(ctx)
@@ -41,7 +42,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 
 	// only if message is a reply
 	if !m.IsReply() {
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		bot.tryDeleteMessage(m)
 		bot.trySendMessage(m.Sender, helpTipUsage(ctx, Translate(ctx, "tipDidYouReplyMessage")))
 		bot.trySendMessage(m.Sender, Translate(ctx, "tipInviteGroupMessage"))
 		return
@@ -49,7 +50,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 
 	if ok, err := TipCheckSyntax(ctx, m); !ok {
 		bot.trySendMessage(m.Sender, helpTipUsage(ctx, err))
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		NewMessage(m, WithDuration(0, bot))
 		return
 	}
 
@@ -58,9 +59,9 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	if err != nil || amount < 1 {
 		errmsg := fmt.Sprintf("[/tip] Error: Tip amount not valid.")
 		// immediately delete if the amount is bullshit
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		NewMessage(m, WithDuration(0, bot))
 		bot.trySendMessage(m.Sender, helpTipUsage(ctx, Translate(ctx, "tipValidAmountMessage")))
-		log.Errorln(errmsg)
+		log.Warnln(errmsg)
 		return
 	}
 
@@ -74,7 +75,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	to := LoadReplyToUser(ctx)
 
 	if from.Telegram.ID == to.Telegram.ID {
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		NewMessage(m, WithDuration(0, bot))
 		bot.trySendMessage(m.Sender, Translate(ctx, "tipYourselfMessage"))
 		return
 	}
@@ -110,10 +111,10 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	t.Memo = transactionMemo
 	success, err := t.Send()
 	if !success {
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		NewMessage(m, WithDuration(0, bot))
 		bot.trySendMessage(m.Sender, Translate(ctx, "tipErrorMessage"))
 		errMsg := fmt.Sprintf("[/tip] Transaction failed: %s", err)
-		log.Errorln(errMsg)
+		log.Warnln(errMsg)
 		return
 	}
 

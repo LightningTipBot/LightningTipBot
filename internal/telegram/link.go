@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+
 	"github.com/LightningTipBot/LightningTipBot/internal"
 
 	log "github.com/sirupsen/logrus"
@@ -21,7 +22,7 @@ func (bot TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
 	// reply only in private message
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
-		NewMessage(m, WithDuration(0, bot.Telegram))
+		bot.tryDeleteMessage(m)
 	}
 	// first check whether the user is initialized
 	fromUser := LoadUser(ctx)
