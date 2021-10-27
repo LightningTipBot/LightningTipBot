@@ -20,6 +20,12 @@ type TipBot struct {
 	logger   *gorm.DB
 	Telegram *telebot.Bot
 	Client   *lnbits.Client
+	Cache
+}
+type Cache struct {
+	m        *sync.Mutex
+	Users    map[string]cachedUser
+	userChan chan *lnbits.User
 }
 
 var (
@@ -37,6 +43,7 @@ func NewBot() TipBot {
 		logger:   txLogger,
 		Bunt:     createBunt(),
 		Telegram: newTelegramBot(),
+		Cache:    Cache{m: &sync.Mutex{}, Users: make(map[string]cachedUser, 0)},
 	}
 }
 
@@ -57,6 +64,7 @@ func newTelegramBot() *tb.Bot {
 // todo -- may want to derive user wallets from this specific bot wallet (master wallet), since lnbits usermanager extension is able to do that.
 func (bot TipBot) initBotWallet() error {
 	botWalletInitialisation.Do(func() {
+		time.Sleep(time.Second)
 		_, err := bot.initWallet(bot.Telegram.Me)
 		if err != nil {
 			log.Errorln(fmt.Sprintf("[initBotWallet] Could not initialize bot wallet: %s", err.Error()))
@@ -69,6 +77,7 @@ func (bot TipBot) initBotWallet() error {
 // Start will initialize the Telegram bot and lnbits.
 func (bot TipBot) Start() {
 	log.Infof("[Telegram] Authorized on account @%s", bot.Telegram.Me.Username)
+	bot.Cache.userChan = bot.enableUsersCache()
 	// initialize the bot wallet
 	err := bot.initBotWallet()
 	if err != nil {
