@@ -68,10 +68,10 @@ _Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirl
 %s
 
 ⚙️ *Comandi*
-*/tip* 🏅 Rispondi così a un messaggio per inviare una mancia: `/tip <ammontare> [<descrizione>]`
+*/tip* 🏅 Rispondi così a un messaggio per inviare una mancia: `/tip <ammontare> [<memo>]`
 */balance* 👑 Verifica il tuo saldo residuo: `/balance`
-*/send* 💸 Invia fondi a un utente: `/send <ammontare> @utente o utente@ln.tips [<descrizione>]`
-*/invoice* ⚡️ Ricevi attraverso Lightning: `/invoice <ammontare> [<descrizione>]`
+*/send* 💸 Invia fondi a un utente: `/send <ammontare> @utente o utente@ln.tips [<memo>]`
+*/invoice* ⚡️ Ricevi attraverso Lightning: `/invoice <ammontare> [<memo>]`
 */pay* ⚡️ Paga attraverso Lightning: `/pay <invoice>`
 */donate* ❤️ Dona per supportare questo progetto: `/donate 1000`
 */advanced* 🤖 Funzioni avanzate.
@@ -109,18 +109,18 @@ helpNoUsernameMessage = """👋 Per favore imposta un nome utente Telegram."""
 advancedMessage = """%s
 
 👉 *Comandi in linea*
-*send* 💸 Invia alcuni sat a una chat: `%s send <ammontare> [<utente>] [<descrizione>]`
-*receive* 🏅 Richiedi un pagamento: `... receive <ammontare> [<utente>] [<descrizione>]`
-*faucet* 🚰 Eroga fondi ai partecipanti della chat: `... faucet <ammontare_totale> <per_utente> [<descrizione>]`
-*tipjar* 🍯 Crea un tipjar: `... tipjar <ammontare_totale> <per_utente> [<descrizione>]`
+*send* 💸 Invia alcuni sat a una chat: `%s send <ammontare> [<utente>] [<memo>]`
+*receive* 🏅 Richiedi un pagamento: `... receive <ammontare> [<utente>] [<memo>]`
+*faucet* 🚰 Crea una distribuzione: `... faucet <totale> <per_utente> [<memo>]`
+*tipjar* 🍯 Crea un tipjar: `... tipjar <totale> <per_utente> [<memo>]`
 
 📖 Puoi usare i comandi in linea in ogni chat, anche nelle conversazioni private. Attendi un secondo dopo aver inviato un comando in linea e *clicca* sull'azione desiderata, non premere invio.
 
 ⚙️ *Comandi avanzati*
 */link* 🔗 Crea un collegamento al tuo wallet [BlueWallet](https://bluewallet.io/) o [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ Ricevi o paga un Lnurl: `/lnurl` or `/lnurl <lnurl>`
-*/faucet* 🚰 Eroga fondi ai partecipanti della chat: `/faucet <ammontare_totale> <per_utente>`
-*/tipjar* 🍯 Crea un tipjar: `/tipjar <ammontare_totale> <per_utente>`"""
+*/faucet* 🚰 Crea una distribuzione: `/faucet <totale> <per_utente>`
+*/tipjar* 🍯 Crea un tipjar: `/tipjar <totale> <per_utente>`"""
 
 # START
 
@@ -148,7 +148,7 @@ tipErrorMessage       = """🚫 Invio mancia non riuscito."""
 tipUndefinedErrorMsg  = """Per favore riprova più tardi."""
 tipHelpText           = """📖 Ops, non funziona. %s
 
-*Usage:* `/tip <ammontare> [<descrizione>]`
+*Usage:* `/tip <ammontare> [<memo>]`
 *Example:* `/tip 1000 meme fantastico!`"""
 
 # SEND
@@ -166,7 +166,7 @@ errorTryLaterMessage       = """🚫 Errore. Per favore riprova più tardi."""
 sendSyntaxErrorMessage     = """Hai specificato un ammontare e un destinatario? Puoi usare il comando /send per inviare sia a utenti Telegram come %s sia a un indirizzo Lightning del tipo LightningTipBot@ln.tips."""
 sendHelpText               = """📖 Ops, non ha funzionato. %s
 
-*Sintassi:* `/send <ammontare> <utente> [<descrizione>]`
+*Sintassi:* `/send <ammontare> <utente> [<memo>]`
 *Esempio:* `/send 1000 @LightningTipBot Amo questo bot ❤️`
 *Esempio:* `/send 1234 LightningTipBot@ln.tips`"""
 
@@ -177,7 +177,7 @@ invoiceEnterAmountMessage = """Hai inserito un ammontare?"""
 invoiceValidAmountMessage = """Hai inserito un ammontare valido?"""
 invoiceHelpText           = """📖 Ops, non ha funzionato. %s
 
-*Sintassi:* `/invoice <ammontare> [<descrizione>]`
+*Sintassi:* `/invoice <ammontare> [<memo>]`
 *Esempio:* `/invoice 1000 Grazie!`"""
 
 # PAY
@@ -245,7 +245,7 @@ couldNotLinkMessage = """🚫 Non sono riuscito a collegare il tuo wallet. Per f
 # FAUCET
 
 inlineQueryFaucetTitle        = """🚰 Crea una distribuzione di fondi."""
-inlineQueryFaucetDescription  = """Sintassi: @%s faucet <ammontare_totale> <per_utente>"""
+inlineQueryFaucetDescription  = """Sintassi: @%s faucet <totale> <per_utente>"""
 inlineResultFaucetTitle       = """🚰 Crea una distribuzione per un totale di %d sat."""
 inlineResultFaucetDescription = """👉 Clicca qui per creare una distribuzione di fondi in questa chat."""
 
@@ -264,13 +264,13 @@ inlineFaucetReceivedMessage             = """🚰 %s ti ha inviato %d sat."""
 inlineFaucetHelpFaucetInGroup           = """Crea una distribuzione in un gruppo in cui sia presente il bot oppure usa il 👉 comando in linea (/advanced per ulteriori funzionalità)."""
 inlineFaucetHelpText                    = """📖 Ops, non ha funzionato. %s
 
-*Sintassi:* `/faucet <ammontare_totale> <per_utente>`
+*Sintassi:* `/faucet <totale> <per_utente>`
 *Esempio:* `/faucet 210 21`"""
 
 # INLINE SEND
 
 inlineQuerySendTitle            = """💸 Invia pagamento in una chat."""
-inlineQuerySendDescription      = """Sintassi: @%s send <ammontare> [<utente>] [<descrizione>]"""
+inlineQuerySendDescription      = """Sintassi: @%s send <ammontare> [<utente>] [<memo>]"""
 inlineResultSendTitle           = """💸 Invio %d sat."""
 inlineResultSendDescription     = """👉 Clicca per inviare %d sat in questa chat."""
 
@@ -286,7 +286,7 @@ inlineSendBalanceLowMessage    = """🚫 Il tuo saldo è insufficiente (%d sat).
 # INLINE RECEIVE
 
 inlineQueryReceiveTitle        = """🏅 Richiedi un pagamento in una chat."""
-inlineQueryReceiveDescription  = """Sintassi: @%s receive <ammontare> [<utente>] [<descrizione>]"""
+inlineQueryReceiveDescription  = """Sintassi: @%s receive <ammontare> [<utente>] [<memo>]"""
 inlineResultReceiveTitle       = """🏅 Ricevi %d sat."""
 inlineResultReceiveDescription = """👉 Clicca per richiedere un pagamento di %d sat."""
 
