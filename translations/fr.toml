@@ -110,15 +110,17 @@ advancedMessage = """%s
 
 👉 *Inline commands*
 *send* 💸 Envoyer des sats : `%s send <montant> [<utilisateur>] [<memo>]`
-*receive* 🏅 Demander un paiement : `%s receive <montant> [<utilisateur>] [<memo>]`
-*faucet* 🚰 Créer un faucet: `%s faucet <capacité> <par_utilisateur> [<memo>]`
+*receive* 🏅 Demander un paiement : `... receive <montant> [<utilisateur>] [<memo>]`
+*faucet* 🚰 Créer un faucet: `... faucet <capacité> <par_utilisateur> [<memo>]`
+*tipjar* 🍯 Créer un tipjar: `... tipjar <capacité> <par_utilisateur> [<memo>]`
 
 📖 Vous pouvez utiliser ces commandes dans tous les chats et même dans les conversations privées. Attendez une seconde après avoir tapé une commandé puis *click* sur le résultat, n'appuyez pas sur entrée.
 
 ⚙️ *Commandes avancées*
 */link* 🔗 Lier votre wallet à [BlueWallet](https://bluewallet.io/) ou [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ Lnurl recevoir ou payer: `/lnurl` ou `/lnurl <lnurl>`
-*/faucet* 🚰 Créer un faucet `/faucet <capacité> <par_utilisateur>`"""
+*/faucet* 🚰 Créer un faucet: `/faucet <capacité> <par_utilisateur>`
+*/tipjar* 🍯 Créer un tipjar: `/tipjar <capacité> <par_utilisateur>`"""
 
 # START
 

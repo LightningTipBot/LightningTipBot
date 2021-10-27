@@ -110,15 +110,17 @@ advancedMessage = """%s
 
 👉 *Comandi in linea*
 *send* 💸 Invia alcuni sat a una chat: `%s send <ammontare> [<utente>] [<descrizione>]`
-*receive* 🏅 Richiedi un pagamento: `%s receive <ammontare> [<utente>] [<descrizione>]`
-*faucet* 🚰 Eroga fondi ai partecipanti della chat: `%s faucet <ammontare_totale> <per_utente> [<descrizione>]`
+*receive* 🏅 Richiedi un pagamento: `... receive <ammontare> [<utente>] [<descrizione>]`
+*faucet* 🚰 Eroga fondi ai partecipanti della chat: `... faucet <ammontare_totale> <per_utente> [<descrizione>]`
+*tipjar* 🍯 Crea un tipjar: `... tipjar <ammontare_totale> <per_utente> [<descrizione>]`
 
 📖 Puoi usare i comandi in linea in ogni chat, anche nelle conversazioni private. Attendi un secondo dopo aver inviato un comando in linea e *clicca* sull'azione desiderata, non premere invio.
 
 ⚙️ *Comandi avanzati*
 */link* 🔗 Crea un collegamento al tuo wallet [BlueWallet](https://bluewallet.io/) o [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ Ricevi o paga un Lnurl: `/lnurl` or `/lnurl <lnurl>`
-*/faucet* 🚰 Eroga fondi ai partecipanti della chat `/faucet <ammontare_totale> <per_utente>`"""
+*/faucet* 🚰 Eroga fondi ai partecipanti della chat: `/faucet <ammontare_totale> <per_utente>`
+*/tipjar* 🍯 Crea un tipjar: `/tipjar <ammontare_totale> <per_utente>`"""
 
 # START
 

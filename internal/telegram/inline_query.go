@@ -101,7 +101,7 @@ func (bot TipBot) commandTranslationMap(ctx context.Context, command string) con
 	// case "faucet":
 	// 	ctx = context.WithValue(ctx, "publicLanguageCode", "en")
 	// 	ctx = context.WithValue(ctx, "publicLocalizer", i18n.NewLocalizer(i18n.Bundle, "en"))
-	case "zapfhahn":
+	case "zapfhahn", "spendendose":
 		ctx = context.WithValue(ctx, "publicLanguageCode", "de")
 		ctx = context.WithValue(ctx, "publicLocalizer", i18n2.NewLocalizer(i18n.Bundle, "de"))
 	case "kraan":
@@ -135,7 +135,11 @@ func (bot TipBot) anyQueryHandler(ctx context.Context, q *tb.Query) {
 		}
 		bot.handleInlineFaucetQuery(ctx, q)
 	}
-	if strings.HasPrefix(q.Text, "tipjar") {
+	if strings.HasPrefix(q.Text, "tipjar") || strings.HasPrefix(q.Text, "spendendose") {
+		if len(strings.Split(q.Text, " ")) > 1 {
+			c := strings.Split(q.Text, " ")[0]
+			ctx = bot.commandTranslationMap(ctx, c)
+		}
 		bot.handleInlineTipjarQuery(ctx, q)
 	}
 

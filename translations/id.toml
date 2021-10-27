@@ -110,15 +110,17 @@ advancedMessage = """%s
 
 👉 *Sebaris perintah*
 *send* 💸 Kirim sats ke percakapan: `%s send <jumlah> [<berita>]`
-*receive* 🏅 Permintaan pembayaran: `%s receive <jumlah> [<berita>]`
-*faucet* 🚰 Membuat sebuah keran: `%s faucet <kapasitas> <per_pengguna>`
+*receive* 🏅 Permintaan pembayaran: `... receive <jumlah> [<berita>]`
+*faucet* 🚰 Membuat sebuah keran: `... faucet <kapasitas> <per_pengguna>`
+*tipjar* 🍯 Create a tipjar: `... tipjar <capacity> <per_user> [<memo>]`
 
 📖 Kamu dapat menggunakan sebaris perintah di tiap percakapan, bahkan di percakapan privat. Tunggu sejenak setelah memasukkan sebaris perintah lalu *pencet* hasilnya, jangan tekan enter.
 
 ⚙️ *Perintah lanjutan*
 */link* 🔗 Menghubungkan dompet mu ke [BlueWallet](https://bluewallet.io/) atau [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ Lnurl menerima atau membayar: `/lnurl` atau `/lnurl <lnurl>`
-*/faucet* 🚰 Membuat sebuah keran `/faucet <kapasitas> <per_pengguna>`"""
+*/faucet* 🚰 Membuat sebuah keran `/faucet <kapasitas> <per_pengguna>`
+*/tipjar* 🍯 Create a tipjar: `/tipjar <capacity> <per_user>`"""
 
 # START
 

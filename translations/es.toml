@@ -110,15 +110,17 @@ advancedMessage = """%s
 
 👉 *Comandos Inline*
 *send* 💸 Enviar sats al chat: `%s send <monto> [<usario>] [<memo>]`
-*receive* 🏅 Solicita un pago: `%s receive <monto> [<usario>] [<memo>]`.
-*faucet* 🚰 Crear un grifo: `%s faucet <capacidad> <por_usuario> [<memo>]`.
+*receive* 🏅 Solicita un pago: `... receive <monto> [<usario>] [<memo>]`
+*faucet* 🚰 Crear un grifo: `... faucet <capacidad> <por_usuario> [<memo>]`
+*tipjar* 🍯 Crear un tipjar: `... tipjar <capacidad> <por_usuario> [<memo>]`
 
 📖 Puedes usar comandos _inline_ en todos los chats, incluso en las conversaciones privadas. Espera un segundo después de introducir un comando _inline_ y *haz clic* en el resultado, no pulses enter.
 
 ⚙️ *Comandos avanzados*
 */link* 🔗 Enlaza tu monedero a [ BlueWallet ](https://bluewallet.io/) o [ Zeus ](https://zeusln.app/)
 */lnurl* ⚡️ Lnurl recibir o pagar: `/lnurl` o `/lnurl <lnurl>`
-*/faucet* 🚰 Crear un grifo: `%s faucet <capacidad> <por_usuario>`"""
+*/faucet* 🚰 Crear un grifo: `/faucet <capacidad> <por_usuario>`
+*/tipjar* 🍯 Crear un tipjar: `/tipjar <capacidad> <por_usuario>`"""
 
 # START
 

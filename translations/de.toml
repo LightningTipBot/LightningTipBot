@@ -110,15 +110,17 @@ advancedMessage = """%s
 
 👉 *Inline Befehle*
 *send* 💸 Sende sats an einen Chat: `%s send <betrag> [<user>] [<memo>]`
-*receive* 🏅 Bitte um Zahlung: `%s receive <betrag> [<user>] [<memo>]`
-*faucet* 🚰 Erzeuge einen Zapfhahn: `%s faucet <gesamt> <pro_user> [<memo>]`
+*receive* 🏅 Bitte um Zahlung: `... receive <betrag> [<user>] [<memo>]`
+*faucet* 🚰 Erzeuge einen Zapfhahn: `... faucet <gesamt> <pro_user> [<memo>]`
+*tipjar* 🍯 Erzeuge eine Spendendose: `... tipjar <gesamt> <pro_user> [<memo>]`
 
 📖 Du kannst Inline Befehle in jedem Chat verwenden, sogar in privaten Nachrichten. Warte eine Sekunde, nachdem du den Befehl eingegeben hast und *klicke* auf das Ergebnis, statt Enter einzugeben.
 
 ⚙️ *Fortgeschrittene Befehle*
 */link* 🔗 Verbinde dein Wallet mit [BlueWallet](https://bluewallet.io/) oder [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ Lnurl empfangen oder senden: `/lnurl` or `/lnurl <lnurl>`
-*/faucet* 🚰 Erzeuge einen Zapfhahn `/faucet <gesamt> <pro_user>`"""
+*/faucet* 🚰 Erzeuge einen Zapfhahn: `/faucet <gesamt> <pro_user>`
+*/tipjar* 🍯 Erzeuge eine Spendendose: `/tipjar <gesamt> <pro_user>`"""
 
 # START
 
@@ -284,7 +286,7 @@ inlineSendBalanceLowMessage = """🚫 Dein Guthaben reicht nicht aus."""
 # INLINE RECEIVE
 
 inlineQueryReceiveTitle = """🏅 Empfange eine Zahlung in einem Chat."""
-inlineQueryReceiveDescription = """Befehl: @%s receive <betrag> [<user>] [<memo>]"""
+inlineQueryReceiveDescription = """Befehl: @%s receive <betrag> [<pro_user>] [<memo>]"""
 inlineResultReceiveTitle = """🏅 Empfange %d sat."""
 inlineResultReceiveDescription = """👉 Klicke hier um eine Zahlung von %d sat zu empfangen."""
 
@@ -295,3 +297,27 @@ inlineReceiveCreateWalletMessage = """Chatte mit %s 👈 um dein Wallet zu verwa
 inlineReceiveYourselfMessage = """📖 Du kannst dich nicht selbst bezahlen."""
 inlineReceiveFailedMessage = """🚫 Empfangen fehlgeschlagen."""
 inlineReceiveCancelledMessage = """🚫 Empfangen abgebrochen."""
+
+# TIPJAR
+
+inlineQueryTipjarTitle        = """🍯 Erzeuge eine Spendendose."""
+inlineQueryTipjarDescription  = """Befehl: @%s tipjar <betrag> <pro_user>"""
+inlineResultTipjarTitle       = """🍯 Erzeuge eine Spendendose für %d sat."""
+inlineResultTipjarDescription = """👉 Klicke hier um eine Spendendose zu erzeugen."""
+
+inlineTipjarMessage                     = """Drücke 💸 up *%d sat* in die Spendendose von %s zu *zahlen*.
+
+🙏 Gespendet: *%d*/%d sat (von %d Benutzern)
+%s"""
+inlineTipjarEndedMessage                = """🍯 %s's Spendendose is voll ⭐️\n\n🏅 %d sat gespendet von %d Nutzern."""
+inlineTipjarAppendMemo                  = """\n✉️ %s"""
+inlineTipjarCancelledMessage            = """🚫 Spendendose abgebrochen."""
+inlineTipjarInvalidPeruserAmountMessage = """🚫 Die Pro-User Menge muss ein natürlicher Teiler der Gesamtmenge sein."""
+inlineTipjarInvalidAmountMessage        = """🚫 Ungültige Menge."""
+inlineTipjarSentMessage                 = """🍯 %d sat an %s gesendet."""
+inlineTipjarReceivedMessage             = """🍯 %s hat dir %d sat gesendet."""
+inlineTipjarHelpTipjarInGroup           = """Erzeuge eine Spendendose in einer Gruppe, wo der Bot eingeladen ist oder benutze einen 👉 Inline Befehl (/advanced für mehr)."""
+inlineTipjarHelpText                    = """📖 Ups, das hat nicht geklappt. %s
+
+*Befehl:* `/tipjar <betrag> <pro_user>`
+*Beispiel:* `/tipjar 210 21`"""

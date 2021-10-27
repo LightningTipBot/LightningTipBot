@@ -60,7 +60,6 @@ infoButtonMessage = """Info"""
 cancelButtonEmoji = """🚫"""
 payButtonEmoji = """💸"""
 
-
 # HELP
 
 helpMessage = """⚡️ *Wallet*
@@ -114,15 +113,17 @@ advancedMessage = """%s
 
 👉 *Inline commands*
 *send* 💸 Send sats to chat: `%s send <amount> [<user>] [<memo>]`
-*receive* 🏅 Request a payment: `%s receive <amount> [<user>] [<memo>]`
-*faucet* 🚰 Create a faucet: `%s faucet <capacity> <per_user> [<memo>]`
+*receive* 🏅 Request a payment: `... receive <amount> [<user>] [<memo>]`
+*faucet* 🚰 Create a faucet: `... faucet <capacity> <per_user> [<memo>]`
+*tipjar* 🍯 Create a tipjar: `... tipjar <capacity> <per_user> [<memo>]`
 
 📖 You can use inline commands in every chat, even in private conversations. Wait a second after entering an inline command and *click* the result, don't press enter.
 
 ⚙️ *Advanced commands*
 */link* 🔗 Link your wallet to [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ Lnurl receive or pay: `/lnurl` or `/lnurl <lnurl>`
-*/faucet* 🚰 Create a faucet `/faucet <capacity> <per_user>`"""
+*/faucet* 🚰 Create a faucet: `/faucet <capacity> <per_user>`
+*/tipjar* 🍯 Create a tipjar: `/tipjar <capacity> <per_user>`"""
 
 # START
 
