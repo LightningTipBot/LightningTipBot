@@ -86,9 +86,9 @@ func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) (*lnbits.User, e
 		log.Errorln(errmsg)
 		return user, err
 	}
-	tx := bot.Database.Save(user)
-	if tx.Error != nil {
-		return nil, tx.Error
+	err = UpdateUserRecord(user, *bot)
+	if err != nil {
+		return nil, err
 	}
 	log.Printf("[CreateWalletForTelegramUser] Wallet created for user %s. ", userStr)
 	return user, nil
