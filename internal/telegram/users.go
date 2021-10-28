@@ -16,11 +16,13 @@ func SetUserState(user *lnbits.User, bot *TipBot, stateKey lnbits.UserStateKey, 
 	user.StateKey = stateKey
 	user.StateData = stateData
 	bot.Database.Table("users").Where("name = ?", user.Name).Update("state_key", user.StateKey).Update("state_data", user.StateData)
+	updateCachedUser(user, *bot)
 }
 
 func ResetUserState(user *lnbits.User, bot *TipBot) {
 	user.ResetState()
 	bot.Database.Table("users").Where("name = ?", user.Name).Update("state_key", 0).Update("state_data", "")
+	updateCachedUser(user, *bot)
 }
 
 func GetUserStr(user *tb.User) string {
