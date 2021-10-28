@@ -160,19 +160,17 @@ func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 		// update possibly changed user details in Database
 		user.Telegram = u
 		updateCachedUser(user, bot)
-		go updatePersistentUser(user, bot)
+		go func() {
+			err = UpdateUserRecord(user, bot)
+			if err != nil {
+				log.Warnln(fmt.Sprintf("[UpdateUserRecord] %s", err.Error()))
+			}
+		}()
 	}
 	return user, err
 }
 func updateCachedUser(apiUser *lnbits.User, bot TipBot) {
 	bot.Cache.Set(apiUser.Name, apiUser, &store.Options{Expiration: 10 * time.Second})
-}
-
-func updatePersistentUser(apiUser *lnbits.User, bot TipBot) {
-	err := UpdateUserRecord(apiUser, bot)
-	if err != nil {
-		log.Warnln(fmt.Sprintf("[UpdateUserRecord] %s", err.Error()))
-	}
 }
 
 func telegramUserChanged(apiUser, stateUser *tb.User) bool {
