@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -133,7 +132,7 @@ func (w Server) serveLNURLpSecond(username string, amount int64, comment string)
 		tx = w.database.Where("anon_id = ?", username).First(user)
 	} else {
 		// assume it's a string @username
-		tx = w.database.Where("telegram_username = ?", strings.ToLower(username)).First(user)
+		tx = w.database.Where("telegram_username = ? COLLATE NOCASE", username).First(user)
 	}
 
 	if tx.Error != nil {

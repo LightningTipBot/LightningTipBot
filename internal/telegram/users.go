@@ -3,8 +3,6 @@ package telegram
 import (
 	"errors"
 	"fmt"
-	"strings"
-
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -61,7 +59,6 @@ func appendUinqueUsersToSlice(slice []*tb.User, i *tb.User) []*tb.User {
 }
 
 func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int, err error) {
-
 	wallet, err := bot.Client.Info(*user.Wallet)
 	if err != nil {
 		errmsg := fmt.Sprintf("[GetUserBalance] Error: Couldn't fetch user %s's info from LNbits: %s", GetUserStr(user.Telegram), err.Error())
@@ -79,16 +76,8 @@ func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int, err error) {
 	return
 }
 
-// CopyLowercaseUser will create a coy user and cast username to lowercase.
-func (bot *TipBot) CopyLowercaseUser(u *tb.User) *tb.User {
-	userCopy := *u
-	userCopy.Username = strings.ToLower(u.Username)
-	return &userCopy
-}
-
 func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) (*lnbits.User, error) {
-	userCopy := bot.CopyLowercaseUser(tbUser)
-	user := &lnbits.User{Telegram: userCopy}
+	user := &lnbits.User{Telegram: tbUser}
 	userStr := GetUserStr(tbUser)
 	log.Printf("[CreateWalletForTelegramUser] Creating wallet for user %s ... ", userStr)
 	err := bot.createWallet(user)

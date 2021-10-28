@@ -2,10 +2,10 @@ package telegram
 
 import (
 	"fmt"
+	"github.com/eko/gocache/store"
 	"reflect"
 	"runtime/debug"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
@@ -56,22 +56,11 @@ func (bot *TipBot) enableUsersCache() chan *lnbits.User {
 		// fetch all users in interval i and update in map
 		for {
 			user := <-cacheChan
-			bot.m.Lock()
 			// todo -- configurable good until
-			bot.Users[user.Name] = cachedUser{goodUntil: time.Second * 10, User: user}
-			bot.deleteUserFromCache(bot.Users[user.Name])
-			bot.m.Unlock()
+			bot.Cache.Set(user.Name, user, &store.Options{Expiration: 10 * time.Second})
 		}
 	}()
 	return cacheChan
-}
-func (bot *TipBot) deleteUserFromCache(cachedUser cachedUser) {
-	go func() {
-		time.Sleep(cachedUser.goodUntil)
-		bot.m.Lock()
-		defer bot.m.Unlock()
-		delete(bot.Users, cachedUser.Name)
-	}()
 }
 
 func ColumnMigrationTasks(db *gorm.DB) error {
@@ -117,7 +106,7 @@ func AutoMigration() (db *gorm.DB, txLogger *gorm.DB) {
 
 func GetUserByTelegramUsername(toUserStrWithoutAt string, bot TipBot) (*lnbits.User, error) {
 	toUserDb := &lnbits.User{}
-	tx := bot.Database.Where("telegram_username = ?", strings.ToLower(toUserStrWithoutAt)).First(toUserDb)
+	tx := bot.Database.Where("telegram_username = ? COLLATE NOCASE", toUserStrWithoutAt).First(toUserDb)
 	if tx.Error != nil || toUserDb.Wallet == nil {
 		err := tx.Error
 		if toUserDb.Wallet == nil {
@@ -129,10 +118,8 @@ func GetUserByTelegramUsername(toUserStrWithoutAt string, bot TipBot) (*lnbits.U
 }
 func getCachedUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 	user := &lnbits.User{Name: strconv.Itoa(u.ID)}
-	bot.m.Lock()
-	defer bot.m.Unlock()
-	if us, ok := bot.Users[user.Name]; ok {
-		return us.User, nil
+	if us, err := bot.Cache.Get(user.Name); err == nil {
+		return us.(*lnbits.User), nil
 	}
 	user.Telegram = u
 	return user, gorm.ErrRecordNotFound
@@ -160,31 +147,42 @@ func GetLnbitsUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 
 // GetUser from Telegram user. Update the user if user information changed.
 func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
-	var user cachedUser
-	var cached bool
+	var user *lnbits.User
 	var err error
-	if user, cached = bot.Cache.Users[strconv.Itoa(u.ID)]; !cached {
-		user.User, err = GetLnbitsUser(u, bot)
+	if user, err = getCachedUser(u, bot); err != nil {
+		user, err = GetLnbitsUser(u, bot)
 		if err != nil {
-			return user.User, err
+			return user, err
 		}
+		updateCachedUser(user, bot)
 	}
-	go func() {
-		userCopy := bot.CopyLowercaseUser(u)
-		if !reflect.DeepEqual(userCopy, user.Telegram) {
-			// update possibly changed user details in Database
-			user.Telegram = userCopy
-			err := UpdateUserRecord(user.User, bot)
-			if err != nil {
-				log.Warnln(fmt.Sprintf("[UpdateUserRecord] %s", err.Error()))
-			}
-		}
-	}()
-	return user.User, err
+	if telegramUserChanged(u, user.Telegram) {
+		// update possibly changed user details in Database
+		user.Telegram = u
+		updateCachedUser(user, bot)
+		go updatePersistentUser(user, bot)
+	}
+	return user, err
+}
+func updateCachedUser(apiUser *lnbits.User, bot TipBot) {
+	bot.Cache.Set(apiUser.Name, apiUser, &store.Options{Expiration: 10 * time.Second})
+}
+
+func updatePersistentUser(apiUser *lnbits.User, bot TipBot) {
+	err := UpdateUserRecord(apiUser, bot)
+	if err != nil {
+		log.Warnln(fmt.Sprintf("[UpdateUserRecord] %s", err.Error()))
+	}
+}
+
+func telegramUserChanged(apiUser, stateUser *tb.User) bool {
+	if reflect.DeepEqual(apiUser, stateUser) {
+		return false
+	}
+	return true
 }
 
 func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
-	user.Telegram = bot.CopyLowercaseUser(user.Telegram)
 	user.UpdatedAt = time.Now()
 	tx := bot.Database.Save(user)
 	if tx.Error != nil {

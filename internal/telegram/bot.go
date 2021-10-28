@@ -2,12 +2,14 @@ package telegram
 
 import (
 	"fmt"
+	"github.com/eko/gocache/store"
 	"sync"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	gocache "github.com/patrickmn/go-cache"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/tucnak/telebot.v2"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -23,8 +25,7 @@ type TipBot struct {
 	Cache
 }
 type Cache struct {
-	m        *sync.Mutex
-	Users    map[string]cachedUser
+	*store.GoCacheStore
 	userChan chan *lnbits.User
 }
 
@@ -35,6 +36,8 @@ var (
 
 // NewBot migrates data and creates a new bot
 func NewBot() TipBot {
+	gocacheClient := gocache.New(5*time.Minute, 10*time.Minute)
+	gocacheStore := store.NewGoCache(gocacheClient, nil)
 	// create sqlite databases
 	db, txLogger := AutoMigration()
 	return TipBot{
@@ -43,7 +46,7 @@ func NewBot() TipBot {
 		logger:   txLogger,
 		Bunt:     createBunt(),
 		Telegram: newTelegramBot(),
-		Cache:    Cache{m: &sync.Mutex{}, Users: make(map[string]cachedUser, 0)},
+		Cache:    Cache{GoCacheStore: gocacheStore},
 	}
 }
 
@@ -64,7 +67,6 @@ func newTelegramBot() *tb.Bot {
 // todo -- may want to derive user wallets from this specific bot wallet (master wallet), since lnbits usermanager extension is able to do that.
 func (bot TipBot) initBotWallet() error {
 	botWalletInitialisation.Do(func() {
-		time.Sleep(time.Second)
 		_, err := bot.initWallet(bot.Telegram.Me)
 		if err != nil {
 			log.Errorln(fmt.Sprintf("[initBotWallet] Could not initialize bot wallet: %s", err.Error()))
