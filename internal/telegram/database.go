@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/eko/gocache/store"
 	"reflect"
-	"runtime/debug"
 	"strconv"
 	"time"
 
@@ -35,27 +34,6 @@ func createBunt() *storage.DB {
 		panic(err)
 	}
 	return bunt
-}
-
-func (bot *TipBot) enableUsersCache() chan *lnbits.User {
-	cacheChan := make(chan *lnbits.User, 1)
-	go func() {
-		// create routine recovery
-		var withRecovery = func() {
-			if r := recover(); r != nil {
-				log.Errorln("Recovered panic: ", r)
-				debug.PrintStack()
-			}
-		}
-		defer withRecovery()
-		// fetch all users in interval i and update in map
-		for {
-			user := <-cacheChan
-			// todo -- configurable good until
-			bot.Cache.Set(user.Name, user, &store.Options{Expiration: 10 * time.Second})
-		}
-	}()
-	return cacheChan
 }
 
 func ColumnMigrationTasks(db *gorm.DB) error {
@@ -136,7 +114,6 @@ func GetLnbitsUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 		return user, tx.Error
 	}
 	// todo -- unblock this !
-	bot.Cache.userChan <- user
 	return user, nil
 }
 

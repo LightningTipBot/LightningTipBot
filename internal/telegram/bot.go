@@ -26,7 +26,6 @@ type TipBot struct {
 }
 type Cache struct {
 	*store.GoCacheStore
-	userChan chan *lnbits.User
 }
 
 var (
@@ -79,7 +78,6 @@ func (bot TipBot) initBotWallet() error {
 // Start will initialize the Telegram bot and lnbits.
 func (bot TipBot) Start() {
 	log.Infof("[Telegram] Authorized on account @%s", bot.Telegram.Me.Username)
-	bot.Cache.userChan = bot.enableUsersCache()
 	// initialize the bot wallet
 	err := bot.initBotWallet()
 	if err != nil {
