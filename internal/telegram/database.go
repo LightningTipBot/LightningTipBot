@@ -37,11 +37,6 @@ func createBunt() *storage.DB {
 	return bunt
 }
 
-type cachedUser struct {
-	goodUntil time.Duration
-	*lnbits.User
-}
-
 func (bot *TipBot) enableUsersCache() chan *lnbits.User {
 	cacheChan := make(chan *lnbits.User, 1)
 	go func() {
