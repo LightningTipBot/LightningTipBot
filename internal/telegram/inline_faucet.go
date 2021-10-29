@@ -64,7 +64,7 @@ func (bot TipBot) createFaucet(ctx context.Context, text string, sender *tb.User
 	nTotal := amount / perUserAmount
 	fromUser := LoadUser(ctx)
 	fromUserStr := GetUserStr(sender)
-	balance, err := bot.GetUserBalance(fromUser)
+	balance, err := bot.GetUserBalanceCached(fromUser)
 	if err != nil {
 		return nil, errors.New(errors.GetBalanceError, err)
 	}

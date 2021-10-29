@@ -60,7 +60,7 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 	}
 	fromUser := LoadUser(ctx)
 	fromUserStr := GetUserStr(&q.From)
-	balance, err := bot.GetUserBalance(fromUser)
+	balance, err := bot.GetUserBalanceCached(fromUser)
 	if err != nil {
 		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
 		log.Errorln(errmsg)
