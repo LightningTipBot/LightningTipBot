@@ -140,7 +140,7 @@ func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 }
 
 func updateCachedUser(apiUser *lnbits.User, bot TipBot) {
-	bot.Cache.Set(apiUser.Name, apiUser, &store.Options{Expiration: 10 * time.Second})
+	bot.Cache.Set(apiUser.Name, apiUser, &store.Options{Expiration: 1 * time.Minute})
 }
 
 func telegramUserChanged(apiUser, stateUser *tb.User) bool {

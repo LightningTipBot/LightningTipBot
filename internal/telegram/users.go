@@ -88,7 +88,7 @@ func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int, err error) {
 	bot.Cache.Set(
 		fmt.Sprintf("%s_balance", user.Name),
 		amount,
-		&store.Options{Expiration: 10 * time.Second},
+		&store.Options{Expiration: 30 * time.Second},
 	)
 	return
 }
