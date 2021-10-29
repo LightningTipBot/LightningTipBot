@@ -75,6 +75,7 @@ func (bot TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 		bot.Client)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err)
+		bot.trySendMessage(m.Sender, Translate(ctx, "errorTryLaterMessage"))
 		log.Errorln(errmsg)
 		return
 	}
@@ -83,6 +84,7 @@ func (bot TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 	qr, err := qrcode.Encode(invoice.PaymentRequest, qrcode.Medium, 256)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Failed to create QR code for invoice: %s", err)
+		bot.trySendMessage(m.Sender, Translate(ctx, "errorTryLaterMessage"))
 		log.Errorln(errmsg)
 		return
 	}
