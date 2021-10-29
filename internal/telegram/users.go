@@ -21,7 +21,6 @@ func SetUserState(user *lnbits.User, bot *TipBot, stateKey lnbits.UserStateKey, 
 
 func ResetUserState(user *lnbits.User, bot *TipBot) {
 	user.ResetState()
-	bot.Database.Table("users").Where("name = ?", user.Name).Update("state_key", 0).Update("state_data", "")
 	UpdateUserRecord(user, *bot)
 }
 
