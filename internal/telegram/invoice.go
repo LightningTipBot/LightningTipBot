@@ -64,6 +64,7 @@ func (bot TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 		memo = memo + tag
 	}
 
+	creatingMsg := bot.trySendMessage(m.Sender, "🧮 Creating invoice ...")
 	log.Infof("[/invoice] Creating invoice for %s of %d sat.", userStr, amount)
 	// generate invoice
 	invoice, err := user.Wallet.Invoice(
@@ -75,7 +76,7 @@ func (bot TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 		bot.Client)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err)
-		bot.trySendMessage(m.Sender, Translate(ctx, "errorTryLaterMessage"))
+		bot.tryEditMessage(creatingMsg, Translate(ctx, "errorTryLaterMessage"))
 		log.Errorln(errmsg)
 		return
 	}
@@ -84,11 +85,12 @@ func (bot TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 	qr, err := qrcode.Encode(invoice.PaymentRequest, qrcode.Medium, 256)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Failed to create QR code for invoice: %s", err)
-		bot.trySendMessage(m.Sender, Translate(ctx, "errorTryLaterMessage"))
+		bot.tryEditMessage(creatingMsg, Translate(ctx, "errorTryLaterMessage"))
 		log.Errorln(errmsg)
 		return
 	}
 
+	bot.tryDeleteMessage(creatingMsg)
 	// send the invoice data to user
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
 	log.Printf("[/invoice] Incvoice created. User: %s, amount: %d sat.", userStr, amount)

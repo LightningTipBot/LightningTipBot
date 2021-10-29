@@ -159,10 +159,12 @@ func (bot *TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
 		bot.tryDeleteMessage(c.Message)
+		bot.tryEditMessage(c.Message, i18n.Translate(payData.LanguageCode, "errorTryLaterMessage"), &tb.ReplyMarkup{})
 		return
 	}
 	if !payData.Active {
 		log.Errorf("[confirmPayHandler] send not active anymore")
+		bot.tryEditMessage(c.Message, i18n.Translate(payData.LanguageCode, "errorTryLaterMessage"), &tb.ReplyMarkup{})
 		bot.tryDeleteMessage(c.Message)
 		return
 	}
@@ -219,7 +221,7 @@ func (bot *TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 	sn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
-		log.Errorf("[cancelPaymentHandler] %s", err)
+		log.Errorf("[cancelPaymentHandler] %s", err.Error())
 		return
 	}
 	payData := sn.(*PayData)
