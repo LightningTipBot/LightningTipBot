@@ -64,7 +64,7 @@ func (bot TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 		memo = memo + tag
 	}
 
-	creatingMsg := bot.trySendMessage(m.Sender, "🧮 Creating invoice ...")
+	creatingMsg := bot.trySendMessage(m.Sender, Translate(ctx, "lnurlGettingUserMessage"))
 	log.Infof("[/invoice] Creating invoice for %s of %d sat.", userStr, amount)
 	// generate invoice
 	invoice, err := user.Wallet.Invoice(
