@@ -184,7 +184,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 		return
 	}
 	// balance check of the user
-	balance, err := bot.GetUserBalance(from)
+	balance, err := bot.GetUserBalanceCached(from)
 	if err != nil {
 		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
 		log.Errorln(errmsg)

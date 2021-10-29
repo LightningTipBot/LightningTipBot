@@ -3,13 +3,13 @@ package telegram
 import (
 	"errors"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/str"
-
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
+	"github.com/eko/gocache/store"
 	log "github.com/sirupsen/logrus"
-
 	tb "gopkg.in/tucnak/telebot.v2"
 	"gorm.io/gorm"
+	"time"
 )
 
 func SetUserState(user *lnbits.User, bot *TipBot, stateKey lnbits.UserStateKey, stateData string) {
@@ -60,6 +60,15 @@ func appendUinqueUsersToSlice(slice []*tb.User, i *tb.User) []*tb.User {
 	return append(slice, i)
 }
 
+func (bot *TipBot) GetUserBalanceCached(user *lnbits.User) (amount int, err error) {
+	u, err := bot.Cache.Get(fmt.Sprintf("%s_balance", user.Name))
+	if err != nil {
+		return bot.GetUserBalance(user)
+	}
+	cachedBalance := u.(int)
+	return cachedBalance, nil
+}
+
 func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int, err error) {
 	wallet, err := bot.Client.Info(*user.Wallet)
 	if err != nil {
@@ -75,6 +84,13 @@ func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int, err error) {
 	// msat to sat
 	amount = int(wallet.Balance) / 1000
 	log.Infof("[GetUserBalance] %s's balance: %d sat\n", GetUserStr(user.Telegram), amount)
+
+	// update user balance in cache
+	bot.Cache.Set(
+		fmt.Sprintf("%s_balance", user.Name),
+		amount,
+		&store.Options{Expiration: 10 * time.Second},
+	)
 	return
 }
 
