@@ -39,10 +39,6 @@ func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 	if user.Wallet == nil {
 		return
 	}
-	// if len(strings.Split(m.Text, " ")) < 2 {
-	// 	bot.trySendMessage(m.Sender, helpDonateUsage(ctx, Translate(ctx, "donateEnterAmountMessage")))
-	// 	return
-	// }
 	// if no amount is in the command, ask for it
 	amount, err := decodeAmountFromCommand(m.Text)
 	if (err != nil || amount < 1) && m.Chat.Type == tb.ChatPrivate {
@@ -50,14 +46,6 @@ func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 		bot.askForAmount(ctx, "", "CreateDonationState", 0, 0, m.Text)
 		return
 	}
-	// amount, err := decodeAmountFromCommand(m.Text)
-	// if err != nil {
-	// 	return
-	// }
-	// if amount < 1 {
-	// 	bot.trySendMessage(m.Sender, helpDonateUsage(ctx, Translate(ctx, "donateValidAmountMessage")))
-	// 	return
-	// }
 
 	// command is valid
 	msg := bot.trySendMessage(user.Telegram, Translate(ctx, "donationProgressMessage"))
