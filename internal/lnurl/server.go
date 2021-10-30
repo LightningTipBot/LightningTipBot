@@ -2,11 +2,12 @@ package lnurl
 
 import (
 	"encoding/json"
-	"github.com/LightningTipBot/LightningTipBot/internal"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -32,7 +33,7 @@ const (
 	lnurlEndpoint  = ".well-known/lnurlp"
 	minSendable    = 1000 // mSat
 	MaxSendable    = 1_000_000_000
-	CommentAllowed = 256
+	CommentAllowed = 500
 )
 
 func NewServer(bot *telegram.TipBot) *Server {
