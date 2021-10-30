@@ -49,7 +49,7 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 	amount, err := decodeAmountFromCommand(m.Text)
 	if err != nil || amount < 1 {
 		// // no amount was entered, set user state and ask for amount
-		bot.askForAmount(ctx, id, "LnurlPayState", lnurlPayState.LNURLPayResponse1.MinSendable, lnurlPayState.LNURLPayResponse1.MaxSendable)
+		bot.askForAmount(ctx, id, "LnurlPayState", lnurlPayState.LNURLPayResponse1.MinSendable, lnurlPayState.LNURLPayResponse1.MaxSendable, m.Text)
 		return
 	}
 

@@ -41,6 +41,9 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 	// /lnurl
 	// /lnurl <LNURL>
 	// or /lnurl <amount> <LNURL>
+	if m.Chat.Type != tb.ChatPrivate {
+		return
+	}
 	log.Infof("[lnurlHandler] %s", m.Text)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {

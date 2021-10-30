@@ -63,7 +63,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
 
 	// If the send is a reply, then trigger /tip handler
-	if m.IsReply() {
+	if m.IsReply() && m.Chat.Type != tb.ChatPrivate {
 		bot.tipHandler(ctx, m)
 		return
 	}
@@ -100,6 +100,11 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 
 	// todo: this error might have been overwritten by the functions above
 	// we should only check for a valid amount here, instead of error and amount
+	amount, err = decodeAmountFromCommand(m.Text)
+	if (err != nil || amount < 1) && m.Chat.Type == tb.ChatPrivate {
+		bot.askForAmount(ctx, "", "CreateSendState", 0, 0, m.Text)
+		return
+	}
 
 	// ASSUME INTERNAL SEND TO TELEGRAM USER
 	if err != nil || amount < 1 {
@@ -118,7 +123,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	toUserStrMention := ""
 	toUserStrWithoutAt := ""
 
-	// check for user in command, accepts user mention or plan username without @
+	// check for user in command, accepts user mention or plain username without @
 	if len(m.Entities) > 1 && m.Entities[1].Type == "mention" {
 		toUserStrMention = m.Text[m.Entities[1].Offset : m.Entities[1].Offset+m.Entities[1].Length]
 		toUserStrWithoutAt = strings.TrimPrefix(toUserStrMention, "@")

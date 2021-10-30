@@ -78,23 +78,25 @@ func getAmount(input string) (amount int, err error) {
 }
 
 type EnterAmountStateData struct {
-	ID        string `json:"ID"`        // holds the ID of the tx object in bunt db
-	Type      string `json:"Type"`      // holds type of the tx in bunt db (needed for type checking)
-	Amount    int64  `json:"Amount"`    // holds the amount entered by the user mSat
-	AmountMin int64  `json:"AmountMin"` // holds the minimum amount that needs to be entered mSat
-	AmountMax int64  `json:"AmountMax"` // holds the maximum amount that needs to be entered mSat
+	ID              string `json:"ID"`              // holds the ID of the tx object in bunt db
+	Type            string `json:"Type"`            // holds type of the tx in bunt db (needed for type checking)
+	Amount          int64  `json:"Amount"`          // holds the amount entered by the user mSat
+	AmountMin       int64  `json:"AmountMin"`       // holds the minimum amount that needs to be entered mSat
+	AmountMax       int64  `json:"AmountMax"`       // holds the maximum amount that needs to be entered mSat
+	OiringalCommand string `json:"OiringalCommand"` // hold the originally entered command for evtl later use
 }
 
-func (bot *TipBot) askForAmount(ctx context.Context, id string, eventType string, amountMin int64, amountMax int64) (enterAmountStateData *EnterAmountStateData, err error) {
+func (bot *TipBot) askForAmount(ctx context.Context, id string, eventType string, amountMin int64, amountMax int64, originalCommand string) (enterAmountStateData *EnterAmountStateData, err error) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return // errors.New("user has no wallet"), 0
 	}
 	enterAmountStateData = &EnterAmountStateData{
-		ID:        id,
-		Type:      eventType,
-		AmountMin: amountMin,
-		AmountMax: amountMax,
+		ID:              id,
+		Type:            eventType,
+		AmountMin:       amountMin,
+		AmountMax:       amountMax,
+		OiringalCommand: originalCommand,
 	}
 	// set LNURLPayResponse1 in the state of the user
 	stateDataJson, err := json.Marshal(enterAmountStateData)
@@ -129,14 +131,14 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 	var EnterAmountStateData EnterAmountStateData
 	err := json.Unmarshal([]byte(user.StateData), &EnterAmountStateData)
 	if err != nil {
-		log.Errorf("[enterAmountHandler] Error: %s", err.Error())
+		log.Errorf("[enterAmountHandler] %s", err.Error())
 		ResetUserState(user, bot)
 		return
 	}
 
 	amount, err := getAmount(m.Text)
 	if err != nil {
-		log.Warnf("[enterAmountHandler] Error: %s", err.Error())
+		log.Warnf("[enterAmountHandler] %s", err.Error())
 		bot.trySendMessage(m.Sender, Translate(ctx, "lnurlInvalidAmountMessage"))
 		ResetUserState(user, bot)
 		return //err, 0
@@ -145,7 +147,7 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 	if EnterAmountStateData.AmountMin > 0 && EnterAmountStateData.AmountMax >= EnterAmountStateData.AmountMin && // this line checks whether min_max is set at all
 		(amount > int(EnterAmountStateData.AmountMax/1000) || amount < int(EnterAmountStateData.AmountMin/1000)) { // this line then checks whether the amount is in the range
 		err = fmt.Errorf("amount not in range")
-		log.Warnf("[enterAmountHandler] Error: %s", err.Error())
+		log.Warnf("[enterAmountHandler] %s", err.Error())
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), EnterAmountStateData.AmountMin/1000, EnterAmountStateData.AmountMax/1000))
 		ResetUserState(user, bot)
 		return
@@ -176,8 +178,25 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 		return
 	case "CreateInvoiceState":
 		m.Text = fmt.Sprintf("/invoice %d", amount)
+		log.Infoln(m.Text)
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
 		bot.invoiceHandler(ctx, m)
+		return
+	case "CreateDonationState":
+		m.Text = fmt.Sprintf("/donate %d", amount)
+		log.Infoln(m.Text)
+		SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
+		bot.donationHandler(ctx, m)
+		return
+	case "CreateSendState":
+		splits := strings.SplitAfterN(EnterAmountStateData.OiringalCommand, " ", 2)
+		if len(splits) > 1 {
+			m.Text = fmt.Sprintf("/send %d %s", amount, splits[1])
+			log.Infoln(m.Text)
+			SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
+			bot.sendHandler(ctx, m)
+			return
+		}
 		return
 	default:
 		ResetUserState(user, bot)

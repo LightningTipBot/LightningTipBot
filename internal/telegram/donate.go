@@ -3,11 +3,12 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	log "github.com/sirupsen/logrus"
@@ -34,24 +35,34 @@ func helpDonateUsage(ctx context.Context, errormsg string) string {
 func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)
-
-	if len(strings.Split(m.Text, " ")) < 2 {
-		bot.trySendMessage(m.Sender, helpDonateUsage(ctx, Translate(ctx, "donateEnterAmountMessage")))
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
 		return
 	}
+	// if len(strings.Split(m.Text, " ")) < 2 {
+	// 	bot.trySendMessage(m.Sender, helpDonateUsage(ctx, Translate(ctx, "donateEnterAmountMessage")))
+	// 	return
+	// }
+	// if no amount is in the command, ask for it
 	amount, err := decodeAmountFromCommand(m.Text)
-	if err != nil {
+	if (err != nil || amount < 1) && m.Chat.Type == tb.ChatPrivate {
+		// // no amount was entered, set user state and ask for amount
+		bot.askForAmount(ctx, "", "CreateDonationState", 0, 0, m.Text)
 		return
 	}
-	if amount < 1 {
-		bot.trySendMessage(m.Sender, helpDonateUsage(ctx, Translate(ctx, "donateValidAmountMessage")))
-		return
-	}
+	// amount, err := decodeAmountFromCommand(m.Text)
+	// if err != nil {
+	// 	return
+	// }
+	// if amount < 1 {
+	// 	bot.trySendMessage(m.Sender, helpDonateUsage(ctx, Translate(ctx, "donateValidAmountMessage")))
+	// 	return
+	// }
 
 	// command is valid
-	msg := bot.trySendMessage(m.Sender, Translate(ctx, "donationProgressMessage"))
+	msg := bot.trySendMessage(user.Telegram, Translate(ctx, "donationProgressMessage"))
 	// get invoice
-	resp, err := http.Get(fmt.Sprintf(donationEndpoint, amount, GetUserStr(m.Sender), GetUserStr(bot.Telegram.Me)))
+	resp, err := http.Get(fmt.Sprintf(donationEndpoint, amount, GetUserStr(user.Telegram), GetUserStr(bot.Telegram.Me)))
 	if err != nil {
 		log.Errorln(err)
 		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
@@ -65,14 +76,14 @@ func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 	}
 
 	// send donation invoice
-	user := LoadUser(ctx)
+	// user := LoadUser(ctx)
 	// bot.trySendMessage(user.Telegram, string(body))
 	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: string(body)}, bot.Client)
 	if err != nil {
-		userStr := GetUserStr(m.Sender)
+		userStr := GetUserStr(user.Telegram)
 		errmsg := fmt.Sprintf("[/donate] Donation failed for user %s: %s", userStr, err)
 		log.Errorln(errmsg)
-		bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "donationFailedMessage"), err))
+		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
 		return
 	}
 	bot.tryEditMessage(msg, Translate(ctx, "donationSuccess"))
