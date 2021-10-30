@@ -226,7 +226,7 @@ lnurlPaymentFailed = """🚫 Ödeme başarısız: %s"""
 lnurlInvalidAmountMessage = """🚫 Geçersiz miktar."""
 lnurlInvalidAmountRangeMessage = """🚫 Miktar %d ve %d sat arasında olmalı."""
 lnurlNoUsernameMessage = """🚫 LNURL ödemesi almak için bir Telegram kullanıcı ismi seçmelisin."""
-lnurlEnterAmountMessage = """⌨️ %d ve %d sat arasında bir miktar gir."""
+lnurlEnterAmountRangeMessage = """⌨️ %d ve %d sat arasında bir miktar gir."""
 lnurlHelpText = """📖 Hoppalaa… olmadı. %s
 
 *Komut:* `/lnurl [miktar] <lnurl>`

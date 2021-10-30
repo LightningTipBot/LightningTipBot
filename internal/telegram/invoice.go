@@ -26,29 +26,21 @@ func helpInvoiceUsage(ctx context.Context, errormsg string) string {
 func (bot TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return
+	}
+	userStr := GetUserStr(user.Telegram)
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
 		bot.tryDeleteMessage(m)
 		return
 	}
-	if len(strings.Split(m.Text, " ")) < 2 {
-		bot.trySendMessage(m.Sender, helpInvoiceUsage(ctx, Translate(ctx, "invoiceEnterAmountMessage")))
-		return
-	}
-
-	user := LoadUser(ctx)
-	if user.Wallet == nil {
-		return
-	}
-
-	userStr := GetUserStr(m.Sender)
+	// if no amount is in the command, ask for it
 	amount, err := decodeAmountFromCommand(m.Text)
-	if err != nil {
-		return
-	}
-	if amount > 0 {
-	} else {
-		bot.trySendMessage(m.Sender, helpInvoiceUsage(ctx, Translate(ctx, "invoiceValidAmountMessage")))
+	if err != nil || amount < 1 {
+		// // no amount was entered, set user state and ask for amount
+		bot.askForAmount(ctx, "", "CreateInvoiceState", 0, 0)
 		return
 	}
 

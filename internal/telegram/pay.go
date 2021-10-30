@@ -31,14 +31,15 @@ func helpPayInvoiceUsage(ctx context.Context, errormsg string) string {
 
 type PayData struct {
 	*transaction.Base
-	From         *lnbits.User `json:"from"`
-	Invoice      string       `json:"invoice"`
-	Hash         string       `json:"hash"`
-	Proof        string       `json:"proof"`
-	Memo         string       `json:"memo"`
-	Message      string       `json:"message"`
-	Amount       int64        `json:"amount"`
-	LanguageCode string       `json:"languagecode"`
+	From            *lnbits.User `json:"from"`
+	Invoice         string       `json:"invoice"`
+	Hash            string       `json:"hash"`
+	Proof           string       `json:"proof"`
+	Memo            string       `json:"memo"`
+	Message         string       `json:"message"`
+	Amount          int64        `json:"amount"`
+	LanguageCode    string       `json:"languagecode"`
+	TelegramMessage *tb.Message  `json:"telegrammessage"`
 }
 
 // payHandler invoked on "/pay lnbc..." command
@@ -84,19 +85,23 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 
+	statusMsg := bot.trySendMessage(m.Sender, Translate(ctx, "lnurlGettingUserMessage"))
 	// check user balance first
 	balance, err := bot.GetUserBalance(user)
 	if err != nil {
 		NewMessage(m, WithDuration(0, bot))
 		errmsg := fmt.Sprintf("[/pay] Error: Could not get user balance: %s", err)
 		log.Errorln(errmsg)
+		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}
+
 	if amount > balance {
 		NewMessage(m, WithDuration(0, bot))
-		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "insufficientFundsMessage"), balance, amount))
+		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "insufficientFundsMessage"), balance, amount))
 		return
 	}
+	bot.tryDeleteMessage(statusMsg)
 	// send warning that the invoice might fail due to missing fee reserve
 	if float64(amount) > float64(balance)*0.99 {
 		bot.trySendMessage(m.Sender, Translate(ctx, "feeReserveMessage"))
@@ -111,19 +116,6 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 
 	// object that holds all information about the send payment
 	id := fmt.Sprintf("pay-%d-%d-%s", m.Sender.ID, amount, RandStringRunes(5))
-	payData := PayData{
-		From:         user,
-		Invoice:      paymentRequest,
-		Base:         transaction.New(transaction.ID(id)),
-		Amount:       int64(amount),
-		Memo:         bolt11.Description,
-		Message:      confirmText,
-		LanguageCode: ctx.Value("publicLanguageCode").(string),
-	}
-	// add result to persistent struct
-	runtime.IgnoreError(payData.Set(payData, bot.Bunt))
-
-	SetUserState(user, bot, lnbits.UserStateConfirmPayment, paymentRequest)
 
 	// // // create inline buttons
 	payButton := paymentConfirmationMenu.Data(Translate(ctx, "payButtonMessage"), "confirm_pay")
@@ -136,7 +128,21 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 			payButton,
 			cancelButton),
 	)
-	bot.trySendMessage(m.Chat, confirmText, paymentConfirmationMenu)
+	payMessage := bot.trySendMessage(m.Chat, confirmText, paymentConfirmationMenu)
+	payData := PayData{
+		Base:            transaction.New(transaction.ID(id)),
+		From:            user,
+		Invoice:         paymentRequest,
+		Amount:          int64(amount),
+		Memo:            bolt11.Description,
+		Message:         confirmText,
+		LanguageCode:    ctx.Value("publicLanguageCode").(string),
+		TelegramMessage: payMessage,
+	}
+	// add result to persistent struct
+	runtime.IgnoreError(payData.Set(payData, bot.Bunt))
+
+	SetUserState(user, bot, lnbits.UserStateConfirmPayment, paymentRequest)
 }
 
 // confirmPayHandler when user clicked pay on payment confirmation
@@ -185,15 +191,28 @@ func (bot *TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 	ResetUserState(user, bot)
 
 	userStr := GetUserStr(c.Sender)
+
+	// update button text
+	bot.tryEditMessage(
+		c.Message,
+		payData.Message,
+		&tb.ReplyMarkup{
+			InlineKeyboard: [][]tb.InlineButton{
+				{tb.InlineButton{Text: i18n.Translate(payData.LanguageCode, "lnurlGettingUserMessage")}},
+			},
+		},
+	)
 	// pay invoice
 	invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoiceString}, bot.Client)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/pay] Could not pay invoice of %s: %s", userStr, err)
-		if len(err.Error()) == 0 {
-			err = fmt.Errorf(i18n.Translate(payData.LanguageCode, "invoiceUndefinedErrorMessage"))
-		}
-		// bot.trySendMessage(c.Sender, fmt.Sprintf(invoicePaymentFailedMessage, err))
-		bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(payData.LanguageCode, "invoicePaymentFailedMessage"), str.MarkdownEscape(err.Error())), &tb.ReplyMarkup{})
+		err = fmt.Errorf(i18n.Translate(payData.LanguageCode, "invoiceUndefinedErrorMessage"))
+		bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(payData.LanguageCode, "invoicePaymentFailedMessage"), err.Error()), &tb.ReplyMarkup{})
+		// verbose error message, turned off for now
+		// if len(err.Error()) == 0 {
+		// 	err = fmt.Errorf(i18n.Translate(payData.LanguageCode, "invoiceUndefinedErrorMessage"))
+		// }
+		// bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(payData.LanguageCode, "invoicePaymentFailedMessage"), str.MarkdownEscape(err.Error())), &tb.ReplyMarkup{})
 		log.Errorln(errmsg)
 		return
 	}

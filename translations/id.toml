@@ -226,7 +226,7 @@ lnurlPaymentFailed             = """🚫 Pembayaran gagal: %s"""
 lnurlInvalidAmountMessage      = """🚫 Jumlah tidak benar."""
 lnurlInvalidAmountRangeMessage = """🚫 Jumlah harus diantara %d dan %d sat."""
 lnurlNoUsernameMessage         = """🚫 Kamu harus mengatur nama pengguna Telegram untuk menerima pembayaran melalui LNURL."""
-lnurlEnterAmountMessage        = """⌨️ Masukkan jumlah diantara %d dan %d sat."""
+lnurlEnterAmountRangeMessage        = """⌨️ Masukkan jumlah diantara %d dan %d sat."""
 lnurlHelpText                  = """📖 Waduh, itu tidak berhasil. %s
 
 *Usage:* `/lnurl [jumlah] <lnurl>`

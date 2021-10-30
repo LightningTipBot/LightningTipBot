@@ -226,7 +226,7 @@ lnurlPaymentFailed             = """🚫 Pagamento non riuscito: %s"""
 lnurlInvalidAmountMessage      = """🚫 Ammontare non valido."""
 lnurlInvalidAmountRangeMessage = """🚫 L'ammontare deve essere compreso tra %d e %d sat."""
 lnurlNoUsernameMessage         = """🚫 Devi impostare un nome utente Telegram per ricevere pagamenti tramite un LNURL."""
-lnurlEnterAmountMessage        = """⌨️ Imposta un ammontare tra %d e %d sat."""
+lnurlEnterAmountRangeMessage        = """⌨️ Imposta un ammontare tra %d e %d sat."""
 lnurlHelpText                  = """📖 Ops, non ha funzionato. %s
 
 *Sintassi:* `/lnurl [ammontare] <lnurl>`

@@ -48,61 +48,47 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 	// if no amount is in the command, ask for it
 	amount, err := decodeAmountFromCommand(m.Text)
 	if err != nil || amount < 1 {
-		// no amount was entered, set user state and ask for amount
-		EnterAmountStateData := &EnterAmountStateData{
-			ID:        id,
-			Type:      "LnurlPayState",
-			AmountMin: lnurlPayState.LNURLPayResponse1.MinSendable,
-			AmountMax: lnurlPayState.LNURLPayResponse1.MaxSendable,
-		}
-		// set LNURLPayResponse1 in the state of the user
-		StateDataJson, err := json.Marshal(EnterAmountStateData)
-		if err != nil {
-			log.Errorln(err)
-			return
-		}
-		SetUserState(user, bot, lnbits.UserEnterAmount, string(StateDataJson))
-		// Let the user enter an amount and return
-		bot.trySendMessage(m.Sender,
-			fmt.Sprintf(Translate(ctx, "lnurlEnterAmountMessage"), lnurlPayState.LNURLPayResponse1.MinSendable/1000, lnurlPayState.LNURLPayResponse1.MaxSendable/1000),
-			tb.ForceReply)
-	} else {
-		// amount is already present in the command, i.e., /lnurl <amount> <LNURL>
-		// amount not in allowed range from LNURL
-		if int64(amount) > (lnurlPayState.LNURLPayResponse1.MaxSendable/1000) || int64(amount) < (lnurlPayState.LNURLPayResponse1.MinSendable/1000) {
-			err = fmt.Errorf("amount not in range")
-			log.Errorln(err)
-			bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), lnurlPayState.LNURLPayResponse1.MinSendable/1000, lnurlPayState.LNURLPayResponse1.MaxSendable/1000))
-			ResetUserState(user, bot)
-			return
-		}
-		// set also amount in the state of the user
-		lnurlPayState.Amount = amount * 1000 // save as mSat
-
-		// check if comment is presentin lnrul-p
-		memo := GetMemoFromCommand(m.Text, 3)
-		// shorten comment to allowed length
-		if len(memo) > int(lnurlPayState.LNURLPayResponse1.CommentAllowed) {
-			memo = memo[:lnurlPayState.LNURLPayResponse1.CommentAllowed]
-		}
-		if len(memo) > 0 {
-			lnurlPayState.Comment = memo
-		}
-
-		// add result to persistent struct
-		runtime.IgnoreError(lnurlPayState.Set(lnurlPayState, bot.Bunt))
-
-		// not necessary to save this in the state data, but till doing it
-		paramsJson, err := json.Marshal(lnurlPayState)
-		if err != nil {
-			log.Errorln(err)
-			// bot.trySendMessage(m.Sender, err.Error())
-			return
-		}
-		SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(paramsJson))
-		// directly go to confirm
-		bot.lnurlPayHandlerSend(ctx, m)
+		// // no amount was entered, set user state and ask for amount
+		bot.askForAmount(ctx, id, "LnurlPayState", lnurlPayState.LNURLPayResponse1.MinSendable, lnurlPayState.LNURLPayResponse1.MaxSendable)
+		return
 	}
+
+	// amount is already present in the command, i.e., /lnurl <amount> <LNURL>
+	// amount not in allowed range from LNURL
+	if int64(amount) > (lnurlPayState.LNURLPayResponse1.MaxSendable/1000) || int64(amount) < (lnurlPayState.LNURLPayResponse1.MinSendable/1000) {
+		err = fmt.Errorf("amount not in range")
+		log.Warnf("[lnurlPayHandler] Error: %s", err.Error())
+		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), lnurlPayState.LNURLPayResponse1.MinSendable/1000, lnurlPayState.LNURLPayResponse1.MaxSendable/1000))
+		ResetUserState(user, bot)
+		return
+	}
+	// set also amount in the state of the user
+	lnurlPayState.Amount = amount * 1000 // save as mSat
+
+	// check if comment is presentin lnrul-p
+	memo := GetMemoFromCommand(m.Text, 3)
+	// shorten comment to allowed length
+	if len(memo) > int(lnurlPayState.LNURLPayResponse1.CommentAllowed) {
+		memo = memo[:lnurlPayState.LNURLPayResponse1.CommentAllowed]
+	}
+	if len(memo) > 0 {
+		lnurlPayState.Comment = memo
+	}
+
+	// add result to persistent struct
+	runtime.IgnoreError(lnurlPayState.Set(lnurlPayState, bot.Bunt))
+
+	// not necessary to save this in the state data, but till doing it
+	paramsJson, err := json.Marshal(lnurlPayState)
+	if err != nil {
+		log.Errorf("[lnurlPayHandler] Error: %s", err.Error())
+		// bot.trySendMessage(m.Sender, err.Error())
+		return
+	}
+	SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(paramsJson))
+	// directly go to confirm
+	bot.lnurlPayHandlerSend(ctx, m)
+	return
 }
 
 // lnurlPayHandler is invoked when the user has delivered an amount and is ready to pay
@@ -167,14 +153,14 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) {
 
 	res, err := client.Get(callbackUrl.String())
 	if err != nil {
-		log.Errorln(err)
+		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
 		// bot.trySendMessage(c.Sender, err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Errorln(err)
+		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
 		// bot.trySendMessage(c.Sender, err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return

@@ -226,7 +226,7 @@ lnurlPaymentFailed             = """🚫 Falha no pagamento: %s"""
 lnurlInvalidAmountMessage      = """🚫 Quantia inválida."""
 lnurlInvalidAmountRangeMessage = """🚫 A quantia deve estar entre %d e %d sat."""
 lnurlNoUsernameMessage         = """🚫 Você precisa configurar um nome de usuário de Telegram para receber pagamentos através do LNURL."""
-lnurlEnterAmountMessage        = """⌨️ Insira uma quantia entre %d e %d sat."""
+lnurlEnterAmountRangeMessage        = """⌨️ Insira uma quantia entre %d e %d sat."""
 lnurlHelpText                  = """📖 Opa, isso não funcionou. %s
 
 *Uso:* `/lnurl [quantidade] <lnurl>`
