@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -79,15 +80,17 @@ func getAmount(input string) (amount int, err error) {
 }
 
 type EnterAmountStateData struct {
-	ID     string `json:"ID"`     // holds the ID of the tx object in bunt db
-	Type   string `json:"Type"`   // holds type of the tx in bunt db (needed for type checking)
-	Amount int64  `json:"Amount"` // holds the amount entered by the user
+	ID        string `json:"ID"`        // holds the ID of the tx object in bunt db
+	Type      string `json:"Type"`      // holds type of the tx in bunt db (needed for type checking)
+	Amount    int64  `json:"Amount"`    // holds the amount entered by the user mSat
+	AmountMin int64  `json:"AmountMin"` // holds the minimum amount that needs to be entered mSat
+	AmountMax int64  `json:"AmountMax"` // holds the maximum amount that needs to be entered mSat
 }
 
 // enterAmountHandler is invoked in anyTextHandler when the user needs to enter an amount
 // the amount is then stored as an entry in the user's stateKey in the user database
 // any other handler that relies on this, needs to load the resulting amount from the database
-func (bot TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
+func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return // errors.New("user has no wallet"), 0
@@ -113,6 +116,15 @@ func (bot TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 		ResetUserState(user, bot)
 		return //err, 0
 	}
+	// amount not in allowed range from LNURL
+	if EnterAmountStateData.AmountMin > 0 && EnterAmountStateData.AmountMax >= EnterAmountStateData.AmountMin && // this line checks whether min_max is set at all
+		(amount > int(EnterAmountStateData.AmountMax/1000) || amount < int(EnterAmountStateData.AmountMin/1000)) { // this line then checks whether the amount is in the range
+		err = fmt.Errorf("amount not in range")
+		log.Errorln(err)
+		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), EnterAmountStateData.AmountMin/1000, EnterAmountStateData.AmountMax/1000))
+		ResetUserState(user, bot)
+		return
+	}
 
 	// find out which type the object in bunt has waiting for an amount
 	// we stored this in the EnterAmountStateData before
@@ -124,52 +136,24 @@ func (bot TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 			return
 		}
 		LnurlPayState := sn.(*LnurlPayState)
-		LnurlPayState.Amount = amount
+		LnurlPayState.Amount = amount * 1000 // mSat
 		// add result to persistent struct
 		runtime.IgnoreError(LnurlPayState.Set(LnurlPayState, bot.Bunt))
-		bot.lnurlPayHandler(ctx, m)
+
+		EnterAmountStateData.Amount = int64(amount) * 1000 // mSat
+		StateDataJson, err := json.Marshal(EnterAmountStateData)
+		if err != nil {
+			log.Errorln(err)
+			return
+		}
+		SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(StateDataJson))
+		bot.lnurlPayHandlerSend(ctx, m)
+		return
 	default:
 		ResetUserState(user, bot)
 		return
 	}
-
-	// reset database entry
-	ResetUserState(user, bot)
-
-	// tx := &PayData{Base: transaction.New(transaction.ID(EnterAmountStateData.ID))}
-	// sn, err := tx.Get(tx, bot.Bunt)
-	// switch sn.(type) {
-	// case LnurlPayState:
-	// 	payData := sn.(*PayData)
-	// default:
-	// 	ResetUserState(user, bot)
-	// 	return
-	// }
-
-	// var stateResponse LnurlPayState
-	// err = json.Unmarshal([]byte(user.StateData), &stateResponse)
-	// if err != nil {
-	// 	log.Errorln(err)
-	// 	ResetUserState(user, bot)
-	// 	return //err, 0
-	// }
-	// // amount not in allowed range from LNURL
-	// if amount > (stateResponse.MaxSendable/1000) || amount < (stateResponse.MinSendable/1000) {
-	// 	err = fmt.Errorf("amount not in range")
-	// 	log.Errorln(err)
-	// 	bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), stateResponse.MinSendable/1000, stateResponse.MaxSendable/1000))
-	// 	ResetUserState(user, bot)
-	// 	return
-	// }
-
-	// we used to store the amount in the state, but it's not necessayr since we put it in the bunt struct
-	// EnterAmountStateData.Amount = int64(amount)
-	// state, err := json.Marshal(EnterAmountStateData)
-	// if err != nil {
-	// 	log.Errorln(err)
-	// 	ResetUserState(user, bot)
-	// 	return //err, 0
-	// }
-	// SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(state))
-	//bot.lnurlPayHandler(ctx, m)
+	// // reset database entry
+	// ResetUserState(user, bot)
+	// return
 }
