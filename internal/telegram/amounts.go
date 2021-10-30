@@ -178,13 +178,11 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 		return
 	case "CreateInvoiceState":
 		m.Text = fmt.Sprintf("/invoice %d", amount)
-		log.Infoln(m.Text)
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
 		bot.invoiceHandler(ctx, m)
 		return
 	case "CreateDonationState":
 		m.Text = fmt.Sprintf("/donate %d", amount)
-		log.Infoln(m.Text)
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
 		bot.donationHandler(ctx, m)
 		return
@@ -192,7 +190,6 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 		splits := strings.SplitAfterN(EnterAmountStateData.OiringalCommand, " ", 2)
 		if len(splits) > 1 {
 			m.Text = fmt.Sprintf("/send %d %s", amount, splits[1])
-			log.Infoln(m.Text)
 			SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
 			bot.sendHandler(ctx, m)
 			return
