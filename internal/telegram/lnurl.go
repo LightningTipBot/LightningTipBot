@@ -243,78 +243,78 @@ type LnurlStateResponse struct {
 	Comment string `json:"comment"`
 }
 
-// lnurlPayHandler is invoked when the user has delivered an amount and is ready to pay
-func (bot *TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
-	msg := bot.trySendMessage(c.Sender, Translate(ctx, "lnurlGettingUserMessage"))
+// // lnurlPayHandler is invoked when the user has delivered an amount and is ready to pay
+// func (bot *TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
+// 	msg := bot.trySendMessage(c.Sender, Translate(ctx, "lnurlGettingUserMessage"))
 
-	user := LoadUser(ctx)
-	if user.Wallet == nil {
-		return
-	}
+// 	user := LoadUser(ctx)
+// 	if user.Wallet == nil {
+// 		return
+// 	}
 
-	if user.StateKey == lnbits.UserStateConfirmLNURLPay {
-		client, err := getHttpClient()
-		if err != nil {
-			log.Errorln(err)
-			// bot.trySendMessage(c.Sender, err.Error())
-			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
-			return
-		}
-		var stateResponse LnurlStateResponse
-		err = json.Unmarshal([]byte(user.StateData), &stateResponse)
-		if err != nil {
-			log.Errorln(err)
-			// bot.trySendMessage(c.Sender, err.Error())
-			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
-			return
-		}
-		callbackUrl, err := url.Parse(stateResponse.Callback)
-		if err != nil {
-			log.Errorln(err)
-			// bot.trySendMessage(c.Sender, err.Error())
-			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
-			return
-		}
-		qs := callbackUrl.Query()
-		// add amount to query string
-		qs.Set("amount", strconv.Itoa(stateResponse.Amount*1000))
-		// add comment to query string
-		if len(stateResponse.Comment) > 0 {
-			qs.Set("comment", stateResponse.Comment)
-		}
+// 	if user.StateKey == lnbits.UserStateConfirmLNURLPay {
+// 		client, err := getHttpClient()
+// 		if err != nil {
+// 			log.Errorln(err)
+// 			// bot.trySendMessage(c.Sender, err.Error())
+// 			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
+// 			return
+// 		}
+// 		var stateResponse LnurlStateResponse
+// 		err = json.Unmarshal([]byte(user.StateData), &stateResponse)
+// 		if err != nil {
+// 			log.Errorln(err)
+// 			// bot.trySendMessage(c.Sender, err.Error())
+// 			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
+// 			return
+// 		}
+// 		callbackUrl, err := url.Parse(stateResponse.Callback)
+// 		if err != nil {
+// 			log.Errorln(err)
+// 			// bot.trySendMessage(c.Sender, err.Error())
+// 			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
+// 			return
+// 		}
+// 		qs := callbackUrl.Query()
+// 		// add amount to query string
+// 		qs.Set("amount", strconv.Itoa(stateResponse.Amount*1000))
+// 		// add comment to query string
+// 		if len(stateResponse.Comment) > 0 {
+// 			qs.Set("comment", stateResponse.Comment)
+// 		}
 
-		callbackUrl.RawQuery = qs.Encode()
+// 		callbackUrl.RawQuery = qs.Encode()
 
-		res, err := client.Get(callbackUrl.String())
-		if err != nil {
-			log.Errorln(err)
-			// bot.trySendMessage(c.Sender, err.Error())
-			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
-			return
-		}
-		var response2 lnurl.LNURLPayResponse2
-		body, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			log.Errorln(err)
-			// bot.trySendMessage(c.Sender, err.Error())
-			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
-			return
-		}
-		json.Unmarshal(body, &response2)
+// 		res, err := client.Get(callbackUrl.String())
+// 		if err != nil {
+// 			log.Errorln(err)
+// 			// bot.trySendMessage(c.Sender, err.Error())
+// 			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
+// 			return
+// 		}
+// 		var response2 lnurl.LNURLPayResponse2
+// 		body, err := ioutil.ReadAll(res.Body)
+// 		if err != nil {
+// 			log.Errorln(err)
+// 			// bot.trySendMessage(c.Sender, err.Error())
+// 			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
+// 			return
+// 		}
+// 		json.Unmarshal(body, &response2)
 
-		if len(response2.PR) < 1 {
-			error_reason := "Could not receive invoice."
-			if len(response2.Reason) > 0 {
-				error_reason = response2.Reason
-			}
-			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), error_reason))
-			return
-		}
-		bot.Telegram.Delete(msg)
-		c.Text = fmt.Sprintf("/pay %s", response2.PR)
-		bot.payHandler(ctx, c)
-	}
-}
+// 		if len(response2.PR) < 1 {
+// 			error_reason := "Could not receive invoice."
+// 			if len(response2.Reason) > 0 {
+// 				error_reason = response2.Reason
+// 			}
+// 			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), error_reason))
+// 			return
+// 		}
+// 		bot.Telegram.Delete(msg)
+// 		c.Text = fmt.Sprintf("/pay %s", response2.PR)
+// 		bot.payHandler(ctx, c)
+// 	}
+// }
 
 func getHttpClient() (*http.Client, error) {
 	client := http.Client{}
