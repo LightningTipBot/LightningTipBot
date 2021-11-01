@@ -3,7 +3,6 @@ package price
 import (
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -85,7 +84,7 @@ func (p *PriceWatcher) Watch() error {
 func (p *PriceWatcher) GetCoinbasePrice(currency string) (float64, error) {
 	coinbaseEndpoint, err := url.Parse(fmt.Sprintf("https://api.coinbase.com/v2/prices/spot?currency=%s", currency))
 	response, err := p.client.Get(coinbaseEndpoint.String())
-	if err, ok := err.(net.Error); ok && err.Timeout() {
+	if err != nil {
 		return 0, err
 	}
 	bodyBytes, err := ioutil.ReadAll(response.Body)
@@ -111,7 +110,7 @@ func (p *PriceWatcher) GetBitfinexPrice(currency string) (float64, error) {
 	pair := bitfinexCurrencyToPair[currency]
 	bitfinexEndpoint, err := url.Parse(fmt.Sprintf("https://api.bitfinex.com/v1/pubticker/%s", pair))
 	response, err := p.client.Get(bitfinexEndpoint.String())
-	if err, ok := err.(net.Error); ok && err.Timeout() {
+	if err != nil {
 		return 0, err
 	}
 	bodyBytes, err := ioutil.ReadAll(response.Body)
