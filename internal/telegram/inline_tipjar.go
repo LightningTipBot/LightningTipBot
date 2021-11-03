@@ -291,7 +291,6 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 		if err != nil {
 			errmsg := fmt.Errorf("[tipjar] Error: Send message to %s: %s", toUserStr, err)
 			log.Errorln(errmsg)
-			return
 		}
 
 		// build tipjar message

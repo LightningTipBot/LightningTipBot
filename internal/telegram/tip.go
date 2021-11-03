@@ -127,8 +127,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	_, err = bot.Telegram.Send(from.Telegram, fmt.Sprintf(i18n.Translate(from.Telegram.LanguageCode, "tipSentMessage"), amount, toUserStrMd))
 	if err != nil {
 		errmsg := fmt.Errorf("[/tip] Error: Send message to %s: %s", toUserStr, err)
-		log.Errorln(errmsg)
-		return
+		log.Warnln(errmsg)
 	}
 
 	// forward tipped message to user once

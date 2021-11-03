@@ -305,8 +305,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		_, err = bot.Telegram.Send(from.Telegram, fmt.Sprintf(i18n.Translate(from.Telegram.LanguageCode, "inlineFaucetSentMessage"), inlineFaucet.PerUserAmount, toUserStrMd))
 		if err != nil {
 			errmsg := fmt.Errorf("[faucet] Error: Send message to %s: %s", toUserStr, err)
-			log.Errorln(errmsg)
-			return
+			log.Warnln(errmsg)
 		}
 
 		// build faucet message
