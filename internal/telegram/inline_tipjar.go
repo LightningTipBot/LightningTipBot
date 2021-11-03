@@ -290,7 +290,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 		_, err = bot.Telegram.Send(from.Telegram, fmt.Sprintf(i18n.Translate(from.Telegram.LanguageCode, "inlineTipjarSentMessage"), inlineTipjar.PerUserAmount, toUserStrMd))
 		if err != nil {
 			errmsg := fmt.Errorf("[tipjar] Error: Send message to %s: %s", toUserStr, err)
-			log.Errorln(errmsg)
+			log.Warnln(errmsg)
 		}
 
 		// build tipjar message
