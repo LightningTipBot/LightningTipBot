@@ -55,7 +55,8 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 
 	// amount is already present in the command, i.e., /lnurl <amount> <LNURL>
 	// amount not in allowed range from LNURL
-	if int64(amount) > (lnurlPayState.LNURLPayResponse1.MaxSendable/1000) || int64(amount) < (lnurlPayState.LNURLPayResponse1.MinSendable/1000) {
+	if (int64(amount) > (lnurlPayState.LNURLPayResponse1.MaxSendable/1000) || int64(amount) < (lnurlPayState.LNURLPayResponse1.MinSendable/1000)) &&
+		(lnurlPayState.LNURLPayResponse1.MaxSendable != 0 && lnurlPayState.LNURLPayResponse1.MinSendable != 0) {
 		err = fmt.Errorf("amount not in range")
 		log.Warnf("[lnurlPayHandler] Error: %s", err.Error())
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), lnurlPayState.LNURLPayResponse1.MinSendable/1000, lnurlPayState.LNURLPayResponse1.MaxSendable/1000))
