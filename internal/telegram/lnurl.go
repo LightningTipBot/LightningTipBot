@@ -57,7 +57,6 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 	}
 
 	// assume payment
-	// HandleLNURL by fiatjaf/go-lnurl
 	statusMsg := bot.trySendMessage(m.Sender, Translate(ctx, "lnurlResolvingUrlMessage"))
 	var lnurlSplit string
 	if split := strings.Split(m.Text, " "); len(split) > 1 {
@@ -72,6 +71,7 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 		log.Errorln(fmt.Errorf("could not resolve LNURL split"))
 		return
 	}
+	// HandleLNURL by fiatjaf/go-lnurl
 	_, params, err := bot.HandleLNURL(lnurlSplit)
 	if err != nil {
 		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), "could not resolve LNURL."))
