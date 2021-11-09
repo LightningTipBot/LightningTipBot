@@ -42,12 +42,33 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 		LNURLPayResponse1: payParams.LNURLPayResponse1,
 		LanguageCode:      ctx.Value("publicLanguageCode").(string),
 	}
-	// add result to persistent struct
+
+	// first we check whether an amount is present in the command
+	amount, amount_err := decodeAmountFromCommand(m.Text)
+
+	// we need to figure out whether the memo starts at position 2 or 3
+	// so either /lnurl <amount> <lnurl> [memo] or /lnurl <lnurl> [memo]
+	memoStartsAt := 2
+	if amount_err == nil {
+		// amount was present
+		memoStartsAt = 3
+	}
+	// check if memo is presentin lnrul-p
+	memo := GetMemoFromCommand(m.Text, memoStartsAt)
+	// shorten memo to allowed length
+	if len(memo) > int(lnurlPayState.LNURLPayResponse1.CommentAllowed) {
+		memo = memo[:lnurlPayState.LNURLPayResponse1.CommentAllowed]
+	}
+	if len(memo) > 0 {
+		lnurlPayState.Comment = memo
+	}
+
+	// add result to persistent struct, with memo
 	runtime.IgnoreError(lnurlPayState.Set(lnurlPayState, bot.Bunt))
 
+	// now we actualy check whether the amount is already set because we can ask for it if not
 	// if no amount is in the command, ask for it
-	amount, err := decodeAmountFromCommand(m.Text)
-	if err != nil || amount < 1 {
+	if amount_err != nil || amount < 1 {
 		// // no amount was entered, set user state and ask for amount
 		bot.askForAmount(ctx, id, "LnurlPayState", lnurlPayState.LNURLPayResponse1.MinSendable, lnurlPayState.LNURLPayResponse1.MaxSendable, m.Text)
 		return
@@ -55,8 +76,9 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 
 	// amount is already present in the command, i.e., /lnurl <amount> <LNURL>
 	// amount not in allowed range from LNURL
-	if int64(amount) > (lnurlPayState.LNURLPayResponse1.MaxSendable/1000) || int64(amount) < (lnurlPayState.LNURLPayResponse1.MinSendable/1000) {
-		err = fmt.Errorf("amount not in range")
+	if int64(amount) > (lnurlPayState.LNURLPayResponse1.MaxSendable/1000) || int64(amount) < (lnurlPayState.LNURLPayResponse1.MinSendable/1000) &&
+		(lnurlPayState.LNURLPayResponse1.MaxSendable != 0 && lnurlPayState.LNURLPayResponse1.MinSendable != 0) { // only if max and min are set
+		err := fmt.Errorf("amount not in range")
 		log.Warnf("[lnurlPayHandler] Error: %s", err.Error())
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), lnurlPayState.LNURLPayResponse1.MinSendable/1000, lnurlPayState.LNURLPayResponse1.MaxSendable/1000))
 		ResetUserState(user, bot)
@@ -64,16 +86,6 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 	}
 	// set also amount in the state of the user
 	lnurlPayState.Amount = amount * 1000 // save as mSat
-
-	// check if comment is presentin lnrul-p
-	memo := GetMemoFromCommand(m.Text, 3)
-	// shorten comment to allowed length
-	if len(memo) > int(lnurlPayState.LNURLPayResponse1.CommentAllowed) {
-		memo = memo[:lnurlPayState.LNURLPayResponse1.CommentAllowed]
-	}
-	if len(memo) > 0 {
-		lnurlPayState.Comment = memo
-	}
 
 	// add result to persistent struct
 	runtime.IgnoreError(lnurlPayState.Set(lnurlPayState, bot.Bunt))

@@ -55,11 +55,26 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 		bot.lnurlReceiveHandler(ctx, m)
 		return
 	}
+	statusMsg := bot.trySendMessage(m.Sender, Translate(ctx, "lnurlResolvingUrlMessage"))
+
+	var lnurlSplit string
+	split := strings.Split(m.Text, " ")
+	if _, err := decodeAmountFromCommand(m.Text); err == nil {
+		// command is /lnurl 123 <LNURL> [memo]
+		if len(split) > 2 {
+			lnurlSplit = split[2]
+		}
+	} else if len(split) > 1 {
+		lnurlSplit = split[1]
+	} else {
+		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), "could not resolve LNURL."))
+		log.Warnln("[/lnurl] Could not parse command.")
+		return
+	}
 
 	// assume payment
 	// HandleLNURL by fiatjaf/go-lnurl
-	statusMsg := bot.trySendMessage(m.Sender, Translate(ctx, "lnurlResolvingUrlMessage"))
-	_, params, err := bot.HandleLNURL(m.Text)
+	_, params, err := bot.HandleLNURL(lnurlSplit)
 	if err != nil {
 		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), "could not resolve LNURL."))
 		log.Errorln(err)
@@ -134,129 +149,6 @@ func (bot TipBot) lnurlReceiveHandler(ctx context.Context, m *tb.Message) {
 	// send the lnurl data to user
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lnurlEncode)})
 }
-
-// // lnurlEnterAmountHandler is invoked if the user didn't deliver an amount for the lnurl payment
-// func (bot *TipBot) lnurlEnterAmountHandler(ctx context.Context, m *tb.Message) {
-// 	user := LoadUser(ctx)
-// 	if user.Wallet == nil {
-// 		return
-// 	}
-
-// 	if user.StateKey == lnbits.UserStateLNURLEnterAmount || user.StateKey == lnbits.UserEnterAmount {
-// 		a, err := strconv.Atoi(m.Text)
-// 		if err != nil {
-// 			log.Errorln(err)
-// 			bot.trySendMessage(m.Sender, Translate(ctx, "lnurlInvalidAmountMessage"))
-// 			ResetUserState(user, bot)
-// 			return
-// 		}
-// 		amount := int64(a)
-// 		var stateResponse LnurlPayState
-// 		err = json.Unmarshal([]byte(user.StateData), &stateResponse)
-// 		if err != nil {
-// 			log.Errorln(err)
-// 			ResetUserState(user, bot)
-// 			return
-// 		}
-// 		// amount not in allowed range from LNURL
-// 		if amount > (stateResponse.LNURLPayResponse1.MaxSendable/1000) || amount < (stateResponse.LNURLPayResponse1.MinSendable/1000) {
-// 			err = fmt.Errorf("amount not in range")
-// 			log.Errorln(err)
-// 			bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), stateResponse.LNURLPayResponse1.MinSendable/1000, stateResponse.LNURLPayResponse1.MaxSendable/1000))
-// 			ResetUserState(user, bot)
-// 			return
-// 		}
-// 		stateResponse.Amount = a
-// 		state, err := json.Marshal(stateResponse)
-// 		if err != nil {
-// 			log.Errorln(err)
-// 			ResetUserState(user, bot)
-// 			return
-// 		}
-// 		SetUserState(user, bot, lnbits.UserStateConfirmLNURLPay, string(state))
-// 		bot.lnurlPayHandler(ctx, m)
-// 	}
-// }
-
-// // LnurlStateResponse saves the state of the user for an LNURL payment
-// type LnurlStateResponse struct {
-// 	lnurl.LNURLPayResponse1
-// 	Amount  int    `json:"amount"`
-// 	Comment string `json:"comment"`
-// }
-
-// // lnurlPayHandler is invoked when the user has delivered an amount and is ready to pay
-// func (bot *TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
-// 	msg := bot.trySendMessage(c.Sender, Translate(ctx, "lnurlGettingUserMessage"))
-
-// 	user := LoadUser(ctx)
-// 	if user.Wallet == nil {
-// 		return
-// 	}
-
-// 	if user.StateKey == lnbits.UserStateConfirmLNURLPay {
-// 		client, err := getHttpClient()
-// 		if err != nil {
-// 			log.Errorln(err)
-// 			// bot.trySendMessage(c.Sender, err.Error())
-// 			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
-// 			return
-// 		}
-// 		var stateResponse LnurlStateResponse
-// 		err = json.Unmarshal([]byte(user.StateData), &stateResponse)
-// 		if err != nil {
-// 			log.Errorln(err)
-// 			// bot.trySendMessage(c.Sender, err.Error())
-// 			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
-// 			return
-// 		}
-// 		callbackUrl, err := url.Parse(stateResponse.Callback)
-// 		if err != nil {
-// 			log.Errorln(err)
-// 			// bot.trySendMessage(c.Sender, err.Error())
-// 			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
-// 			return
-// 		}
-// 		qs := callbackUrl.Query()
-// 		// add amount to query string
-// 		qs.Set("amount", strconv.Itoa(stateResponse.Amount*1000))
-// 		// add comment to query string
-// 		if len(stateResponse.Comment) > 0 {
-// 			qs.Set("comment", stateResponse.Comment)
-// 		}
-
-// 		callbackUrl.RawQuery = qs.Encode()
-
-// 		res, err := client.Get(callbackUrl.String())
-// 		if err != nil {
-// 			log.Errorln(err)
-// 			// bot.trySendMessage(c.Sender, err.Error())
-// 			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
-// 			return
-// 		}
-// 		var response2 lnurl.LNURLPayResponse2
-// 		body, err := ioutil.ReadAll(res.Body)
-// 		if err != nil {
-// 			log.Errorln(err)
-// 			// bot.trySendMessage(c.Sender, err.Error())
-// 			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
-// 			return
-// 		}
-// 		json.Unmarshal(body, &response2)
-
-// 		if len(response2.PR) < 1 {
-// 			error_reason := "Could not receive invoice."
-// 			if len(response2.Reason) > 0 {
-// 				error_reason = response2.Reason
-// 			}
-// 			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), error_reason))
-// 			return
-// 		}
-// 		bot.Telegram.Delete(msg)
-// 		c.Text = fmt.Sprintf("/pay %s", response2.PR)
-// 		bot.payHandler(ctx, c)
-// 	}
-// }
 
 // from https://github.com/fiatjaf/go-lnurl
 func (bot *TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error) {
