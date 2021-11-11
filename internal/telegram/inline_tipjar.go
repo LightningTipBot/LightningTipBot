@@ -68,7 +68,7 @@ func (bot TipBot) createTipjar(ctx context.Context, text string, sender *tb.User
 	inlineMessage := fmt.Sprintf(
 		Translate(ctx, "inlineTipjarMessage"),
 		perUserAmount,
-		GetUserStr(toUser.Telegram),
+		GetUserStrMd(toUser.Telegram),
 		0,
 		amount,
 		0,
@@ -297,7 +297,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 		inlineTipjar.Message = fmt.Sprintf(
 			i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarMessage"),
 			inlineTipjar.PerUserAmount,
-			GetUserStr(inlineTipjar.To.Telegram),
+			GetUserStrMd(inlineTipjar.To.Telegram),
 			inlineTipjar.GivenAmount,
 			inlineTipjar.Amount,
 			inlineTipjar.NGiven,
@@ -318,7 +318,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 		// tipjar is full
 		inlineTipjar.Message = fmt.Sprintf(
 			i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarEndedMessage"),
-			GetUserStr(inlineTipjar.To.Telegram),
+			GetUserStrMd(inlineTipjar.To.Telegram),
 			inlineTipjar.Amount,
 			inlineTipjar.NGiven,
 		)
