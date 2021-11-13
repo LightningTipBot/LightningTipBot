@@ -3,7 +3,9 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/eko/gocache/store"
 	"strings"
+	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
@@ -214,7 +216,7 @@ func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) {
 		// needed to set a unique string ID for each result
 		results[i].SetResultID(inlineFaucet.ID)
 
-		runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.Bunt))
+		bot.Cache.Set(inlineFaucet.ID, inlineFaucet, &store.Options{Expiration: 5 * time.Minute})
 		log.Infof("[faucet] %s created inline faucet %s: %d sat (%d per user)", GetUserStr(inlineFaucet.From.Telegram), inlineFaucet.ID, inlineFaucet.Amount, inlineFaucet.PerUserAmount)
 	}
 

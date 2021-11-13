@@ -3,7 +3,9 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/eko/gocache/store"
 	"strings"
+	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -121,7 +123,7 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 			From_SpecificUser: from_SpecificUser,
 			LanguageCode:      ctx.Value("publicLanguageCode").(string),
 		}
-		runtime.IgnoreError(inlineReceive.Set(inlineReceive, bot.Bunt))
+		bot.Cache.Set(inlineReceive.ID, inlineReceive, &store.Options{Expiration: 5 * time.Minute})
 	}
 
 	err = bot.Telegram.Answer(q, &tb.QueryResponse{

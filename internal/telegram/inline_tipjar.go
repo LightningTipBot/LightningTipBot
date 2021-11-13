@@ -3,7 +3,9 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/eko/gocache/store"
 	"strings"
+	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
@@ -211,7 +213,7 @@ func (bot TipBot) handleInlineTipjarQuery(ctx context.Context, q *tb.Query) {
 		// needed to set a unique string ID for each result
 		results[i].SetResultID(inlineTipjar.ID)
 
-		runtime.IgnoreError(inlineTipjar.Set(inlineTipjar, bot.Bunt))
+		bot.Cache.Set(inlineTipjar.ID, inlineTipjar, &store.Options{Expiration: 5 * time.Minute})
 		log.Infof("[tipjar] %s created inline tipjar %s: %d sat (%d per user)", GetUserStr(inlineTipjar.To.Telegram), inlineTipjar.ID, inlineTipjar.Amount, inlineTipjar.PerUserAmount)
 	}
 

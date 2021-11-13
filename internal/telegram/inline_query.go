@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	"strconv"
 	"strings"
 
@@ -92,6 +93,14 @@ func (bot TipBot) inlineQueryReplyWithError(q *tb.Query, message string, help st
 }
 
 func (bot TipBot) anyChosenInlineHandler(q *tb.ChosenInlineResult) {
+	// load inline object from cache
+	inlineObject, err := bot.Cache.Get(q.ResultID)
+	// check error
+	if err != nil {
+		log.Errorln(err)
+		return
+	}
+	bot.Bunt.Set(inlineObject.(storage.Storable))
 	fmt.Printf(q.Query)
 }
 

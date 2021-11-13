@@ -3,7 +3,9 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/eko/gocache/store"
 	"strings"
+	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 
@@ -140,7 +142,7 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 		}
 
 		// add result to persistent struct
-		runtime.IgnoreError(inlineSend.Set(inlineSend, bot.Bunt))
+		bot.Cache.Set(inlineSend.ID, inlineSend, &store.Options{Expiration: 5 * time.Minute})
 	}
 
 	err = bot.Telegram.Answer(q, &tb.QueryResponse{
