@@ -2,6 +2,7 @@ package lnbits
 
 import (
 	"github.com/imroc/req"
+	"time"
 )
 
 // NewClient returns a new lnbits api client. Pass your API key and url here.
@@ -155,7 +156,9 @@ func (w Wallet) Pay(params PaymentParams, c *Client) (wtx BitInvoice, err error)
 		"Accept":       "application/json",
 		"X-Api-Key":    w.Adminkey,
 	}
-	resp, err := req.Post(c.url+"/api/v1/payments", adminHeader, req.BodyJSON(&params))
+	r := req.New()
+	r.SetTimeout(time.Hour * 24)
+	resp, err := r.Post(c.url+"/api/v1/payments", adminHeader, req.BodyJSON(&params))
 	if err != nil {
 		return
 	}
