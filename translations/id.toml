@@ -122,6 +122,9 @@ advancedMessage = """%s
 */faucet* 🚰 Membuat sebuah keran `/faucet <kapasitas> <per_pengguna>`
 */tipjar* 🍯 Create a tipjar: `/tipjar <capacity> <per_user>`"""
 
+# GENERIC
+lnurlEnterAmountRangeMessage        = """⌨️ Masukkan jumlah diantara %d dan %d sat."""
+
 # START
 
 startSettingWalletMessage = """🧮 Sedang menyiapkan dompet mu..."""
@@ -226,7 +229,6 @@ lnurlPaymentFailed             = """🚫 Pembayaran gagal: %s"""
 lnurlInvalidAmountMessage      = """🚫 Jumlah tidak benar."""
 lnurlInvalidAmountRangeMessage = """🚫 Jumlah harus diantara %d dan %d sat."""
 lnurlNoUsernameMessage         = """🚫 Kamu harus mengatur nama pengguna Telegram untuk menerima pembayaran melalui LNURL."""
-lnurlEnterAmountRangeMessage        = """⌨️ Masukkan jumlah diantara %d dan %d sat."""
 lnurlHelpText                  = """📖 Waduh, itu tidak berhasil. %s
 
 *Usage:* `/lnurl [jumlah] <lnurl>`

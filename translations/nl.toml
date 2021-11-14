@@ -122,6 +122,9 @@ advancedMessage = """%s
 */faucet* 🚰 Maak een kraan: `/faucet <capacity> <per_user>`
 */tipjar* 🍯 Maak een tipjar: `/tipjar <capacity> <per_user>`"""
 
+# GENERIC
+lnurlEnterAmountRangeMessage        = """⌨️ Voer een bedrag in tussen %d en %d sat."""
+
 # START
 
 startSettingWalletMessage = """🧮 Uw wallet instellen..."""
@@ -226,7 +229,6 @@ lnurlPaymentFailed             = """🚫 Betaling mislukt: %s"""
 lnurlInvalidAmountMessage      = """🚫 Ongeldig bedrag."""
 lnurlInvalidAmountRangeMessage = """🚫 Bedrag moet liggen tussen %d en %d sat."""
 lnurlNoUsernameMessage         = """🚫 U moet een Telegram gebruikersnaam instellen om betalingen te ontvangen via LNURL."""
-lnurlEnterAmountRangeMessage        = """⌨️ Voer een bedrag in tussen %d en %d sat."""
 lnurlHelpText                  = """📖 Oeps, dat werkte niet. %s
 
 *Usage:* `/lnurl [bedrag] <lnurl>`

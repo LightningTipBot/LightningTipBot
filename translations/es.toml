@@ -122,6 +122,10 @@ advancedMessage = """%s
 */faucet* 🚰 Crear un grifo: `/faucet <capacidad> <por_usuario>`
 */tipjar* 🍯 Crear un tipjar: `/tipjar <capacidad> <por_usuario>`"""
 
+# GENERIC
+lnurlEnterAmountRangeMessage        = """⌨️ Introduce un monto entre %d y %d sat."""
+lnurlEnterAmountMessage        = """⌨️ Introduce un monto."""
+
 # START
 
 startSettingWalletMessage = """🧮 Configurando tu monedero..."""
@@ -226,7 +230,6 @@ lnurlPaymentFailed             = """🚫 Pago fallido: %s"""
 lnurlInvalidAmountMessage      = """🚫 Monto inválido."""
 lnurlInvalidAmountRangeMessage = """🚫 El monto debe estar entre %d y %d sat."""
 lnurlNoUsernameMessage         = """🚫 Tienes que establecer un nombre de usuario de Telegram para recibir pagos a través de LNURL."""
-lnurlEnterAmountRangeMessage        = """⌨️ Introduce un monto entre %d y %d sat."""
 lnurlHelpText                  = """📖 Oops, eso no funcionó. %s
 
 *Uso:* `/lnurl [monto] <lnurl>`

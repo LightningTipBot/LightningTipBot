@@ -40,6 +40,7 @@ sendButtonMessage = """✅ Senden"""
 payButtonMessage = """✅ Bezahlen"""
 payReceiveButtonMessage = """💸 Bezahlen"""
 receiveButtonMessage = """✅ Empfangen"""
+withdrawButtonMessage = """✅ Abheben"""
 cancelButtonMessage = """🚫 Abbrechen"""
 collectButtonMessage = """✅ Einsammeln"""
 nextButtonMessage = """Vor"""
@@ -121,6 +122,10 @@ advancedMessage = """%s
 */lnurl* ⚡️ Lnurl empfangen oder senden: `/lnurl` or `/lnurl <lnurl>`
 */faucet* 🚰 Erzeuge einen Zapfhahn: `/faucet <gesamt> <pro_user>`
 */tipjar* 🍯 Erzeuge eine Spendendose: `/tipjar <gesamt> <pro_user>`"""
+
+# GENERIC
+lnurlEnterAmountRangeMessage = """⌨️ Gebe einen Betrag zwischen %d und %d sat ein."""
+lnurlEnterAmountMessage        = """⌨️ Gebe einen Betrag ein."""
 
 # START
 
@@ -226,11 +231,18 @@ lnurlPaymentFailed = """🚫 Zahlung fehlgeschlagen: %s"""
 lnurlInvalidAmountMessage = """🚫 Ungültiger Betrag."""
 lnurlInvalidAmountRangeMessage = """🚫 Betrag muss zwischen %d und %d sat liegen."""
 lnurlNoUsernameMessage = """🚫 Du musst einen Telegram Username anlegen, um per LNURL Zahlungen zu empfangen."""
-lnurlEnterAmountRangeMessage = """⌨️ Gebe einen Betrag zwischen %d und %d sat ein."""
 lnurlHelpText = """📖 Ups, das hat nicht geklappt. %s
 
 *Befehl:* `/lnurl [betrag] <lnurl>`
 *Beispiel:* `/lnurl LNURL1DP68GUR...`"""
+
+# LNURL WITHDRAW
+
+confirmLnurlWithdrawMessage     = """Möchtest du diese Abhebung tätigen?\n\n💸 Betrag: %d sat"""
+lnurlPreparingWithdraw        = """🧮 Bereite Abhebung vor..."""
+lnurlWithdrawFailed             = """🚫 Abhebung gescheitert."""
+lnurlWithdrawCancelled             = """🚫 Abhebung abgebrochen."""
+lnurlWithdrawSuccess             = """✅ Abhebung angefordert."""
 
 # LINK
 
