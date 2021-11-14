@@ -235,6 +235,14 @@ lnurlHelpText                  = """📖 Opa, isso não funcionou. %s
 *Uso:* `/lnurl [quantidade] <lnurl>`
 *Exemplo:* `/lnurl LNURL1DP68GUR...`"""
 
+# LNURL WITHDRAW
+
+confirmLnurlWithdrawMessage     = """Você quer fazer esse saque?\n💸 Quantia: %d sat"""
+lnurlPreparingWithdraw          = """🧮 Preparando o saque..."""
+lnurlWithdrawFailed             = """🚫 Saque falhou."""
+lnurlWithdrawCancelled          = """🚫 Saque cancelado."""
+lnurlWithdrawSuccess            = """✅ Saque solicitado."""
+
 # LINK
 
 walletConnectMessage = """🔗 *Vincule sua carteira*
