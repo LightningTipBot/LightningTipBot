@@ -124,6 +124,7 @@ advancedMessage = """%s
 
 # GENERIC
 lnurlEnterAmountRangeMessage        = """⌨️ Insira uma quantia entre %d e %d sat."""
+lnurlEnterAmountMessage             = """⌨️ Insira uma quantia."""
 
 # START
 

@@ -124,6 +124,7 @@ advancedMessage = """%s
 
 # GENERIC
 lnurlEnterAmountRangeMessage        = """⌨️ Voer een bedrag in tussen %d en %d sat."""
+lnurlEnterAmountMessage             = """⌨️ Voer een bedrag."""
 
 # START
 

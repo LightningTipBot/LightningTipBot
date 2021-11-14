@@ -124,7 +124,7 @@ advancedMessage = """%s
 
 # GENERIC
 lnurlEnterAmountRangeMessage        = """⌨️ Introduce un monto entre %d y %d sat."""
-lnurlEnterAmountMessage        = """⌨️ Introduce un monto."""
+lnurlEnterAmountMessage             = """⌨️ Introduce un monto."""
 
 # START
 
@@ -234,6 +234,14 @@ lnurlHelpText                  = """📖 Oops, eso no funcionó. %s
 
 *Uso:* `/lnurl [monto] <lnurl>`
 *Ejemplo:* `/lnurl LNURL1DP68GUR...`"""
+
+# LNURL WITHDRAW
+
+confirmLnurlWithdrawMessage     = """¿Desea realizar este retiro?\n💸 Monto: %d sat"""
+lnurlPreparingWithdraw          = """🧮 Preparando retiro..."""
+lnurlWithdrawFailed             = """🚫 Retiro fallido"""
+lnurlWithdrawCancelled          = """🚫 Retiro cancelado."""
+lnurlWithdrawSuccess            = """✅ Retiro solicitado."""
 
 # LINK
 
