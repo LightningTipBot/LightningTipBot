@@ -192,8 +192,6 @@ func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) {
 	// reset state immediately
 	ResetUserState(user, bot)
 
-	// userStr := GetUserStr(c.Sender)
-
 	// update button text
 	bot.tryEditMessage(
 		c.Message,
@@ -205,7 +203,6 @@ func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) {
 		},
 	)
 
-	// statusMsg := bot.trySendMessage(c.Sender, Translate(ctx, "lnurlPreparingWithdraw"))
 	// LnurlWithdrawState loaded
 	client, err := bot.GetHttpClient()
 	if err != nil {
