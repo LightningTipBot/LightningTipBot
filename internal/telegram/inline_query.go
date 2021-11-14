@@ -3,7 +3,9 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -97,11 +99,16 @@ func (bot TipBot) anyChosenInlineHandler(q *tb.ChosenInlineResult) {
 	inlineObject, err := bot.Cache.Get(q.ResultID)
 	// check error
 	if err != nil {
-		log.Errorln(err)
+		log.Errorf("[anyChosenInlineHandler] could not find inline object in cache. %v", err)
 		return
 	}
-	bot.Bunt.Set(inlineObject.(storage.Storable))
-	fmt.Printf(q.Query)
+	switch inlineObject.(type) {
+	case storage.Storable:
+		// persist inline object in bunt
+		runtime.IgnoreError(bot.Bunt.Set(inlineObject.(storage.Storable)))
+	default:
+		log.Errorf("[anyChosenInlineHandler] invalid inline object type: %s, query: %s", reflect.TypeOf(inlineObject).String(), q.Query)
+	}
 }
 
 func (bot TipBot) commandTranslationMap(ctx context.Context, command string) context.Context {
