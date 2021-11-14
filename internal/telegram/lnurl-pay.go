@@ -139,14 +139,12 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) {
 	client, err := bot.GetHttpClient()
 	if err != nil {
 		log.Errorf("[lnurlPayHandler] Error: %s", err.Error())
-		// bot.trySendMessage(c.Sender, err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}
 	callbackUrl, err := url.Parse(lnurlPayState.LNURLPayParams.Callback)
 	if err != nil {
 		log.Errorf("[lnurlPayHandler] Error: %s", err.Error())
-		// bot.trySendMessage(c.Sender, err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}
@@ -163,14 +161,12 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) {
 	res, err := client.Get(callbackUrl.String())
 	if err != nil {
 		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
-		// bot.trySendMessage(c.Sender, err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
-		// bot.trySendMessage(c.Sender, err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}
