@@ -41,17 +41,17 @@ func (w Server) handleLnUrl(writer http.ResponseWriter, request *http.Request) {
 	} else {
 		stringAmount := request.FormValue("amount")
 		if stringAmount == "" {
-			NotFoundHandler(writer, fmt.Errorf("[serveLNURLpSecond] Form value 'amount' is not set"))
+			NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Form value 'amount' is not set"))
 			return
 		}
 		amount, parseError := strconv.Atoi(stringAmount)
 		if parseError != nil {
-			NotFoundHandler(writer, fmt.Errorf("[serveLNURLpSecond] Couldn't cast amount to int %v", parseError))
+			NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Couldn't cast amount to int %v", parseError))
 			return
 		}
 		comment := request.FormValue("comment")
 		if len(comment) > CommentAllowed {
-			NotFoundHandler(writer, fmt.Errorf("[serveLNURLpSecond] Comment is too long"))
+			NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Comment is too long"))
 			return
 		}
 		response, err = w.serveLNURLpSecond(username, int64(amount), comment)
@@ -85,10 +85,6 @@ func (w Server) serveLNURLpFirst(username string) (*lnurl.LNURLPayParams, error)
 		return nil, err
 	}
 	metadata := w.metaData(username)
-	jsonMeta, err := json.Marshal(metadata)
-	if err != nil {
-		return nil, err
-	}
 
 	return &lnurl.LNURLPayParams{
 		LNURLResponse:   lnurl.LNURLResponse{Status: statusOk},
@@ -96,7 +92,7 @@ func (w Server) serveLNURLpFirst(username string) (*lnurl.LNURLPayParams, error)
 		Callback:        callbackURL.String(),
 		MinSendable:     minSendable,
 		MaxSendable:     MaxSendable,
-		EncodedMetadata: string(jsonMeta),
+		EncodedMetadata: metadata.Encode(),
 		CommentAllowed:  CommentAllowed,
 	}, nil
 

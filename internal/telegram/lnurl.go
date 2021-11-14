@@ -80,13 +80,13 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 	switch params.(type) {
 	case lnurl.LNURLPayParams:
 		payParams := LnurlPayState{LNURLPayParams: params.(lnurl.LNURLPayParams)}
-		log.Infof("[lnurlHandler] %s", payParams.LNURLPayParams.Callback)
+		log.Infof("[LNURL-p] %s", payParams.LNURLPayParams.Callback)
 		bot.tryDeleteMessage(statusMsg)
 		bot.lnurlPayHandler(ctx, m, payParams)
 		return
 	case lnurl.LNURLWithdrawResponse:
 		withdrawParams := LnurlWithdrawState{LNURLWithdrawResponse: params.(lnurl.LNURLWithdrawResponse)}
-		log.Infof("[lnurlHandler] %s", withdrawParams.LNURLWithdrawResponse.Callback)
+		log.Infof("[LNURL-w] %s", withdrawParams.LNURLWithdrawResponse.Callback)
 		bot.tryDeleteMessage(statusMsg)
 		bot.lnurlWithdrawHandler(ctx, m, withdrawParams)
 	default:
