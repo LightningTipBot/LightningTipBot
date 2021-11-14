@@ -128,15 +128,13 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 	}
 	LnurlWithdrawState := fn.(*LnurlWithdrawState)
 
-	// NEW
-
 	confirmText := fmt.Sprintf(Translate(ctx, "confirmLnurlWithdrawMessage"), LnurlWithdrawState.Amount/1000)
 	if len(LnurlWithdrawState.LNURLWithdrawResponse.DefaultDescription) > 0 {
 		confirmText = confirmText + fmt.Sprintf(Translate(ctx, "confirmPayAppendMemo"), str.MarkdownEscape(LnurlWithdrawState.LNURLWithdrawResponse.DefaultDescription))
 	}
 	LnurlWithdrawState.Message = confirmText
 
-	// // // create inline buttons
+	// create inline buttons
 	withdrawButton := paymentConfirmationMenu.Data(Translate(ctx, "withdrawButtonMessage"), "confirm_withdraw")
 	btnCancelWithdraw := paymentConfirmationMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_withdraw")
 	withdrawButton.Data = LnurlWithdrawState.ID
@@ -149,68 +147,6 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 	)
 
 	bot.tryEditMessage(statusMsg, confirmText, withdrawConfirmationMenu)
-	// END NEW
-
-	// // LnurlWithdrawState loaded
-	// client, err := bot.GetHttpClient()
-	// if err != nil {
-	// 	log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
-	// 	bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
-	// 	return
-	// }
-	// callbackUrl, err := url.Parse(LnurlWithdrawState.LNURLWithdrawResponse.Callback)
-	// if err != nil {
-	// 	log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
-	// 	bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
-	// 	return
-	// }
-
-	// // generate an invoice and add the pr to the request
-	// // generate invoice
-	// invoice, err := user.Wallet.Invoice(
-	// 	lnbits.InvoiceParams{
-	// 		Out:     false,
-	// 		Amount:  int64(LnurlWithdrawState.Amount) / 1000,
-	// 		Memo:    "Withdraw",
-	// 		Webhook: internal.Configuration.Lnbits.WebhookServer},
-	// 	bot.Client)
-	// if err != nil {
-	// 	errmsg := fmt.Sprintf("[lnurlWithdrawHandlerWithdraw] Could not create an invoice: %s", err)
-	// 	log.Errorln(errmsg)
-	// 	return
-	// }
-	// LnurlWithdrawState.Invoice = invoice
-
-	// qs := callbackUrl.Query()
-	// // add amount to query string
-	// qs.Set("pr", invoice.PaymentRequest)
-	// qs.Set("k1", LnurlWithdrawState.LNURLWithdrawResponse.K1)
-
-	// callbackUrl.RawQuery = qs.Encode()
-
-	// res, err := client.Get(callbackUrl.String())
-	// if err != nil || res.StatusCode >= 300 {
-	// 	log.Errorf("[lnurlWithdrawHandlerWithdraw] Failed.")
-	// 	bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
-	// 	return
-	// }
-	// body, err := ioutil.ReadAll(res.Body)
-	// if err != nil {
-	// 	log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
-	// 	bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
-	// 	return
-	// }
-
-	// // parse the response
-	// var response2 lnurl.LNURLResponse
-	// json.Unmarshal(body, &response2)
-	// if response2.Status == "OK" {
-	// 	bot.tryEditMessage(statusMsg, Translate(ctx, "lnurlWithdrawSuccess"))
-	// } else {
-	// 	log.Errorf("[lnurlWithdrawHandlerWithdraw] LNURLWithdraw failed.")
-	// 	bot.tryEditMessage(statusMsg, Translate(ctx, "lnurlWithdrawFailed"))
-	// 	return
-	// }
 
 	// // add response to persistent struct
 	// LnurlWithdrawState.LNURResponse = response2
