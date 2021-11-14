@@ -78,7 +78,7 @@ func (w Server) handleLnUrl(writer http.ResponseWriter, request *http.Request) {
 
 // serveLNURLpFirst serves the first part of the LNURLp protocol with the endpoint
 // to call and the metadata that matches the description hash of the second response
-func (w Server) serveLNURLpFirst(username string) (*lnurl.LNURLPayResponse1, error) {
+func (w Server) serveLNURLpFirst(username string) (*lnurl.LNURLPayParams, error) {
 	log.Infof("[LNURL] Serving endpoint for user %s", username)
 	callbackURL, err := url.Parse(fmt.Sprintf("%s/%s/%s", w.callbackHostname.String(), lnurlEndpoint, username))
 	if err != nil {
@@ -90,11 +90,10 @@ func (w Server) serveLNURLpFirst(username string) (*lnurl.LNURLPayResponse1, err
 		return nil, err
 	}
 
-	return &lnurl.LNURLPayResponse1{
+	return &lnurl.LNURLPayParams{
 		LNURLResponse:   lnurl.LNURLResponse{Status: statusOk},
 		Tag:             payRequestTag,
 		Callback:        callbackURL.String(),
-		CallbackURL:     callbackURL, // probably no need to set this here
 		MinSendable:     minSendable,
 		MaxSendable:     MaxSendable,
 		EncodedMetadata: string(jsonMeta),
@@ -104,11 +103,11 @@ func (w Server) serveLNURLpFirst(username string) (*lnurl.LNURLPayResponse1, err
 }
 
 // serveLNURLpSecond serves the second LNURL response with the payment request with the correct description hash
-func (w Server) serveLNURLpSecond(username string, amount int64, comment string) (*lnurl.LNURLPayResponse2, error) {
+func (w Server) serveLNURLpSecond(username string, amount int64, comment string) (*lnurl.LNURLPayValues, error) {
 	log.Infof("[LNURL] Serving invoice for user %s", username)
 	if amount < minSendable || amount > MaxSendable {
 		// amount is not ok
-		return &lnurl.LNURLPayResponse2{
+		return &lnurl.LNURLPayValues{
 			LNURLResponse: lnurl.LNURLResponse{
 				Status: statusError,
 				Reason: fmt.Sprintf("Amount out of bounds (min: %d mSat, max: %d mSat).", minSendable, MaxSendable)},
@@ -116,7 +115,7 @@ func (w Server) serveLNURLpSecond(username string, amount int64, comment string)
 	}
 	// check comment length
 	if len(comment) > CommentAllowed {
-		return &lnurl.LNURLPayResponse2{
+		return &lnurl.LNURLPayValues{
 			LNURLResponse: lnurl.LNURLResponse{
 				Status: statusError,
 				Reason: fmt.Sprintf("Comment too long (max: %d characters).", CommentAllowed)},
@@ -136,14 +135,14 @@ func (w Server) serveLNURLpSecond(username string, amount int64, comment string)
 	}
 
 	if tx.Error != nil {
-		return &lnurl.LNURLPayResponse2{
+		return &lnurl.LNURLPayValues{
 			LNURLResponse: lnurl.LNURLResponse{
 				Status: statusError,
 				Reason: fmt.Sprintf("Invalid user.")},
 		}, fmt.Errorf("[GetUser] Couldn't fetch user info from database: %v", tx.Error)
 	}
 	if user.Wallet == nil {
-		return &lnurl.LNURLPayResponse2{
+		return &lnurl.LNURLPayValues{
 			LNURLResponse: lnurl.LNURLResponse{
 				Status: statusError,
 				Reason: fmt.Sprintf("Invalid user.")},
@@ -152,7 +151,7 @@ func (w Server) serveLNURLpSecond(username string, amount int64, comment string)
 	// user is ok now create invoice
 	// set wallet lnbits client
 
-	var resp *lnurl.LNURLPayResponse2
+	var resp *lnurl.LNURLPayValues
 
 	// the same description_hash needs to be built in the second request
 	metadata := w.metaData(username)
@@ -169,7 +168,7 @@ func (w Server) serveLNURLpSecond(username string, amount int64, comment string)
 		w.c)
 	if err != nil {
 		err = fmt.Errorf("[serveLNURLpSecond] Couldn't create invoice: %v", err)
-		resp = &lnurl.LNURLPayResponse2{
+		resp = &lnurl.LNURLPayValues{
 			LNURLResponse: lnurl.LNURLResponse{
 				Status: statusError,
 				Reason: "Couldn't create invoice."},
@@ -187,10 +186,10 @@ func (w Server) serveLNURLpSecond(username string, amount int64, comment string)
 			CreatedAt:      time.Now(),
 		}))
 
-	return &lnurl.LNURLPayResponse2{
+	return &lnurl.LNURLPayValues{
 		LNURLResponse: lnurl.LNURLResponse{Status: statusOk},
 		PR:            invoice.PaymentRequest,
-		Routes:        make([][]lnurl.RouteInfo, 0),
+		Routes:        make([]struct{}, 0),
 		SuccessAction: &lnurl.SuccessAction{Message: "Payment received!", Tag: "message"},
 	}, nil
 
@@ -211,6 +210,7 @@ func (w Server) descriptionHash(metadata lnurl.Metadata) (string, error) {
 // and is used again in the second response to verify the description hash
 func (w Server) metaData(username string) lnurl.Metadata {
 	return lnurl.Metadata{
-		{"text/identifier", fmt.Sprintf("%s@%s", username, w.callbackHostname.Hostname())},
-		{"text/plain", fmt.Sprintf("Pay to %s@%s", username, w.callbackHostname.Hostname())}}
+		Description:      fmt.Sprintf("Pay to %s@%s", username, w.callbackHostname.Hostname()),
+		LightningAddress: fmt.Sprintf("%s@%s", username, w.callbackHostname.Hostname()),
+	}
 }

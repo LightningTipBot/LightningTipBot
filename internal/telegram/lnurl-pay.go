@@ -20,12 +20,12 @@ import (
 // LnurlPayState saves the state of the user for an LNURL payment
 type LnurlPayState struct {
 	*transaction.Base
-	From              *lnbits.User            `json:"from"`
-	LNURLPayResponse1 lnurl.LNURLPayResponse1 `json:"LNURLPayResponse1"`
-	LNURLPayResponse2 lnurl.LNURLPayResponse2 `json:"LNURLPayResponse2"`
-	Amount            int                     `json:"amount"`
-	Comment           string                  `json:"comment"`
-	LanguageCode      string                  `json:"languagecode"`
+	From           *lnbits.User         `json:"from"`
+	LNURLPayParams lnurl.LNURLPayParams `json:"LNURLPayParams"`
+	LNURLPayValues lnurl.LNURLPayValues `json:"LNURLPayValues"`
+	Amount         int                  `json:"amount"`
+	Comment        string               `json:"comment"`
+	LanguageCode   string               `json:"languagecode"`
 }
 
 // lnurlPayHandler1 is invoked when the first lnurl response was a lnurlpay response
@@ -38,9 +38,9 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 	// object that holds all information about the send payment
 	id := fmt.Sprintf("lnurlp-%d-%s", m.Sender.ID, RandStringRunes(5))
 	lnurlPayState := LnurlPayState{
-		Base:              transaction.New(transaction.ID(id)),
-		LNURLPayResponse1: payParams.LNURLPayResponse1,
-		LanguageCode:      ctx.Value("publicLanguageCode").(string),
+		Base:           transaction.New(transaction.ID(id)),
+		LNURLPayParams: payParams.LNURLPayParams,
+		LanguageCode:   ctx.Value("publicLanguageCode").(string),
 	}
 
 	// first we check whether an amount is present in the command
@@ -53,34 +53,24 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 		// amount was present
 		memoStartsAt = 3
 	}
-	// check if memo is presentin lnrul-p
+	// check if memo is present in command
 	memo := GetMemoFromCommand(m.Text, memoStartsAt)
 	// shorten memo to allowed length
-	if len(memo) > int(lnurlPayState.LNURLPayResponse1.CommentAllowed) {
-		memo = memo[:lnurlPayState.LNURLPayResponse1.CommentAllowed]
+	if len(memo) > int(lnurlPayState.LNURLPayParams.CommentAllowed) {
+		memo = memo[:lnurlPayState.LNURLPayParams.CommentAllowed]
 	}
 	if len(memo) > 0 {
 		lnurlPayState.Comment = memo
 	}
 
-	// add result to persistent struct, with memo
-	runtime.IgnoreError(lnurlPayState.Set(lnurlPayState, bot.Bunt))
-
-	// now we actualy check whether the amount is already set because we can ask for it if not
-	// if no amount is in the command, ask for it
-	if amount_err != nil || amount < 1 {
-		// // no amount was entered, set user state and ask for amount
-		bot.askForAmount(ctx, id, "LnurlPayState", lnurlPayState.LNURLPayResponse1.MinSendable, lnurlPayState.LNURLPayResponse1.MaxSendable, m.Text)
-		return
-	}
-
 	// amount is already present in the command, i.e., /lnurl <amount> <LNURL>
 	// amount not in allowed range from LNURL
-	if int64(amount) > (lnurlPayState.LNURLPayResponse1.MaxSendable/1000) || int64(amount) < (lnurlPayState.LNURLPayResponse1.MinSendable/1000) &&
-		(lnurlPayState.LNURLPayResponse1.MaxSendable != 0 && lnurlPayState.LNURLPayResponse1.MinSendable != 0) { // only if max and min are set
+	if amount_err == nil &&
+		(int64(amount) > (lnurlPayState.LNURLPayParams.MaxSendable/1000) || int64(amount) < (lnurlPayState.LNURLPayParams.MinSendable/1000)) &&
+		(lnurlPayState.LNURLPayParams.MaxSendable != 0 && lnurlPayState.LNURLPayParams.MinSendable != 0) { // only if max and min are set
 		err := fmt.Errorf("amount not in range")
 		log.Warnf("[lnurlPayHandler] Error: %s", err.Error())
-		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), lnurlPayState.LNURLPayResponse1.MinSendable/1000, lnurlPayState.LNURLPayResponse1.MaxSendable/1000))
+		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), lnurlPayState.LNURLPayParams.MinSendable/1000, lnurlPayState.LNURLPayParams.MaxSendable/1000))
 		ResetUserState(user, bot)
 		return
 	}
@@ -90,7 +80,14 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 	// add result to persistent struct
 	runtime.IgnoreError(lnurlPayState.Set(lnurlPayState, bot.Bunt))
 
-	// not necessary to save this in the state data, but till doing it
+	// now we actualy check whether the amount was in the command and if not, ask for it
+	if amount_err != nil || amount < 1 {
+		// // no amount was entered, set user state and ask for amount
+		bot.askForAmount(ctx, id, "LnurlPayState", lnurlPayState.LNURLPayParams.MinSendable, lnurlPayState.LNURLPayParams.MaxSendable, m.Text)
+		return
+	}
+
+	// We need to save the pay state in the user state so we can load the payment in the next handler
 	paramsJson, err := json.Marshal(lnurlPayState)
 	if err != nil {
 		log.Errorf("[lnurlPayHandler] Error: %s", err.Error())
@@ -146,7 +143,7 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) {
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}
-	callbackUrl, err := url.Parse(lnurlPayState.LNURLPayResponse1.Callback)
+	callbackUrl, err := url.Parse(lnurlPayState.LNURLPayParams.Callback)
 	if err != nil {
 		log.Errorf("[lnurlPayHandler] Error: %s", err.Error())
 		// bot.trySendMessage(c.Sender, err.Error())
@@ -178,19 +175,19 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) {
 		return
 	}
 
-	var response2 lnurl.LNURLPayResponse2
+	var response2 lnurl.LNURLPayValues
 	json.Unmarshal(body, &response2)
 	if response2.Status == "ERROR" || len(response2.PR) < 1 {
 		error_reason := "Could not receive invoice."
 		if len(response2.Reason) > 0 {
 			error_reason = response2.Reason
 		}
-		log.Errorf("[lnurlPayHandler] Error in LNURLPayResponse2: %s", error_reason)
+		log.Errorf("[lnurlPayHandler] Error in LNURLPayValues: %s", error_reason)
 		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), error_reason))
 		return
 	}
 
-	lnurlPayState.LNURLPayResponse2 = response2
+	lnurlPayState.LNURLPayValues = response2
 	// add result to persistent struct
 	runtime.IgnoreError(lnurlPayState.Set(lnurlPayState, bot.Bunt))
 	bot.Telegram.Delete(statusMsg)

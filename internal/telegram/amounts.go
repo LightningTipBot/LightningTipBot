@@ -98,7 +98,7 @@ func (bot *TipBot) askForAmount(ctx context.Context, id string, eventType string
 		AmountMax:       amountMax,
 		OiringalCommand: originalCommand,
 	}
-	// set LNURLPayResponse1 in the state of the user
+	// set LNURLPayParams in the state of the user
 	stateDataJson, err := json.Marshal(enterAmountStateData)
 	if err != nil {
 		log.Errorln(err)

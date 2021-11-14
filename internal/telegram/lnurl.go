@@ -74,16 +74,16 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 
 	// assume payment
 	// HandleLNURL by fiatjaf/go-lnurl
-	_, params, err := bot.HandleLNURL(lnurlSplit)
+	_, params, err := lnurl.HandleLNURL(lnurlSplit)
 	if err != nil {
 		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), "could not resolve LNURL."))
 		log.Errorln(err)
 		return
 	}
 	switch params.(type) {
-	case lnurl.LNURLPayResponse1:
-		payParams := LnurlPayState{LNURLPayResponse1: params.(lnurl.LNURLPayResponse1)}
-		log.Infof("[lnurlHandler] %s", payParams.LNURLPayResponse1.Callback)
+	case lnurl.LNURLPayParams:
+		payParams := LnurlPayState{LNURLPayParams: params.(lnurl.LNURLPayParams)}
+		log.Infof("[lnurlHandler] %s", payParams.LNURLPayParams.Callback)
 		bot.tryDeleteMessage(statusMsg)
 		bot.lnurlPayHandler(ctx, m, payParams)
 		return
@@ -221,7 +221,7 @@ func (bot *TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, erro
 	// 	value, err := lnurl.HandleWithdraw(j)
 	// 	return rawurl, value, err
 	case "payRequest":
-		value, err := lnurl.HandlePay(j)
+		value, err := lnurl.HandlePay(b)
 		return rawurl, value, err
 	// case "channelRequest":
 	// 	value, err := lnurl.HandleChannel(j)
