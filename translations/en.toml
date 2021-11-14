@@ -40,6 +40,7 @@ sendButtonMessage = """✅ Send"""
 payButtonMessage = """✅ Pay"""
 payReceiveButtonMessage = """💸 Pay"""
 receiveButtonMessage = """✅ Receive"""
+withdrawButtonMessage = """✅ Withdraw"""
 cancelButtonMessage = """🚫 Cancel"""
 collectButtonMessage = """✅ Collect"""
 nextButtonMessage = """Next"""
@@ -235,6 +236,13 @@ lnurlHelpText                  = """📖 Oops, that didn't work. %s
 
 *Usage:* `/lnurl [amount] <lnurl>`
 *Example:* `/lnurl LNURL1DP68GUR...`"""
+
+# LNURL WITHDRAW
+confirmLnurlWithdrawMessage     = """Do you want to make this withdrawal?\n\n💸 Amount: %d sat"""
+lnurlPreparingWithdraw        = """🧮 Preparing withdrawal..."""
+lnurlWithdrawFailed             = """🚫 Withdrawal failed."""
+lnurlWithdrawCancelled             = """🚫 Withdrawal cancelled."""
+lnurlWithdrawSuccess             = """✅ Withdrawal requested."""
 
 # LINK
 

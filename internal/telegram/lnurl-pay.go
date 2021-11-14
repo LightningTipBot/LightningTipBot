@@ -39,6 +39,7 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 	id := fmt.Sprintf("lnurlp-%d-%s", m.Sender.ID, RandStringRunes(5))
 	lnurlPayState := LnurlPayState{
 		Base:           transaction.New(transaction.ID(id)),
+		From:           user,
 		LNURLPayParams: payParams.LNURLPayParams,
 		LanguageCode:   ctx.Value("publicLanguageCode").(string),
 	}
@@ -100,7 +101,7 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 	return
 }
 
-// lnurlPayHandler is invoked when the user has delivered an amount and is ready to pay
+// lnurlPayHandlerSend is invoked when the user has delivered an amount and is ready to pay
 func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
@@ -110,7 +111,7 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) {
 
 	// assert that user has entered an amount
 	if user.StateKey != lnbits.UserHasEnteredAmount {
-		log.Errorln("[lnurlPayHandler] state keys don't match")
+		log.Errorln("[lnurlPayHandlerSend] state keys don't match")
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}
@@ -119,7 +120,7 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) {
 	var enterAmountData EnterAmountStateData
 	err := json.Unmarshal([]byte(user.StateData), &enterAmountData)
 	if err != nil {
-		log.Errorf("[lnurlPayHandler] Error: %s", err.Error())
+		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}
@@ -128,7 +129,7 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) {
 	tx := &LnurlPayState{Base: transaction.New(transaction.ID(enterAmountData.ID))}
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[lnurlPayHandler] Error: %s", err.Error())
+		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}
@@ -138,13 +139,13 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) {
 
 	client, err := bot.GetHttpClient()
 	if err != nil {
-		log.Errorf("[lnurlPayHandler] Error: %s", err.Error())
+		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}
 	callbackUrl, err := url.Parse(lnurlPayState.LNURLPayParams.Callback)
 	if err != nil {
-		log.Errorf("[lnurlPayHandler] Error: %s", err.Error())
+		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}

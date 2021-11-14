@@ -176,6 +176,26 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(StateDataJson))
 		bot.lnurlPayHandlerSend(ctx, m)
 		return
+	case "LnurlWithdrawState":
+		tx := &LnurlWithdrawState{Base: transaction.New(transaction.ID(EnterAmountStateData.ID))}
+		sn, err := tx.Get(tx, bot.Bunt)
+		if err != nil {
+			return
+		}
+		LnurlWithdrawState := sn.(*LnurlWithdrawState)
+		LnurlWithdrawState.Amount = amount * 1000 // mSat
+		// add result to persistent struct
+		runtime.IgnoreError(LnurlWithdrawState.Set(LnurlWithdrawState, bot.Bunt))
+
+		EnterAmountStateData.Amount = int64(amount) * 1000 // mSat
+		StateDataJson, err := json.Marshal(EnterAmountStateData)
+		if err != nil {
+			log.Errorln(err)
+			return
+		}
+		SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(StateDataJson))
+		bot.lnurlWithdrawHandlerWithdraw(ctx, m)
+		return
 	case "CreateInvoiceState":
 		m.Text = fmt.Sprintf("/invoice %d", amount)
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
