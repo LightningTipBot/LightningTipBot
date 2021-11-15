@@ -284,7 +284,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 			return
 		}
 
-		log.Infof("[💸 tipjar] Tipjar %s from %s to %s (%d sat)", inlineTipjar.ID, fromUserStr, toUserStr, inlineTipjar.PerUserAmount)
+		log.Infof("[💸 tipjar] Tipjar %s from %s to %s (%d sat).", inlineTipjar.ID, fromUserStr, toUserStr, inlineTipjar.PerUserAmount)
 		inlineTipjar.NGiven += 1
 		inlineTipjar.From = append(inlineTipjar.From, from)
 		inlineTipjar.GivenAmount = inlineTipjar.GivenAmount + inlineTipjar.PerUserAmount
