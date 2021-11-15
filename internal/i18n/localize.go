@@ -17,7 +17,6 @@ func RegisterLanguages() *i18n.Bundle {
 	bundle := i18n.NewBundle(language.English)
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 	bundle.MustLoadMessageFile("translations/en.toml")
-	bundle.MustLoadMessageFile("translations/ru.toml")
 	bundle.LoadMessageFile("translations/de.toml")
 	bundle.LoadMessageFile("translations/it.toml")
 	bundle.LoadMessageFile("translations/es.toml")
@@ -26,6 +25,7 @@ func RegisterLanguages() *i18n.Bundle {
 	bundle.LoadMessageFile("translations/pt-br.toml")
 	bundle.LoadMessageFile("translations/tr.toml")
 	bundle.LoadMessageFile("translations/id.toml")
+	bundle.LoadMessageFile("translations/ru.toml")
 	return bundle
 }
 func Translate(languageCode string, MessgeID string) string {
