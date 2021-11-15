@@ -3,9 +3,10 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/eko/gocache/store"
 	"strings"
 	"time"
+
+	"github.com/eko/gocache/store"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
@@ -298,7 +299,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 			return
 		}
 
-		log.Infof("[faucet] faucet %s: %d sat from %s to %s ", inlineFaucet.ID, inlineFaucet.PerUserAmount, fromUserStr, toUserStr)
+		log.Infof("[💸 faucet] Faucet %s from %s to %s (%d sat).", inlineFaucet.ID, fromUserStr, toUserStr, inlineFaucet.PerUserAmount)
 		inlineFaucet.NTaken += 1
 		inlineFaucet.To = append(inlineFaucet.To, to)
 		inlineFaucet.RemainingAmount = inlineFaucet.RemainingAmount - inlineFaucet.PerUserAmount

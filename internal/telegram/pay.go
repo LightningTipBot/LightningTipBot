@@ -112,7 +112,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 		confirmText = confirmText + fmt.Sprintf(Translate(ctx, "confirmPayAppendMemo"), str.MarkdownEscape(bolt11.Description))
 	}
 
-	log.Printf("[/pay] User: %s, amount: %d sat.", userStr, amount)
+	log.Infof("[/pay] Invoice entered. User: %s, amount: %d sat.", userStr, amount)
 
 	// object that holds all information about the send payment
 	id := fmt.Sprintf("pay-%d-%d-%s", m.Sender.ID, amount, RandStringRunes(5))
@@ -227,7 +227,7 @@ func (bot *TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 		bot.trySendMessage(c.Sender, i18n.Translate(payData.LanguageCode, "invoicePaidMessage"))
 		bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(payData.LanguageCode, "invoicePublicPaidMessage"), userStr), &tb.ReplyMarkup{})
 	}
-	log.Printf("[pay] User %s paid invoice %s (%d sat)", userStr, payData.ID, payData.Amount)
+	log.Printf("[⚡️ pay] User %s paid invoice %s (%d sat)", userStr, payData.ID, payData.Amount)
 	return
 }
 

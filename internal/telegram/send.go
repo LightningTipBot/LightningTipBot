@@ -263,7 +263,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	}
 	sendData.Inactivate(sendData, bot.Bunt)
 
-	log.Infof("[send] Transaction sent from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
+	log.Infof("[💸 send] Send from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
 
 	// notify to user
 	bot.trySendMessage(to.Telegram, fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "sendReceivedMessage"), fromUserStrMd, amount))

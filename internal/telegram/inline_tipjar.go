@@ -3,9 +3,10 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/eko/gocache/store"
 	"strings"
 	"time"
+
+	"github.com/eko/gocache/store"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
@@ -283,7 +284,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 			return
 		}
 
-		log.Infof("[tipjar] tipjar %s: %d sat from %s to %s ", inlineTipjar.ID, inlineTipjar.PerUserAmount, fromUserStr, toUserStr)
+		log.Infof("[💸 tipjar] Tipjar %s from %s to %s (%d sat)", inlineTipjar.ID, fromUserStr, toUserStr, inlineTipjar.PerUserAmount)
 		inlineTipjar.NGiven += 1
 		inlineTipjar.From = append(inlineTipjar.From, from)
 		inlineTipjar.GivenAmount = inlineTipjar.GivenAmount + inlineTipjar.PerUserAmount

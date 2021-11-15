@@ -3,18 +3,20 @@ package webhook
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 
+	"net/http"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
-	"net/http"
 
 	"github.com/gorilla/mux"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -100,7 +102,7 @@ func (w Server) receive(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(400)
 		return
 	}
-	log.Infoln(fmt.Sprintf("[WebHook] User %s (%d) received invoice of %d sat.", user.Telegram.Username, user.Telegram.ID, depositEvent.Amount/1000))
+	log.Infoln(fmt.Sprintf("[⚡️ WebHook] User %s (%d) received invoice of %d sat.", user.Telegram.Username, user.Telegram.ID, depositEvent.Amount/1000))
 	_, err = w.bot.Send(user.Telegram, fmt.Sprintf(i18n.Translate(user.Telegram.LanguageCode, "invoiceReceivedMessage"), depositEvent.Amount/1000))
 	if err != nil {
 		log.Errorln(err)

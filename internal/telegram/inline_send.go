@@ -3,9 +3,10 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/eko/gocache/store"
 	"strings"
 	"time"
+
+	"github.com/eko/gocache/store"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 
@@ -229,7 +230,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 		return
 	}
 
-	log.Infof("[sendInline] %d sat from %s to %s", amount, fromUserStr, toUserStr)
+	log.Infof("[💸 sendInline] Send from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
 
 	inlineSend.Message = fmt.Sprintf("%s", fmt.Sprintf(i18n.Translate(inlineSend.LanguageCode, "inlineSendUpdateMessageAccept"), amount, fromUserStrMd, toUserStrMd))
 	memo := inlineSend.Memo

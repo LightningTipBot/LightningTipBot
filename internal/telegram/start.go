@@ -24,7 +24,7 @@ func (bot TipBot) startHandler(ctx context.Context, m *tb.Message) {
 	// ATTENTION: DO NOT CALL ANY HANDLER BEFORE THE WALLET IS CREATED
 	// WILL RESULT IN AN ENDLESS LOOP OTHERWISE
 	// bot.helpHandler(m)
-	log.Printf("[/start] User: %s (%d)\n", m.Sender.Username, m.Sender.ID)
+	log.Printf("[⭐️ /start] New user: %s (%d)\n", GetUserStr(m.Sender), m.Sender.ID)
 	walletCreationMsg, err := bot.Telegram.Send(m.Sender, Translate(ctx, "startSettingWalletMessage"))
 	user, err := bot.initWallet(m.Sender)
 	if err != nil {

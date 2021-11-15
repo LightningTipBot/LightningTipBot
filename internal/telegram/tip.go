@@ -121,7 +121,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	// update tooltip if necessary
 	messageHasTip := tipTooltipHandler(m, bot, amount, to.Initialized)
 
-	log.Infof("[tip] Transaction sent from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
+	log.Infof("[💸 tip] Tip from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
 
 	// notify users
 	_, err = bot.Telegram.Send(from.Telegram, fmt.Sprintf(i18n.Translate(from.Telegram.LanguageCode, "tipSentMessage"), amount, toUserStrMd))
