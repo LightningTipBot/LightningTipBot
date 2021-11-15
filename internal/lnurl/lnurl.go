@@ -3,7 +3,6 @@ package lnurl
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -193,11 +192,7 @@ func (w Server) serveLNURLpSecond(username string, amount int64, comment string)
 
 // descriptionHash is the SHA256 hash of the metadata
 func (w Server) descriptionHash(metadata lnurl.Metadata) (string, error) {
-	jsonMeta, err := json.Marshal(metadata)
-	if err != nil {
-		return "", err
-	}
-	hash := sha256.Sum256([]byte(string(jsonMeta)))
+	hash := sha256.Sum256([]byte(metadata.Encode()))
 	hashString := hex.EncodeToString(hash[:])
 	return hashString, nil
 }
