@@ -125,6 +125,7 @@ advancedMessage = """%s
 # GENERIC
 lnurlEnterAmountRangeMessage        = """⌨️ Voer een bedrag in tussen %d en %d sat."""
 lnurlEnterAmountMessage             = """⌨️ Voer een bedrag."""
+errorReasonMessage                  = """🚫 Fout: %s"""
 
 # START
 
@@ -234,6 +235,14 @@ lnurlHelpText                  = """📖 Oeps, dat werkte niet. %s
 
 *Usage:* `/lnurl [bedrag] <lnurl>`
 *Example:* `/lnurl LNURL1DP68GUR...`"""
+
+# LNURL WITHDRAW
+
+confirmLnurlWithdrawMessage = """Wilt u deze opname maken?💸 Bedrag: %d sat"""
+lnurlPreparingWithdraw = """🧮 Opname aan het voorbereiden..."""
+lnurlWithdrawFailed = """🚫 Opname mislukt."""
+lnurlWithdrawCancelled = """🚫 Opname geannuleerd."""
+lnurlWithdrawSuccess = """✅ Opname aangevraagd."""
 
 # LINK
 

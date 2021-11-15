@@ -129,6 +129,7 @@ advancedMessage = """%s
 # GENERIC
 lnurlEnterAmountRangeMessage   = """⌨️ Enter an amount between %d and %d sat."""
 lnurlEnterAmountMessage        = """⌨️ Enter an amount."""
+errorReasonMessage             = """🚫 Error: %s"""
 
 # START
 
