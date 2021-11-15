@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/eko/gocache v1.2.0
-	github.com/fiatjaf/go-lnurl v1.8.3
+	github.com/fiatjaf/go-lnurl v1.8.4
 	github.com/fiatjaf/ln-decodepay v1.1.0
 	github.com/gorilla/mux v1.8.0
 	github.com/imroc/req v0.3.0
