@@ -64,7 +64,7 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 	} else if len(split) > 1 {
 		lnurlSplit = split[1]
 	} else {
-		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), "could not resolve LNURL."))
+		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), "Could not parse command."))
 		log.Warnln("[/lnurl] Could not parse command.")
 		return
 	}
@@ -73,8 +73,8 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 	// HandleLNURL by fiatjaf/go-lnurl
 	_, params, err := lnurl.HandleLNURL(lnurlSplit)
 	if err != nil {
-		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), "could not resolve LNURL."))
-		log.Errorln(err)
+		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), err.Error()))
+		log.Warnf("[HandleLNURL] Error: %s", err.Error())
 		return
 	}
 	switch params.(type) {
@@ -90,9 +90,9 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 		bot.tryDeleteMessage(statusMsg)
 		bot.lnurlWithdrawHandler(ctx, m, withdrawParams)
 	default:
-		err := fmt.Errorf("invalid LNURL type.")
-		log.Errorln(err)
-		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
+		err := fmt.Errorf("Invalid LNURL type.")
+		log.Warnln(err)
+		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), err.Error()))
 		// bot.trySendMessage(m.Sender, err.Error())
 		return
 	}
