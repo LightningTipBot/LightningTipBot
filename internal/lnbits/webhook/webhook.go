@@ -102,7 +102,7 @@ func (w Server) receive(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(400)
 		return
 	}
-	log.Infoln(fmt.Sprintf("[⚡️ WebHook] User %s (%d) received invoice of %d sat.", user.Telegram.Username, user.Telegram.ID, depositEvent.Amount/1000))
+	log.Infoln(fmt.Sprintf("[⚡️ WebHook] User %s (%d) received invoice of %d sat.", telegram.GetUserStr(user.Telegram), user.Telegram.ID, depositEvent.Amount/1000))
 	_, err = w.bot.Send(user.Telegram, fmt.Sprintf(i18n.Translate(user.Telegram.LanguageCode, "invoiceReceivedMessage"), depositEvent.Amount/1000))
 	if err != nil {
 		log.Errorln(err)
