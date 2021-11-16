@@ -252,6 +252,6 @@ func (bot TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error
 	// 	value, err := lnurl.HandleChannel(b)
 	// 	return rawurl, value, err
 	default:
-		return rawurl, nil, errors.New("unknown response tag " + j.String())
+		return rawurl, nil, errors.New("unkown LNURL response.")
 	}
 }
