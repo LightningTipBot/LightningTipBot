@@ -3,12 +3,15 @@ package telegram
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
+	"github.com/tidwall/gjson"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	lnurl "github.com/fiatjaf/go-lnurl"
@@ -71,7 +74,7 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 
 	// assume payment
 	// HandleLNURL by fiatjaf/go-lnurl
-	_, params, err := lnurl.HandleLNURL(lnurlSplit)
+	_, params, err := bot.HandleLNURL(lnurlSplit)
 	if err != nil {
 		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), err.Error()))
 		log.Warnf("[HandleLNURL] Error: %s", err.Error())
@@ -90,7 +93,9 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 		bot.tryDeleteMessage(statusMsg)
 		bot.lnurlWithdrawHandler(ctx, m, withdrawParams)
 	default:
-		err := fmt.Errorf("Invalid LNURL type.")
+		if err == nil {
+			err = errors.New("Invalid LNURL type.")
+		}
 		log.Warnln(err)
 		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), err.Error()))
 		// bot.trySendMessage(m.Sender, err.Error())
@@ -150,4 +155,103 @@ func (bot TipBot) lnurlReceiveHandler(ctx context.Context, m *tb.Message) {
 	bot.trySendMessage(m.Sender, Translate(ctx, "lnurlReceiveInfoText"))
 	// send the lnurl data to user
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lnurlEncode)})
+}
+
+// fiatjaf/go-lnurl 1.8.4 with proxy
+func (bot TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error) {
+	var err error
+	var rawurl string
+
+	if name, domain, ok := lnurl.ParseInternetIdentifier(rawlnurl); ok {
+		isOnion := strings.Index(domain, ".onion") == len(domain)-6
+		rawurl = domain + "/.well-known/lnurlp/" + name
+		if isOnion {
+			rawurl = "http://" + rawurl
+		} else {
+			rawurl = "https://" + rawurl
+		}
+	} else if strings.HasPrefix(rawlnurl, "http") {
+		rawurl = rawlnurl
+	} else if strings.HasPrefix(rawlnurl, "lnurlp://") ||
+		strings.HasPrefix(rawlnurl, "lnurlw://") ||
+		strings.HasPrefix(rawlnurl, "lnurla://") ||
+		strings.HasPrefix(rawlnurl, "keyauth://") {
+
+		scheme := "https:"
+		if strings.Contains(rawurl, ".onion/") || strings.HasSuffix(rawurl, ".onion") {
+			scheme = "http:"
+		}
+		location := strings.SplitN(rawlnurl, ":", 2)[1]
+		rawurl = scheme + location
+	} else {
+		lnurl_str, ok := lnurl.FindLNURLInText(rawlnurl)
+		if !ok {
+			return "", nil,
+				errors.New("invalid bech32-encoded lnurl: " + rawlnurl)
+		}
+		rawurl, err = lnurl.LNURLDecode(lnurl_str)
+		if err != nil {
+			return "", nil, err
+		}
+	}
+
+	parsed, err := url.Parse(rawurl)
+	if err != nil {
+		return rawurl, nil, err
+	}
+
+	query := parsed.Query()
+
+	switch query.Get("tag") {
+	case "login":
+		value, err := lnurl.HandleAuth(rawurl, parsed, query)
+		return rawurl, value, err
+	case "withdrawRequest":
+		if value, ok := lnurl.HandleFastWithdraw(query); ok {
+			return rawurl, value, nil
+		}
+	}
+
+	// // original withouth proxy
+	// resp, err := http.Get(rawurl)
+	// if err != nil {
+	// 	return rawurl, nil, err
+	// }
+
+	client, err := bot.GetHttpClient()
+	if err != nil {
+		return "", nil, err
+	}
+	resp, err := client.Get(rawurl)
+	if err != nil {
+		return rawurl, nil, err
+	}
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return rawurl, nil, err
+	}
+
+	j := gjson.ParseBytes(b)
+	if j.Get("status").String() == "ERROR" {
+		return rawurl, nil, lnurl.LNURLErrorResponse{
+			URL:    parsed,
+			Reason: j.Get("reason").String(),
+			Status: "ERROR",
+		}
+	}
+
+	switch j.Get("tag").String() {
+	case "withdrawRequest":
+		value, err := lnurl.HandleWithdraw(b)
+		return rawurl, value, err
+	case "payRequest":
+		value, err := lnurl.HandlePay(b)
+		return rawurl, value, err
+	// case "channelRequest":
+	// 	value, err := lnurl.HandleChannel(b)
+	// 	return rawurl, value, err
+	default:
+		return rawurl, nil, errors.New("unknown response tag " + j.String())
+	}
 }
