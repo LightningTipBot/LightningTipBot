@@ -259,9 +259,8 @@ func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) {
 	// add amount to query string
 	qs.Set("pr", invoice.PaymentRequest)
 	qs.Set("k1", lnurlWithdrawState.LNURLWithdrawResponse.K1)
-
 	callbackUrl.RawQuery = qs.Encode()
-	log.Infof(callbackUrl.String())
+
 	res, err := client.Get(callbackUrl.String())
 	if err != nil || res.StatusCode >= 300 {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Failed.")
