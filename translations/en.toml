@@ -79,7 +79,9 @@ _This bot charges no fees but costs Satoshis to operate. If you like the bot, pl
 */pay* ⚡️ Pay with Lightning: `/pay <invoice>`
 */donate* ❤️ Donate to the project: `/donate 1000`
 */advanced* 🤖 Advanced features.
-*/help* 📖 Read this help."""
+*/help* 📖 Read this help.
+
+⬇️ Press the menu button."""
 
 infoHelpMessage = """ℹ️ *Info*"""
 infoYourLightningAddress = """Your Lightning Address is `%s`"""
@@ -260,7 +262,8 @@ walletConnectMessage = """🔗 *Link your wallet*
 
 - *BlueWallet:* Press *New wallet*, *Import wallet*, *Scan or import a file*, and scan the QR code.
 - *Zeus:* Copy the URL below, press *Add a new node*, *Import* (the URL), *Save Node Config*."""
-couldNotLinkMessage = """🚫 Couldn't link your wallet. Please try again later."""
+couldNotLinkMessage             = """🚫 Couldn't link your wallet. Please try again later."""
+linkHiddenMessage               = """🔍 Link hidden. Enter /link to see it again."""
 
 # FAUCET
 
