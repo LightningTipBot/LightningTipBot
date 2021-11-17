@@ -31,8 +31,6 @@ func TipCheckSyntax(ctx context.Context, m *tb.Message) (bool, string) {
 }
 
 func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
-	// delete the tip message after a few seconds, this is default behaviour
-	defer NewMessage(m, WithDuration(time.Second*time.Duration(internal.Configuration.Telegram.MessageDisposeDuration), bot))
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)
 	user := LoadUser(ctx)
@@ -139,5 +137,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	if len(tipMemo) > 0 {
 		bot.trySendMessage(to.Telegram, fmt.Sprintf("✉️ %s", str.MarkdownEscape(tipMemo)))
 	}
+	// delete the tip message after a few seconds, this is default behaviour
+	NewMessage(m, WithDuration(time.Second*time.Duration(internal.Configuration.Telegram.MessageDisposeDuration), bot))
 	return
 }
