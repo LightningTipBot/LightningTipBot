@@ -129,6 +129,7 @@ func (t *Transaction) SendTransaction(bot *TipBot, from *lnbits.User, to *lnbits
 		log.Errorln(errmsg)
 		return false, err
 	}
+	t.Invoice = invoice
 	// pay invoice
 	_, err = from.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoice.PaymentRequest}, bot.Client)
 	if err != nil {
