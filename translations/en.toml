@@ -132,9 +132,6 @@ enterAmountMessage             = """💯 Enter an amount."""
 enterUserMessage               = """👤 Enter a user."""
 errorReasonMessage             = """🚫 Error: %s"""
 
-# ERRORS
-errorUsernameShort              = """Username too short."""
-
 # START
 
 startSettingWalletMessage = """🧮 Setting up your wallet..."""
