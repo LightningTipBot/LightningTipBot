@@ -139,8 +139,8 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 			log.Errorln(err.Error())
 			return
 		}
-		toUserStrMention = "@" + toUserStrWithoutAt
 		toUserStrWithoutAt = strings.TrimPrefix(toUserStrWithoutAt, "@")
+		toUserStrMention = "@" + toUserStrWithoutAt
 	}
 
 	err = bot.parseCmdDonHandler(ctx, m)

@@ -94,8 +94,7 @@ func (bot *TipBot) enterUserHandler(ctx context.Context, m *tb.Message) {
 		ResetUserState(user, bot)
 		return // errors.New("user state does not match"), 0
 	}
-	if len(m.Text) < 4 {
-		bot.trySendMessage(user.Telegram, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), Translate(ctx, "errorUsernameShort")))
+	if len(m.Text) < 4 || strings.HasPrefix(m.Text, "/") {
 		ResetUserState(user, bot)
 		return
 	}
