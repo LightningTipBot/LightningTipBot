@@ -34,6 +34,8 @@ const (
 	UserStateConfirmLNURLPay
 	UserEnterAmount
 	UserHasEnteredAmount
+	UserEnterUser
+	UserHasEnteredUser
 )
 
 type UserStateKey int

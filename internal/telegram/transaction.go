@@ -11,25 +11,26 @@ import (
 )
 
 type Transaction struct {
-	ID           uint         `gorm:"primarykey"`
-	Time         time.Time    `json:"time"`
-	Bot          *TipBot      `gorm:"-"`
-	From         *lnbits.User `json:"from" gorm:"-"`
-	To           *lnbits.User `json:"to" gorm:"-"`
-	FromId       int          `json:"from_id" `
-	ToId         int          `json:"to_id" `
-	FromUser     string       `json:"from_user"`
-	ToUser       string       `json:"to_user"`
-	Type         string       `json:"type"`
-	Amount       int          `json:"amount"`
-	ChatID       int64        `json:"chat_id"`
-	ChatName     string       `json:"chat_name"`
-	Memo         string       `json:"memo"`
-	Success      bool         `json:"success"`
-	FromWallet   string       `json:"from_wallet"`
-	ToWallet     string       `json:"to_wallet"`
-	FromLNbitsID string       `json:"from_lnbits"`
-	ToLNbitsID   string       `json:"to_lnbits"`
+	ID           uint              `gorm:"primarykey"`
+	Time         time.Time         `json:"time"`
+	Bot          *TipBot           `gorm:"-"`
+	From         *lnbits.User      `json:"from" gorm:"-"`
+	To           *lnbits.User      `json:"to" gorm:"-"`
+	FromId       int               `json:"from_id" `
+	ToId         int               `json:"to_id" `
+	FromUser     string            `json:"from_user"`
+	ToUser       string            `json:"to_user"`
+	Type         string            `json:"type"`
+	Amount       int               `json:"amount"`
+	ChatID       int64             `json:"chat_id"`
+	ChatName     string            `json:"chat_name"`
+	Memo         string            `json:"memo"`
+	Success      bool              `json:"success"`
+	FromWallet   string            `json:"from_wallet"`
+	ToWallet     string            `json:"to_wallet"`
+	FromLNbitsID string            `json:"from_lnbits"`
+	ToLNbitsID   string            `json:"to_lnbits"`
+	Invoice      lnbits.BitInvoice `gorm:"embedded;embeddedPrefix:invoice_"`
 }
 
 type TransactionOption func(t *Transaction)
@@ -86,7 +87,7 @@ func (t *Transaction) Send() (success bool, err error) {
 	// save transaction to db
 	tx := t.Bot.logger.Save(t)
 	if tx.Error != nil {
-		errMsg := fmt.Sprintf("Error: Could not log transaction: %s", err)
+		errMsg := fmt.Sprintf("Error: Could not log transaction: %s", err.Error())
 		log.Errorln(errMsg)
 	}
 

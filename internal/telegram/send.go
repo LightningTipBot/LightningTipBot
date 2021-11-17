@@ -68,11 +68,11 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 
-	if ok, errstr := bot.SendCheckSyntax(ctx, m); !ok {
-		bot.trySendMessage(m.Sender, helpSendUsage(ctx, errstr))
-		NewMessage(m, WithDuration(0, bot))
-		return
-	}
+	// if ok, errstr := bot.SendCheckSyntax(ctx, m); !ok {
+	// 	bot.trySendMessage(m.Sender, helpSendUsage(ctx, errstr))
+	// 	NewMessage(m, WithDuration(0, bot))
+	// 	return
+	// }
 
 	// get send amount, returns 0 if no amount is given
 	amount, err := decodeAmountFromCommand(m.Text)
@@ -98,8 +98,14 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 		}
 	}
 
-	// todo: this error might have been overwritten by the functions above
-	// we should only check for a valid amount here, instead of error and amount
+	// is a user given?
+	arg, err = getArgumentFromCommand(m.Text, 1)
+	if err != nil && m.Chat.Type == tb.ChatPrivate {
+		bot.askForUser(ctx, "", "CreateSendState", m.Text)
+		return
+	}
+
+	// is an amount given?
 	amount, err = decodeAmountFromCommand(m.Text)
 	if (err != nil || amount < 1) && m.Chat.Type == tb.ChatPrivate {
 		bot.askForAmount(ctx, "", "CreateSendState", 0, 0, m.Text)
@@ -145,7 +151,11 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	toUserDb, err := GetUserByTelegramUsername(toUserStrWithoutAt, *bot)
 	if err != nil {
 		NewMessage(m, WithDuration(0, bot))
-		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "sendUserHasNoWalletMessage"), toUserStrMention))
+		// cut username if it's too long
+		if len(toUserStrMention) > 100 {
+			toUserStrMention = toUserStrMention[:100]
+		}
+		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "sendUserHasNoWalletMessage"), str.MarkdownEscape(toUserStrMention)))
 		return
 	}
 

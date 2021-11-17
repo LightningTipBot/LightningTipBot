@@ -127,8 +127,8 @@ advancedMessage = """%s
 */tipjar* 🍯 Создать копилку: `/tipjar <ёмкость> <на_пользователя>`"""
 
 # GENERIC
-lnurlEnterAmountRangeMessage   = """⌨️ Введите количество между %d и %d sat."""
-lnurlEnterAmountMessage        = """⌨️ Введите количество."""
+enterAmountRangeMessage   = """⌨️ Введите количество между %d и %d sat."""
+enterAmountMessage        = """⌨️ Введите количество."""
 errorReasonMessage             = """🚫 Ошибка: %s"""
 
 # START

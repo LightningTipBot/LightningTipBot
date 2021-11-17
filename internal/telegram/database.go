@@ -2,10 +2,11 @@ package telegram
 
 import (
 	"fmt"
-	"github.com/eko/gocache/store"
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/eko/gocache/store"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/database"
@@ -79,6 +80,10 @@ func AutoMigration() (db *gorm.DB, txLogger *gorm.DB) {
 
 func GetUserByTelegramUsername(toUserStrWithoutAt string, bot TipBot) (*lnbits.User, error) {
 	toUserDb := &lnbits.User{}
+	// return error if username is too long
+	if len(toUserStrWithoutAt) > 100 {
+		return nil, fmt.Errorf("[GetUserByTelegramUsername] Telegram username is too long: %s..", toUserStrWithoutAt[:100])
+	}
 	tx := bot.Database.Where("telegram_username = ? COLLATE NOCASE", toUserStrWithoutAt).First(toUserDb)
 	if tx.Error != nil || toUserDb.Wallet == nil {
 		err := tx.Error

@@ -105,9 +105,9 @@ func (bot *TipBot) askForAmount(ctx context.Context, id string, eventType string
 		return
 	}
 	SetUserState(user, bot, lnbits.UserEnterAmount, string(stateDataJson))
-	askAmountText := Translate(ctx, "lnurlEnterAmountMessage")
+	askAmountText := Translate(ctx, "enterAmountMessage")
 	if amountMin > 0 && amountMax >= amountMin {
-		askAmountText = fmt.Sprintf(Translate(ctx, "lnurlEnterAmountRangeMessage"), enterAmountStateData.AmountMin/1000, enterAmountStateData.AmountMax/1000)
+		askAmountText = fmt.Sprintf(Translate(ctx, "enterAmountRangeMessage"), enterAmountStateData.AmountMin/1000, enterAmountStateData.AmountMax/1000)
 	}
 	// Let the user enter an amount and return
 	bot.trySendMessage(user.Telegram, askAmountText, tb.ForceReply)

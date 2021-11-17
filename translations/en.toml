@@ -127,9 +127,13 @@ advancedMessage = """%s
 */tipjar* 🍯 Create a tipjar: `/tipjar <capacity> <per_user>`"""
 
 # GENERIC
-lnurlEnterAmountRangeMessage   = """⌨️ Enter an amount between %d and %d sat."""
-lnurlEnterAmountMessage        = """⌨️ Enter an amount."""
+enterAmountRangeMessage        = """💯 Enter an amount between %d and %d sat."""
+enterAmountMessage             = """💯 Enter an amount."""
+enterUserMessage               = """👤 Enter a user."""
 errorReasonMessage             = """🚫 Error: %s"""
+
+# ERRORS
+errorUsernameShort              = """Username too short."""
 
 # START
 

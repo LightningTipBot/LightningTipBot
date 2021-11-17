@@ -85,23 +85,21 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 
-	statusMsg := bot.trySendMessage(m.Sender, Translate(ctx, "lnurlGettingUserMessage"))
 	// check user balance first
 	balance, err := bot.GetUserBalance(user)
 	if err != nil {
 		NewMessage(m, WithDuration(0, bot))
 		errmsg := fmt.Sprintf("[/pay] Error: Could not get user balance: %s", err)
 		log.Errorln(errmsg)
-		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
+		bot.trySendMessage(m.Sender, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}
 
 	if amount > balance {
 		NewMessage(m, WithDuration(0, bot))
-		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "insufficientFundsMessage"), balance, amount))
+		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "insufficientFundsMessage"), balance, amount))
 		return
 	}
-	bot.tryDeleteMessage(statusMsg)
 	// send warning that the invoice might fail due to missing fee reserve
 	if float64(amount) > float64(balance)*0.99 {
 		bot.trySendMessage(m.Sender, Translate(ctx, "feeReserveMessage"))

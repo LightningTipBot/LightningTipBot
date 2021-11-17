@@ -124,8 +124,8 @@ advancedMessage = """%s
 */tipjar* 🍯 Erzeuge eine Spendendose: `/tipjar <gesamt> <pro_user>`"""
 
 # GENERIC
-lnurlEnterAmountRangeMessage        = """⌨️ Gebe einen Betrag zwischen %d und %d sat ein."""
-lnurlEnterAmountMessage             = """⌨️ Gebe einen Betrag ein."""
+enterAmountRangeMessage        = """⌨️ Gebe einen Betrag zwischen %d und %d sat ein."""
+enterAmountMessage             = """⌨️ Gebe einen Betrag ein."""
 errorReasonMessage                  = """🚫 Fehler: %s"""
 
 # START
