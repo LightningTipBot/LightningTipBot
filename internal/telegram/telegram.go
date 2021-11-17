@@ -5,17 +5,6 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-// limitMessageLength limits the length of a message to 500 characters
-func limitMessageLength(what interface{}) interface{} {
-	// if what is a string, limit it to 500 characters
-	if s, ok := what.(string); ok {
-		if len(s) > 500 {
-			what = s[:500]
-		}
-	}
-	return what
-}
-
 func (bot TipBot) tryForwardMessage(to tb.Recipient, what tb.Editable, options ...interface{}) (msg *tb.Message) {
 	msg, err := bot.Telegram.Forward(to, what, options...)
 	if err != nil {
@@ -24,7 +13,6 @@ func (bot TipBot) tryForwardMessage(to tb.Recipient, what tb.Editable, options .
 	return
 }
 func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...interface{}) (msg *tb.Message) {
-	what = limitMessageLength(what)
 	msg, err := bot.Telegram.Send(to, what, options...)
 	if err != nil {
 		log.Warnln(err.Error())
@@ -33,7 +21,6 @@ func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...i
 }
 
 func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...interface{}) (msg *tb.Message) {
-	what = limitMessageLength(what)
 	msg, err := bot.Telegram.Reply(to, what, options...)
 	if err != nil {
 		log.Warnln(err.Error())
@@ -42,7 +29,6 @@ func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...i
 }
 
 func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...interface{}) (msg *tb.Message) {
-	what = limitMessageLength(what)
 	msg, err := bot.Telegram.Edit(to, what, options...)
 	if err != nil {
 		log.Warnln(err.Error())
