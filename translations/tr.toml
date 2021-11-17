@@ -122,6 +122,12 @@ advancedMessage = """%s
 */faucet* 🚰 Bir fıçı oluştur: `/faucet <toplam> <kullanıcı_başına>`
 */tipjar* 🍯 Bir tipjar oluştur: `/tipjar <capacity> <per_user>`"""
 
+# GENERIC
+enterAmountRangeMessage        = """💯 %d ve %d sat arasında bir miktar gir."""
+enterAmountMessage             = """💯 Bir miktar gir."""
+enterUserMessage               = """👤 Bir kullanıcı gir."""
+errorReasonMessage             = """🚫 Hata: %s"""
+
 # START
 
 startSettingWalletMessage = """🧮 Cüzdanın hazırlanıyor…"""
@@ -226,7 +232,6 @@ lnurlPaymentFailed = """🚫 Ödeme başarısız: %s"""
 lnurlInvalidAmountMessage = """🚫 Geçersiz miktar."""
 lnurlInvalidAmountRangeMessage = """🚫 Miktar %d ve %d sat arasında olmalı."""
 lnurlNoUsernameMessage = """🚫 LNURL ödemesi almak için bir Telegram kullanıcı ismi seçmelisin."""
-enterAmountRangeMessage = """⌨️ %d ve %d sat arasında bir miktar gir."""
 lnurlHelpText = """📖 Hoppalaa… olmadı. %s
 
 *Komut:* `/lnurl [miktar] <lnurl>`

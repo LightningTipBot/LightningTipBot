@@ -79,9 +79,7 @@ _This bot charges no fees but costs Satoshis to operate. If you like the bot, pl
 */pay* ⚡️ Pay with Lightning: `/pay <invoice>`
 */donate* ❤️ Donate to the project: `/donate 1000`
 */advanced* 🤖 Advanced features.
-*/help* 📖 Read this help.
-
-⬇️ Press the menu button."""
+*/help* 📖 Read this help."""
 
 infoHelpMessage = """ℹ️ *Info*"""
 infoYourLightningAddress = """Your Lightning Address is `%s`"""
