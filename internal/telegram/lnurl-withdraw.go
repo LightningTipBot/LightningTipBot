@@ -38,6 +38,18 @@ type LnurlWithdrawState struct {
 	Message               string                      `json:"message"`
 }
 
+func (bot *TipBot) editSingleButton(ctx context.Context, m *tb.Message, message string, button string) {
+	bot.tryEditMessage(
+		m,
+		message,
+		&tb.ReplyMarkup{
+			InlineKeyboard: [][]tb.InlineButton{
+				{tb.InlineButton{Text: button}},
+			},
+		},
+	)
+}
+
 // lnurlWithdrawHandler is invoked when the first lnurl response was a lnurl-withdraw response
 // at this point, the user hans't necessarily entered an amount yet
 func (bot *TipBot) lnurlWithdrawHandler(ctx context.Context, m *tb.Message, withdrawParams LnurlWithdrawState) {
@@ -68,6 +80,13 @@ func (bot *TipBot) lnurlWithdrawHandler(ctx context.Context, m *tb.Message, with
 		ResetUserState(user, bot)
 		return
 	}
+
+	// if no amount is entered, and if only one amount is possible, we use it
+	if amount_err != nil && LnurlWithdrawState.LNURLWithdrawResponse.MaxWithdrawable == LnurlWithdrawState.LNURLWithdrawResponse.MinWithdrawable {
+		amount = int(LnurlWithdrawState.LNURLWithdrawResponse.MaxWithdrawable / 1000)
+		amount_err = nil
+	}
+
 	// set also amount in the state of the user
 	LnurlWithdrawState.Amount = amount * 1000 // save as mSat
 
@@ -204,15 +223,7 @@ func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) {
 	ResetUserState(user, bot)
 
 	// update button text
-	bot.tryEditMessage(
-		c.Message,
-		lnurlWithdrawState.Message,
-		&tb.ReplyMarkup{
-			InlineKeyboard: [][]tb.InlineButton{
-				{tb.InlineButton{Text: i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlPreparingWithdraw")}},
-			},
-		},
-	)
+	bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlPreparingWithdraw"))
 
 	// lnurlWithdrawState loaded
 	client, err := bot.GetHttpClient()
@@ -250,17 +261,19 @@ func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) {
 	qs.Set("k1", lnurlWithdrawState.LNURLWithdrawResponse.K1)
 
 	callbackUrl.RawQuery = qs.Encode()
-
+	log.Infof(callbackUrl.String())
 	res, err := client.Get(callbackUrl.String())
 	if err != nil || res.StatusCode >= 300 {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Failed.")
-		bot.trySendMessage(c.Sender, Translate(ctx, "errorTryLaterMessage"))
+		// bot.trySendMessage(c.Sender, Translate(ctx, "errorTryLaterMessage"))
+		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
 		return
 	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
-		bot.trySendMessage(c.Sender, Translate(ctx, "errorTryLaterMessage"))
+		// bot.trySendMessage(c.Sender, Translate(ctx, "errorTryLaterMessage"))
+		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
 		return
 	}
 
@@ -268,31 +281,13 @@ func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) {
 	var response2 lnurl.LNURLResponse
 	json.Unmarshal(body, &response2)
 	if response2.Status == "OK" {
-		// bot.trySendMessage(c.Sender, Translate(ctx, "lnurlWithdrawSuccess"))
 		// update button text
-		bot.tryEditMessage(
-			c.Message,
-			lnurlWithdrawState.Message,
-			&tb.ReplyMarkup{
-				InlineKeyboard: [][]tb.InlineButton{
-					{tb.InlineButton{Text: i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlWithdrawSuccess")}},
-				},
-			},
-		)
+		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlWithdrawSuccess"))
 
 	} else {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] LNURLWithdraw failed.")
-		// bot.trySendMessage(c.Sender, Translate(ctx, "lnurlWithdrawFailed"))
 		// update button text
-		bot.tryEditMessage(
-			c.Message,
-			lnurlWithdrawState.Message,
-			&tb.ReplyMarkup{
-				InlineKeyboard: [][]tb.InlineButton{
-					{tb.InlineButton{Text: i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlWithdrawFailed")}},
-				},
-			},
-		)
+		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlWithdrawFailed"))
 		return
 	}
 

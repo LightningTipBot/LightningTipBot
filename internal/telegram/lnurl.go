@@ -226,6 +226,9 @@ func (bot TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error
 	if err != nil {
 		return rawurl, nil, err
 	}
+	if resp.StatusCode >= 300 {
+		return rawurl, nil, errors.New("HTTP error: " + resp.Status)
+	}
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -252,6 +255,6 @@ func (bot TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error
 	// 	value, err := lnurl.HandleChannel(b)
 	// 	return rawurl, value, err
 	default:
-		return rawurl, nil, errors.New("unkown LNURL response.")
+		return rawurl, nil, errors.New("Unkown LNURL response.")
 	}
 }
