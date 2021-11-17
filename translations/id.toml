@@ -123,9 +123,10 @@ advancedMessage = """%s
 */tipjar* 🍯 Create a tipjar: `/tipjar <capacity> <per_user>`"""
 
 # GENERIC
-enterAmountRangeMessage        = """⌨️ Masukkan jumlah diantara %d dan %d sat."""
-enterAmountMessage        = """⌨️ Masukkan jumlah."""
-errorReasonMessage                  = """🚫 Error: %s"""
+enterAmountRangeMessage        = """💯 Masukkan jumlah diantara %d dan %d sat."""
+enterAmountMessage             = """💯 Masukkan jumlah."""
+enterUserMessage               = """👤 Masukkan user."""
+errorReasonMessage             = """🚫 Error: %s"""
 
 # START
 

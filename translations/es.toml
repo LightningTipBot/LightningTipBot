@@ -123,9 +123,10 @@ advancedMessage = """%s
 */tipjar* 🍯 Crear un tipjar: `/tipjar <capacidad> <por_usuario>`"""
 
 # GENERIC
-enterAmountRangeMessage        = """⌨️ Introduce un monto entre %d y %d sat."""
-enterAmountMessage             = """⌨️ Introduce un monto."""
-errorReasonMessage                  = """🚫 Error: %s"""
+enterAmountRangeMessage        = """💯 Introduce un monto entre %d y %d sat."""
+enterAmountMessage             = """💯 Introduce un monto."""
+enterUserMessage               = """👤 Introduce un usuario."""
+errorReasonMessage             = """🚫 Error: %s"""
 
 # START
 
