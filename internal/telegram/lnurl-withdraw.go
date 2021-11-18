@@ -151,6 +151,8 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 		lnurlWithdrawState = fn.(*LnurlWithdrawState)
 	default:
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] invalid type")
+		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
+		return
 	}
 
 	confirmText := fmt.Sprintf(Translate(ctx, "confirmLnurlWithdrawMessage"), lnurlWithdrawState.Amount/1000)
@@ -192,6 +194,7 @@ func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) {
 		lnurlWithdrawState = fn.(*LnurlWithdrawState)
 	default:
 		log.Errorf("[confirmWithdrawHandler] invalid type")
+		return
 	}
 	// onnly the correct user can press
 	if lnurlWithdrawState.From.Telegram.ID != c.Sender.ID {
@@ -225,17 +228,11 @@ func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) {
 	// update button text
 	bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlPreparingWithdraw"))
 
-	// lnurlWithdrawState loaded
-	client, err := bot.GetHttpClient()
-	if err != nil {
-		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
-		bot.trySendMessage(c.Sender, Translate(ctx, "errorTryLaterMessage"))
-		return
-	}
 	callbackUrl, err := url.Parse(lnurlWithdrawState.LNURLWithdrawResponse.Callback)
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
-		bot.trySendMessage(c.Sender, Translate(ctx, "errorTryLaterMessage"))
+		// bot.trySendMessage(c.Sender, Translate(ctx, "errorTryLaterMessage"))
+		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
 		return
 	}
 
@@ -251,6 +248,7 @@ func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) {
 	if err != nil {
 		errmsg := fmt.Sprintf("[lnurlWithdrawHandlerWithdraw] Could not create an invoice: %s", err)
 		log.Errorln(errmsg)
+		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
 		return
 	}
 	lnurlWithdrawState.Invoice = invoice
@@ -261,6 +259,14 @@ func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) {
 	qs.Set("k1", lnurlWithdrawState.LNURLWithdrawResponse.K1)
 	callbackUrl.RawQuery = qs.Encode()
 
+	// lnurlWithdrawState loaded
+	client, err := bot.GetHttpClient()
+	if err != nil {
+		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
+		// bot.trySendMessage(c.Sender, Translate(ctx, "errorTryLaterMessage"))
+		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
+		return
+	}
 	res, err := client.Get(callbackUrl.String())
 	if err != nil || res.StatusCode >= 300 {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Failed.")
