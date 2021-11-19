@@ -4,15 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
+	"github.com/eko/gocache/store"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 type ShopView struct {
+	ID     string
 	ShopID string
 	Page   int
 }
@@ -38,7 +41,8 @@ type Shop struct {
 	Type         string              `json:"Type"`        // type of the shop
 	Title        string              `json:"title"`       // Title of the item
 	Description  string              `json:"description"` // Description of the item
-	Items        map[string]ShopItem `json:"Items"`       // holds the amount entered by the user mSat
+	ItemIds      []string            `json:"ItemsIDs"`    //
+	Items        map[string]ShopItem `json:"Items"`       //
 	LanguageCode string              `json:"languagecode"`
 }
 
@@ -46,7 +50,7 @@ type Shops struct {
 	*transaction.Base
 	ID    string       `json:"ID"`    // holds the ID of the tx object in bunt db
 	Owner *lnbits.User `json:"owner"` // owner of the shop
-	Shops []string     `json:"shop"`  // holds the amount entered by the user mSat
+	Shops []string     `json:"shop"`  //
 }
 
 func (shop *Shop) getItem(itemId string) (item ShopItem, ok bool) {
@@ -55,10 +59,15 @@ func (shop *Shop) getItem(itemId string) (item ShopItem, ok bool) {
 }
 
 var (
-	shopMainMenu       = &tb.ReplyMarkup{ResizeReplyKeyboard: false}
-	browseShopButton   = shopMainMenu.Data("Browse shops", "shops_browse")
-	shopNewShopButton  = shopMainMenu.Data("New Shop", "shops_newshop")
-	shopSettingsButton = shopMainMenu.Data("Settings", "shops_settings")
+	shopMainMenu          = &tb.ReplyMarkup{ResizeReplyKeyboard: false}
+	browseShopButton      = shopMainMenu.Data("Browse shops", "shops_browse")
+	shopNewShopButton     = shopMainMenu.Data("New Shop", "shops_newshop")
+	shopSettingsButton    = shopMainMenu.Data("Settings", "shops_settings")
+	shopBrowseItemsButton = shopMainMenu.Data("Browse items", "shop_browse")
+	shopAddItemButton     = shopMainMenu.Data("Add item", "shop_additem")
+	shopNextitemButton    = shopMainMenu.Data(">", "shop_nextitem")
+	shopPrevitemButton    = shopMainMenu.Data("<", "shop_previtem")
+	shopBuyitemButton     = shopMainMenu.Data("Buy", "shop_buyitem")
 )
 
 func (bot TipBot) shopsMainMenu(ctx context.Context, shops *Shops) *tb.ReplyMarkup {
@@ -76,9 +85,57 @@ func (bot TipBot) shopsMainMenu(ctx context.Context, shops *Shops) *tb.ReplyMark
 	return shopMainMenu
 }
 
+func (bot TipBot) shopMenu(ctx context.Context, shop *Shop) *tb.ReplyMarkup {
+	shopBrowseItemsButton = shopMainMenu.Data("Browse items", "shop_browse", shop.ID)
+	shopAddItemButton = shopMainMenu.Data("Add item", "shop_additem", shop.ID)
+	shopNextitemButton = shopMainMenu.Data(">", "shop_nextitem", shop.ID)
+	shopPrevitemButton = shopMainMenu.Data("<", "shop_previtem", shop.ID)
+	shopBuyitemButton = shopMainMenu.Data("Buy", "shop_buyitem", shop.ID)
+
+	shopMainMenu.Inline(
+		shopMainMenu.Row(
+			shopBrowseItemsButton,
+			shopAddItemButton),
+		shopMainMenu.Row(
+			shopPrevitemButton,
+			shopBuyitemButton,
+			shopNextitemButton),
+	)
+	return shopMainMenu
+}
+
+func (bot *TipBot) shopNextItemButtonHandler(ctx context.Context, c *tb.Callback) {
+	user := LoadUser(ctx)
+	// shopView, err := bot.Cache.Get(fmt.Sprintf("shopview-%d", user.Telegram.ID))
+	sv, err := bot.Cache.Get(fmt.Sprintf("shopview-%d", user.Telegram.ID))
+	if err != nil {
+		return
+	}
+	shopView := sv.(ShopView)
+	shop, err := bot.getShop(ctx, shopView.ShopID)
+	if shopView.Page < len(shop.Items) {
+		shopView.Page++
+	}
+	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
+}
+
+func (bot *TipBot) shopPrevItemButtonHandler(ctx context.Context, c *tb.Callback) {
+	user := LoadUser(ctx)
+	// shopView, err := bot.Cache.Get(fmt.Sprintf("shopview-%d", user.Telegram.ID))
+	sv, err := bot.Cache.Get(fmt.Sprintf("shopview-%d", user.Telegram.ID))
+	if err != nil {
+		return
+	}
+	shopView := sv.(ShopView)
+	if shopView.Page > 0 {
+		shopView.Page--
+	}
+	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
+}
+
 var ShopsText = "*Welcome to your shop.*\nYour have %d shops.\n%s\n🔞 Look at me `(8 items for 100 sat each)`\n📚 Audiobooks `(12 items for 1000 sat each)`\n\nPress buttons to add a new shop."
 
-func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) {
+func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 	if !m.Private() {
 		return
 	}
@@ -101,6 +158,41 @@ func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) {
 	}
 
 	bot.trySendMessage(m.Chat, fmt.Sprintf(ShopsText, len(shops.Shops), shopTitles), bot.shopsMainMenu(ctx, shops))
+	// runtime.IgnoreError(shop.Set(shop, bot.Bunt))
+	return
+}
+
+func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) {
+	if !m.Private() {
+		return
+	}
+	user := LoadUser(ctx)
+	shops, err := bot.getUserShops(ctx, user)
+	if err != nil {
+		log.Errorf("[shopHandler] %s", err)
+		return
+	}
+
+	shop, err := bot.getShop(ctx, shops.Shops[0])
+	if shop.Owner.Telegram.ID != m.Sender.ID {
+		return
+	}
+
+	shopview := ShopView{
+		ID:     fmt.Sprintf("shopview-%d", user.Telegram.ID),
+		ShopID: shop.ID,
+		Page:   0,
+	}
+	bot.Cache.Set(shopview.ID, shopview, &store.Options{Expiration: 24 * time.Hour})
+
+	if len(shop.ItemIds) > 0 {
+		bot.trySendMessage(m.Chat, shop.Items[shop.ItemIds[shopview.Page]].TbPhoto, bot.shopMenu(ctx, shop))
+		// for _, item := range shop.Items {
+		// 	bot.trySendMessage(m.Chat, item.TbPhoto, bot.shopMenu(ctx, shop))
+		// }
+	} else {
+		bot.trySendMessage(m.Chat, "No items in shop.", bot.shopMenu(ctx, shop))
+	}
 	// runtime.IgnoreError(shop.Set(shop, bot.Bunt))
 	return
 }
@@ -162,6 +254,82 @@ func (bot *TipBot) shopNewItemHandler(ctx context.Context, c *tb.Callback) {
 	bot.trySendMessage(c.Sender, fmt.Sprintf("🌄 Upload an image."), tb.ForceReply)
 }
 
+func (bot *TipBot) addShopItem(ctx context.Context, shopId string) (ShopItem, error) {
+	shop, err := bot.getShop(ctx, shopId)
+	if err != nil {
+		log.Errorf("[addShopItem] %s", err)
+		return ShopItem{}, err
+	}
+	user := LoadUser(ctx)
+	// onnly the correct user can press
+	if shop.Owner.Telegram.ID != user.Telegram.ID {
+		return ShopItem{}, fmt.Errorf("not owner")
+	}
+	// immediatelly set lock to block duplicate calls
+	err = shop.Lock(shop, bot.Bunt)
+	defer shop.Release(shop, bot.Bunt)
+
+	itemId := fmt.Sprintf("item-%s-%s", shop.ID, RandStringRunes(8))
+	item := ShopItem{
+		ID:           itemId,
+		ShopID:       shop.ID,
+		Owner:        user,
+		Type:         "photo",
+		LanguageCode: shop.LanguageCode,
+	}
+	shop.Items[itemId] = item
+	shop.ItemIds = append(shop.ItemIds, itemId)
+	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
+	return item, nil
+}
+
+func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) {
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return // errors.New("user has no wallet"), 0
+	}
+
+	// read item from user.StateData
+	var item ShopItem
+	err := json.Unmarshal([]byte(user.StateData), &item)
+	if err != nil {
+		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
+		bot.trySendMessage(m.Sender, Translate(ctx, "errorTryLaterMessage"), Translate(ctx, "errorTryLaterMessage"))
+		return
+	}
+	shop, err := bot.getShop(ctx, item.ShopID)
+	if shop.Owner.Telegram.ID != m.Sender.ID {
+		return
+	}
+	item = shop.Items[item.ID]
+	item.FileID = m.Photo.FileID
+	item.TbPhoto = m.Photo
+	shop.Items[item.ID] = item
+	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
+
+	// // tx := &Shop{Base: transaction.New(transaction.ID(item.ShopID))}
+	// // sn, err := tx.Get(tx, bot.Bunt)
+	// // // immediatelly set intransaction to block duplicate calls
+	// // if err != nil {
+	// // 	log.Errorf("[shopNewItemHandler] %s", err)
+	// // 	return
+	// // }
+	// // shop := sn.(*Shop)
+	// // switch from sqlite to bunt db
+	// item = shop.Items[item.ID]
+	// // user := LoadUser(ctx)
+	// // onnly the correct user can press
+
+	// // immediatelly set lock to block duplicate calls
+	// err = shop.Lock(shop, bot.Bunt)
+	// defer shop.Release(shop, bot.Bunt)
+
+	// item.FileID = m.Photo.FileID
+	// item.TbPhoto = m.Photo
+	// fmt.Println(m.Photo.OnDisk())  // true
+	// fmt.Println(m.Photo.InCloud()) // false
+}
+
 func (bot *TipBot) initUserShops(ctx context.Context, user *lnbits.User) (*Shops, error) {
 	id := fmt.Sprintf("shops-%d", user.Telegram.ID)
 	shops := &Shops{
@@ -213,78 +381,4 @@ func (bot *TipBot) getShop(ctx context.Context, shopId string) (*Shop, error) {
 	}
 	shop := sn.(*Shop)
 	return shop, nil
-}
-
-func (bot *TipBot) addShopItem(ctx context.Context, shopId string) (ShopItem, error) {
-	shop, err := bot.getShop(ctx, shopId)
-	if err != nil {
-		log.Errorf("[addShopItem] %s", err)
-		return ShopItem{}, err
-	}
-	user := LoadUser(ctx)
-	// onnly the correct user can press
-	if shop.Owner.Telegram.ID != user.Telegram.ID {
-		return ShopItem{}, fmt.Errorf("not owner")
-	}
-	// immediatelly set lock to block duplicate calls
-	err = shop.Lock(shop, bot.Bunt)
-	defer shop.Release(shop, bot.Bunt)
-
-	itemId := fmt.Sprintf("item-%s-%s", shop.ID, RandStringRunes(8))
-	item := ShopItem{
-		ID:           itemId,
-		ShopID:       shop.ID,
-		Owner:        user,
-		Type:         "photo",
-		LanguageCode: shop.LanguageCode,
-	}
-	shop.Items[itemId] = item
-	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
-	return item, nil
-}
-
-func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) {
-	user := LoadUser(ctx)
-	if user.Wallet == nil {
-		return // errors.New("user has no wallet"), 0
-	}
-
-	// read item from user.StateData
-	var item ShopItem
-	err := json.Unmarshal([]byte(user.StateData), &item)
-	if err != nil {
-		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
-		bot.trySendMessage(m.Sender, Translate(ctx, "errorTryLaterMessage"), Translate(ctx, "errorTryLaterMessage"))
-		return
-	}
-	shop, err := bot.getShop(ctx, item.ShopID)
-	if shop.Owner.Telegram.ID != m.Sender.ID {
-		return
-	}
-
-	item.FileID = m.Photo.FileID
-	item.TbPhoto = m.Photo
-	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
-
-	// // tx := &Shop{Base: transaction.New(transaction.ID(item.ShopID))}
-	// // sn, err := tx.Get(tx, bot.Bunt)
-	// // // immediatelly set intransaction to block duplicate calls
-	// // if err != nil {
-	// // 	log.Errorf("[shopNewItemHandler] %s", err)
-	// // 	return
-	// // }
-	// // shop := sn.(*Shop)
-	// // switch from sqlite to bunt db
-	// item = shop.Items[item.ID]
-	// // user := LoadUser(ctx)
-	// // onnly the correct user can press
-
-	// // immediatelly set lock to block duplicate calls
-	// err = shop.Lock(shop, bot.Bunt)
-	// defer shop.Release(shop, bot.Bunt)
-
-	// item.FileID = m.Photo.FileID
-	// item.TbPhoto = m.Photo
-	// fmt.Println(m.Photo.OnDisk())  // true
-	// fmt.Println(m.Photo.InCloud()) // false
 }
