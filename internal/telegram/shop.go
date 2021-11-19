@@ -15,9 +15,11 @@ import (
 )
 
 type ShopView struct {
-	ID     string
-	ShopID string
-	Page   int
+	ID            string
+	ShopID        string
+	Page          int
+	Message       *tb.Message
+	StatusMessage *tb.Message
 }
 
 type ShopItem struct {
@@ -91,7 +93,7 @@ func (bot TipBot) shopMenu(ctx context.Context, shop *Shop) *tb.ReplyMarkup {
 	shopAddItemButton = shopMainMenu.Data("Add item", "shop_additem", shop.ID)
 	shopNextitemButton = shopMainMenu.Data(">", "shop_nextitem", shop.ID)
 	shopPrevitemButton = shopMainMenu.Data("<", "shop_previtem", shop.ID)
-	shopBuyitemButton = shopMainMenu.Data("Buy", "shop_buyitem", shop.ID)
+	shopBuyitemButton = shopMainMenu.Data("Tip", "shop_buyitem", shop.ID)
 
 	shopMainMenu.Inline(
 		shopMainMenu.Row(
@@ -105,38 +107,38 @@ func (bot TipBot) shopMenu(ctx context.Context, shop *Shop) *tb.ReplyMarkup {
 	return shopMainMenu
 }
 
-func (bot *TipBot) shopNextItemButtonHandler(ctx context.Context, c *tb.Callback) {
-	user := LoadUser(ctx)
-	// shopView, err := bot.Cache.Get(fmt.Sprintf("shopview-%d", user.Telegram.ID))
+func (bot *TipBot) getUserShopview(ctx context.Context, user *lnbits.User) (shopView ShopView, err error) {
 	sv, err := bot.Cache.Get(fmt.Sprintf("shopview-%d", user.Telegram.ID))
 	if err != nil {
+
 		return
 	}
-	shopView := sv.(ShopView)
-	shop, err := bot.getShop(ctx, shopView.ShopID)
-	if shopView.Page < len(shop.Items)-1 {
-		shopView.Page++
-	}
-	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
-	shop, err = bot.getShop(ctx, shopView.ShopID)
-	bot.displayShopItem(ctx, c.Message, shop)
+	shopView = sv.(ShopView)
+	return
 }
 
 func (bot *TipBot) shopSelect(ctx context.Context, c *tb.Callback) {
 	shop, _ := bot.getShop(ctx, c.Data)
-	shopView := ShopView{
-		ID:     fmt.Sprintf("shopview-%d", c.Sender.ID),
-		ShopID: shop.ID,
-		Page:   0,
+	user := LoadUser(ctx)
+	shopView, err := bot.getUserShopview(ctx, user)
+	if err != nil {
+		shopView = ShopView{
+			ID:     fmt.Sprintf("shopview-%d", c.Sender.ID),
+			ShopID: shop.ID,
+			Page:   0,
+		}
+		bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 	}
-	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 
+	var shopMessage *tb.Message
 	if len(shop.ItemIds) > 0 {
 		bot.tryDeleteMessage(c.Message)
-		bot.trySendMessage(c.Message.Chat, shop.Items[shop.ItemIds[shopView.Page]].TbPhoto, bot.shopMenu(ctx, shop))
+		shopMessage = bot.trySendMessage(c.Message.Chat, shop.Items[shop.ItemIds[shopView.Page]].TbPhoto, bot.shopMenu(ctx, shop))
 	} else {
-		bot.tryEditMessage(c.Message, "No items in shop.", bot.shopMenu(ctx, shop))
+		shopMessage = bot.tryEditMessage(c.Message, "No items in shop.", bot.shopMenu(ctx, shop))
 	}
+	shopView.Message = shopMessage
+	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 }
 
 func (bot *TipBot) shopsBrowser(ctx context.Context, c *tb.Callback) {
@@ -160,14 +162,32 @@ func (bot *TipBot) shopsBrowser(ctx context.Context, c *tb.Callback) {
 
 }
 
-func (bot *TipBot) shopPrevItemButtonHandler(ctx context.Context, c *tb.Callback) {
+func (bot *TipBot) shopNextItemButtonHandler(ctx context.Context, c *tb.Callback) {
 	user := LoadUser(ctx)
 	// shopView, err := bot.Cache.Get(fmt.Sprintf("shopview-%d", user.Telegram.ID))
-	sv, err := bot.Cache.Get(fmt.Sprintf("shopview-%d", user.Telegram.ID))
+	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
 		return
 	}
-	shopView := sv.(ShopView)
+	shop, err := bot.getShop(ctx, shopView.ShopID)
+	if shopView.Page < len(shop.Items)-1 {
+		shopView.Page++
+		bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
+		shop, err = bot.getShop(ctx, shopView.ShopID)
+		bot.displayShopItem(ctx, c.Message, shop)
+	}
+}
+
+func (bot *TipBot) shopPrevItemButtonHandler(ctx context.Context, c *tb.Callback) {
+	user := LoadUser(ctx)
+	shopView, err := bot.getUserShopview(ctx, user)
+	if err != nil {
+		return
+	}
+	if shopView.Page == 0 {
+		bot.shopsHandler(ctx, c.Message)
+		return
+	}
 	if shopView.Page > 0 {
 		shopView.Page--
 	}
@@ -201,6 +221,14 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 
 	}
 
+	// if the user used the command /shops, we will send a new message
+	// if the user clied a button and has a shopview set, we will edit an old message
+	shopView, err := bot.getUserShopview(ctx, user)
+	if err == nil {
+		if shopView.Message.ID != m.ID {
+			bot.tryEditMessage(shopView.Message, fmt.Sprintf(ShopsText, len(shops.Shops), shopTitles), bot.shopsMainMenu(ctx, shops))
+		}
+	}
 	bot.trySendMessage(m.Chat, fmt.Sprintf(ShopsText, len(shops.Shops), shopTitles), bot.shopsMainMenu(ctx, shops))
 	// runtime.IgnoreError(shop.Set(shop, bot.Bunt))
 	return
@@ -230,6 +258,7 @@ func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) {
 	}
 
 	shop, err := bot.getShop(ctx, shops.Shops[0])
+
 	if shop.Owner.Telegram.ID != m.Sender.ID {
 		return
 	}
@@ -239,14 +268,15 @@ func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) {
 		ShopID: shop.ID,
 		Page:   0,
 	}
-	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 
+	var shopMessage *tb.Message
 	if len(shop.ItemIds) > 0 {
-		bot.trySendMessage(m.Chat, shop.Items[shop.ItemIds[shopView.Page]].TbPhoto, bot.shopMenu(ctx, shop))
+		shopMessage = bot.trySendMessage(m.Chat, shop.Items[shop.ItemIds[shopView.Page]].TbPhoto, bot.shopMenu(ctx, shop))
 	} else {
-		bot.trySendMessage(m.Chat, "No items in shop.", bot.shopMenu(ctx, shop))
+		shopMessage = bot.trySendMessage(m.Chat, "No items in shop.", bot.shopMenu(ctx, shop))
 	}
-	// runtime.IgnoreError(shop.Set(shop, bot.Bunt))
+	shopView.Message = shopMessage
+	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 	return
 }
 
@@ -304,7 +334,7 @@ func (bot *TipBot) shopNewItemHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 	SetUserState(user, bot, lnbits.UserStateShopItemSendPhoto, string(paramsJson))
-	bot.trySendMessage(c.Sender, fmt.Sprintf("🌄 Upload an image."), tb.ForceReply)
+	bot.trySendMessage(c.Sender, fmt.Sprintf("🌄 Send me an image ."))
 }
 
 func (bot *TipBot) addShopItem(ctx context.Context, shopId string) (ShopItem, error) {
@@ -359,7 +389,13 @@ func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) {
 	item.TbPhoto = m.Photo
 	shop.Items[item.ID] = item
 	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
-
+	bot.tryDeleteMessage(m)
+	bot.trySendMessage(m.Sender, fmt.Sprintf("✅ Image added."))
+	shopView, err := bot.getUserShopview(ctx, user)
+	if err != nil {
+		return
+	}
+	bot.shopNextItemButtonHandler(ctx, &tb.Callback{Message: shopView.Message})
 	// // tx := &Shop{Base: transaction.New(transaction.ID(item.ShopID))}
 	// // sn, err := tx.Get(tx, bot.Bunt)
 	// // // immediatelly set intransaction to block duplicate calls
