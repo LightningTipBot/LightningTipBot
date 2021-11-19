@@ -243,11 +243,6 @@ func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) {
 
 	if len(shop.ItemIds) > 0 {
 		bot.trySendMessage(m.Chat, shop.Items[shop.ItemIds[shopView.Page]].TbPhoto, bot.shopMenu(ctx, shop))
-		// bot.displayShopItem(ctx, m.Sender, shop)
-		// bot.trySendMessage(m.Chat, shop.Items[shop.ItemIds[shopview.Page]].TbPhoto, bot.shopMenu(ctx, shop))
-		// for _, item := range shop.Items {
-		// 	bot.trySendMessage(m.Chat, item.TbPhoto, bot.shopMenu(ctx, shop))
-		// }
 	} else {
 		bot.trySendMessage(m.Chat, "No items in shop.", bot.shopMenu(ctx, shop))
 	}
