@@ -117,6 +117,8 @@ func (bot *TipBot) shopNextItemButtonHandler(ctx context.Context, c *tb.Callback
 		shopView.Page++
 	}
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
+	shop, err = bot.getShop(ctx, shopView.ShopID)
+	bot.displayShopItem(ctx, c.Sender, shop)
 }
 
 func (bot *TipBot) shopPrevItemButtonHandler(ctx context.Context, c *tb.Callback) {
@@ -131,6 +133,8 @@ func (bot *TipBot) shopPrevItemButtonHandler(ctx context.Context, c *tb.Callback
 		shopView.Page--
 	}
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
+	shop, err := bot.getShop(ctx, shopView.ShopID)
+	bot.displayShopItem(ctx, c.Sender, shop)
 }
 
 var ShopsText = "*Welcome to your shop.*\nYour have %d shops.\n%s\n🔞 Look at me `(8 items for 100 sat each)`\n📚 Audiobooks `(12 items for 1000 sat each)`\n\nPress buttons to add a new shop."
@@ -140,9 +144,10 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 	user := LoadUser(ctx)
+
 	shops, err := bot.getUserShops(ctx, user)
 	if err != nil {
-		log.Errorf("[shopHandler] %s", err)
+		bot.trySendMessage(m.Chat, "You have no shops.", bot.shopsMainMenu(ctx, shops))
 		return
 	}
 
@@ -160,6 +165,18 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 	bot.trySendMessage(m.Chat, fmt.Sprintf(ShopsText, len(shops.Shops), shopTitles), bot.shopsMainMenu(ctx, shops))
 	// runtime.IgnoreError(shop.Set(shop, bot.Bunt))
 	return
+}
+
+func (bot *TipBot) displayShopItem(ctx context.Context, to tb.Recipient, shop *Shop) {
+	user := LoadUser(ctx)
+	// shopView, err := bot.Cache.Get(fmt.Sprintf("shopview-%d", user.Telegram.ID))
+	sv, err := bot.Cache.Get(fmt.Sprintf("shopview-%d", user.Telegram.ID))
+	if err != nil {
+		return
+	}
+	shopView := sv.(ShopView)
+	bot.trySendMessage(to, shop.Items[shop.ItemIds[shopView.Page]].TbPhoto, bot.shopMenu(ctx, shop))
+
 }
 
 func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) {
@@ -186,7 +203,8 @@ func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) {
 	bot.Cache.Set(shopview.ID, shopview, &store.Options{Expiration: 24 * time.Hour})
 
 	if len(shop.ItemIds) > 0 {
-		bot.trySendMessage(m.Chat, shop.Items[shop.ItemIds[shopview.Page]].TbPhoto, bot.shopMenu(ctx, shop))
+		bot.displayShopItem(ctx, m.Sender, shop)
+		// bot.trySendMessage(m.Chat, shop.Items[shop.ItemIds[shopview.Page]].TbPhoto, bot.shopMenu(ctx, shop))
 		// for _, item := range shop.Items {
 		// 	bot.trySendMessage(m.Chat, item.TbPhoto, bot.shopMenu(ctx, shop))
 		// }
