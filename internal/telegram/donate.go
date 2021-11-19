@@ -48,7 +48,7 @@ func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 	}
 
 	// command is valid
-	msg := bot.trySendMessage(user.Telegram, Translate(ctx, "donationProgressMessage"))
+	msg := bot.trySendMessage(m.Chat, Translate(ctx, "donationProgressMessage"))
 	// get invoice
 	resp, err := http.Get(fmt.Sprintf(donationEndpoint, amount, GetUserStr(user.Telegram), GetUserStr(bot.Telegram.Me)))
 	if err != nil {
