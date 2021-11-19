@@ -90,5 +90,6 @@ func (bot *TipBot) Start() {
 	}
 	bot.registerTelegramHandlers()
 	initInvoiceEventCallbacks(bot)
+	initializeStateCallbackMessage(bot)
 	bot.Telegram.Start()
 }

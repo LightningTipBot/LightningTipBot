@@ -7,7 +7,6 @@ import (
 	"image/jpeg"
 	"strings"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
@@ -43,8 +42,8 @@ func (bot *TipBot) photoHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 	user := LoadUser(ctx)
-	if user.StateKey == lnbits.UserStateShopItemSendPhoto {
-		bot.addShopItemPhoto(ctx, m)
+	if c := stateCallbackMessage[user.StateKey]; c != nil {
+		c(ctx, m)
 		ResetUserState(user, bot)
 		return
 	}

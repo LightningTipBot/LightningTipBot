@@ -273,7 +273,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 		// bot.trySendMessage(c.Sender, sendErrorMessage)
 		errmsg := fmt.Sprintf("[/send] Error: Transaction failed. %s", err)
 		log.Errorln(errmsg)
-		bot.tryEditMessage(c.Message, fmt.Sprintf("%s %s", i18n.Translate(sendData.LanguageCode, "sendErrorMessage"), err), &tb.ReplyMarkup{})
+		bot.tryEditMessage(c.Message, i18n.Translate(sendData.LanguageCode, "sendErrorMessage"), &tb.ReplyMarkup{})
 		return
 	}
 	sendData.Inactivate(sendData, bot.Bunt)
