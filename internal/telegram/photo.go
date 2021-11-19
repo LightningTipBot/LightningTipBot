@@ -7,6 +7,7 @@ import (
 	"image/jpeg"
 	"strings"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
@@ -34,11 +35,17 @@ func TryRecognizeQrCode(img image.Image) (*gozxing.Result, error) {
 }
 
 // photoHandler is the handler function for every photo from a private chat that the bot receives
-func (bot TipBot) photoHandler(ctx context.Context, m *tb.Message) {
+func (bot *TipBot) photoHandler(ctx context.Context, m *tb.Message) {
 	if m.Chat.Type != tb.ChatPrivate {
 		return
 	}
 	if m.Photo == nil {
+		return
+	}
+	user := LoadUser(ctx)
+	if user.StateKey == lnbits.UserStateShopItemSendPhoto {
+		bot.addShopItemPhoto(ctx, m)
+		ResetUserState(user, bot)
 		return
 	}
 

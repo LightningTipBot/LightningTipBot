@@ -12,7 +12,7 @@ import (
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
-func (bot TipBot) anyTextHandler(ctx context.Context, m *tb.Message) {
+func (bot *TipBot) anyTextHandler(ctx context.Context, m *tb.Message) {
 	if m.Chat.Type != tb.ChatPrivate {
 		return
 	}
@@ -43,9 +43,16 @@ func (bot TipBot) anyTextHandler(ctx context.Context, m *tb.Message) {
 	// inputs asked for
 	if user.StateKey == lnbits.UserStateLNURLEnterAmount || user.StateKey == lnbits.UserEnterAmount {
 		bot.enterAmountHandler(ctx, m)
+		return
 	}
 	if user.StateKey == lnbits.UserEnterUser {
 		bot.enterUserHandler(ctx, m)
+		return
+	}
+	if user.StateKey == lnbits.UserEnterShopTitle {
+		bot.enterShopTitleHandler(ctx, m)
+		ResetUserState(user, bot)
+		return
 	}
 
 }
