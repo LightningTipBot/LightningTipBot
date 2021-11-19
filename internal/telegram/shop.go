@@ -65,9 +65,10 @@ var (
 	shopSettingsButton    = shopMainMenu.Data("Settings", "shops_settings")
 	shopBrowseItemsButton = shopMainMenu.Data("Browse items", "shop_browse")
 	shopAddItemButton     = shopMainMenu.Data("Add item", "shop_additem")
-	shopNextitemButton    = shopMainMenu.Data(">", "shop_nextitem")
+	shopNextitemButton    = getNextItemButton("")
 	shopPrevitemButton    = shopMainMenu.Data("<", "shop_previtem")
 	shopBuyitemButton     = shopMainMenu.Data("Buy", "shop_buyitem")
+	shopSelect            = shopMainMenu.Data("", "select_shop")
 )
 
 func (bot TipBot) shopsMainMenu(ctx context.Context, shops *Shops) *tb.ReplyMarkup {
@@ -113,12 +114,50 @@ func (bot *TipBot) shopNextItemButtonHandler(ctx context.Context, c *tb.Callback
 	}
 	shopView := sv.(ShopView)
 	shop, err := bot.getShop(ctx, shopView.ShopID)
-	if shopView.Page < len(shop.Items) {
+	if shopView.Page < len(shop.Items)-1 {
 		shopView.Page++
 	}
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 	shop, err = bot.getShop(ctx, shopView.ShopID)
 	bot.displayShopItem(ctx, c.Message, shop)
+}
+
+func (bot *TipBot) shopSelect(ctx context.Context, c *tb.Callback) {
+	shop, _ := bot.getShop(ctx, c.Data)
+	shopView := ShopView{
+		ID:     fmt.Sprintf("shopview-%d", c.Sender.ID),
+		ShopID: shop.ID,
+		Page:   0,
+	}
+	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
+
+	if len(shop.ItemIds) > 0 {
+		bot.tryDeleteMessage(c.Message)
+		bot.trySendMessage(c.Message.Chat, shop.Items[shop.ItemIds[shopView.Page]].TbPhoto, bot.shopMenu(ctx, shop))
+	} else {
+		bot.tryEditMessage(c.Message, "No items in shop.", bot.shopMenu(ctx, shop))
+	}
+}
+
+func (bot *TipBot) shopsBrowser(ctx context.Context, c *tb.Callback) {
+	user := LoadUser(ctx)
+
+	shops, err := bot.getUserShops(ctx, user)
+	if err != nil {
+		return
+	}
+	var s []*Shop
+	for _, shopId := range shops.Shops {
+		shop, _ := bot.getShop(ctx, shopId)
+		if shop.Owner.Telegram.ID != c.Sender.ID {
+			return
+		}
+		s = append(s, shop)
+	}
+
+	shopMainMenu.Inline(buttonWrapper(selectShopButtons(s), shopMainMenu, 3)...)
+	bot.tryEditMessage(c.Message, "Select your shop!", shopMainMenu)
+
 }
 
 func (bot *TipBot) shopPrevItemButtonHandler(ctx context.Context, c *tb.Callback) {
