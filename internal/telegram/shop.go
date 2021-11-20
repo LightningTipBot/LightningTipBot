@@ -61,50 +61,68 @@ func (shop *Shop) getItem(itemId string) (item ShopItem, ok bool) {
 }
 
 var (
-	shopMainMenu          = &tb.ReplyMarkup{ResizeReplyKeyboard: false}
-	browseShopButton      = shopMainMenu.Data("Browse shops", "shops_browse")
-	shopNewShopButton     = shopMainMenu.Data("New Shop", "shops_newshop")
-	shopSettingsButton    = shopMainMenu.Data("Settings", "shops_settings")
-	shopBrowseItemsButton = shopMainMenu.Data("Browse items", "shop_browse")
-	shopAddItemButton     = shopMainMenu.Data("Add item", "shop_additem")
-	shopNextitemButton    = getNextItemButton("")
-	shopPrevitemButton    = shopMainMenu.Data("<", "shop_previtem")
-	shopBuyitemButton     = shopMainMenu.Data("Buy", "shop_buyitem")
-	shopSelect            = shopMainMenu.Data("", "select_shop")
+	shopKeyboard          = &tb.ReplyMarkup{ResizeReplyKeyboard: false}
+	browseShopButton      = shopKeyboard.Data("Browse shops", "shops_browse")
+	shopNewShopButton     = shopKeyboard.Data("New Shop", "shops_newshop")
+	shopSettingsButton    = shopKeyboard.Data("Settings", "shops_settings")
+	shopBrowseItemsButton = shopKeyboard.Data("Browse items", "shop_browse")
+	shopAddItemButton     = shopKeyboard.Data("Add item", "shop_additem")
+	shopNextitemButton    = shopKeyboard.Data(">", "shop_nextitem")
+	shopPrevitemButton    = shopKeyboard.Data("<", "shop_previtem")
+	shopBuyitemButton     = shopKeyboard.Data("Buy", "shop_buyitem")
+	shopItemPriceButton   = shopKeyboard.Data("Price", "shop_itemprice")
+	shopItemDeleteButton  = shopKeyboard.Data("Delete", "shop_itemdelete")
+	shopSelect            = shopKeyboard.Data("", "select_shop")
 )
 
 func (bot TipBot) shopsMainMenu(ctx context.Context, shops *Shops) *tb.ReplyMarkup {
-	browseShopButton := shopMainMenu.Data("Browse shops", "shops_browse", shops.ID)
-	shopNewShopButton := shopMainMenu.Data("New Shop", "shops_newshop", shops.ID)
-	shopSettingsButton := shopMainMenu.Data("Settings", "shops_settings", shops.ID)
+	browseShopButton := shopKeyboard.Data("Browse shops", "shops_browse", shops.ID)
+	shopNewShopButton := shopKeyboard.Data("New Shop", "shops_newshop", shops.ID)
+	shopSettingsButton := shopKeyboard.Data("Settings", "shops_settings", shops.ID)
+	user := LoadUser(ctx)
 
-	shopMainMenu.Inline(
-		shopMainMenu.Row(
+	ownerButtons := []tb.Btn{}
+	if user.Telegram.ID == shops.Owner.Telegram.ID {
+		ownerButtons = shopKeyboard.Row(shopNewShopButton, shopSettingsButton)
+	}
+	shopKeyboard.Inline(
+		shopKeyboard.Row(
 			browseShopButton),
-		shopMainMenu.Row(
-			shopNewShopButton,
-			shopSettingsButton),
+		ownerButtons,
 	)
-	return shopMainMenu
+	return shopKeyboard
 }
 
-func (bot TipBot) shopMenu(ctx context.Context, shop *Shop) *tb.ReplyMarkup {
-	shopBrowseItemsButton = shopMainMenu.Data("Browse items", "shop_browse", shop.ID)
-	shopAddItemButton = shopMainMenu.Data("Add item", "shop_additem", shop.ID)
-	shopNextitemButton = shopMainMenu.Data(">", "shop_nextitem", shop.ID)
-	shopPrevitemButton = shopMainMenu.Data("<", "shop_previtem", shop.ID)
-	shopBuyitemButton = shopMainMenu.Data("Tip", "shop_buyitem", shop.ID)
-
-	shopMainMenu.Inline(
-		shopMainMenu.Row(
-			shopBrowseItemsButton,
-			shopAddItemButton),
-		shopMainMenu.Row(
-			shopPrevitemButton,
-			shopBuyitemButton,
-			shopNextitemButton),
+func (bot TipBot) shopMenu(ctx context.Context, shop *Shop, item *ShopItem) *tb.ReplyMarkup {
+	shopBrowseItemsButton = shopKeyboard.Data("Browse items", "shop_browse", shop.ID)
+	shopAddItemButton = shopKeyboard.Data("Add item", "shop_additem", shop.ID)
+	shopNextitemButton = shopKeyboard.Data(">", "shop_nextitem", shop.ID)
+	shopPrevitemButton = shopKeyboard.Data("<", "shop_previtem", shop.ID)
+	shopItemPriceButton = shopKeyboard.Data("Price", "shop_itemprice", item.ID)
+	shopItemDeleteButton = shopKeyboard.Data("Delete", "shop_itemdelete", item.ID)
+	buyButtonText := "Get"
+	if item.Price > 0 {
+		buyButtonText = fmt.Sprintf("Buy (%d sat)", item.Price)
+	}
+	shopBuyitemButton = shopKeyboard.Data(buyButtonText, "shop_buyitem", shop.ID)
+	user := LoadUser(ctx)
+	buttons := []tb.Row{}
+	if user.Telegram.ID == shop.Owner.Telegram.ID {
+		if len(shop.Items) == 0 {
+			buttons = append(buttons, shopKeyboard.Row(shopAddItemButton))
+		} else {
+			buttons = append(buttons, shopKeyboard.Row(shopAddItemButton, shopItemDeleteButton, shopItemPriceButton))
+		}
+	}
+	// publicButtons := []tb.Row{}
+	if len(shop.Items) > 0 {
+		buttons = append(buttons, shopKeyboard.Row(shopPrevitemButton, shopBuyitemButton, shopNextitemButton))
+		buttons = append(buttons, shopKeyboard.Row(shopBrowseItemsButton))
+	}
+	shopKeyboard.Inline(
+		buttons...,
 	)
-	return shopMainMenu
+	return shopKeyboard
 }
 
 func (bot *TipBot) getUserShopview(ctx context.Context, user *lnbits.User) (shopView ShopView, err error) {
@@ -129,16 +147,27 @@ func (bot *TipBot) shopSelect(ctx context.Context, c *tb.Callback) {
 		}
 		bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 	}
+	shopView.Page = 0
+	shopView.ShopID = shop.ID
 
 	var shopMessage *tb.Message
 	if len(shop.ItemIds) > 0 {
 		bot.tryDeleteMessage(c.Message)
-		shopMessage = bot.trySendMessage(c.Message.Chat, shop.Items[shop.ItemIds[shopView.Page]].TbPhoto, bot.shopMenu(ctx, shop))
+		item := shop.Items[shop.ItemIds[shopView.Page]]
+		shopMessage = bot.trySendMessage(c.Message.Chat, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
 	} else {
-		shopMessage = bot.tryEditMessage(c.Message, "No items in shop.", bot.shopMenu(ctx, shop))
+		shopMessage = bot.tryEditMessage(c.Message, "No items in shop.", bot.shopMenu(ctx, shop, &ShopItem{}))
 	}
 	shopView.Message = shopMessage
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
+}
+
+func (bot *TipBot) makseShopSelectionButtons(shops []*Shop) []tb.Btn {
+	var buttons []tb.Btn
+	for _, shop := range shops {
+		buttons = append(buttons, shopKeyboard.Data(shop.Title, "select_shop", shop.ID))
+	}
+	return buttons
 }
 
 func (bot *TipBot) shopsBrowser(ctx context.Context, c *tb.Callback) {
@@ -157,8 +186,8 @@ func (bot *TipBot) shopsBrowser(ctx context.Context, c *tb.Callback) {
 		s = append(s, shop)
 	}
 
-	shopMainMenu.Inline(buttonWrapper(selectShopButtons(s), shopMainMenu, 3)...)
-	bot.tryEditMessage(c.Message, "Select your shop!", shopMainMenu)
+	shopKeyboard.Inline(buttonWrapper(bot.makseShopSelectionButtons(s), shopKeyboard, 3)...)
+	bot.tryEditMessage(c.Message, "Select your shop!", shopKeyboard)
 
 }
 
@@ -198,6 +227,9 @@ func (bot *TipBot) shopPrevItemButtonHandler(ctx context.Context, c *tb.Callback
 
 var ShopsText = "*Welcome to your shop.*\nYour have %d shops.\n%s\n🔞 Look at me `(8 items for 100 sat each)`\n📚 Audiobooks `(12 items for 1000 sat each)`\n\nPress buttons to add a new shop."
 
+func (bot *TipBot) shopsHandlerCallback(ctx context.Context, c *tb.Callback) {
+	bot.shopsHandler(ctx, c.Message)
+}
 func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 	if !m.Private() {
 		return
@@ -225,8 +257,8 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 	// if the user clied a button and has a shopview set, we will edit an old message
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err == nil {
-		if shopView.Message.ID != m.ID {
-			bot.tryEditMessage(shopView.Message, fmt.Sprintf(ShopsText, len(shops.Shops), shopTitles), bot.shopsMainMenu(ctx, shops))
+		if shopView.Message.ID == m.ID {
+			bot.tryDeleteMessage(shopView.Message)
 		}
 	}
 	bot.trySendMessage(m.Chat, fmt.Sprintf(ShopsText, len(shops.Shops), shopTitles), bot.shopsMainMenu(ctx, shops))
@@ -242,7 +274,8 @@ func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Sho
 		return
 	}
 	shopView := sv.(ShopView)
-	bot.tryEditMessage(m, shop.Items[shop.ItemIds[shopView.Page]].TbPhoto, bot.shopMenu(ctx, shop))
+	item := shop.Items[shop.ItemIds[shopView.Page]]
+	bot.tryEditMessage(m, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
 
 }
 
@@ -271,9 +304,10 @@ func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) {
 
 	var shopMessage *tb.Message
 	if len(shop.ItemIds) > 0 {
-		shopMessage = bot.trySendMessage(m.Chat, shop.Items[shop.ItemIds[shopView.Page]].TbPhoto, bot.shopMenu(ctx, shop))
+		item := shop.Items[shop.ItemIds[shopView.Page]]
+		shopMessage = bot.trySendMessage(m.Chat, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
 	} else {
-		shopMessage = bot.trySendMessage(m.Chat, "No items in shop.", bot.shopMenu(ctx, shop))
+		shopMessage = bot.trySendMessage(m.Chat, "No items in shop.", bot.shopMenu(ctx, shop, &ShopItem{}))
 	}
 	shopView.Message = shopMessage
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
@@ -390,12 +424,19 @@ func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) {
 	shop.Items[item.ID] = item
 	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
 	bot.tryDeleteMessage(m)
-	bot.trySendMessage(m.Sender, fmt.Sprintf("✅ Image added."))
+	statusMsg := bot.trySendMessage(m.Sender, fmt.Sprintf("✅ Image added."))
+	NewMessage(statusMsg, WithDuration(5, bot))
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
 		return
 	}
-	bot.shopNextItemButtonHandler(ctx, &tb.Callback{Message: shopView.Message})
+
+	// bot.shopNextItemButtonHandler(ctx, &tb.Callback{Message: shopView.Message})
+	if shopView.Page < len(shop.Items)-1 {
+		shopView.Page = len(shop.Items) - 1
+		bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
+		bot.displayShopItem(ctx, shopView.Message, shop)
+	}
 	// // tx := &Shop{Base: transaction.New(transaction.ID(item.ShopID))}
 	// // sn, err := tx.Get(tx, bot.Bunt)
 	// // // immediatelly set intransaction to block duplicate calls

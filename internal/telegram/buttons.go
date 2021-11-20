@@ -2,17 +2,6 @@ package telegram
 
 import tb "gopkg.in/tucnak/telebot.v2"
 
-func getNextItemButton(data string) tb.Btn {
-	return shopMainMenu.Data(">", "shop_nextitem", data)
-}
-func selectShopButtons(shops []*Shop) []tb.Btn {
-	var buttons []tb.Btn
-	for _, shop := range shops {
-		buttons = append(buttons, shopMainMenu.Data(shop.Title, "select_shop", shop.ID))
-	}
-	return buttons
-}
-
 // buttonWrapper wrap buttons slice in rows of length i
 func buttonWrapper(buttons []tb.Btn, markup *tb.ReplyMarkup, length int) []tb.Row {
 	buttonLength := len(buttons)
