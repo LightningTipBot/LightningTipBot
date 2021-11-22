@@ -133,3 +133,8 @@ func (tx *Base) Set(s storage.Storable, db *storage.DB) error {
 	tx.UpdatedAt = time.Now()
 	return db.Set(s)
 }
+
+func (tx *Base) Delete(s storage.Storable, db *storage.DB) error {
+	tx.UpdatedAt = time.Now()
+	return db.Delete(s.Key(), s)
+}

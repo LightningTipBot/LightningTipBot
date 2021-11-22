@@ -641,8 +641,32 @@ func (bot TipBot) getHandler() []Handler {
 				Before: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
-			Endpoints: []interface{}{&shopSelect},
+			Endpoints: []interface{}{&shopSelectButton},
 			Handler:   bot.shopSelect,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
+		},
+		// button that opens selection of shops to delete
+		{
+			Endpoints: []interface{}{&shopDeleteShopButton},
+			Handler:   bot.shopsDeleteShopBrowser,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
+		},
+		// button that selects which shop to delete
+		{
+			Endpoints: []interface{}{&shopDeleteSelectButton},
+			Handler:   bot.shopSelectDelete,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
+		},
+		// button that opens shops settings buttons view
+		{
+			Endpoints: []interface{}{&shopSettingsButton},
+			Handler:   bot.shopSettingsHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
 				Before: []intercept.Func{bot.loadUserInterceptor}},
@@ -657,6 +681,20 @@ func (bot TipBot) getHandler() []Handler {
 		{
 			Endpoints: []interface{}{&shopBrowseItemsButton},
 			Handler:   bot.shopsHandlerCallback,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
+		},
+		{
+			Endpoints: []interface{}{&shopItemSettingsButton},
+			Handler:   bot.shopItemSettingsHandler,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
+		},
+		{
+			Endpoints: []interface{}{&shopItemSettingsBackButton},
+			Handler:   bot.displayShopItemHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
 				Before: []intercept.Func{bot.loadUserInterceptor}},
