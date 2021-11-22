@@ -144,7 +144,7 @@ func (w Server) serveLNURLpSecond(username string, amount_msat int64, comment st
 	}
 	// user is ok now create invoice
 	// set wallet lnbits client
-
+	log.Infof("[LNURL] Serving invoice for user %s", username)
 	var resp *lnurl.LNURLPayValues
 
 	// the same description_hash needs to be built in the second request
