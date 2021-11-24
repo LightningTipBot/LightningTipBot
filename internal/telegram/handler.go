@@ -679,7 +679,7 @@ func (bot TipBot) getHandler() []Handler {
 				Before: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
-			Endpoints: []interface{}{&shopBrowseItemsButton},
+			Endpoints: []interface{}{&shopShopsButton},
 			Handler:   bot.shopsHandlerCallback,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
