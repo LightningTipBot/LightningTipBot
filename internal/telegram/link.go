@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
@@ -28,6 +29,11 @@ func (bot *TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
 	// first check whether the user is initialized
 	fromUser := LoadUser(ctx)
 	bot.trySendMessage(m.Sender, Translate(ctx, "walletConnectMessage"))
+
+	// do not respond to banned users
+	if strings.HasPrefix(fromUser.Wallet.Adminkey, "banned") || strings.HasPrefix(fromUser.Wallet.Adminkey, "_") {
+		return
+	}
 
 	lndhubUrl := fmt.Sprintf("lndhub://admin:%s@%slndhub/ext/", fromUser.Wallet.Adminkey, internal.Configuration.Lnbits.LnbitsPublicUrl)
 
