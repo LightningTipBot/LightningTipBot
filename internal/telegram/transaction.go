@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 type Transaction struct {
@@ -16,8 +16,8 @@ type Transaction struct {
 	Bot          *TipBot           `gorm:"-"`
 	From         *lnbits.User      `json:"from" gorm:"-"`
 	To           *lnbits.User      `json:"to" gorm:"-"`
-	FromId       int64             `json:"from_id" `
-	ToId         int64             `json:"to_id" `
+	FromId       int               `json:"from_id" `
+	ToId         int               `json:"to_id" `
 	FromUser     string            `json:"from_user"`
 	ToUser       string            `json:"to_user"`
 	Type         string            `json:"type"`

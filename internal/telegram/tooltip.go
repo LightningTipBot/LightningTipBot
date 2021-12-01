@@ -13,7 +13,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 const (
@@ -161,7 +161,7 @@ func tipTooltipInitializedHandler(user *tb.User, bot TipBot) {
 	runtime.IgnoreError(bot.Bunt.View(func(tx *buntdb.Tx) error {
 		err := tx.Ascend(MessageOrderedByReplyToFrom, func(key, value string) bool {
 			replyToUserId := gjson.Get(value, MessageOrderedByReplyToFrom)
-			if replyToUserId.String() == strconv.FormatInt(user.ID, 10) {
+			if replyToUserId.String() == strconv.Itoa(user.ID) {
 				log.Debugln("loading persistent tip tool tip messages")
 				ttt := &TipTooltip{}
 				err := json.Unmarshal([]byte(value), ttt)

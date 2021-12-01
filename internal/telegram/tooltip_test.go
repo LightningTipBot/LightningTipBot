@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 var (

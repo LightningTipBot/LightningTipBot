@@ -13,7 +13,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 func getArgumentFromCommand(input string, which int) (output string, err error) {

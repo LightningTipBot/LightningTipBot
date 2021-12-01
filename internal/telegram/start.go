@@ -13,7 +13,7 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/tucnak/telebot.v2"
 	"gorm.io/gorm"
 )
 
@@ -80,7 +80,7 @@ func (bot TipBot) initWallet(tguser *tb.User) (*lnbits.User, error) {
 
 func (bot TipBot) createWallet(user *lnbits.User) error {
 	UserStr := GetUserStr(user.Telegram)
-	u, err := bot.Client.CreateUserWithInitialWallet(strconv.FormatInt(user.Telegram.ID, 10),
+	u, err := bot.Client.CreateUserWithInitialWallet(strconv.Itoa(user.Telegram.ID),
 		fmt.Sprintf("%d (%s)", user.Telegram.ID, UserStr),
 		internal.Configuration.Lnbits.AdminId,
 		UserStr)

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 func (bot TipBot) makeHelpMessage(ctx context.Context, m *tb.Message) string {

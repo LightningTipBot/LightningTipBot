@@ -16,7 +16,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/tucnak/telebot.v2"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -95,7 +95,7 @@ func GetUserByTelegramUsername(toUserStrWithoutAt string, bot TipBot) (*lnbits.U
 	return toUserDb, nil
 }
 func getCachedUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
-	user := &lnbits.User{Name: strconv.FormatInt(u.ID, 10)}
+	user := &lnbits.User{Name: strconv.Itoa(u.ID)}
 	if us, err := bot.Cache.Get(user.Name); err == nil {
 		return us.(*lnbits.User), nil
 	}
@@ -110,7 +110,7 @@ func getCachedUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 // &tb.User{ID: toId, Username: username}
 // without updating the user in storage.
 func GetLnbitsUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
-	user := &lnbits.User{Name: strconv.FormatInt(u.ID, 10)}
+	user := &lnbits.User{Name: strconv.Itoa(u.ID)}
 	tx := bot.Database.First(user)
 	if tx.Error != nil {
 		errmsg := fmt.Sprintf("[GetUser] Couldn't fetch %s from Database: %s", GetUserStr(u), tx.Error.Error())

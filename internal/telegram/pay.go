@@ -12,7 +12,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	decodepay "github.com/fiatjaf/ln-decodepay"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 var (

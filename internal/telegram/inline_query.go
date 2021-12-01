@@ -3,17 +3,16 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	"reflect"
 	"strconv"
 	"strings"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage"
-
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	i18n2 "github.com/nicksnyder/go-i18n/v2/i18n"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 const queryImage = "https://avatars.githubusercontent.com/u/88730856?v=4"

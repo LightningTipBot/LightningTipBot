@@ -17,7 +17,7 @@ import (
 	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 func (bot *TipBot) GetHttpClient() (*http.Client, error) {

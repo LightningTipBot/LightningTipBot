@@ -13,7 +13,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 var (
@@ -41,7 +41,7 @@ func (bot *TipBot) SendCheckSyntax(ctx context.Context, m *tb.Message) (bool, st
 type SendData struct {
 	*transaction.Base
 	From           *lnbits.User `json:"from"`
-	ToTelegramId   int64        `json:"to_telegram_id"`
+	ToTelegramId   int          `json:"to_telegram_id"`
 	ToTelegramUser string       `json:"to_telegram_user"`
 	Memo           string       `json:"memo"`
 	Message        string       `json:"message"`

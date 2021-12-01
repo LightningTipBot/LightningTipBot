@@ -3,14 +3,13 @@ package telegram
 import (
 	"errors"
 	"fmt"
-	"time"
-
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"github.com/eko/gocache/store"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/tucnak/telebot.v2"
 	"gorm.io/gorm"
+	"time"
 )
 
 func SetUserState(user *lnbits.User, bot *TipBot, stateKey lnbits.UserStateKey, stateData string) {
