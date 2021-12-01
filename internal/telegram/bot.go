@@ -2,9 +2,10 @@ package telegram
 
 import (
 	"fmt"
-	"github.com/eko/gocache/store"
 	"sync"
 	"time"
+
+	"github.com/eko/gocache/store"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -53,7 +54,7 @@ func NewBot() TipBot {
 func newTelegramBot() *tb.Bot {
 	tgb, err := tb.NewBot(tb.Settings{
 		Token:     internal.Configuration.Telegram.ApiKey,
-		Poller:    &tb.LongPoller{Timeout: 60 * time.Second},
+		Poller:    &tb.LongPoller{Timeout: 60 * time.Second, AllowedUpdates: []string{"message"}},
 		ParseMode: tb.ModeMarkdown,
 	})
 	if err != nil {
