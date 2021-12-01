@@ -54,7 +54,7 @@ func NewBot() TipBot {
 func newTelegramBot() *tb.Bot {
 	tgb, err := tb.NewBot(tb.Settings{
 		Token:     internal.Configuration.Telegram.ApiKey,
-		Poller:    &tb.LongPoller{Timeout: 60 * time.Second, AllowedUpdates: []string{"message"}},
+		Poller:    &tb.LongPoller{Timeout: 60 * time.Second},
 		ParseMode: tb.ModeMarkdown,
 	})
 	if err != nil {
