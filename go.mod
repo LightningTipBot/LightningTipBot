@@ -18,7 +18,7 @@ require (
 	github.com/tidwall/buntdb v1.2.7
 	github.com/tidwall/gjson v1.10.2
 	golang.org/x/text v0.3.5
-	gopkg.in/tucnak/telebot.v2 v2.3.5
+	gopkg.in/tucnak/telebot.v2 v2.4.1
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.21.12
 )
