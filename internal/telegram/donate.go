@@ -12,7 +12,7 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/tucnak/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
 // PLEASE DO NOT CHANGE THE CODE IN THIS FILE

@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/imroc/req"
-	tb "gopkg.in/tucnak/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
 type Client struct {

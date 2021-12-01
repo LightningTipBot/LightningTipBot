@@ -12,8 +12,8 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	gocache "github.com/patrickmn/go-cache"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/tucnak/telebot.v2"
-	tb "gopkg.in/tucnak/telebot.v2"
+	"gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v2"
 	"gorm.io/gorm"
 )
 

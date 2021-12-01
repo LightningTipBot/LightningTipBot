@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"time"
 
-	tb "gopkg.in/tucnak/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
 type Message struct {

@@ -12,7 +12,7 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/skip2/go-qrcode"
-	tb "gopkg.in/tucnak/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
 func helpInvoiceUsage(ctx context.Context, errormsg string) string {

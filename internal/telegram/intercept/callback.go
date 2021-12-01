@@ -3,7 +3,7 @@ package intercept
 import (
 	"context"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/tucnak/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
 type CallbackFuncHandler func(ctx context.Context, message *tb.Callback)

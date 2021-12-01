@@ -14,7 +14,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
 	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/tucnak/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
 // LnurlPayState saves the state of the user for an LNURL payment

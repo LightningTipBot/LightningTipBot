@@ -11,7 +11,7 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/tucnak/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
 func helpTipUsage(ctx context.Context, errormsg string) string {
