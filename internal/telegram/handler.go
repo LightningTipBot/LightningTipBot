@@ -685,6 +685,7 @@ func (bot TipBot) getHandler() []Handler {
 				Type:   CallbackInterceptor,
 				Before: []intercept.Func{bot.loadUserInterceptor}},
 		},
+		// shop item settings buttons
 		{
 			Endpoints: []interface{}{&shopItemSettingsButton},
 			Handler:   bot.shopItemSettingsHandler,
@@ -694,6 +695,27 @@ func (bot TipBot) getHandler() []Handler {
 		},
 		{
 			Endpoints: []interface{}{&shopItemSettingsBackButton},
+			Handler:   bot.displayShopItemHandler,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
+		},
+		{
+			Endpoints: []interface{}{&shopItemDeleteButton},
+			Handler:   bot.shopItemSettingsHandler,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
+		},
+		{
+			Endpoints: []interface{}{&shopItemPriceButton},
+			Handler:   bot.displayShopItemHandler,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
+		},
+		{
+			Endpoints: []interface{}{&shopItemTitleButton},
 			Handler:   bot.displayShopItemHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
