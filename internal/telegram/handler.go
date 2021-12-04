@@ -367,6 +367,16 @@ func (bot TipBot) getHandler() []Handler {
 			},
 		},
 		{
+			Endpoints: []interface{}{tb.OnDocument, tb.OnVideo, tb.OnAnimation, tb.OnVoice, tb.OnAudio, tb.OnSticker, tb.OnVideoNote},
+			Handler:   bot.fileHandler,
+			Interceptor: &Interceptor{
+				Type: MessageInterceptor,
+				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
+					bot.logMessageInterceptor,
+					bot.loadUserInterceptor}},
+		},
+		{
 			Endpoints: []interface{}{tb.OnText},
 			Handler:   bot.anyTextHandler,
 			Interceptor: &Interceptor{
@@ -627,6 +637,13 @@ func (bot TipBot) getHandler() []Handler {
 				Before: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
+			Endpoints: []interface{}{&shopBuyitemButton},
+			Handler:   bot.shopGetItemFilesHandler,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
+		},
+		{
 			Endpoints: []interface{}{&shopNextitemButton},
 			Handler:   bot.shopNextItemButtonHandler,
 			Interceptor: &Interceptor{
@@ -702,21 +719,28 @@ func (bot TipBot) getHandler() []Handler {
 		},
 		{
 			Endpoints: []interface{}{&shopItemDeleteButton},
-			Handler:   bot.shopItemSettingsHandler,
+			Handler:   bot.shopItemDeleteHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
 				Before: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&shopItemPriceButton},
-			Handler:   bot.displayShopItemHandler,
+			Handler:   bot.shopItemPriceHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
 				Before: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&shopItemTitleButton},
-			Handler:   bot.displayShopItemHandler,
+			Handler:   bot.shopItemTitleHandler,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
+		},
+		{
+			Endpoints: []interface{}{&shopItemAddFileButton},
+			Handler:   bot.shopItemAddItemHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
 				Before: []intercept.Func{bot.loadUserInterceptor}},

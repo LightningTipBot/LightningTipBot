@@ -1,6 +1,6 @@
 package telegram
 
-import tb "gopkg.in/tucnak/telebot.v2"
+import tb "gopkg.in/lightningtipbot/telebot.v2"
 
 // buttonWrapper wrap buttons slice in rows of length i
 func buttonWrapper(buttons []tb.Btn, markup *tb.ReplyMarkup, length int) []tb.Row {
