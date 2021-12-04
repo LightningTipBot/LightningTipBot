@@ -442,24 +442,33 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 }
 
 // displayShopItem renders the current item in the shopView
-func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Shop) {
+func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Shop) *tb.Message {
 	user := LoadUser(ctx)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
-		return
+		log.Errorf("[displayShopItem] %s", err.Error())
+		return nil
 	}
 	item := shop.Items[shop.ItemIds[shopView.Page]]
-	// item.TbPhoto.Caption = fmt.Sprintf("%s", item.Title)
-	msg := bot.tryEditMessage(m, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
+
+	if len(item.Title) > 0 {
+		item.TbPhoto.Caption = fmt.Sprintf("%s", item.Title)
+	}
+	var msg *tb.Message
+	if m != nil {
+		msg = bot.tryEditMessage(m, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
+	}
 	if msg == nil {
 		// if editing has failed
-		bot.tryDeleteMessage(m)
+		if m != nil {
+			bot.tryDeleteMessage(m)
+		}
 		msg = bot.trySendMessage(m.Chat, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
 		shopView.Message = msg
 		shopView.Page = 0
-		bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 	}
-
+	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
+	return msg
 }
 
 // shopHandler is invoked when the user enters /shop
@@ -485,11 +494,12 @@ func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) {
 		ShopID: shop.ID,
 		Page:   0,
 	}
-
-	var shopMessage *tb.Message
+	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
+	shopMessage := &tb.Message{Chat: m.Chat}
 	if len(shop.ItemIds) > 0 {
-		item := shop.Items[shop.ItemIds[shopView.Page]]
-		shopMessage = bot.trySendMessage(m.Chat, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
+		// item := shop.Items[shop.ItemIds[shopView.Page]]
+		// shopMessage = bot.trySendMessage(m.Chat, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
+		shopMessage = bot.displayShopItem(ctx, shopMessage, shop)
 	} else {
 		shopMessage = bot.trySendMessage(m.Chat, "No items in shop.", bot.shopMenu(ctx, shop, &ShopItem{}))
 	}
@@ -590,7 +600,6 @@ func (bot *TipBot) addShopItem(ctx context.Context, shopId string) (*Shop, ShopI
 	itemId := fmt.Sprintf("item-%s-%s", shop.ID, RandStringRunes(8))
 	item := ShopItem{
 		ID:           itemId,
-		Title:        "Item tiiitle",
 		ShopID:       shop.ID,
 		Owner:        user,
 		Type:         "photo",
@@ -634,6 +643,7 @@ func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) {
 	// defer shop.Release(shop, bot.Bunt)
 	item.FileID = m.Photo.FileID
 	item.TbPhoto = m.Photo
+	item.Title = m.Caption
 	shop.Items[item.ID] = item
 	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
 	bot.tryDeleteMessage(m)
