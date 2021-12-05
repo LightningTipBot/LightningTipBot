@@ -42,6 +42,7 @@ const (
 	UserStateShopItemSendDescription
 	UserStateShopItemSendPrice
 	UserStateShopItemSendItemFile
+	UserEnterShopsDescription
 )
 
 type UserStateKey int

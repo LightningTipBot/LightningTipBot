@@ -57,18 +57,20 @@ type Shop struct {
 
 type Shops struct {
 	*transaction.Base
-	ID       string       `json:"ID"`    // holds the ID of the tx object in bunt db
-	Owner    *lnbits.User `json:"owner"` // owner of the shop
-	Shops    []string     `json:"shop"`  //
-	MaxShops int          `json:"maxShops"`
+	ID          string       `json:"ID"`    // holds the ID of the tx object in bunt db
+	Owner       *lnbits.User `json:"owner"` // owner of the shop
+	Shops       []string     `json:"shop"`  //
+	MaxShops    int          `json:"maxShops"`
+	Description string       `json:"description"`
 }
 
 const (
-	MAX_SHOPS             = 10
-	MAX_ITEMS_PER_SHOP    = 20
-	MAX_FILES_PER_ITEM    = 20
-	SHOP_TITLE_MAX_LENGTH = 50
-	ITEM_TITLE_MAX_LENGTH = 1500
+	MAX_SHOPS                    = 10
+	MAX_ITEMS_PER_SHOP           = 20
+	MAX_FILES_PER_ITEM           = 200
+	SHOP_TITLE_MAX_LENGTH        = 50
+	ITEM_TITLE_MAX_LENGTH        = 1500
+	SHOPS_DESCRIPTION_MAX_LENGTH = 1500
 )
 
 func (shop *Shop) getItem(itemId string) (item ShopItem, ok bool) {
@@ -77,13 +79,15 @@ func (shop *Shop) getItem(itemId string) (item ShopItem, ok bool) {
 }
 
 var (
-	shopKeyboard         = &tb.ReplyMarkup{ResizeReplyKeyboard: false}
-	browseShopButton     = shopKeyboard.Data("Browse shops", "shops_browse")
-	shopNewShopButton    = shopKeyboard.Data("New Shop", "shops_newshop")
-	shopDeleteShopButton = shopKeyboard.Data("Delete Shop", "shops_deleteshop")
-	shopLinkShopButton   = shopKeyboard.Data("Shop links", "shops_linkshop")
-	shopSettingsButton   = shopKeyboard.Data("Settings", "shops_settings")
-	shopShopsButton      = shopKeyboard.Data("Back", "shops_shops")
+	shopKeyboard              = &tb.ReplyMarkup{ResizeReplyKeyboard: false}
+	browseShopButton          = shopKeyboard.Data("Browse shops", "shops_browse")
+	shopNewShopButton         = shopKeyboard.Data("New Shop", "shops_newshop")
+	shopDeleteShopButton      = shopKeyboard.Data("Delete Shop", "shops_deleteshop")
+	shopLinkShopButton        = shopKeyboard.Data("Shop links", "shops_linkshop")
+	shopResetShopButton       = shopKeyboard.Data("Reset shops", "shops_reset")
+	shopDescriptionShopButton = shopKeyboard.Data("Shop description", "shops_description")
+	shopSettingsButton        = shopKeyboard.Data("Settings", "shops_settings")
+	shopShopsButton           = shopKeyboard.Data("Back", "shops_shops")
 
 	shopAddItemButton  = shopKeyboard.Data("New item", "shop_additem")
 	shopNextitemButton = shopKeyboard.Data(">", "shop_nextitem")
@@ -412,7 +416,7 @@ func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) {
 
 	// when no argument is given, i.e. command is only /shop, load /shops
 	shop := &Shop{}
-	if len(strings.Split(m.Text, " ")) < 2 {
+	if len(strings.Split(m.Text, " ")) < 2 || !strings.HasPrefix(strings.Split(m.Text, " ")[1], "shop-") {
 		bot.shopsHandler(ctx, m)
 		return
 	} else {
@@ -540,7 +544,6 @@ func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) {
 	shop.Items[item.ID] = item
 	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
 	bot.tryDeleteMessage(m)
-
 	bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("✅ Image added."))
 	ResetUserState(user, bot)
 	time.Sleep(time.Duration(2) * time.Second)
@@ -570,7 +573,7 @@ func (bot *TipBot) shopItemAddItemHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 
-	itemID := user.StateData
+	itemID := c.Data
 
 	item := shop.Items[itemID]
 
@@ -695,7 +698,12 @@ func (bot *TipBot) sendFileByID(ctx context.Context, to tb.Recipient, fileId str
 }
 
 // -------------- shops handler --------------
-var ShopsText = "*Welcome to %s shop.*\nThere are %d shops here.\n%s\n\nPress buttons to add a new shop."
+// var ShopsText = "*Welcome to %s shop.*\n%s\nThere are %d shops here.\n%s"
+var ShopsText = ""
+var ShopsTextWelcome = "*You are browsing %s shop.*"
+var ShopsTextShopCount = "*Browse %d shops:*"
+var ShopsTextHelp = "Click the buttons below."
+var ShopsNoShopsText = "*There are no shops here yet.*"
 
 // shopsHandlerCallback is a warpper for shopsHandler for callbacks
 func (bot *TipBot) shopsHandlerCallback(ctx context.Context, c *tb.Callback) {
@@ -711,7 +719,7 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 	shopOwner := user
 
 	// if the user in the command, i.e. /shops @user
-	if len(strings.Split(m.Text, " ")) > 1 && strings.Split(m.Text, " ")[0] == "/shops" {
+	if len(strings.Split(m.Text, " ")) > 1 && strings.HasPrefix(strings.Split(m.Text, " ")[0], "/shop") {
 		toUserStrMention := ""
 		toUserStrWithoutAt := ""
 
@@ -742,7 +750,7 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 		}
 		// overwrite user with the one from db
 		shopOwner = toUserDb
-	} else if strings.Split(m.Text, " ")[0] != "/shops" {
+	} else if !strings.HasPrefix(strings.Split(m.Text, " ")[0], "/shop") {
 		// otherwise, the user is returning to a shops view from a back button callback
 		shopView, err := bot.getUserShopview(ctx, user)
 		if err == nil {
@@ -755,12 +763,17 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 	shops, err := bot.getUserShops(ctx, shopOwner)
-	if err != nil && user == shopOwner {
+	if err != nil && user.Telegram.ID == shopOwner.Telegram.ID {
 		shops, err = bot.initUserShops(ctx, user)
 		if err != nil {
 			log.Errorf("[shopsHandler] %s", err)
 			return
 		}
+	}
+
+	if len(shops.Shops) == 0 && user.Telegram.ID != shopOwner.Telegram.ID {
+		bot.trySendMessage(m.Chat, fmt.Sprintf("This user has no shops yet."))
+		return
 	}
 
 	// build shop list
@@ -771,28 +784,49 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 			log.Errorf("[shopsHandler] %s", err)
 			return
 		}
-		shopTitles += fmt.Sprintf("\n%s (%d items)", shop.Title, len(shop.Items))
+		shopTitles += fmt.Sprintf("\n· %s (%d items)", str.MarkdownEscape(shop.Title), len(shop.Items))
 
 	}
+
+	// build shop text
 
 	// shows "your shop" or "@other's shop"
 	shopOwnerText := "your"
-	if shopOwner != user {
-		shopOwnerText = fmt.Sprintf("@%s's", shopOwner.Telegram.Username)
+	if shopOwner.Telegram.ID != user.Telegram.ID {
+		shopOwnerText = fmt.Sprintf("%s's", GetUserStrMd(shopOwner.Telegram))
 	}
+	ShopsText = fmt.Sprintf(ShopsTextWelcome, shopOwnerText)
+	if len(shops.Description) > 0 {
+		ShopsText += fmt.Sprintf("\n\n%s\n", shops.Description)
+	} else {
+		ShopsText += "\n"
+	}
+	if len(shops.Shops) > 0 {
+		ShopsText += fmt.Sprintf("\n%s\n", fmt.Sprintf(ShopsTextShopCount, len(shops.Shops)))
+	} else {
+		ShopsText += fmt.Sprintf("\n%s\n", ShopsNoShopsText)
+	}
+
+	if len(shops.Shops) > 0 {
+		ShopsText += fmt.Sprintf("%s\n", str.MarkdownEscape(shopTitles))
+	}
+	ShopsText += fmt.Sprintf("\n%s", ShopsTextHelp)
+
+	// fmt.Sprintf(ShopsText, shopOwnerText, len(shops.Shops), shopTitles)
+
 	// if the user used the command /shops, we will send a new message
 	// if the user clicked a button and has a shopview set, we will edit an old message
 	shopView, err := bot.getUserShopview(ctx, user)
 	var shopsMsg *tb.Message
-	if err == nil && strings.Split(m.Text, " ")[0] != "/shops" {
+	if err == nil && !strings.HasPrefix(strings.Split(m.Text, " ")[0], "/shop") {
 		// the user is returning to a shops view from a back button callback
 		if shopView.Message.Photo == nil {
-			shopsMsg = bot.tryEditMessage(shopView.Message, fmt.Sprintf(ShopsText, shopOwnerText, len(shops.Shops), shopTitles), bot.shopsMainMenu(ctx, shops))
+			shopsMsg = bot.tryEditMessage(shopView.Message, ShopsText, bot.shopsMainMenu(ctx, shops))
 		}
 		if shopsMsg == nil {
 			// if editing has failed, we will send a new message
 			bot.tryDeleteMessage(shopView.Message)
-			shopsMsg = bot.trySendMessage(m.Chat, fmt.Sprintf(ShopsText, shopOwnerText, len(shops.Shops), shopTitles), bot.shopsMainMenu(ctx, shops))
+			shopsMsg = bot.trySendMessage(m.Chat, ShopsText, bot.shopsMainMenu(ctx, shops))
 
 		}
 	} else {
@@ -802,7 +836,7 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 			// delete any old shop message
 			bot.tryDeleteMessage(shopView.Message)
 		}
-		shopsMsg = bot.trySendMessage(m.Chat, fmt.Sprintf(ShopsText, shopOwnerText, len(shops.Shops), shopTitles), bot.shopsMainMenu(ctx, shops))
+		shopsMsg = bot.trySendMessage(m.Chat, ShopsText, bot.shopsMainMenu(ctx, shops))
 	}
 	shopView = ShopView{
 		ID:        fmt.Sprintf("shopview-%d", user.Telegram.ID),
@@ -862,6 +896,61 @@ func (bot *TipBot) shopSelectLink(ctx context.Context, c *tb.Callback) {
 	bot.trySendMessage(c.Sender, fmt.Sprintf("*%s*: `/shop %s`", shop.Title, shop.ID))
 }
 
+// shopsDescriptionHandler is invoked when the user clicks on "description" to set a shop description
+func (bot *TipBot) shopsDescriptionHandler(ctx context.Context, c *tb.Callback) {
+	user := LoadUser(ctx)
+	shops, err := bot.getUserShops(ctx, user)
+	if err != nil {
+		log.Errorf("[shopsDescriptionHandler] %s", err)
+		return
+	}
+	SetUserState(user, bot, lnbits.UserEnterShopsDescription, shops.ID)
+	bot.sendStatusMessage(ctx, c.Sender, fmt.Sprintf("⌨️ Enter a description."), tb.ForceReply)
+}
+
+// enterShopTitleHandler is invoked when the user enters the shop title
+func (bot *TipBot) enterShopsDescriptionHandler(ctx context.Context, m *tb.Message) {
+	user := LoadUser(ctx)
+	shops, err := bot.getUserShops(ctx, user)
+	if err != nil {
+		log.Errorf("[enterShopsDescriptionHandler] %s", err)
+		return
+	}
+	if shops.Owner.Telegram.ID != m.Sender.ID {
+		return
+	}
+	// crop shop title
+	if len(m.Text) > SHOPS_DESCRIPTION_MAX_LENGTH {
+		m.Text = m.Text[:SHOPS_DESCRIPTION_MAX_LENGTH]
+	}
+	shops.Description = m.Text
+	runtime.IgnoreError(shops.Set(shops, bot.Bunt))
+	bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("✅ Description set."))
+	ResetUserState(user, bot)
+	time.Sleep(time.Duration(2) * time.Second)
+	bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	bot.shopsHandler(ctx, m)
+	bot.tryDeleteMessage(m)
+}
+
+// shopsResetHandler is invoked when the user clicks button to reset shops completely
+func (bot *TipBot) shopsResetHandler(ctx context.Context, c *tb.Callback) {
+	user := LoadUser(ctx)
+	shops, err := bot.getUserShops(ctx, user)
+	if err != nil {
+		log.Errorf("[shopsResetHandler] %s", err)
+		return
+	}
+	if shops.Owner.Telegram.ID != c.Sender.ID {
+		return
+	}
+	runtime.IgnoreError(shops.Delete(shops, bot.Bunt))
+	bot.sendStatusMessage(ctx, c.Sender, fmt.Sprintf("✅ Shops reset."))
+	time.Sleep(time.Duration(2) * time.Second)
+	bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	bot.shopsHandlerCallback(ctx, c)
+}
+
 // shopSelect is invoked when the user has selected a shop to browse
 func (bot *TipBot) shopSelect(ctx context.Context, c *tb.Callback) {
 	shop, _ := bot.getShop(ctx, c.Data)
@@ -881,8 +970,7 @@ func (bot *TipBot) shopSelect(ctx context.Context, c *tb.Callback) {
 	var shopMessage *tb.Message
 	if len(shop.ItemIds) > 0 {
 		bot.tryDeleteMessage(c.Message)
-		item := shop.Items[shop.ItemIds[shopView.Page]]
-		shopMessage = bot.trySendMessage(c.Message.Chat, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
+		shopMessage = bot.displayShopItem(ctx, c.Message, shop)
 	} else {
 		shopMessage = bot.tryEditMessage(c.Message, "There are no items in this shop yet.", bot.shopMenu(ctx, shop, &ShopItem{}))
 	}

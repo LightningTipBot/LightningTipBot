@@ -704,6 +704,22 @@ func (bot TipBot) getHandler() []Handler {
 				Type:   CallbackInterceptor,
 				Before: []intercept.Func{bot.loadUserInterceptor}},
 		},
+		// button that lets user enter description for shops
+		{
+			Endpoints: []interface{}{&shopDescriptionShopButton},
+			Handler:   bot.shopsDescriptionHandler,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
+		},
+		// button that resets user shops
+		{
+			Endpoints: []interface{}{&shopResetShopButton},
+			Handler:   bot.shopsResetHandler,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
+		},
 		{
 			Endpoints: []interface{}{&shopPrevitemButton},
 			Handler:   bot.shopPrevItemButtonHandler,
