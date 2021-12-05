@@ -83,10 +83,11 @@ var (
 	shopKeyboard              = &tb.ReplyMarkup{ResizeReplyKeyboard: false}
 	browseShopButton          = shopKeyboard.Data("Browse shops", "shops_browse")
 	shopNewShopButton         = shopKeyboard.Data("New Shop", "shops_newshop")
-	shopDeleteShopButton      = shopKeyboard.Data("Delete Shop", "shops_deleteshop")
+	shopDeleteShopButton      = shopKeyboard.Data("Delete Shops", "shops_deleteshop")
 	shopLinkShopButton        = shopKeyboard.Data("Shop links", "shops_linkshop")
 	shopRenameShopButton      = shopKeyboard.Data("Rename shop", "shops_renameshop")
-	shopResetShopButton       = shopKeyboard.Data("Reset shops", "shops_reset")
+	shopResetShopAskButton    = shopKeyboard.Data("Delete all shops", "shops_reset_ask")
+	shopResetShopButton       = shopKeyboard.Data("Delete all shops", "shops_reset")
 	shopDescriptionShopButton = shopKeyboard.Data("Shop description", "shops_description")
 	shopSettingsButton        = shopKeyboard.Data("Settings", "shops_settings")
 	shopShopsButton           = shopKeyboard.Data("Back", "shops_shops")
@@ -979,8 +980,22 @@ func (bot *TipBot) shopsDeleteShopBrowser(ctx context.Context, c *tb.Callback) {
 		s = append(s, shop)
 	}
 	shopShopsButton := shopKeyboard.Data("⬅️ Back", "shops_shops", shops.ID)
-	shopKeyboard.Inline(buttonWrapper(append(bot.makseShopSelectionButtons(s, "delete_shop"), shopShopsButton), shopKeyboard, 1)...)
+
+	shopResetShopAskButton = shopKeyboard.Data("⚠️ Delete all shops", "shops_reset_ask", shops.ID)
+	shopKeyboard.Inline(buttonWrapper(append(bot.makseShopSelectionButtons(s, "delete_shop"), shopResetShopAskButton, shopShopsButton), shopKeyboard, 1)...)
 	bot.tryEditMessage(c.Message, "Which shop do you want to delete?", shopKeyboard)
+}
+
+func (bot *TipBot) shopsAskDeleteAllShopsHandler(ctx context.Context, c *tb.Callback) {
+	shopResetShopButton := shopKeyboard.Data("⚠️ Delete all shops", "shops_reset", c.Data)
+	buttons := []tb.Row{
+		shopKeyboard.Row(shopResetShopButton),
+		shopKeyboard.Row(shopShopsButton),
+	}
+	shopKeyboard.Inline(
+		buttons...,
+	)
+	bot.tryEditMessage(c.Message, "Are you sure you want  to delete all shops?\nYou will lose all items as well.", shopKeyboard)
 }
 
 // shopsLinkShopBrowser is invoked when the user clicks on "shop links" and makes a list of all shops

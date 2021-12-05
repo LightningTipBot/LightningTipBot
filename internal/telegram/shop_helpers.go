@@ -36,20 +36,29 @@ func (bot TipBot) shopsSettingsMenu(ctx context.Context, shops *Shops) *tb.Reply
 	shopShopsButton := shopKeyboard.Data("⬅️ Back", "shops_shops", shops.ID)
 	shopLinkShopButton := shopKeyboard.Data("🔗 Shop links", "shops_linkshop", shops.ID)
 	shopRenameShopButton := shopKeyboard.Data("⌨️ Rename a shop", "shops_renameshop", shops.ID)
-	shopDeleteShopButton := shopKeyboard.Data("🚫 Delete one shop", "shops_deleteshop", shops.ID)
+	shopDeleteShopButton := shopKeyboard.Data("🚫 Delete shops", "shops_deleteshop", shops.ID)
 	shopDescriptionShopButton := shopKeyboard.Data("💬 Description", "shops_description", shops.ID)
-	shopResetShopButton := shopKeyboard.Data("⚠️ Delete all shops", "shops_reset", shops.ID)
-	buttons := []tb.Row{
-		shopKeyboard.Row(shopLinkShopButton),
-		shopKeyboard.Row(shopDescriptionShopButton),
-		shopKeyboard.Row(shopRenameShopButton),
-		shopKeyboard.Row(shopDeleteShopButton),
-		shopKeyboard.Row(shopResetShopButton),
-		shopKeyboard.Row(shopShopsButton),
+	// // shopResetShopButton := shopKeyboard.Data("⚠️ Delete all shops", "shops_reset", shops.ID)
+	// buttons := []tb.Row{
+	// 	shopKeyboard.Row(shopLinkShopButton),
+	// 	shopKeyboard.Row(shopDescriptionShopButton),
+	// 	shopKeyboard.Row(shopRenameShopButton),
+	// 	shopKeyboard.Row(shopDeleteShopButton),
+	// 	// shopKeyboard.Row(shopResetShopButton),
+	// 	shopKeyboard.Row(shopShopsButton),
+	// }
+	// shopKeyboard.Inline(
+	// 	buttons...,
+	// )
+
+	button := []tb.Btn{
+		shopLinkShopButton,
+		shopDescriptionShopButton,
+		shopRenameShopButton,
+		shopDeleteShopButton,
+		shopShopsButton,
 	}
-	shopKeyboard.Inline(
-		buttons...,
-	)
+	shopKeyboard.Inline(buttonWrapper(button, shopKeyboard, 2)...)
 	return shopKeyboard
 }
 
