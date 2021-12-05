@@ -84,6 +84,7 @@ var (
 	shopNewShopButton         = shopKeyboard.Data("New Shop", "shops_newshop")
 	shopDeleteShopButton      = shopKeyboard.Data("Delete Shop", "shops_deleteshop")
 	shopLinkShopButton        = shopKeyboard.Data("Shop links", "shops_linkshop")
+	shopRenameShopButton      = shopKeyboard.Data("Rename shop", "shops_renameshop")
 	shopResetShopButton       = shopKeyboard.Data("Reset shops", "shops_reset")
 	shopDescriptionShopButton = shopKeyboard.Data("Shop description", "shops_description")
 	shopSettingsButton        = shopKeyboard.Data("Settings", "shops_settings")
@@ -97,6 +98,7 @@ var (
 	shopSelectButton           = shopKeyboard.Data("SHOP SELECTOR", "select_shop")        // shop slectino buttons
 	shopDeleteSelectButton     = shopKeyboard.Data("DELETE SHOP SELECTOR", "delete_shop") // shop slectino buttons
 	shopLinkSelectButton       = shopKeyboard.Data("LINK SHOP SELECTOR", "link_shop")     // shop slectino buttons
+	shopRenameSelectButton     = shopKeyboard.Data("RENAME SHOP SELECTOR", "rename_shop") // shop slectino buttons
 	shopItemPriceButton        = shopKeyboard.Data("Price", "shop_itemprice")
 	shopItemDeleteButton       = shopKeyboard.Data("Delete", "shop_itemdelete")
 	shopItemTitleButton        = shopKeyboard.Data("Set title", "shop_itemtitle")
@@ -124,7 +126,7 @@ func (bot *TipBot) shopItemPriceHandler(ctx context.Context, c *tb.Callback) {
 	}
 	// We need to save the pay state in the user state so we can load the payment in the next handler
 	SetUserState(user, bot, lnbits.UserStateShopItemSendPrice, item.ID)
-	bot.sendStatusMessage(ctx, c.Sender, fmt.Sprintf("💯 Enter item price."), tb.ForceReply)
+	bot.sendStatusMessage(ctx, c.Sender, fmt.Sprintf("💯 Enter a price."), tb.ForceReply)
 }
 
 // enterShopItemPriceHandler is invoked when the user enters a price amount
@@ -151,14 +153,23 @@ func (bot *TipBot) enterShopItemPriceHandler(ctx context.Context, m *tb.Message)
 		return
 	}
 
-	amount, err := getAmount(m.Text)
-	if err != nil {
-		log.Warnf("[enterShopItemPriceHandler] %s", err.Error())
-		bot.trySendMessage(m.Sender, Translate(ctx, "lnurlInvalidAmountMessage"))
-		ResetUserState(user, bot)
-		return //err, 0
+	var amount int
+	if m.Text == "0" {
+		amount = 0
+	} else {
+		amount, err = getAmount(m.Text)
+		if err != nil {
+			log.Warnf("[enterShopItemPriceHandler] %s", err.Error())
+			bot.trySendMessage(m.Sender, Translate(ctx, "lnurlInvalidAmountMessage"))
+			ResetUserState(user, bot)
+			return //err, 0
+		}
 	}
 
+	if amount > 0 {
+		bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("ℹ️ During development, price can be max 1 sat."))
+		amount = 1
+	}
 	item.Price = amount
 	shop.Items[item.ID] = item
 	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
@@ -279,19 +290,6 @@ func (bot *TipBot) shopItemDeleteHandler(ctx context.Context, c *tb.Callback) {
 	}
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 	bot.displayShopItem(ctx, shopView.Message, shop)
-
-	// shopView, err = bot.getUserShopview(ctx, user)
-	// if err == nil {
-	// 	shopView.StatusMessages = append(shopView.StatusMessages, statusMsg)
-	// 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
-	// 	time.Sleep(time.Duration(2) * time.Second)
-	// 	bot.shopViewDeleteAllStatusMsgs(ctx, user)
-	// 	if shopView.Page > 0 {
-	// 		shopView.Page--
-	// 	}
-	// 	bot.displayShopItem(ctx, shopView.Message, shop)
-	// }
-	// bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 }
 
 // displayShopItemHandler is invoked when the user presses the back button in the item settings
@@ -525,16 +523,6 @@ func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) {
 	if state_shop.Owner.Telegram.ID != m.Sender.ID {
 		return
 	}
-	// todo: can go away
-
-	// shop, err := bot.getShop(ctx, state_shop.ID)
-	// if err != nil {
-	// 	log.Errorf("[addShopItemPhoto] %s", err)
-	// }
-	// if shop.Owner.Telegram.ID != m.Sender.ID {
-	// 	return
-	// }
-	// immediatelly set lock to block duplicate calls
 
 	shop, item, err := bot.addShopItem(ctx, state_shop.ID)
 	// err = shop.Lock(shop, bot.Bunt)
@@ -552,6 +540,7 @@ func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) {
 	shopView.Page = len(shop.Items) - 1
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 	bot.displayShopItem(ctx, shopView.Message, shop)
+	log.Infof("[🛍 shop] %s added an item %s:%s.", GetUserStr(user.Telegram), shop.ID, item.ID)
 }
 
 // ------------------- item files ----------
@@ -639,7 +628,7 @@ func (bot *TipBot) addItemFileHandler(ctx context.Context, m *tb.Message) {
 	time.Sleep(time.Duration(2) * time.Second)
 	bot.shopViewDeleteAllStatusMsgs(ctx, user)
 	bot.displayShopItem(ctx, shopView.Message, shop)
-
+	log.Infof("[🛍 shop] %s added a file to shop:item %s:%s.", GetUserStr(user.Telegram), shop.ID, item.ID)
 }
 
 func (bot *TipBot) shopGetItemFilesHandler(ctx context.Context, c *tb.Callback) {
@@ -662,12 +651,14 @@ func (bot *TipBot) shopGetItemFilesHandler(ctx context.Context, c *tb.Callback) 
 	itemID := c.Data
 
 	item := shop.Items[itemID]
+	// send the cover image
+	bot.sendFileByID(ctx, c.Sender, item.TbPhoto.FileID, "photo")
+	// and all other files
 	for i, fileID := range item.FileIDs {
 		bot.sendFileByID(ctx, c.Sender, fileID, item.FileTypes[i])
 	}
-	// fileId := item.FileIDs[len(item.FileIDs)-1]
-	// fileType := item.FileTypes[len(item.FileTypes)-1]
-	// bot.sendFileByID(ctx, c.Sender, fileId, fileType)
+	log.Infof("[🛍 shop] %s got %d items from %s's item %s:%d (for %d sat).", GetUserStr(user.Telegram), len(item.FileIDs), GetUserStr(shop.Owner.Telegram), shop.ID, item.ID, item.Price)
+
 }
 
 func (bot *TipBot) sendFileByID(ctx context.Context, to tb.Recipient, fileId string, fileType string) {
@@ -896,6 +887,38 @@ func (bot *TipBot) shopSelectLink(ctx context.Context, c *tb.Callback) {
 	bot.trySendMessage(c.Sender, fmt.Sprintf("*%s*: `/shop %s`", shop.Title, shop.ID))
 }
 
+// shopsLinkShopBrowser is invoked when the user clicks on "shop links" and makes a list of all shops
+func (bot *TipBot) shopsRenameShopBrowser(ctx context.Context, c *tb.Callback) {
+	user := LoadUser(ctx)
+	shops, err := bot.getUserShops(ctx, user)
+	if err != nil {
+		return
+	}
+	var s []*Shop
+	for _, shopId := range shops.Shops {
+		shop, _ := bot.getShop(ctx, shopId)
+		if shop.Owner.Telegram.ID != c.Sender.ID {
+			return
+		}
+		s = append(s, shop)
+	}
+	shopShopsButton := shopKeyboard.Data("⬅️ Back", "shops_shops", shops.ID)
+	shopKeyboard.Inline(buttonWrapper(append(bot.makseShopSelectionButtons(s, "rename_shop"), shopShopsButton), shopKeyboard, 1)...)
+	bot.tryEditMessage(c.Message, "Select the shop you want to rename.", shopKeyboard)
+}
+
+// shopSelectLink is invoked when the user has chosen a shop to get the link of
+func (bot *TipBot) shopSelectRename(ctx context.Context, c *tb.Callback) {
+	user := LoadUser(ctx)
+	shop, _ := bot.getShop(ctx, c.Data)
+	if shop.Owner.Telegram.ID != c.Sender.ID {
+		return
+	}
+	// We need to save the pay state in the user state so we can load the payment in the next handler
+	SetUserState(user, bot, lnbits.UserEnterShopTitle, shop.ID)
+	bot.sendStatusMessage(ctx, c.Sender, fmt.Sprintf("⌨️ Enter the name of your shop."), tb.ForceReply)
+}
+
 // shopsDescriptionHandler is invoked when the user clicks on "description" to set a shop description
 func (bot *TipBot) shopsDescriptionHandler(ctx context.Context, c *tb.Callback) {
 	user := LoadUser(ctx)
@@ -908,7 +931,7 @@ func (bot *TipBot) shopsDescriptionHandler(ctx context.Context, c *tb.Callback) 
 	bot.sendStatusMessage(ctx, c.Sender, fmt.Sprintf("⌨️ Enter a description."), tb.ForceReply)
 }
 
-// enterShopTitleHandler is invoked when the user enters the shop title
+// enterShopsDescriptionHandler is invoked when the user enters the shop title
 func (bot *TipBot) enterShopsDescriptionHandler(ctx context.Context, m *tb.Message) {
 	user := LoadUser(ctx)
 	shops, err := bot.getUserShops(ctx, user)
@@ -976,6 +999,7 @@ func (bot *TipBot) shopSelect(ctx context.Context, c *tb.Callback) {
 	}
 	shopView.Message = shopMessage
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
+	log.Infof("[🛍 shop] %s entered shop %s.", GetUserStr(user.Telegram), shop.ID)
 }
 
 // shopSelectDelete is invoked when the user has chosen a shop to delete
@@ -1004,6 +1028,7 @@ func (bot *TipBot) shopSelectDelete(ctx context.Context, c *tb.Callback) {
 
 	// then update buttons
 	bot.shopsDeleteShopBrowser(ctx, c)
+	log.Infof("[🛍 shop] %s deleted shop %s.", GetUserStr(user.Telegram), shop.ID)
 }
 
 // shopsBrowser makes a button list of all shops the user can browse
@@ -1092,4 +1117,5 @@ func (bot *TipBot) enterShopTitleHandler(ctx context.Context, m *tb.Message) {
 	bot.shopViewDeleteAllStatusMsgs(ctx, user)
 	bot.shopsHandler(ctx, m)
 	bot.tryDeleteMessage(m)
+	log.Infof("[🛍 shop] %s added new shop %s.", GetUserStr(user.Telegram), shop.ID)
 }

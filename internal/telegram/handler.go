@@ -696,6 +696,22 @@ func (bot TipBot) getHandler() []Handler {
 				Type:   CallbackInterceptor,
 				Before: []intercept.Func{bot.loadUserInterceptor}},
 		},
+		// button that opens selection of shops to rename
+		{
+			Endpoints: []interface{}{&shopRenameShopButton},
+			Handler:   bot.shopsRenameShopBrowser,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
+		},
+		// button that selects which shop to rename
+		{
+			Endpoints: []interface{}{&shopRenameSelectButton},
+			Handler:   bot.shopSelectRename,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
+		},
 		// button that opens shops settings buttons view
 		{
 			Endpoints: []interface{}{&shopSettingsButton},

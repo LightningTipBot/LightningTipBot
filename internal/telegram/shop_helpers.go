@@ -35,12 +35,14 @@ func (bot TipBot) shopsMainMenu(ctx context.Context, shops *Shops) *tb.ReplyMark
 func (bot TipBot) shopsSettingsMenu(ctx context.Context, shops *Shops) *tb.ReplyMarkup {
 	shopShopsButton := shopKeyboard.Data("⬅️ Back", "shops_shops", shops.ID)
 	shopLinkShopButton := shopKeyboard.Data("🔗 Shop links", "shops_linkshop", shops.ID)
+	shopRenameShopButton := shopKeyboard.Data("⌨️ Rename a shop", "shops_renameshop", shops.ID)
 	shopDeleteShopButton := shopKeyboard.Data("🚫 Delete one shop", "shops_deleteshop", shops.ID)
 	shopDescriptionShopButton := shopKeyboard.Data("💬 Description", "shops_description", shops.ID)
 	shopResetShopButton := shopKeyboard.Data("⚠️ Delete all shops", "shops_reset", shops.ID)
 	buttons := []tb.Row{
 		shopKeyboard.Row(shopLinkShopButton),
 		shopKeyboard.Row(shopDescriptionShopButton),
+		shopKeyboard.Row(shopRenameShopButton),
 		shopKeyboard.Row(shopDeleteShopButton),
 		shopKeyboard.Row(shopResetShopButton),
 		shopKeyboard.Row(shopShopsButton),
