@@ -34,8 +34,13 @@ func (bot TipBot) shopsMainMenu(ctx context.Context, shops *Shops) *tb.ReplyMark
 
 func (bot TipBot) shopsSettingsMenu(ctx context.Context, shops *Shops) *tb.ReplyMarkup {
 	shopShopsButton := shopKeyboard.Data("⬅️ Back", "shops_shops", shops.ID)
+	shopLinkShopButton := shopKeyboard.Data("🔗 Shop links", "shops_linkshop", shops.ID)
 	shopDeleteShopButton := shopKeyboard.Data("🚫 Delete Shop", "shops_deleteshop", shops.ID)
-	buttons := []tb.Row{shopKeyboard.Row(shopDeleteShopButton), shopKeyboard.Row(shopShopsButton)}
+	buttons := []tb.Row{
+		shopKeyboard.Row(shopLinkShopButton),
+		shopKeyboard.Row(shopDeleteShopButton),
+		shopKeyboard.Row(shopShopsButton),
+	}
 	shopKeyboard.Inline(
 		buttons...,
 	)
@@ -44,10 +49,10 @@ func (bot TipBot) shopsSettingsMenu(ctx context.Context, shops *Shops) *tb.Reply
 
 // shopItemSettingsMenu builds the buttons of the item settings
 func (bot TipBot) shopItemSettingsMenu(ctx context.Context, shop *Shop, item *ShopItem) *tb.ReplyMarkup {
-	shopItemPriceButton = shopKeyboard.Data("💯 Price", "shop_itemprice", item.ID)
-	shopItemDeleteButton = shopKeyboard.Data("🚫 Delete", "shop_itemdelete", item.ID)
+	shopItemPriceButton = shopKeyboard.Data("💯 Set price", "shop_itemprice", item.ID)
+	shopItemDeleteButton = shopKeyboard.Data("🚫 Delete item", "shop_itemdelete", item.ID)
 	shopItemTitleButton = shopKeyboard.Data("⌨️ Set title", "shop_itemtitle", item.ID)
-	shopItemAddFileButton = shopKeyboard.Data("✅ Add file", "shop_itemaddfile", item.ID)
+	shopItemAddFileButton = shopKeyboard.Data("💾 Add file", "shop_itemaddfile", item.ID)
 	shopItemSettingsBackButton = shopKeyboard.Data("⬅️ Back", "shop_itemsettingsback", item.ID)
 	user := LoadUser(ctx)
 	buttons := []tb.Row{}
@@ -64,9 +69,15 @@ func (bot TipBot) shopItemSettingsMenu(ctx context.Context, shop *Shop, item *Sh
 
 // shopMenu builds the buttons in the item browser
 func (bot TipBot) shopMenu(ctx context.Context, shop *Shop, item *ShopItem) *tb.ReplyMarkup {
+	user := LoadUser(ctx)
+	shopView, err := bot.getUserShopview(ctx, user)
+	if err != nil {
+		return nil
+	}
+
 	shopShopsButton := shopKeyboard.Data("⬅️ Back", "shops_shops", shop.ShopsID)
-	shopAddItemButton = shopKeyboard.Data("✅ Add item", "shop_additem", shop.ID)
-	shopItemSettingsButton = shopKeyboard.Data("⚙️ Item settings", "shop_itemsettings", item.ID)
+	shopAddItemButton = shopKeyboard.Data("✅ New item", "shop_additem", shop.ID)
+	shopItemSettingsButton = shopKeyboard.Data("⚙️ Settings", "shop_itemsettings", item.ID)
 	shopNextitemButton = shopKeyboard.Data(">", "shop_nextitem", shop.ID)
 	shopPrevitemButton = shopKeyboard.Data("<", "shop_previtem", shop.ID)
 	buyButtonText := "📩 Get"
@@ -74,7 +85,7 @@ func (bot TipBot) shopMenu(ctx context.Context, shop *Shop, item *ShopItem) *tb.
 		buyButtonText = fmt.Sprintf("💸 Buy (%d sat)", item.Price)
 	}
 	shopBuyitemButton = shopKeyboard.Data(buyButtonText, "shop_buyitem", item.ID)
-	user := LoadUser(ctx)
+
 	buttons := []tb.Row{}
 	if user.Telegram.ID == shop.Owner.Telegram.ID {
 		if len(shop.Items) == 0 {
@@ -85,8 +96,11 @@ func (bot TipBot) shopMenu(ctx context.Context, shop *Shop, item *ShopItem) *tb.
 	}
 	// publicButtons := []tb.Row{}
 	if len(shop.Items) > 0 {
+		if shopView.Page == len(shop.Items)-1 {
+			// last page
+			shopNextitemButton = shopKeyboard.Data("x", "shop_nextitem", shop.ID)
+		}
 		buttons = append(buttons, shopKeyboard.Row(shopPrevitemButton, shopBuyitemButton, shopNextitemButton))
-
 	}
 	buttons = append(buttons, shopKeyboard.Row(shopShopsButton))
 	shopKeyboard.Inline(
@@ -116,11 +130,10 @@ func (bot *TipBot) getUserShopview(ctx context.Context, user *lnbits.User) (shop
 	return
 }
 func (bot *TipBot) shopViewDeleteAllStatusMsgs(ctx context.Context, user *lnbits.User) (shopView ShopView, err error) {
-	sv, err := bot.Cache.Get(fmt.Sprintf("shopview-%d", user.Telegram.ID))
+	shopView, err = bot.getUserShopview(ctx, user)
 	if err != nil {
 		return
 	}
-	shopView = sv.(ShopView)
 	for _, msg := range shopView.StatusMessages {
 		bot.tryDeleteMessage(msg)
 	}
@@ -130,11 +143,12 @@ func (bot *TipBot) shopViewDeleteAllStatusMsgs(ctx context.Context, user *lnbits
 
 func (bot *TipBot) sendStatusMessage(ctx context.Context, to tb.Recipient, what interface{}, options ...interface{}) (msg *tb.Message) {
 	user := LoadUser(ctx)
-	statusMsg := bot.trySendMessage(to, what)
 	shopView, err := bot.getUserShopview(ctx, user)
-	if err == nil {
-		shopView.StatusMessages = append(shopView.StatusMessages, statusMsg)
+	if err != nil {
+		return nil
 	}
+	statusMsg := bot.trySendMessage(to, what)
+	shopView.StatusMessages = append(shopView.StatusMessages, statusMsg)
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 	return statusMsg
 }
@@ -145,10 +159,11 @@ func (bot *TipBot) sendStatusMessage(ctx context.Context, to tb.Recipient, what 
 func (bot *TipBot) initUserShops(ctx context.Context, user *lnbits.User) (*Shops, error) {
 	id := fmt.Sprintf("shops-%d", user.Telegram.ID)
 	shops := &Shops{
-		Base:  transaction.New(transaction.ID(id)),
-		ID:    id,
-		Owner: user,
-		Shops: []string{},
+		Base:     transaction.New(transaction.ID(id)),
+		ID:       id,
+		Owner:    user,
+		Shops:    []string{},
+		MaxShops: MAX_SHOPS,
 	}
 	runtime.IgnoreError(shops.Set(shops, bot.Bunt))
 	return shops, nil
@@ -172,7 +187,7 @@ func (bot *TipBot) addUserShop(ctx context.Context, user *lnbits.User) (*Shop, e
 	if err != nil {
 		return &Shop{}, err
 	}
-	shopId := fmt.Sprintf("shop-%d-%s", user.Telegram.ID, RandStringRunes(5))
+	shopId := fmt.Sprintf("shop-%s", RandStringRunes(10))
 	shop := &Shop{
 		Base:         transaction.New(transaction.ID(shopId)),
 		ID:           shopId,
@@ -182,6 +197,7 @@ func (bot *TipBot) addUserShop(ctx context.Context, user *lnbits.User) (*Shop, e
 		Items:        make(map[string]ShopItem),
 		LanguageCode: ctx.Value("publicLanguageCode").(string),
 		ShopsID:      shops.ID,
+		MaxItems:     MAX_ITEMS_PER_SHOP,
 	}
 	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
 	shops.Shops = append(shops.Shops, shopId)

@@ -2,7 +2,7 @@ package storage
 
 import (
 	"encoding/json"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/buntdb"
 )
@@ -78,23 +78,31 @@ func (db *DB) Set(object Storable) error {
 }
 
 // Delete a storable item.
-// todo -- not ascend users index
 func (db *DB) Delete(index string, object Storable) error {
 	return db.Update(func(tx *buntdb.Tx) error {
-		var delkeys []string
-		runtime.IgnoreError(
-			tx.Ascend(index, func(key, value string) bool {
-				if key == object.Key() {
-					delkeys = append(delkeys, key)
-				}
-				return true
-			}),
-		)
-		for _, k := range delkeys {
-			if _, err := tx.Delete(k); err != nil {
-				return err
-			}
+		_, err := tx.Get(object.Key())
+		if err != nil {
+			return err
 		}
+		if _, err := tx.Delete(object.Key()); err != nil {
+			return err
+		}
+		// OLD: from gohumble:
+		// todo -- not ascend users index
+		// var delkeys []string
+		// runtime.IgnoreError(
+		// 	tx.Ascend(index, func(key, value string) bool {
+		// 		if key == object.Key() {
+		// 			delkeys = append(delkeys, key)
+		// 		}
+		// 		return true
+		// 	}),
+		// )
+		// for _, k := range delkeys {
+		// 	if _, err := tx.Delete(k); err != nil {
+		// 		return err
+		// 	}
+		// }
 		return nil
 	})
 }
