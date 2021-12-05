@@ -226,7 +226,13 @@ func (bot *TipBot) enterShopItemTitleHandler(ctx context.Context, m *tb.Message)
 	if shop.Owner.Telegram.ID != m.Sender.ID {
 		return
 	}
-
+	if len(m.Text) == 0 {
+		ResetUserState(user, bot)
+		bot.sendStatusMessage(ctx, m.Sender, "🚫 Action cancelled.")
+		time.Sleep(time.Duration(2) * time.Second)
+		bot.shopViewDeleteAllStatusMsgs(ctx, user)
+		return
+	}
 	// crop item title
 	if len(m.Text) > ITEM_TITLE_MAX_LENGTH {
 		m.Text = m.Text[:ITEM_TITLE_MAX_LENGTH]
@@ -1118,7 +1124,15 @@ func (bot *TipBot) enterShopTitleHandler(ctx context.Context, m *tb.Message) {
 	if shop.Owner.Telegram.ID != m.Sender.ID {
 		return
 	}
+	if len(m.Text) == 0 {
+		ResetUserState(user, bot)
+		bot.sendStatusMessage(ctx, m.Sender, "🚫 Action cancelled.")
+		time.Sleep(time.Duration(2) * time.Second)
+		bot.shopViewDeleteAllStatusMsgs(ctx, user)
+		return
+	}
 	// crop shop title
+	m.Text = strings.Replace(m.Text, "\n", " ", -1)
 	if len(m.Text) > SHOP_TITLE_MAX_LENGTH {
 		m.Text = m.Text[:SHOP_TITLE_MAX_LENGTH]
 	}
