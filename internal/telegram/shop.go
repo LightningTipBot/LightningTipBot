@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
@@ -105,6 +106,9 @@ var (
 	shopItemAddFileButton      = shopKeyboard.Data("Add file", "shop_itemaddfile")
 	shopItemSettingsButton     = shopKeyboard.Data("Item settings", "shop_itemsettings")
 	shopItemSettingsBackButton = shopKeyboard.Data("Back", "shop_itemsettingsback")
+
+	shopItemBuyButton       = shopKeyboard.Data("Buy", "shop_itembuy")
+	shopItemCancelBuyButton = shopKeyboard.Data("Cancel", "shop_itemcancelbuy")
 )
 
 // shopItemPriceHandler is invoked when the user presses the item settings button to set a price
@@ -238,6 +242,7 @@ func (bot *TipBot) enterShopItemTitleHandler(ctx context.Context, m *tb.Message)
 		m.Text = m.Text[:ITEM_TITLE_MAX_LENGTH]
 	}
 	item.Title = m.Text
+	item.TbPhoto.Caption = m.Text
 	shop.Items[item.ID] = item
 	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
 	bot.tryDeleteMessage(m)
@@ -262,6 +267,7 @@ func (bot *TipBot) shopItemSettingsHandler(ctx context.Context, c *tb.Callback) 
 		log.Error("[shopItemSettingsHandler] item id mismatch")
 		return
 	}
+	item.TbPhoto.Caption = bot.getItemTitle(ctx, &item)
 	bot.tryEditMessage(shopView.Message, item.TbPhoto, bot.shopItemSettingsMenu(ctx, shop, &item))
 }
 
@@ -352,6 +358,22 @@ func (bot *TipBot) shopPrevItemButtonHandler(ctx context.Context, c *tb.Callback
 	bot.displayShopItem(ctx, c.Message, shop)
 }
 
+func (bot *TipBot) getItemTitle(ctx context.Context, item *ShopItem) string {
+	if len(item.Title) > 0 {
+		item.TbPhoto.Caption = fmt.Sprintf("%s", item.Title)
+	}
+	if len(item.FileIDs) > 0 {
+		if len(item.TbPhoto.Caption) > 0 {
+			item.TbPhoto.Caption += " "
+		}
+		item.TbPhoto.Caption += fmt.Sprintf("(%d Files)", len(item.FileIDs))
+	}
+	if item.Price > 0 {
+		item.TbPhoto.Caption += fmt.Sprintf("\n\n💸 Price: %d sat", item.Price)
+	}
+	return item.TbPhoto.Caption
+}
+
 // displayShopItem renders the current item in the shopView
 // requires that the shopview page is already set accordingly
 // m is the message that will be edited
@@ -367,19 +389,20 @@ func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Sho
 		shopView.Page = len(shop.Items) - 1
 	}
 	item := shop.Items[shop.ItemIds[shopView.Page]]
+	item.TbPhoto.Caption = bot.getItemTitle(ctx, &item)
 
-	if len(item.Title) > 0 {
-		item.TbPhoto.Caption = fmt.Sprintf("%s", item.Title)
-	}
-	if len(item.FileIDs) > 0 {
-		if len(item.TbPhoto.Caption) > 0 {
-			item.TbPhoto.Caption += " "
-		}
-		item.TbPhoto.Caption += fmt.Sprintf("(%d Files)", len(item.FileIDs))
-	}
-	if item.Price > 0 {
-		item.TbPhoto.Caption += fmt.Sprintf("\n\n💸 Price: %d sat", item.Price)
-	}
+	// if len(item.Title) > 0 {
+	// 	item.TbPhoto.Caption = fmt.Sprintf("%s", item.Title)
+	// }
+	// if len(item.FileIDs) > 0 {
+	// 	if len(item.TbPhoto.Caption) > 0 {
+	// 		item.TbPhoto.Caption += " "
+	// 	}
+	// 	item.TbPhoto.Caption += fmt.Sprintf("(%d Files)", len(item.FileIDs))
+	// }
+	// if item.Price > 0 {
+	// 	item.TbPhoto.Caption += fmt.Sprintf("\n\n💸 Price: %d sat", item.Price)
+	// }
 	var msg *tb.Message
 	if shopView.Message != nil {
 		if item.TbPhoto != nil {
@@ -403,7 +426,7 @@ func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Sho
 		} else {
 			msg = bot.trySendMessage(user.Telegram, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
 		}
-		shopView.Page = 0
+		// shopView.Page = 0
 	}
 	shopView.Message = msg
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
@@ -652,24 +675,115 @@ func (bot *TipBot) shopGetItemFilesHandler(ctx context.Context, c *tb.Callback) 
 		log.Errorf("[addItemFileHandler] %s", err.Error())
 		return
 	}
-
 	shop, err := bot.getShop(ctx, shopView.ShopID)
 	if err != nil {
 		log.Errorf("[shopNewItemHandler] %s", err)
 		return
 	}
-
 	itemID := c.Data
+	item := shop.Items[itemID]
 
+	if item.Price <= 0 {
+		bot.shopSendItemFilesToUser(ctx, user, itemID)
+	} else {
+		item.TbPhoto.Caption = bot.getItemTitle(ctx, &item)
+		bot.tryEditMessage(shopView.Message, item.TbPhoto, bot.shopItemConfirmBuyMenu(ctx, shop, &item))
+	}
+
+	// // send the cover image
+	// bot.sendFileByID(ctx, c.Sender, item.TbPhoto.FileID, "photo")
+	// // and all other files
+	// for i, fileID := range item.FileIDs {
+	// 	bot.sendFileByID(ctx, c.Sender, fileID, item.FileTypes[i])
+	// }
+	// log.Infof("[🛍 shop] %s got %d items from %s's item %s (for %d sat).", GetUserStr(user.Telegram), len(item.FileIDs), GetUserStr(shop.Owner.Telegram), item.ID, item.Price)
+
+}
+
+// shopConfirmBuyHandler is invoked when the user has confirmed to pay for an item
+func (bot *TipBot) shopConfirmBuyHandler(ctx context.Context, c *tb.Callback) {
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return // errors.New("user has no wallet"), 0
+	}
+	shopView, err := bot.getUserShopview(ctx, user)
+	if err != nil {
+		log.Errorf("[shopConfirmBuyHandler] %s", err.Error())
+		return
+	}
+	shop, err := bot.getShop(ctx, shopView.ShopID)
+	if err != nil {
+		log.Errorf("[shopConfirmBuyHandler] %s", err)
+		return
+	}
+	itemID := c.Data
+	item := shop.Items[itemID]
+	if item.Owner.ID != shop.Owner.ID {
+		log.Errorf("[shopConfirmBuyHandler] Owners do not match.")
+		return
+	}
+	from := user
+	to := shop.Owner
+
+	// fromUserStr := GetUserStr(from.Telegram)
+	// fromUserStrMd := GetUserStrMd(from.Telegram)
+	toUserStr := GetUserStr(to.Telegram)
+	toUserStrMd := GetUserStrMd(to.Telegram)
+	amount := item.Price
+	if amount <= 0 {
+		log.Errorf("[shopConfirmBuyHandler] item has no price.")
+		return
+	}
+	transactionMemo := fmt.Sprintf("Buy item %s (%d sat).", toUserStr, amount)
+	t := NewTransaction(bot, from, to, int(amount), TransactionType("shop"))
+	t.Memo = transactionMemo
+
+	success, err := t.Send()
+	if !success || err != nil {
+		// bot.trySendMessage(c.Sender, sendErrorMessage)
+		errmsg := fmt.Sprintf("[shop] Error: Transaction failed. %s", err)
+		log.Errorln(errmsg)
+		bot.trySendMessage(user.Telegram, i18n.Translate(user.Telegram.LanguageCode, "sendErrorMessage"), &tb.ReplyMarkup{})
+		return
+	}
+	bot.trySendMessage(user.Telegram, fmt.Sprintf("🛍 %d sat sent to %s.", amount, toUserStrMd), &tb.ReplyMarkup{})
+	bot.trySendMessage(to.Telegram, fmt.Sprintf("🛍 Someone bought `%s` from you for %d sat.", str.MarkdownEscape(item.Title), amount))
+	log.Infof("[🛍 shop] %s paid %s %d sat.", GetUserStr(user.Telegram), GetUserStr(shop.Owner.Telegram), item.Price)
+	bot.shopSendItemFilesToUser(ctx, user, itemID)
+}
+
+// shopSendItemFilesToUser is a handler function to send itemID's files to the user
+func (bot *TipBot) shopSendItemFilesToUser(ctx context.Context, toUser *lnbits.User, itemID string) {
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return // errors.New("user has no wallet"), 0
+	}
+	shopView, err := bot.getUserShopview(ctx, user)
+	if err != nil {
+		log.Errorf("[addItemFileHandler] %s", err.Error())
+		return
+	}
+	shop, err := bot.getShop(ctx, shopView.ShopID)
+	if err != nil {
+		log.Errorf("[shopNewItemHandler] %s", err)
+		return
+	}
 	item := shop.Items[itemID]
 	// send the cover image
-	bot.sendFileByID(ctx, c.Sender, item.TbPhoto.FileID, "photo")
+	bot.sendFileByID(ctx, toUser.Telegram, item.TbPhoto.FileID, "photo")
 	// and all other files
 	for i, fileID := range item.FileIDs {
-		bot.sendFileByID(ctx, c.Sender, fileID, item.FileTypes[i])
+		bot.sendFileByID(ctx, toUser.Telegram, fileID, item.FileTypes[i])
 	}
 	log.Infof("[🛍 shop] %s got %d items from %s's item %s (for %d sat).", GetUserStr(user.Telegram), len(item.FileIDs), GetUserStr(shop.Owner.Telegram), item.ID, item.Price)
 
+	// delete old shop and show again below the files
+	if shopView.Message != nil {
+		bot.tryDeleteMessage(shopView.Message)
+	}
+	shopView.Message = nil
+	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
+	bot.displayShopItem(ctx, &tb.Message{}, shop)
 }
 
 func (bot *TipBot) sendFileByID(ctx context.Context, to tb.Recipient, fileId string, fileType string) {

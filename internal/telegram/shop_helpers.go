@@ -73,6 +73,19 @@ func (bot TipBot) shopItemSettingsMenu(ctx context.Context, shop *Shop, item *Sh
 	return shopKeyboard
 }
 
+// shopItemConfirmBuyMenu builds the buttons to confirm a purchase
+func (bot TipBot) shopItemConfirmBuyMenu(ctx context.Context, shop *Shop, item *ShopItem) *tb.ReplyMarkup {
+	shopItemBuyButton = shopKeyboard.Data(fmt.Sprintf("💸 Buy (%d sat)", item.Price), "shop_itembuy", item.ID)
+	shopItemCancelBuyButton = shopKeyboard.Data("⬅️ Back", "shop_itemcancelbuy", item.ID)
+	buttons := []tb.Row{}
+	buttons = append(buttons, shopKeyboard.Row(shopItemBuyButton))
+	buttons = append(buttons, shopKeyboard.Row(shopItemCancelBuyButton))
+	shopKeyboard.Inline(
+		buttons...,
+	)
+	return shopKeyboard
+}
+
 // shopMenu builds the buttons in the item browser
 func (bot TipBot) shopMenu(ctx context.Context, shop *Shop, item *ShopItem) *tb.ReplyMarkup {
 	user := LoadUser(ctx)
