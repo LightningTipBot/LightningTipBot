@@ -175,6 +175,7 @@ func (bot TipBot) getHandler() []Handler {
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
 					bot.loadUserInterceptor,
 				}},
 		},
@@ -185,6 +186,7 @@ func (bot TipBot) getHandler() []Handler {
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
 					bot.loadUserInterceptor,
 				}},
 		},

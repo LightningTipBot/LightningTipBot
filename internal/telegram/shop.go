@@ -523,6 +523,11 @@ func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) {
 	if state_shop.Owner.Telegram.ID != m.Sender.ID {
 		return
 	}
+	if m.Photo == nil {
+		bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("🚫 That didn't work. You need to send an image (not a file)."))
+		ResetUserState(user, bot)
+		return
+	}
 
 	shop, item, err := bot.addShopItem(ctx, state_shop.ID)
 	// err = shop.Lock(shop, bot.Bunt)
@@ -657,7 +662,7 @@ func (bot *TipBot) shopGetItemFilesHandler(ctx context.Context, c *tb.Callback) 
 	for i, fileID := range item.FileIDs {
 		bot.sendFileByID(ctx, c.Sender, fileID, item.FileTypes[i])
 	}
-	log.Infof("[🛍 shop] %s got %d items from %s's item %s:%d (for %d sat).", GetUserStr(user.Telegram), len(item.FileIDs), GetUserStr(shop.Owner.Telegram), shop.ID, item.ID, item.Price)
+	log.Infof("[🛍 shop] %s got %d items from %s's item %s (for %d sat).", GetUserStr(user.Telegram), len(item.FileIDs), GetUserStr(shop.Owner.Telegram), item.ID, item.Price)
 
 }
 
@@ -942,6 +947,14 @@ func (bot *TipBot) enterShopsDescriptionHandler(ctx context.Context, m *tb.Messa
 	if shops.Owner.Telegram.ID != m.Sender.ID {
 		return
 	}
+	if len(m.Text) == 0 {
+		ResetUserState(user, bot)
+		bot.sendStatusMessage(ctx, m.Sender, "🚫 Action cancelled.")
+		time.Sleep(time.Duration(2) * time.Second)
+		bot.shopViewDeleteAllStatusMsgs(ctx, user)
+		return
+	}
+
 	// crop shop title
 	if len(m.Text) > SHOPS_DESCRIPTION_MAX_LENGTH {
 		m.Text = m.Text[:SHOPS_DESCRIPTION_MAX_LENGTH]
