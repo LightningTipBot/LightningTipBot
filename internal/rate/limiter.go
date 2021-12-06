@@ -2,7 +2,6 @@ package rate
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
 	"strconv"
 	"time"
 
@@ -40,16 +39,12 @@ func CheckLimit(to interface{}, limiter *Limiter) {
 		CheckLimit(to, limiter)
 	}
 	checkIdLimiter := func(id string) {
-		log.Printf("[limiter] checking chat limiter for %s", id)
 		if !isAllowed(limiter.ChatID, id) {
-			log.Printf("[limiter] ChatID rate limit reached")
 			retryLimit()
 		}
 	}
 	checkGlobalLimiter := func() {
-		log.Printf("[limiter] checking global limiter")
 		if !isAllowed(limiter.Global, "global") {
-			log.Printf("[limiter] Global rate limit reached")
 			retryLimit()
 		}
 	}
@@ -67,5 +62,7 @@ func CheckLimit(to interface{}, limiter *Limiter) {
 			id = strconv.FormatInt(to.(*tb.Message).Chat.ID, 10)
 		}
 	}
-	checkIdLimiter(id)
+	if len(id) > 0 {
+		checkIdLimiter(id)
+	}
 }
