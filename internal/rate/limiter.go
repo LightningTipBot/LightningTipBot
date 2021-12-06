@@ -2,53 +2,34 @@ package rate
 
 import (
 	"context"
-	"strconv"
-	"time"
-
-	"github.com/sethvargo/go-limiter"
-	"github.com/sethvargo/go-limiter/memorystore"
+	"golang.org/x/time/rate"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
+	"strconv"
+	"sync"
 )
 
-type Limiter struct {
-	Global limiter.Store
-	ChatID limiter.Store
+type LimiterWrapper struct {
+	Global *Limiter
+	ChatID *Limiter
 }
 
-// NewLimiter creates both chat and global rate limiters.
-func NewLimiter() *Limiter {
-	chatIdRateLimiter, err := memorystore.New(&memorystore.Config{Interval: time.Minute, Tokens: 19, SweepMinTTL: time.Minute})
-	if err != nil {
-		panic(err)
-	}
+// NewLimiterWrapper creates both chat and global rate limiters.
+func NewLimiterWrapper() *LimiterWrapper {
+	chatIdRateLimiter := NewRateLimiter(rate.Limit(0.3), 20)
 
-	globalLimiter, err := memorystore.New(&memorystore.Config{Interval: time.Second, Tokens: 29, SweepMinTTL: 10 * time.Second})
-	if err != nil {
-		panic(err)
-	}
-	return &Limiter{Global: globalLimiter, ChatID: chatIdRateLimiter}
+	globalLimiter := NewRateLimiter(rate.Limit(30), 30)
+	return &LimiterWrapper{Global: globalLimiter, ChatID: chatIdRateLimiter}
 }
 
-func isAllowed(l limiter.Store, key string) bool {
-	_, _, _, ok, _ := l.Take(context.Background(), key)
-	return ok
-}
-func CheckLimit(to interface{}, limiter *Limiter) {
-	retryLimit := func() {
-		time.Sleep(time.Second)
-		CheckLimit(to, limiter)
-	}
+func CheckLimit(to interface{}, limiter *LimiterWrapper) {
 	checkIdLimiter := func(id string) {
-		if !isAllowed(limiter.ChatID, id) {
-			retryLimit()
-		}
+		limiter.ChatID.GetLimiter(id).Wait(context.Background())
 	}
 	checkGlobalLimiter := func() {
-		if !isAllowed(limiter.Global, "global") {
-			retryLimit()
-		}
+		limiter.Global.GetLimiter("global").Wait(context.Background())
 	}
 	checkGlobalLimiter()
+
 	var id string
 	switch to.(type) {
 	case *tb.Chat:
@@ -65,4 +46,53 @@ func CheckLimit(to interface{}, limiter *Limiter) {
 	if len(id) > 0 {
 		checkIdLimiter(id)
 	}
+}
+
+// IPRateLimiter .
+type Limiter struct {
+	keys map[string]*rate.Limiter
+	mu   *sync.RWMutex
+	r    rate.Limit
+	b    int
+}
+
+// NewRateLimiter .
+func NewRateLimiter(r rate.Limit, b int) *Limiter {
+	i := &Limiter{
+		keys: make(map[string]*rate.Limiter),
+		mu:   &sync.RWMutex{},
+		r:    r,
+		b:    b,
+	}
+
+	return i
+}
+
+// Add creates a new rate limiter and adds it to the keys map,
+// using the IP address as the key
+func (i *Limiter) Add(key string) *rate.Limiter {
+	i.mu.Lock()
+	defer i.mu.Unlock()
+
+	limiter := rate.NewLimiter(i.r, i.b)
+
+	i.keys[key] = limiter
+
+	return limiter
+}
+
+// GetLimiter returns the rate limiter for the provided IP address if it exists.
+// Otherwise calls AddIP to add IP address to the map
+func (i *Limiter) GetLimiter(ip string) *rate.Limiter {
+	i.mu.Lock()
+	limiter, exists := i.keys[ip]
+
+	if !exists {
+		i.mu.Unlock()
+		return i.Add(ip)
+	}
+
+	i.mu.Unlock()
+
+	return limiter
 }

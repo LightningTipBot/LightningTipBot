@@ -25,7 +25,7 @@ type TipBot struct {
 	logger   *gorm.DB
 	Telegram *telebot.Bot
 	Client   *lnbits.Client
-	limiter  *limiter.Limiter
+	limiter  *limiter.LimiterWrapper
 	Cache
 }
 type Cache struct {
@@ -49,7 +49,7 @@ func NewBot() TipBot {
 		logger:   txLogger,
 		Bunt:     createBunt(),
 		Telegram: newTelegramBot(),
-		limiter:  limiter.NewLimiter(),
+		limiter:  limiter.NewLimiterWrapper(),
 		Cache:    Cache{GoCacheStore: gocacheStore},
 	}
 }
