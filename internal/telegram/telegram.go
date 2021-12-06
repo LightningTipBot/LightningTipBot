@@ -100,7 +100,7 @@ func isAdminAndCanDelete(members []tb.ChatMember, me *tb.User) bool {
 func isAdminAndCanEdit(members []tb.ChatMember, me *tb.User) bool {
 	for _, admin := range members {
 		if admin.User.ID == me.ID {
-			return true
+			return admin.CanEditMessages
 		}
 	}
 	return false
