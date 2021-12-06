@@ -19,14 +19,14 @@ type Limiter struct {
 var idLimiter *Limiter
 var globalLimiter *rate.Limiter
 
-// NewLimiterWrapper creates both chat and global rate limiters.
-func NewLimiterWrapper() {
-	idLimiter = NewRateLimiter(rate.Limit(0.3), 20)
+// NewLimiter creates both chat and global rate limiters.
+func Start() {
+	idLimiter = newIdRateLimiter(rate.Limit(0.3), 20)
 	globalLimiter = rate.NewLimiter(rate.Limit(1), 1)
 }
 
 // NewRateLimiter .
-func NewRateLimiter(r rate.Limit, b int) *Limiter {
+func newIdRateLimiter(r rate.Limit, b int) *Limiter {
 	i := &Limiter{
 		keys: make(map[string]*rate.Limiter),
 		mu:   &sync.RWMutex{},

@@ -43,7 +43,7 @@ func NewBot() TipBot {
 	gocacheStore := store.NewGoCache(gocacheClient, nil)
 	// create sqlite databases
 	db, txLogger := AutoMigration()
-	limiter.NewLimiterWrapper()
+	limiter.Start()
 	return TipBot{
 		Database: db,
 		Client:   lnbits.NewClient(internal.Configuration.Lnbits.AdminKey, internal.Configuration.Lnbits.Url),
