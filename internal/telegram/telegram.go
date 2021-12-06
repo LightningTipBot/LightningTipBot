@@ -3,11 +3,7 @@ package telegram
 import (
 	"github.com/LightningTipBot/LightningTipBot/internal/rate"
 	log "github.com/sirupsen/logrus"
-<<<<<<< HEAD:internal/telegram/telegram.go
 	tb "gopkg.in/lightningtipbot/telebot.v2"
-=======
-	tb "gopkg.in/tucnak/telebot.v2"
->>>>>>> 51bd3ea (differentiate between global and chat rate limiting):telegram.go
 )
 
 func (bot TipBot) tryForwardMessage(to tb.Recipient, what tb.Editable, options ...interface{}) (msg *tb.Message) {
