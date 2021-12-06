@@ -2,10 +2,10 @@ package telegram
 
 import (
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/limiter"
-	"golang.org/x/time/rate"
 	"sync"
 	"time"
+
+	limiter "github.com/LightningTipBot/LightningTipBot/internal/rate"
 
 	"github.com/eko/gocache/store"
 
@@ -25,7 +25,7 @@ type TipBot struct {
 	logger   *gorm.DB
 	Telegram *telebot.Bot
 	Client   *lnbits.Client
-	limiter  *limiter.ChatIDRateLimiter
+	limiter  *limiter.Limiter
 	Cache
 }
 type Cache struct {
@@ -49,7 +49,7 @@ func NewBot() TipBot {
 		logger:   txLogger,
 		Bunt:     createBunt(),
 		Telegram: newTelegramBot(),
-		limiter:  limiter.NewChatIDRateLimiter(rate.Limit(30), 30),
+		limiter:  limiter.NewLimiter(),
 		Cache:    Cache{GoCacheStore: gocacheStore},
 	}
 }

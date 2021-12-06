@@ -8,7 +8,7 @@ import (
 
 func (bot TipBot) tryForwardMessage(to tb.Recipient, what tb.Editable, options ...interface{}) (msg *tb.Message) {
 	rate.CheckLimit(to, bot.limiter)
-	msg, err := bot.telegram.Forward(to, what, options...)
+	msg, err := bot.Telegram.Forward(to, what, options...)
 	if err != nil {
 		log.Warnln(err.Error())
 	}
@@ -16,7 +16,7 @@ func (bot TipBot) tryForwardMessage(to tb.Recipient, what tb.Editable, options .
 }
 func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...interface{}) (msg *tb.Message) {
 	rate.CheckLimit(to, bot.limiter)
-	msg, err := bot.telegram.Send(to, what, options...)
+	msg, err := bot.Telegram.Send(to, what, options...)
 	if err != nil {
 		log.Warnln(err.Error())
 	}
@@ -25,7 +25,7 @@ func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...i
 
 func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...interface{}) (msg *tb.Message) {
 	rate.CheckLimit(to, bot.limiter)
-	msg, err := bot.telegram.Reply(to, what, options...)
+	msg, err := bot.Telegram.Reply(to, what, options...)
 	if err != nil {
 		log.Warnln(err.Error())
 	}
