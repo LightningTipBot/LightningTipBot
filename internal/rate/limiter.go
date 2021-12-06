@@ -13,12 +13,32 @@ type LimiterWrapper struct {
 	ChatID *Limiter
 }
 
+// Limiter
+type Limiter struct {
+	keys map[string]*rate.Limiter
+	mu   *sync.RWMutex
+	r    rate.Limit
+	b    int
+}
+
 // NewLimiterWrapper creates both chat and global rate limiters.
 func NewLimiterWrapper() *LimiterWrapper {
 	chatIdRateLimiter := NewRateLimiter(rate.Limit(0.3), 20)
 
 	globalLimiter := NewRateLimiter(rate.Limit(30), 30)
 	return &LimiterWrapper{Global: globalLimiter, ChatID: chatIdRateLimiter}
+}
+
+// NewRateLimiter .
+func NewRateLimiter(r rate.Limit, b int) *Limiter {
+	i := &Limiter{
+		keys: make(map[string]*rate.Limiter),
+		mu:   &sync.RWMutex{},
+		r:    r,
+		b:    b,
+	}
+
+	return i
 }
 
 func CheckLimit(to interface{}, limiter *LimiterWrapper) {
@@ -48,28 +68,8 @@ func CheckLimit(to interface{}, limiter *LimiterWrapper) {
 	}
 }
 
-// IPRateLimiter .
-type Limiter struct {
-	keys map[string]*rate.Limiter
-	mu   *sync.RWMutex
-	r    rate.Limit
-	b    int
-}
-
-// NewRateLimiter .
-func NewRateLimiter(r rate.Limit, b int) *Limiter {
-	i := &Limiter{
-		keys: make(map[string]*rate.Limiter),
-		mu:   &sync.RWMutex{},
-		r:    r,
-		b:    b,
-	}
-
-	return i
-}
-
 // Add creates a new rate limiter and adds it to the keys map,
-// using the IP address as the key
+// using the key
 func (i *Limiter) Add(key string) *rate.Limiter {
 	i.mu.Lock()
 	defer i.mu.Unlock()
@@ -81,15 +81,15 @@ func (i *Limiter) Add(key string) *rate.Limiter {
 	return limiter
 }
 
-// GetLimiter returns the rate limiter for the provided IP address if it exists.
-// Otherwise calls AddIP to add IP address to the map
-func (i *Limiter) GetLimiter(ip string) *rate.Limiter {
+// GetLimiter returns the rate limiter for the provided key if it exists.
+// Otherwise, calls Add to add key address to the map
+func (i *Limiter) GetLimiter(key string) *rate.Limiter {
 	i.mu.Lock()
-	limiter, exists := i.keys[ip]
+	limiter, exists := i.keys[key]
 
 	if !exists {
 		i.mu.Unlock()
-		return i.Add(ip)
+		return i.Add(key)
 	}
 
 	i.mu.Unlock()
