@@ -25,7 +25,7 @@ type TipBot struct {
 	logger   *gorm.DB
 	Telegram *telebot.Bot
 	Client   *lnbits.Client
-	limiter  *limiter.LimiterWrapper
+	limiter  map[string]limiter.Limiter
 	Cache
 }
 type Cache struct {
@@ -43,13 +43,13 @@ func NewBot() TipBot {
 	gocacheStore := store.NewGoCache(gocacheClient, nil)
 	// create sqlite databases
 	db, txLogger := AutoMigration()
+	limiter.NewLimiterWrapper()
 	return TipBot{
 		Database: db,
 		Client:   lnbits.NewClient(internal.Configuration.Lnbits.AdminKey, internal.Configuration.Lnbits.Url),
 		logger:   txLogger,
 		Bunt:     createBunt(),
 		Telegram: newTelegramBot(),
-		limiter:  limiter.NewLimiterWrapper(),
 		Cache:    Cache{GoCacheStore: gocacheStore},
 	}
 }

@@ -8,11 +8,6 @@ import (
 	"sync"
 )
 
-type LimiterWrapper struct {
-	Global *Limiter
-	ChatID *Limiter
-}
-
 // Limiter
 type Limiter struct {
 	keys map[string]*rate.Limiter
@@ -21,12 +16,13 @@ type Limiter struct {
 	b    int
 }
 
-// NewLimiterWrapper creates both chat and global rate limiters.
-func NewLimiterWrapper() *LimiterWrapper {
-	chatIdRateLimiter := NewRateLimiter(rate.Limit(0.3), 20)
+var idLimiter *Limiter
+var globalLimiter *rate.Limiter
 
-	globalLimiter := NewRateLimiter(rate.Limit(30), 30)
-	return &LimiterWrapper{Global: globalLimiter, ChatID: chatIdRateLimiter}
+// NewLimiterWrapper creates both chat and global rate limiters.
+func NewLimiterWrapper() {
+	idLimiter = NewRateLimiter(rate.Limit(0.3), 20)
+	globalLimiter = rate.NewLimiter(rate.Limit(1), 1)
 }
 
 // NewRateLimiter .
@@ -41,15 +37,8 @@ func NewRateLimiter(r rate.Limit, b int) *Limiter {
 	return i
 }
 
-func CheckLimit(to interface{}, limiter *LimiterWrapper) {
-	checkIdLimiter := func(id string) {
-		limiter.ChatID.GetLimiter(id).Wait(context.Background())
-	}
-	checkGlobalLimiter := func() {
-		limiter.Global.GetLimiter("global").Wait(context.Background())
-	}
-	checkGlobalLimiter()
-
+func CheckLimit(to interface{}) {
+	globalLimiter.Wait(context.Background())
 	var id string
 	switch to.(type) {
 	case *tb.Chat:
@@ -64,7 +53,7 @@ func CheckLimit(to interface{}, limiter *LimiterWrapper) {
 		}
 	}
 	if len(id) > 0 {
-		checkIdLimiter(id)
+		idLimiter.GetLimiter(id).Wait(context.Background())
 	}
 }
 
