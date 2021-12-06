@@ -17,12 +17,12 @@ type Limiter struct {
 
 // NewLimiter creates both chat and global rate limiters.
 func NewLimiter() *Limiter {
-	chatIdRateLimiter, err := memorystore.New(&memorystore.Config{Interval: time.Second, Tokens: 1, SweepMinTTL: time.Second})
+	chatIdRateLimiter, err := memorystore.New(&memorystore.Config{Interval: time.Minute, Tokens: 19, SweepMinTTL: time.Minute})
 	if err != nil {
 		panic(err)
 	}
 
-	globalLimiter, err := memorystore.New(&memorystore.Config{Interval: time.Second, Tokens: 2, SweepMinTTL: 10 * time.Second})
+	globalLimiter, err := memorystore.New(&memorystore.Config{Interval: time.Second, Tokens: 29, SweepMinTTL: 10 * time.Second})
 	if err != nil {
 		panic(err)
 	}
