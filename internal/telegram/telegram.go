@@ -32,27 +32,34 @@ func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...i
 }
 
 func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...interface{}) (msg *tb.Message) {
-	if rightsToDoAction(bot, msg, isAdminAndCanEdit) {
-		var err error
-		msg, err = bot.Telegram.Edit(to, what, options...)
-		if err != nil {
-			log.Warnln(err.Error())
-		}
-		return msg
+	if !allowedToPerformAction(bot, msg, isAdminAndCanEdit) {
+		return
+	}
+	var err error
+	msg, err = bot.Telegram.Edit(to, what, options...)
+	if err != nil {
+		log.Warnln(err.Error())
 	}
 	return
+
 }
 
 func (bot TipBot) tryDeleteMessage(msg tb.Editable) {
-	if rightsToDoAction(bot, msg, isAdminAndCanDelete) {
-		err := bot.Telegram.Delete(msg)
-		if err != nil {
-			log.Warnln(err.Error())
-		}
+	if allowedToPerformAction(bot, msg, isAdminAndCanDelete) {
+		return
 	}
+	err := bot.Telegram.Delete(msg)
+	if err != nil {
+		log.Warnln(err.Error())
+	}
+	return
+
 }
 
-func rightsToDoAction(bot TipBot, editable tb.Editable, action func(members []tb.ChatMember, me *tb.User) bool) bool {
+// allowedToPerformAction will check if bot is allowed to perform an action on the tb.Editable.
+// this function will persist the admins list in cache for 5 minutes.
+// if no admins list is found for this group, bot will always fetch a fresh list.
+func allowedToPerformAction(bot TipBot, editable tb.Editable, action func(members []tb.ChatMember, me *tb.User) bool) bool {
 	switch editable.(type) {
 	case *tb.Message:
 		message := editable.(*tb.Message)
