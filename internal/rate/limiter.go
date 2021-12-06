@@ -2,6 +2,7 @@ package rate
 
 import (
 	"context"
+	log "github.com/sirupsen/logrus"
 	"strconv"
 	"time"
 
@@ -39,25 +40,32 @@ func CheckLimit(to interface{}, limiter *Limiter) {
 		CheckLimit(to, limiter)
 	}
 	checkChatLimiter := func(id string) {
+		log.Printf("[limiter] checking chat limiter for %s", id)
 		if !isAllowed(limiter.ChatID, id) {
+			log.Printf("[limiter] rate limit reached")
 			retryLimit()
 		}
 	}
 	checkGlobalLimiter := func() {
+		log.Printf("[limiter] checking global limiter")
 		if !isAllowed(limiter.Global, "global") {
+			log.Printf("[limiter] rate limit reached")
 			retryLimit()
 		}
 	}
+	checkGlobalLimiter()
+	var id string
 	switch to.(type) {
 	case *tb.Chat:
-		checkChatLimiter(strconv.FormatInt(to.(*tb.Chat).ID, 10))
+		id = strconv.FormatInt(to.(*tb.Chat).ID, 10)
 	case *tb.User:
-		checkChatLimiter(strconv.FormatInt(to.(*tb.User).ID, 10))
+		id = strconv.FormatInt(to.(*tb.User).ID, 10)
 	case tb.Recipient:
-		checkChatLimiter(to.(tb.Recipient).Recipient())
+		id = to.(tb.Recipient).Recipient()
 	case *tb.Message:
-		checkChatLimiter(strconv.FormatInt(to.(*tb.Message).Chat.ID, 10))
-	default:
-		checkGlobalLimiter()
+		if to.(*tb.Message).Chat != nil {
+			id = strconv.FormatInt(to.(*tb.Message).Chat.ID, 10)
+		}
 	}
+	checkChatLimiter(id)
 }
