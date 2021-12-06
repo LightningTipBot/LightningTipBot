@@ -45,7 +45,7 @@ func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...in
 }
 
 func (bot TipBot) tryDeleteMessage(msg tb.Editable) {
-	if allowedToPerformAction(bot, msg, isAdminAndCanDelete) {
+	if !allowedToPerformAction(bot, msg, isAdminAndCanDelete) {
 		return
 	}
 	err := bot.Telegram.Delete(msg)
