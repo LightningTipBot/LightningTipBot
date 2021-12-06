@@ -18,12 +18,12 @@ type Limiter struct {
 
 // NewLimiter creates both chat and global rate limiters.
 func NewLimiter() *Limiter {
-	chatIdRateLimiter, err := memorystore.New(&memorystore.Config{Interval: time.Minute, Tokens: 20, SweepMinTTL: time.Minute})
+	chatIdRateLimiter, err := memorystore.New(&memorystore.Config{Interval: time.Second, Tokens: 1, SweepMinTTL: time.Second})
 	if err != nil {
 		panic(err)
 	}
 
-	globalLimiter, err := memorystore.New(&memorystore.Config{Interval: time.Second, Tokens: 30, SweepMinTTL: 10 * time.Second})
+	globalLimiter, err := memorystore.New(&memorystore.Config{Interval: time.Second, Tokens: 2, SweepMinTTL: 10 * time.Second})
 	if err != nil {
 		panic(err)
 	}
@@ -42,14 +42,14 @@ func CheckLimit(to interface{}, limiter *Limiter) {
 	checkIdLimiter := func(id string) {
 		log.Printf("[limiter] checking chat limiter for %s", id)
 		if !isAllowed(limiter.ChatID, id) {
-			log.Printf("[limiter] rate limit reached")
+			log.Printf("[limiter] ChatID rate limit reached")
 			retryLimit()
 		}
 	}
 	checkGlobalLimiter := func() {
 		log.Printf("[limiter] checking global limiter")
 		if !isAllowed(limiter.Global, "global") {
-			log.Printf("[limiter] rate limit reached")
+			log.Printf("[limiter] Global rate limit reached")
 			retryLimit()
 		}
 	}
