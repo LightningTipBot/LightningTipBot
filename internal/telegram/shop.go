@@ -268,7 +268,9 @@ func (bot *TipBot) shopItemSettingsHandler(ctx context.Context, c *tb.Callback) 
 		log.Error("[shopItemSettingsHandler] item id mismatch")
 		return
 	}
-	item.TbPhoto.Caption = bot.getItemTitle(ctx, &item)
+	if item.TbPhoto != nil {
+		item.TbPhoto.Caption = bot.getItemTitle(ctx, &item)
+	}
 	bot.tryEditMessage(shopView.Message, item.TbPhoto, bot.shopItemSettingsMenu(ctx, shop, &item))
 }
 
@@ -291,6 +293,18 @@ func (bot *TipBot) shopItemDeleteHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 
+	// delete ItemID of item
+	for i, itemId := range shop.ItemIds {
+		if itemId == item.ID {
+			if len(shop.ItemIds) == 1 {
+				shop.ItemIds = []string{}
+			} else {
+				shop.ItemIds = append(shop.ItemIds[:i], shop.ItemIds[i+1:]...)
+			}
+			break
+		}
+	}
+	// delete item itself
 	delete(shop.Items, item.ID)
 	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
 
@@ -313,12 +327,12 @@ func (bot *TipBot) displayShopItemHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 	shop, err := bot.getShop(ctx, shopView.ShopID)
-	item := shop.Items[shop.ItemIds[shopView.Page]]
-	// sanity check
-	if item.ID != c.Data {
-		log.Error("[shopItemSettingsHandler] item id mismatch")
-		return
-	}
+	// item := shop.Items[shop.ItemIds[shopView.Page]]
+	// // sanity check
+	// if item.ID != c.Data {
+	// 	log.Error("[shopItemSettingsHandler] item id mismatch")
+	// 	return
+	// }
 	bot.displayShopItem(ctx, c.Message, shop)
 }
 
@@ -360,19 +374,21 @@ func (bot *TipBot) shopPrevItemButtonHandler(ctx context.Context, c *tb.Callback
 }
 
 func (bot *TipBot) getItemTitle(ctx context.Context, item *ShopItem) string {
+	caption := ""
 	if len(item.Title) > 0 {
-		item.TbPhoto.Caption = fmt.Sprintf("%s", item.Title)
+		caption = fmt.Sprintf("%s", item.Title)
 	}
 	if len(item.FileIDs) > 0 {
-		if len(item.TbPhoto.Caption) > 0 {
-			item.TbPhoto.Caption += " "
+		if len(caption) > 0 {
+			caption += " "
 		}
-		item.TbPhoto.Caption += fmt.Sprintf("(%d Files)", len(item.FileIDs))
+		caption += fmt.Sprintf("(%d Files)", len(item.FileIDs))
 	}
 	if item.Price > 0 {
-		item.TbPhoto.Caption += fmt.Sprintf("\n\n💸 Price: %d sat", item.Price)
+		caption += fmt.Sprintf("\n\n💸 Price: %d sat", item.Price)
 	}
-	return item.TbPhoto.Caption
+	// item.TbPhoto.Caption = caption
+	return caption
 }
 
 // displayShopItem renders the current item in the shopView
@@ -389,49 +405,52 @@ func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Sho
 	if shopView.Page >= len(shop.Items) {
 		shopView.Page = len(shop.Items) - 1
 	}
-	item := shop.Items[shop.ItemIds[shopView.Page]]
-	item.TbPhoto.Caption = bot.getItemTitle(ctx, &item)
 
-	// if len(item.Title) > 0 {
-	// 	item.TbPhoto.Caption = fmt.Sprintf("%s", item.Title)
-	// }
-	// if len(item.FileIDs) > 0 {
-	// 	if len(item.TbPhoto.Caption) > 0 {
-	// 		item.TbPhoto.Caption += " "
-	// 	}
-	// 	item.TbPhoto.Caption += fmt.Sprintf("(%d Files)", len(item.FileIDs))
-	// }
-	// if item.Price > 0 {
-	// 	item.TbPhoto.Caption += fmt.Sprintf("\n\n💸 Price: %d sat", item.Price)
-	// }
-	var msg *tb.Message
+	if len(shop.Items) == 0 {
+		no_items_message := "There are no items in this shop yet."
+		if len(shopView.Message.Text) > 0 {
+			shopView.Message = bot.tryEditMessage(shopView.Message, no_items_message, bot.shopMenu(ctx, shop, &ShopItem{}))
+		} else {
+			bot.tryDeleteMessage(shopView.Message)
+			shopView.Message = bot.trySendMessage(shopView.Message.Chat, no_items_message, bot.shopMenu(ctx, shop, &ShopItem{}))
+		}
+		shopView.Page = 0
+		return shopView.Message
+	}
+
+	item := shop.Items[shop.ItemIds[shopView.Page]]
+	if item.TbPhoto != nil {
+		item.TbPhoto.Caption = bot.getItemTitle(ctx, &item)
+	}
+
+	// var msg *tb.Message
 	if shopView.Message != nil {
 		if item.TbPhoto != nil {
 			if shopView.Message.Photo != nil {
 				// can only edit photo messages with another photo
-				msg = bot.tryEditMessage(shopView.Message, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
+				shopView.Message = bot.tryEditMessage(shopView.Message, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
 			} else {
 				// if editing failes
 				bot.tryDeleteMessage(shopView.Message)
-				msg = bot.trySendMessage(shopView.Message.Chat, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
+				shopView.Message = bot.trySendMessage(shopView.Message.Chat, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
 			}
 		} else if item.Title != "" {
-			msg = bot.tryEditMessage(shopView.Message, item.Title, bot.shopMenu(ctx, shop, &item))
-			if msg == nil {
-				msg = bot.trySendMessage(shopView.Message.Chat, item.Title, bot.shopMenu(ctx, shop, &item))
+			shopView.Message = bot.tryEditMessage(shopView.Message, item.Title, bot.shopMenu(ctx, shop, &item))
+			if shopView.Message == nil {
+				shopView.Message = bot.trySendMessage(shopView.Message.Chat, item.Title, bot.shopMenu(ctx, shop, &item))
 			}
 		}
 	} else {
 		if m != nil && m.Chat != nil {
-			msg = bot.trySendMessage(m.Chat, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
+			shopView.Message = bot.trySendMessage(m.Chat, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
 		} else {
-			msg = bot.trySendMessage(user.Telegram, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
+			shopView.Message = bot.trySendMessage(user.Telegram, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
 		}
 		// shopView.Page = 0
 	}
-	shopView.Message = msg
+	// shopView.Message = msg
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
-	return msg
+	return shopView.Message
 }
 
 // shopHandler is invoked when the user enters /shop
@@ -465,15 +484,16 @@ func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) {
 		ShopOwner: shopOwner,
 	}
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
-	shopMessage := &tb.Message{Chat: m.Chat}
-	if len(shop.ItemIds) > 0 {
-		// item := shop.Items[shop.ItemIds[shopView.Page]]
-		// shopMessage = bot.trySendMessage(m.Chat, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
-		shopMessage = bot.displayShopItem(ctx, m, shop)
-	} else {
-		shopMessage = bot.trySendMessage(m.Chat, "No items in shop.", bot.shopMenu(ctx, shop, &ShopItem{}))
-	}
-	shopView.Message = shopMessage
+	shopView.Message = bot.displayShopItem(ctx, m, shop)
+	// shopMessage := &tb.Message{Chat: m.Chat}
+	// if len(shop.ItemIds) > 0 {
+	// 	// item := shop.Items[shop.ItemIds[shopView.Page]]
+	// 	// shopMessage = bot.trySendMessage(m.Chat, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
+	// 	shopMessage = bot.displayShopItem(ctx, m, shop)
+	// } else {
+	// 	shopMessage = bot.trySendMessage(m.Chat, "No items in shop.", bot.shopMenu(ctx, shop, &ShopItem{}))
+	// }
+	// shopView.Message = shopMessage
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 	return
 }
@@ -566,15 +586,18 @@ func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) {
 	item.Title = m.Caption
 	shop.Items[item.ID] = item
 	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
+
 	bot.tryDeleteMessage(m)
 	bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("✅ Image added."))
 	ResetUserState(user, bot)
 	time.Sleep(time.Duration(2) * time.Second)
 	bot.shopViewDeleteAllStatusMsgs(ctx, user)
+
 	shopView, err := bot.getUserShopview(ctx, user)
 	shopView.Page = len(shop.Items) - 1
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 	bot.displayShopItem(ctx, shopView.Message, shop)
+
 	log.Infof("[🛍 shop] %s added an item %s:%s.", GetUserStr(user.Telegram), shop.ID, item.ID)
 }
 
@@ -687,7 +710,9 @@ func (bot *TipBot) shopGetItemFilesHandler(ctx context.Context, c *tb.Callback) 
 	if item.Price <= 0 {
 		bot.shopSendItemFilesToUser(ctx, user, itemID)
 	} else {
-		item.TbPhoto.Caption = bot.getItemTitle(ctx, &item)
+		if item.TbPhoto != nil {
+			item.TbPhoto.Caption = bot.getItemTitle(ctx, &item)
+		}
 		bot.tryEditMessage(shopView.Message, item.TbPhoto, bot.shopItemConfirmBuyMenu(ctx, shop, &item))
 	}
 
@@ -1138,13 +1163,14 @@ func (bot *TipBot) shopSelect(ctx context.Context, c *tb.Callback) {
 	shopView.Page = 0
 	shopView.ShopID = shop.ID
 
-	var shopMessage *tb.Message
-	if len(shop.ItemIds) > 0 {
-		bot.tryDeleteMessage(c.Message)
-		shopMessage = bot.displayShopItem(ctx, c.Message, shop)
-	} else {
-		shopMessage = bot.tryEditMessage(c.Message, "There are no items in this shop yet.", bot.shopMenu(ctx, shop, &ShopItem{}))
-	}
+	// var shopMessage *tb.Message
+	shopMessage := bot.displayShopItem(ctx, c.Message, shop)
+	// if len(shop.ItemIds) > 0 {
+	// 	bot.tryDeleteMessage(c.Message)
+	// 	shopMessage = bot.displayShopItem(ctx, c.Message, shop)
+	// } else {
+	// 	shopMessage = bot.tryEditMessage(c.Message, "There are no items in this shop yet.", bot.shopMenu(ctx, shop, &ShopItem{}))
+	// }
 	shopView.Message = shopMessage
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 	log.Infof("[🛍 shop] %s entered shop %s.", GetUserStr(user.Telegram), shop.ID)
