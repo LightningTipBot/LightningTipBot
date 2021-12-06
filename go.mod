@@ -21,7 +21,6 @@ require (
 	golang.org/x/text v0.3.5
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	gopkg.in/lightningtipbot/telebot.v2 v2.4.2-0.20211201074627-babf9f2cc955
-	gopkg.in/tucnak/telebot.v2 v2.4.1
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.21.12
 )

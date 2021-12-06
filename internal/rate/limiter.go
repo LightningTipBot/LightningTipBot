@@ -2,11 +2,12 @@ package rate
 
 import (
 	"context"
-	"github.com/sethvargo/go-limiter"
-	"github.com/sethvargo/go-limiter/memorystore"
-	tb "gopkg.in/tucnak/telebot.v2"
 	"strconv"
 	"time"
+
+	"github.com/sethvargo/go-limiter"
+	"github.com/sethvargo/go-limiter/memorystore"
+	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
 type Limiter struct {
@@ -16,12 +17,12 @@ type Limiter struct {
 
 // NewLimiter creates both chat and global rate limiters.
 func NewLimiter() *Limiter {
-	chatRateLimiter, err := memorystore.New(&memorystore.Config{Interval: time.Minute, Tokens: 20})
+	chatRateLimiter, err := memorystore.New(&memorystore.Config{Interval: time.Minute, Tokens: 20, SweepMinTTL: time.Minute})
 	if err != nil {
 		panic(err)
 	}
 
-	globalLimiter, err := memorystore.New(&memorystore.Config{Interval: time.Second, Tokens: 30})
+	globalLimiter, err := memorystore.New(&memorystore.Config{Interval: time.Second, Tokens: 30, SweepMinTTL: 10 * time.Second})
 	if err != nil {
 		panic(err)
 	}
@@ -48,15 +49,15 @@ func CheckLimit(to interface{}, limiter *Limiter) {
 		}
 	}
 	switch to.(type) {
+	case *tb.Chat:
+		checkChatLimiter(strconv.FormatInt(to.(*tb.Chat).ID, 10))
 	case *tb.User:
-		checkGlobalLimiter()
+		checkChatLimiter(strconv.FormatInt(to.(*tb.User).ID, 10))
 	case tb.Recipient:
 		checkChatLimiter(to.(tb.Recipient).Recipient())
 	case *tb.Message:
 		checkChatLimiter(strconv.FormatInt(to.(*tb.Message).Chat.ID, 10))
-	case *tb.Chat:
-		checkChatLimiter(strconv.FormatInt(to.(*tb.Chat).ID, 10))
 	default:
-		return
+		checkGlobalLimiter()
 	}
 }
