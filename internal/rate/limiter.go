@@ -39,7 +39,7 @@ func CheckLimit(to interface{}, limiter *Limiter) {
 		time.Sleep(time.Second)
 		CheckLimit(to, limiter)
 	}
-	checkChatLimiter := func(id string) {
+	checkIdLimiter := func(id string) {
 		log.Printf("[limiter] checking chat limiter for %s", id)
 		if !isAllowed(limiter.ChatID, id) {
 			log.Printf("[limiter] rate limit reached")
@@ -67,5 +67,5 @@ func CheckLimit(to interface{}, limiter *Limiter) {
 			id = strconv.FormatInt(to.(*tb.Message).Chat.ID, 10)
 		}
 	}
-	checkChatLimiter(id)
+	checkIdLimiter(id)
 }
