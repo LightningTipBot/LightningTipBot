@@ -32,7 +32,7 @@ func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...i
 }
 
 func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...interface{}) (msg *tb.Message) {
-	if !allowedToPerformAction(bot, msg, isAdminAndCanEdit) {
+	if !allowedToPerformAction(bot, to, isAdminAndCanEdit) {
 		return
 	}
 	var err error
@@ -63,7 +63,7 @@ func allowedToPerformAction(bot TipBot, editable tb.Editable, action func(member
 	switch editable.(type) {
 	case *tb.Message:
 		message := editable.(*tb.Message)
-		if message.Sender == bot.Telegram.Me {
+		if message.Sender.ID == bot.Telegram.Me.ID {
 			break
 		}
 		chat := message.Chat
@@ -100,7 +100,7 @@ func isAdminAndCanDelete(members []tb.ChatMember, me *tb.User) bool {
 func isAdminAndCanEdit(members []tb.ChatMember, me *tb.User) bool {
 	for _, admin := range members {
 		if admin.User.ID == me.ID {
-			return admin.CanEditMessages
+			return true
 		}
 	}
 	return false
