@@ -86,6 +86,7 @@ func allowedToPerformAction(bot TipBot, editable tb.Editable, action func(member
 	return true
 }
 
+// isAdminAndCanDelete will check if me is in members list and allowed to delete messages
 func isAdminAndCanDelete(members []tb.ChatMember, me *tb.User) bool {
 	for _, admin := range members {
 		if admin.User.ID == me.ID {
@@ -95,6 +96,7 @@ func isAdminAndCanDelete(members []tb.ChatMember, me *tb.User) bool {
 	return false
 }
 
+// isAdminAndCanEdit will check if me is in members list and allowed to edit messages
 func isAdminAndCanEdit(members []tb.ChatMember, me *tb.User) bool {
 	for _, admin := range members {
 		if admin.User.ID == me.ID {
