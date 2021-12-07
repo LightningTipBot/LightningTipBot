@@ -13,6 +13,7 @@ type handlerQueryInterceptor struct {
 	handler QueryFuncHandler
 	before  QueryChain
 	after   QueryChain
+	onDefer QueryChain
 }
 type QueryChain []Func
 type QueryInterceptOption func(*handlerQueryInterceptor)
@@ -25,6 +26,11 @@ func WithBeforeQuery(chain ...Func) QueryInterceptOption {
 func WithAfterQuery(chain ...Func) QueryInterceptOption {
 	return func(a *handlerQueryInterceptor) {
 		a.after = chain
+	}
+}
+func WithDeferQuery(chain ...Func) QueryInterceptOption {
+	return func(a *handlerQueryInterceptor) {
+		a.onDefer = chain
 	}
 }
 
@@ -49,14 +55,16 @@ func HandlerWithQuery(handler QueryFuncHandler, option ...QueryInterceptOption) 
 	for _, opt := range option {
 		opt(hm)
 	}
-	return func(message *tb.Query) {
-		ctx, err := interceptQuery(context.Background(), message, hm.before)
+	return func(query *tb.Query) {
+		ctx := context.Background()
+		defer interceptQuery(ctx, query, hm.onDefer)
+		ctx, err := interceptQuery(context.Background(), query, hm.before)
 		if err != nil {
 			log.Traceln(err)
 			return
 		}
-		hm.handler(ctx, message)
-		_, err = interceptQuery(ctx, message, hm.after)
+		hm.handler(ctx, query)
+		_, err = interceptQuery(ctx, query, hm.after)
 		if err != nil {
 			log.Traceln(err)
 			return

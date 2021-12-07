@@ -31,33 +31,40 @@ func (bot TipBot) registerTelegramHandlers() {
 func getDefaultBeforeInterceptor(bot TipBot) []intercept.Func {
 	return []intercept.Func{bot.lockInterceptor, bot.localizerInterceptor}
 }
-func getDefaultAfterInterceptor(bot TipBot) []intercept.Func {
+func getDefaultDeferInterceptor(bot TipBot) []intercept.Func {
 	return []intercept.Func{bot.unlockInterceptor}
+}
+func getDefaultAfterInterceptor(bot TipBot) []intercept.Func {
+	return []intercept.Func{}
 }
 
 // registerHandlerWithInterceptor will register a handler with all the predefined interceptors, based on the interceptor type
 func (bot TipBot) registerHandlerWithInterceptor(h Handler) {
 	h.Interceptor.Before = append(getDefaultBeforeInterceptor(bot), h.Interceptor.Before...)
 	h.Interceptor.After = append(h.Interceptor.After, getDefaultAfterInterceptor(bot)...)
+	h.Interceptor.OnDefer = append(h.Interceptor.OnDefer, getDefaultDeferInterceptor(bot)...)
 
 	switch h.Interceptor.Type {
 	case MessageInterceptor:
 		for _, endpoint := range h.Endpoints {
 			bot.handle(endpoint, intercept.HandlerWithMessage(h.Handler.(func(ctx context.Context, query *tb.Message)),
 				intercept.WithBeforeMessage(h.Interceptor.Before...),
-				intercept.WithAfterMessage(h.Interceptor.After...)))
+				intercept.WithAfterMessage(h.Interceptor.After...),
+				intercept.WithDeferMessage(h.Interceptor.OnDefer...)))
 		}
 	case QueryInterceptor:
 		for _, endpoint := range h.Endpoints {
 			bot.handle(endpoint, intercept.HandlerWithQuery(h.Handler.(func(ctx context.Context, query *tb.Query)),
 				intercept.WithBeforeQuery(h.Interceptor.Before...),
-				intercept.WithAfterQuery(h.Interceptor.After...)))
+				intercept.WithAfterQuery(h.Interceptor.After...),
+				intercept.WithDeferQuery(h.Interceptor.OnDefer...)))
 		}
 	case CallbackInterceptor:
 		for _, endpoint := range h.Endpoints {
 			bot.handle(endpoint, intercept.HandlerWithCallback(h.Handler.(func(ctx context.Context, callback *tb.Callback)),
 				intercept.WithBeforeCallback(h.Interceptor.Before...),
-				intercept.WithAfterCallback(h.Interceptor.After...)))
+				intercept.WithAfterCallback(h.Interceptor.After...),
+				intercept.WithDeferCallback(h.Interceptor.OnDefer...)))
 		}
 	}
 }

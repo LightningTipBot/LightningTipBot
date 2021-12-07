@@ -16,6 +16,7 @@ type handlerMessageInterceptor struct {
 	handler MessageFuncHandler
 	before  MessageChain
 	after   MessageChain
+	onDefer MessageChain
 }
 type MessageChain []Func
 type MessageInterceptOption func(*handlerMessageInterceptor)
@@ -28,6 +29,11 @@ func WithBeforeMessage(chain ...Func) MessageInterceptOption {
 func WithAfterMessage(chain ...Func) MessageInterceptOption {
 	return func(a *handlerMessageInterceptor) {
 		a.after = chain
+	}
+}
+func WithDeferMessage(chain ...Func) MessageInterceptOption {
+	return func(a *handlerMessageInterceptor) {
+		a.onDefer = chain
 	}
 }
 
@@ -54,7 +60,9 @@ func HandlerWithMessage(handler MessageFuncHandler, option ...MessageInterceptOp
 		opt(hm)
 	}
 	return func(message *tb.Message) {
-		ctx, err := interceptMessage(context.Background(), message, hm.before)
+		ctx := context.Background()
+		defer interceptMessage(ctx, message, hm.onDefer)
+		ctx, err := interceptMessage(ctx, message, hm.before)
 		if err != nil {
 			log.Traceln(err)
 			return

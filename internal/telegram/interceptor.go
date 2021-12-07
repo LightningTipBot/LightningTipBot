@@ -29,9 +29,10 @@ func init() {
 var invalidTypeError = fmt.Errorf("invalid type")
 
 type Interceptor struct {
-	Type   InterceptorType
-	Before []intercept.Func
-	After  []intercept.Func
+	Type    InterceptorType
+	Before  []intercept.Func
+	After   []intercept.Func
+	OnDefer []intercept.Func
 }
 type HandlerMutex map[int64]*sync.Mutex
 

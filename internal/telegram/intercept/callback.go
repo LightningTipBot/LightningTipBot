@@ -13,6 +13,7 @@ type handlerCallbackInterceptor struct {
 	handler CallbackFuncHandler
 	before  CallbackChain
 	after   CallbackChain
+	onDefer CallbackChain
 }
 type CallbackChain []Func
 type CallbackInterceptOption func(*handlerCallbackInterceptor)
@@ -25,6 +26,11 @@ func WithBeforeCallback(chain ...Func) CallbackInterceptOption {
 func WithAfterCallback(chain ...Func) CallbackInterceptOption {
 	return func(a *handlerCallbackInterceptor) {
 		a.after = chain
+	}
+}
+func WithDeferCallback(chain ...Func) CallbackInterceptOption {
+	return func(a *handlerCallbackInterceptor) {
+		a.onDefer = chain
 	}
 }
 
@@ -50,7 +56,9 @@ func HandlerWithCallback(handler CallbackFuncHandler, option ...CallbackIntercep
 		opt(hm)
 	}
 	return func(c *tb.Callback) {
-		ctx, err := interceptCallback(context.Background(), c, hm.before)
+		ctx := context.Background()
+		defer interceptCallback(ctx, c, hm.onDefer)
+		ctx, err := interceptCallback(ctx, c, hm.before)
 		if err != nil {
 			log.Traceln(err)
 			return
