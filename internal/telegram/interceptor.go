@@ -79,10 +79,6 @@ func (bot TipBot) requireUserInterceptor(ctx context.Context, i interface{}) (co
 	case *tb.Query:
 		user, err = GetUser(&i.(*tb.Query).From, bot)
 	case *tb.Callback:
-		// WHAT DOES THIS UGLY HACK DO??!?
-		c := i.(*tb.Callback)
-		m := *c.Message
-		m.Sender = c.Sender
 		user, err = GetUser(i.(*tb.Callback).Sender, bot)
 	case *tb.Message:
 		user, err = GetUser(i.(*tb.Message).Sender, bot)
