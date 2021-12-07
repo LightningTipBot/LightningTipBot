@@ -28,25 +28,32 @@ func (bot TipBot) registerTelegramHandlers() {
 	})
 }
 
+func getDefaultBeforeInterceptor(bot TipBot) []intercept.Func {
+	return []intercept.Func{bot.localizerInterceptor}
+}
+func getDefaultAfterInterceptor(bot TipBot) []intercept.Func {
+	return []intercept.Func{bot.unlockInterceptor}
+}
+
 // registerHandlerWithInterceptor will register a handler with all the predefined interceptors, based on the interceptor type
 func (bot TipBot) registerHandlerWithInterceptor(h Handler) {
+	h.Interceptor.Before = append(h.Interceptor.Before, getDefaultBeforeInterceptor(bot)...)
+	h.Interceptor.After = append(h.Interceptor.Before, getDefaultAfterInterceptor(bot)...)
+
 	switch h.Interceptor.Type {
 	case MessageInterceptor:
-		h.Interceptor.Before = append(h.Interceptor.Before, bot.localizerInterceptor)
 		for _, endpoint := range h.Endpoints {
 			bot.handle(endpoint, intercept.HandlerWithMessage(h.Handler.(func(ctx context.Context, query *tb.Message)),
 				intercept.WithBeforeMessage(h.Interceptor.Before...),
 				intercept.WithAfterMessage(h.Interceptor.After...)))
 		}
 	case QueryInterceptor:
-		h.Interceptor.Before = append(h.Interceptor.Before, bot.localizerInterceptor)
 		for _, endpoint := range h.Endpoints {
 			bot.handle(endpoint, intercept.HandlerWithQuery(h.Handler.(func(ctx context.Context, query *tb.Query)),
 				intercept.WithBeforeQuery(h.Interceptor.Before...),
 				intercept.WithAfterQuery(h.Interceptor.After...)))
 		}
 	case CallbackInterceptor:
-		h.Interceptor.Before = append(h.Interceptor.Before, bot.localizerInterceptor)
 		for _, endpoint := range h.Endpoints {
 			bot.handle(endpoint, intercept.HandlerWithCallback(h.Handler.(func(ctx context.Context, callback *tb.Callback)),
 				intercept.WithBeforeCallback(h.Interceptor.Before...),

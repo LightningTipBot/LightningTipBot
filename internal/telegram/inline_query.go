@@ -95,6 +95,8 @@ func (bot TipBot) inlineQueryReplyWithError(q *tb.Query, message string, help st
 	}
 }
 
+// anyChosenInlineHandler will load any inline object from cache and store into bunt.
+// this is used to decrease bunt db write ops.
 func (bot TipBot) anyChosenInlineHandler(q *tb.ChosenInlineResult) {
 	// load inline object from cache
 	inlineObject, err := bot.Cache.Get(q.ResultID)
