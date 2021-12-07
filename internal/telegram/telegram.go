@@ -98,13 +98,3 @@ func isAdminAndCanDelete(members []tb.ChatMember, me *tb.User) bool {
 	}
 	return false
 }
-
-// isAdminAndCanEdit will check if me is in members list and allowed to edit messages
-func isAdminAndCanEdit(members []tb.ChatMember, me *tb.User) bool {
-	for _, admin := range members {
-		if admin.User.ID == me.ID {
-			return true
-		}
-	}
-	return false
-}
