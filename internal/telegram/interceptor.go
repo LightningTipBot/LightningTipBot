@@ -38,15 +38,13 @@ type HandlerMutex map[int64]*sync.Mutex
 var handlerUserMutex HandlerMutex
 
 func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
-	user := LoadUser(ctx)
+	user := getTelegramUserFromInterface(i)
 	if user != nil {
-		handlerUserMutex[user.Telegram.ID].Unlock()
+		handlerUserMutex[user.ID].Unlock()
 	}
 	return ctx, nil
 }
-func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
-	var user *tb.User
-	var err error
+func getTelegramUserFromInterface(i interface{}) (user *tb.User) {
 	switch i.(type) {
 	case *tb.Query:
 		user = &i.(*tb.Query).From
@@ -55,12 +53,17 @@ func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.C
 	case *tb.Message:
 		user = i.(*tb.Message).Sender
 	}
+	return
+}
+func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
+
+	user := getTelegramUserFromInterface(i)
 	if user != nil {
 		if handlerUserMutex[user.ID] == nil {
 			handlerUserMutex[user.ID] = &sync.Mutex{}
 		}
 		handlerUserMutex[user.ID].Lock()
-		return ctx, err
+		return ctx, nil
 	}
 	return nil, invalidTypeError
 }
