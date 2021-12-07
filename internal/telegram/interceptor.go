@@ -44,6 +44,8 @@ func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context
 	}
 	return ctx, nil
 }
+
+// user is here a tb.User
 func getTelegramUserFromInterface(i interface{}) (user *tb.User) {
 	switch i.(type) {
 	case *tb.Query:
@@ -69,19 +71,23 @@ func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.C
 }
 
 // requireUserInterceptor will return an error if user is not found
+// user is here an lnbits.User
 func (bot TipBot) requireUserInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
+	var user *lnbits.User
+	var err error
 	switch i.(type) {
 	case *tb.Query:
-		user, err := GetUser(&i.(*tb.Query).From, bot)
-		return context.WithValue(ctx, "user", user), err
+		user, err = GetUser(&i.(*tb.Query).From, bot)
 	case *tb.Callback:
+		// WHAT DOES THIS UGLY HACK DO??!?
 		c := i.(*tb.Callback)
 		m := *c.Message
 		m.Sender = c.Sender
-		user, err := GetUser(i.(*tb.Callback).Sender, bot)
-		return context.WithValue(ctx, "user", user), err
+		user, err = GetUser(i.(*tb.Callback).Sender, bot)
 	case *tb.Message:
-		user, err := GetUser(i.(*tb.Message).Sender, bot)
+		user, err = GetUser(i.(*tb.Message).Sender, bot)
+	}
+	if user != nil {
 		return context.WithValue(ctx, "user", user), err
 	}
 	return nil, invalidTypeError
