@@ -37,7 +37,7 @@ func getDefaultAfterInterceptor(bot TipBot) []intercept.Func {
 
 // registerHandlerWithInterceptor will register a handler with all the predefined interceptors, based on the interceptor type
 func (bot TipBot) registerHandlerWithInterceptor(h Handler) {
-	h.Interceptor.Before = append(h.Interceptor.Before, getDefaultBeforeInterceptor(bot)...)
+	h.Interceptor.Before = append(getDefaultBeforeInterceptor(bot), h.Interceptor.Before...)
 	h.Interceptor.After = append(h.Interceptor.After, getDefaultAfterInterceptor(bot)...)
 
 	switch h.Interceptor.Type {
