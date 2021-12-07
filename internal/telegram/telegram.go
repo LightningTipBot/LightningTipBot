@@ -36,9 +36,6 @@ func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...i
 }
 
 func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...interface{}) (msg *tb.Message) {
-	if !allowedToPerformAction(bot, to, isAdminAndCanEdit) {
-		return
-	}
 	rate.CheckLimit(to)
 	var err error
 	msg, err = bot.Telegram.Edit(to, what, options...)
