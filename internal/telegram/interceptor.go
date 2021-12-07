@@ -74,11 +74,15 @@ func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.C
 // user is here an lnbits.User
 func (bot TipBot) requireUserInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	var user *lnbits.User
-	user, err := GetUser(getTelegramUserFromInterface(i), bot)
-	if user != nil {
-		return context.WithValue(ctx, "user", user), err
+	var err error
+	u := getTelegramUserFromInterface(i)
+	if u != nil {
+		user, err = GetUser(u, bot)
+		if user != nil {
+			return context.WithValue(ctx, "user", user), err
+		}
 	}
-	return nil, err
+	return nil, invalidTypeError
 }
 
 func (bot TipBot) loadUserInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
