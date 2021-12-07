@@ -46,7 +46,6 @@ func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context
 }
 
 func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
-
 	user := getTelegramUserFromInterface(i)
 	if user != nil {
 		if handlerUserMutex[user.ID] == nil {
