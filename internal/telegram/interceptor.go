@@ -45,18 +45,6 @@ func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context
 	return ctx, nil
 }
 
-// user is here a tb.User
-func getTelegramUserFromInterface(i interface{}) (user *tb.User) {
-	switch i.(type) {
-	case *tb.Query:
-		user = &i.(*tb.Query).From
-	case *tb.Callback:
-		user = i.(*tb.Callback).Sender
-	case *tb.Message:
-		user = i.(*tb.Message).Sender
-	}
-	return
-}
 func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 
 	user := getTelegramUserFromInterface(i)
@@ -88,6 +76,19 @@ func (bot TipBot) requireUserInterceptor(ctx context.Context, i interface{}) (co
 func (bot TipBot) loadUserInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	ctx, _ = bot.requireUserInterceptor(ctx, i)
 	return ctx, nil
+}
+
+// getTelegramUserFromInterface returns the tb user based in interface type
+func getTelegramUserFromInterface(i interface{}) (user *tb.User) {
+	switch i.(type) {
+	case *tb.Query:
+		user = &i.(*tb.Query).From
+	case *tb.Callback:
+		user = i.(*tb.Callback).Sender
+	case *tb.Message:
+		user = i.(*tb.Message).Sender
+	}
+	return
 }
 
 // loadReplyToInterceptor Loading the Telegram user with message intercept
