@@ -47,8 +47,11 @@ func (bot *TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
 
 	// send the link to the user
 	linkmsg := bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lndhubUrl)})
-	time.Sleep(time.Second * 60)
-	bot.tryDeleteMessage(linkmsg)
+
+	go func() {
+		time.Sleep(time.Second * 5)
+		bot.tryDeleteMessage(linkmsg)
+	}()
 	bot.trySendMessage(m.Sender, Translate(ctx, "linkHiddenMessage"))
 	// auto delete the message
 	// NewMessage(linkmsg, WithDuration(time.Second*time.Duration(internal.Configuration.Telegram.MessageDisposeDuration), bot))

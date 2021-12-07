@@ -75,13 +75,13 @@ func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error
 	}
 	// to avoid race conditions, we block the call if there is
 	// already an active transaction by loop until InTransaction is false
-	ticker := time.NewTicker(time.Second * 3)
+	ticker := time.NewTicker(time.Second * 2)
 	for tx.InTransaction {
 		select {
 		case <-ticker.C:
 			return nil, fmt.Errorf("transaction timeout")
 		default:
-			time.Sleep(time.Duration(200) * time.Millisecond)
+			time.Sleep(time.Duration(500) * time.Millisecond)
 			err = db.Get(s)
 		}
 	}
