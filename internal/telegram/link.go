@@ -49,7 +49,7 @@ func (bot *TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
 	linkmsg := bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lndhubUrl)})
 
 	go func() {
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 60)
 		bot.tryDeleteMessage(linkmsg)
 	}()
 	bot.trySendMessage(m.Sender, Translate(ctx, "linkHiddenMessage"))
