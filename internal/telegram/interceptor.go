@@ -24,6 +24,7 @@ const (
 
 func init() {
 	handlerUserMutex = make(map[int64]*sync.Mutex)
+	handlerMapMutex = &sync.Mutex{}
 }
 
 var invalidTypeError = fmt.Errorf("invalid type")
@@ -36,12 +37,15 @@ type Interceptor struct {
 }
 type HandlerMutex map[int64]*sync.Mutex
 
+var handlerMapMutex *sync.Mutex
 var handlerUserMutex HandlerMutex
 
 func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	user := getTelegramUserFromInterface(i)
 	if user != nil {
+		handlerMapMutex.Lock()
 		handlerUserMutex[user.ID].Unlock()
+		handlerMapMutex.Unlock()
 	}
 	return ctx, nil
 }
@@ -49,6 +53,8 @@ func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context
 func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	user := getTelegramUserFromInterface(i)
 	if user != nil {
+		handlerMapMutex.Lock()
+		defer handlerMapMutex.Unlock()
 		if handlerUserMutex[user.ID] == nil {
 			handlerUserMutex[user.ID] = &sync.Mutex{}
 		}
