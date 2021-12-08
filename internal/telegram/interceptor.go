@@ -23,7 +23,7 @@ const (
 )
 
 func init() {
-	handlerUserMutex = make(map[int64]*sync.Mutex)
+	handlerMutex = make(map[int64]*sync.Mutex)
 	handlerMapMutex = &sync.Mutex{}
 }
 
@@ -35,30 +35,34 @@ type Interceptor struct {
 	After   []intercept.Func
 	OnDefer []intercept.Func
 }
-type HandlerMutex map[int64]*sync.Mutex
 
+// handlerMapMutex to prevent concurrent map read / writes on HandlerMutex map
 var handlerMapMutex *sync.Mutex
-var handlerUserMutex HandlerMutex
 
+// handlerMutex map holds mutex for every telegram user. Mutex locket as first before interceptor and unlocked on defer intercept
+var handlerMutex map[int64]*sync.Mutex
+
+// unlockInterceptor invoked as onDefer interceptor
 func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	user := getTelegramUserFromInterface(i)
 	if user != nil {
 		handlerMapMutex.Lock()
-		handlerUserMutex[user.ID].Unlock()
+		handlerMutex[user.ID].Unlock()
 		handlerMapMutex.Unlock()
 	}
 	return ctx, nil
 }
 
+// lockInterceptor invoked as first before interceptor
 func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	user := getTelegramUserFromInterface(i)
 	if user != nil {
 		handlerMapMutex.Lock()
 		defer handlerMapMutex.Unlock()
-		if handlerUserMutex[user.ID] == nil {
-			handlerUserMutex[user.ID] = &sync.Mutex{}
+		if handlerMutex[user.ID] == nil {
+			handlerMutex[user.ID] = &sync.Mutex{}
 		}
-		handlerUserMutex[user.ID].Lock()
+		handlerMutex[user.ID].Lock()
 		return ctx, nil
 	}
 	return nil, invalidTypeError
