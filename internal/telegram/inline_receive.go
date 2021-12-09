@@ -26,7 +26,7 @@ var (
 type InlineReceive struct {
 	*transaction.Base
 	Message           string       `json:"inline_receive_message"`
-	Amount            int          `json:"inline_receive_amount"`
+	Amount            int64        `json:"inline_receive_amount"`
 	From              *lnbits.User `json:"inline_receive_from"`
 	To                *lnbits.User `json:"inline_receive_to"`
 	From_SpecificUser bool         `json:"from_specific_user"`

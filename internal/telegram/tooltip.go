@@ -26,7 +26,7 @@ const (
 
 type TipTooltip struct {
 	Message
-	TipAmount int        `json:"tip_amount"`
+	TipAmount int64      `json:"tip_amount"`
 	Ntips     int        `json:"ntips"`
 	LastTip   time.Time  `json:"last_tip"`
 	Tippers   []*tb.User `json:"tippers"`
@@ -36,7 +36,7 @@ const maxNamesInTipperMessage = 5
 
 type TipTooltipOption func(m *TipTooltip)
 
-func TipAmount(amount int) TipTooltipOption {
+func TipAmount(amount int64) TipTooltipOption {
 	return func(m *TipTooltip) {
 		m.TipAmount = amount
 	}
@@ -110,7 +110,7 @@ func tipTooltipExists(replyToId int, bot *TipBot) (bool, *TipTooltip) {
 }
 
 // tipTooltipHandler function to update the tooltip below a tipped message. either updates or creates initial tip tool tip
-func tipTooltipHandler(m *tb.Message, bot *TipBot, amount int, initializedWallet bool) (hasTip bool) {
+func tipTooltipHandler(m *tb.Message, bot *TipBot, amount int64, initializedWallet bool) (hasTip bool) {
 	// todo: this crashes if the tooltip message (maybe also the original tipped message) was deleted in the mean time!!! need to check for existence!
 	hasTip, ttt := tipTooltipExists(m.ReplyTo.ID, bot)
 	if hasTip {
@@ -144,7 +144,7 @@ func tipTooltipHandler(m *tb.Message, bot *TipBot, amount int, initializedWallet
 }
 
 // updateToolTip updates existing tip tool tip in Telegram
-func (ttt *TipTooltip) updateTooltip(bot *TipBot, user *tb.User, amount int, notInitializedWallet bool) error {
+func (ttt *TipTooltip) updateTooltip(bot *TipBot, user *tb.User, amount int64, notInitializedWallet bool) error {
 	ttt.TipAmount += amount
 	ttt.Ntips += 1
 	ttt.Tippers = appendUinqueUsersToSlice(ttt.Tippers, user)

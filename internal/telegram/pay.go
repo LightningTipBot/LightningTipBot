@@ -76,7 +76,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 		log.Errorln(errmsg)
 		return
 	}
-	amount := int(bolt11.MSatoshi / 1000)
+	amount := int64(bolt11.MSatoshi / 1000)
 
 	if amount <= 0 {
 		bot.trySendMessage(m.Sender, Translate(ctx, "invoiceNoAmountMessage"))

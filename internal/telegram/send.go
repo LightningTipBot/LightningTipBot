@@ -265,7 +265,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	fromUserStr := GetUserStr(from.Telegram)
 
 	transactionMemo := fmt.Sprintf("Send from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
-	t := NewTransaction(bot, from, to, int(amount), TransactionType("send"))
+	t := NewTransaction(bot, from, to, amount, TransactionType("send"))
 	t.Memo = transactionMemo
 
 	success, err := t.Send()

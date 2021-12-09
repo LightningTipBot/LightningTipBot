@@ -60,16 +60,16 @@ func appendUinqueUsersToSlice(slice []*tb.User, i *tb.User) []*tb.User {
 	return append(slice, i)
 }
 
-func (bot *TipBot) GetUserBalanceCached(user *lnbits.User) (amount int, err error) {
+func (bot *TipBot) GetUserBalanceCached(user *lnbits.User) (amount int64, err error) {
 	u, err := bot.Cache.Get(fmt.Sprintf("%s_balance", user.Name))
 	if err != nil {
 		return bot.GetUserBalance(user)
 	}
-	cachedBalance := u.(int)
+	cachedBalance := u.(int64)
 	return cachedBalance, nil
 }
 
-func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int, err error) {
+func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int64, err error) {
 	wallet, err := bot.Client.Info(*user.Wallet)
 	if err != nil {
 		errmsg := fmt.Sprintf("[GetUserBalance] Error: Couldn't fetch user %s's info from LNbits: %s", GetUserStr(user.Telegram), err.Error())
@@ -82,7 +82,7 @@ func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int, err error) {
 		return
 	}
 	// msat to sat
-	amount = int(wallet.Balance) / 1000
+	amount = int64(wallet.Balance) / 1000
 	log.Infof("[GetUserBalance] %s's balance: %d sat\n", GetUserStr(user.Telegram), amount)
 
 	// update user balance in cache

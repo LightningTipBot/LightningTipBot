@@ -23,7 +23,7 @@ type LnurlPayState struct {
 	From           *lnbits.User         `json:"from"`
 	LNURLPayParams lnurl.LNURLPayParams `json:"LNURLPayParams"`
 	LNURLPayValues lnurl.LNURLPayValues `json:"LNURLPayValues"`
-	Amount         int                  `json:"amount"`
+	Amount         int64                `json:"amount"`
 	Comment        string               `json:"comment"`
 	LanguageCode   string               `json:"languagecode"`
 }
@@ -151,7 +151,7 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) {
 	}
 	qs := callbackUrl.Query()
 	// add amount to query string
-	qs.Set("amount", strconv.Itoa(lnurlPayState.Amount)) // msat
+	qs.Set("amount", strconv.FormatInt(lnurlPayState.Amount, 10)) // msat
 	// add comment to query string
 	if len(lnurlPayState.Comment) > 0 {
 		qs.Set("comment", lnurlPayState.Comment)
@@ -192,7 +192,7 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) {
 	bot.payHandler(ctx, m)
 }
 
-func (bot *TipBot) sendToLightningAddress(ctx context.Context, m *tb.Message, address string, amount int) error {
+func (bot *TipBot) sendToLightningAddress(ctx context.Context, m *tb.Message, address string, amount int64) error {
 	split := strings.Split(address, "@")
 	if len(split) != 2 {
 		return fmt.Errorf("lightning address format wrong")

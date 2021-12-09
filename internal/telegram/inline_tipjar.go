@@ -27,9 +27,9 @@ var (
 type InlineTipjar struct {
 	*transaction.Base
 	Message       string         `json:"inline_tipjar_message"`
-	Amount        int            `json:"inline_tipjar_amount"`
-	GivenAmount   int            `json:"inline_tipjar_givenamount"`
-	PerUserAmount int            `json:"inline_tipjar_peruseramount"`
+	Amount        int64          `json:"inline_tipjar_amount"`
+	GivenAmount   int64          `json:"inline_tipjar_givenamount"`
+	PerUserAmount int64          `json:"inline_tipjar_peruseramount"`
 	To            *lnbits.User   `json:"inline_tipjar_to"`
 	From          []*lnbits.User `json:"inline_tipjar_from"`
 	Memo          string         `json:"inline_tipjar_memo"`
@@ -62,7 +62,7 @@ func (bot TipBot) createTipjar(ctx context.Context, text string, sender *tb.User
 	if perUserAmount < 1 || amount%perUserAmount != 0 {
 		return nil, errors.New(errors.InvalidAmountPerUserError, fmt.Errorf("invalid amount per user"))
 	}
-	nTotal := amount / perUserAmount
+	nTotal := int(amount / perUserAmount)
 	toUser := LoadUser(ctx)
 	// toUserStr := GetUserStr(sender)
 	// // check for memo in command

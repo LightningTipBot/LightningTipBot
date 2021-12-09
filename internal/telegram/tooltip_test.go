@@ -45,7 +45,7 @@ func Test_getTippersString(t *testing.T) {
 func TestMessage_getTooltipMessage(t *testing.T) {
 	type fields struct {
 		Message   Message
-		TipAmount int
+		TipAmount int64
 		Ntips     int
 		LastTip   time.Time
 		Tippers   []*tb.User

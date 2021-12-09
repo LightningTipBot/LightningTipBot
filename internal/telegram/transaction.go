@@ -21,7 +21,7 @@ type Transaction struct {
 	FromUser     string            `json:"from_user"`
 	ToUser       string            `json:"to_user"`
 	Type         string            `json:"type"`
-	Amount       int               `json:"amount"`
+	Amount       int64             `json:"amount"`
 	ChatID       int64             `json:"chat_id"`
 	ChatName     string            `json:"chat_name"`
 	Memo         string            `json:"memo"`
@@ -48,7 +48,7 @@ func TransactionType(transactionType string) TransactionOption {
 	}
 }
 
-func NewTransaction(bot *TipBot, from *lnbits.User, to *lnbits.User, amount int, opts ...TransactionOption) *Transaction {
+func NewTransaction(bot *TipBot, from *lnbits.User, to *lnbits.User, amount int64, opts ...TransactionOption) *Transaction {
 	t := &Transaction{
 		Bot:      bot,
 		From:     from,
@@ -94,7 +94,7 @@ func (t *Transaction) Send() (success bool, err error) {
 	return success, err
 }
 
-func (t *Transaction) SendTransaction(bot *TipBot, from *lnbits.User, to *lnbits.User, amount int, memo string) (bool, error) {
+func (t *Transaction) SendTransaction(bot *TipBot, from *lnbits.User, to *lnbits.User, amount int64, memo string) (bool, error) {
 	fromUserStr := GetUserStr(from.Telegram)
 	toUserStr := GetUserStr(to.Telegram)
 

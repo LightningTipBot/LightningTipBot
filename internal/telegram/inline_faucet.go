@@ -28,9 +28,9 @@ var (
 type InlineFaucet struct {
 	*transaction.Base
 	Message         string         `json:"inline_faucet_message"`
-	Amount          int            `json:"inline_faucet_amount"`
-	RemainingAmount int            `json:"inline_faucet_remainingamount"`
-	PerUserAmount   int            `json:"inline_faucet_peruseramount"`
+	Amount          int64          `json:"inline_faucet_amount"`
+	RemainingAmount int64          `json:"inline_faucet_remainingamount"`
+	PerUserAmount   int64          `json:"inline_faucet_peruseramount"`
 	From            *lnbits.User   `json:"inline_faucet_from"`
 	To              []*lnbits.User `json:"inline_faucet_to"`
 	Memo            string         `json:"inline_faucet_memo"`
@@ -64,7 +64,7 @@ func (bot TipBot) createFaucet(ctx context.Context, text string, sender *tb.User
 	if perUserAmount < 1 || amount%perUserAmount != 0 {
 		return nil, errors.New(errors.InvalidAmountPerUserError, fmt.Errorf("invalid amount per user"))
 	}
-	nTotal := amount / perUserAmount
+	nTotal := int(amount / perUserAmount)
 	fromUser := LoadUser(ctx)
 	fromUserStr := GetUserStr(sender)
 	balance, err := bot.GetUserBalanceCached(fromUser)

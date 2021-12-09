@@ -24,7 +24,7 @@ func getArgumentFromCommand(input string, which int) (output string, err error) 
 	return output, nil
 }
 
-func decodeAmountFromCommand(input string) (amount int, err error) {
+func decodeAmountFromCommand(input string) (amount int64, err error) {
 	if len(strings.Split(input, " ")) < 2 {
 		errmsg := "message doesn't contain any amount"
 		// log.Errorln(errmsg)
@@ -34,14 +34,14 @@ func decodeAmountFromCommand(input string) (amount int, err error) {
 	return amount, err
 }
 
-func getAmount(input string) (amount int, err error) {
+func getAmount(input string) (amount int64, err error) {
 	// convert something like 1.2k into 1200
 	if strings.HasSuffix(strings.ToLower(input), "k") {
 		fmount, err := strconv.ParseFloat(strings.TrimSpace(input[:len(input)-1]), 64)
 		if err != nil {
 			return 0, err
 		}
-		amount = int(fmount * 1000)
+		amount = int64(fmount * 1000)
 		return amount, err
 	}
 
@@ -61,13 +61,13 @@ func getAmount(input string) (amount int, err error) {
 			if !(price.Price[currency] > 0) {
 				return 0, errors.New("price is zero")
 			}
-			amount = int(fmount / price.Price[currency] * float64(100_000_000))
+			amount = int64(fmount / price.Price[currency] * float64(100_000_000))
 			return amount, nil
 		}
 	}
 
 	// use plain integer as satoshis
-	amount, err = strconv.Atoi(input)
+	amount, err = strconv.ParseInt(input, 10, 64)
 	if err != nil {
 		return 0, err
 	}
@@ -145,7 +145,7 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 	}
 	// amount not in allowed range from LNURL
 	if EnterAmountStateData.AmountMin > 0 && EnterAmountStateData.AmountMax >= EnterAmountStateData.AmountMin && // this line checks whether min_max is set at all
-		(amount > int(EnterAmountStateData.AmountMax/1000) || amount < int(EnterAmountStateData.AmountMin/1000)) { // this line then checks whether the amount is in the range
+		(amount > int64(EnterAmountStateData.AmountMax/1000) || amount < int64(EnterAmountStateData.AmountMin/1000)) { // this line then checks whether the amount is in the range
 		err = fmt.Errorf("amount not in range")
 		log.Warnf("[enterAmountHandler] %s", err.Error())
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), EnterAmountStateData.AmountMin/1000, EnterAmountStateData.AmountMax/1000))

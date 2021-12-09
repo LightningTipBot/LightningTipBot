@@ -34,7 +34,7 @@ func GetMemoFromCommand(command string, fromWord int) string {
 	return memo
 }
 
-func MakeProgressbar(current int, total int) string {
+func MakeProgressbar(current int64, total int64) string {
 	MAX_BARS := 16
 	progress := math.Round((float64(current) / float64(total)) * float64(MAX_BARS))
 	progressbar := strings.Repeat("🟩", int(progress))
@@ -42,7 +42,7 @@ func MakeProgressbar(current int, total int) string {
 	return progressbar
 }
 
-func MakeTipjarbar(current int, total int) string {
+func MakeTipjarbar(current int64, total int64) string {
 	MAX_BARS := 16
 	progress := math.Round((float64(current) / float64(total)) * float64(MAX_BARS))
 	progressbar := strings.Repeat("🍯", int(progress))

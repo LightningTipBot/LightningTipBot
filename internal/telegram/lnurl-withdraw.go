@@ -30,7 +30,7 @@ type LnurlWithdrawState struct {
 	From                  *lnbits.User                `json:"from"`
 	LNURLWithdrawResponse lnurl.LNURLWithdrawResponse `json:"LNURLWithdrawResponse"`
 	LNURResponse          lnurl.LNURLResponse         `json:"LNURLResponse"`
-	Amount                int                         `json:"amount"`
+	Amount                int64                       `json:"amount"`
 	Comment               string                      `json:"comment"`
 	LanguageCode          string                      `json:"languagecode"`
 	Success               bool                        `json:"success"`
@@ -83,7 +83,7 @@ func (bot *TipBot) lnurlWithdrawHandler(ctx context.Context, m *tb.Message, with
 
 	// if no amount is entered, and if only one amount is possible, we use it
 	if amount_err != nil && LnurlWithdrawState.LNURLWithdrawResponse.MaxWithdrawable == LnurlWithdrawState.LNURLWithdrawResponse.MinWithdrawable {
-		amount = int(LnurlWithdrawState.LNURLWithdrawResponse.MaxWithdrawable / 1000)
+		amount = int64(LnurlWithdrawState.LNURLWithdrawResponse.MaxWithdrawable / 1000)
 		amount_err = nil
 	}
 
