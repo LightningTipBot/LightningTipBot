@@ -159,6 +159,11 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 
+	if user.ID == toUserDb.ID {
+		bot.trySendMessage(m.Sender, Translate(ctx, "sendYourselfMessage"))
+		return
+	}
+
 	// entire text of the inline object
 	confirmText := fmt.Sprintf(Translate(ctx, "confirmSendMessage"), str.MarkdownEscape(toUserStrMention), amount)
 	if len(sendMemo) > 0 {

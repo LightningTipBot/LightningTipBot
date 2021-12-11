@@ -200,6 +200,8 @@ func (bot *TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 			},
 		},
 	)
+
+	log.Infof("[/pay] Attempting %s's invoice %s (%d sat)", userStr, payData.ID, payData.Amount)
 	// pay invoice
 	invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoiceString}, bot.Client)
 	if err != nil {
@@ -225,7 +227,7 @@ func (bot *TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 		bot.trySendMessage(c.Sender, i18n.Translate(payData.LanguageCode, "invoicePaidMessage"))
 		bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(payData.LanguageCode, "invoicePublicPaidMessage"), userStr), &tb.ReplyMarkup{})
 	}
-	log.Printf("[⚡️ pay] User %s paid invoice %s (%d sat)", userStr, payData.ID, payData.Amount)
+	log.Infof("[⚡️ pay] User %s paid invoice %s (%d sat)", userStr, payData.ID, payData.Amount)
 	return
 }
 

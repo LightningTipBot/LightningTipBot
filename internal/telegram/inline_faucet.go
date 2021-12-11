@@ -184,7 +184,7 @@ func (bot TipBot) faucetHandler(ctx context.Context, m *tb.Message) {
 	ctx = bot.mapFaucetLanguage(ctx, m.Text)
 	inlineFaucet, err := bot.makeFaucet(ctx, m, false)
 	if err != nil {
-		log.Errorf("[faucet] %s", err)
+		log.Warnf("[faucet] %s", err.Error())
 		return
 	}
 	fromUserStr := GetUserStr(m.Sender)
@@ -273,7 +273,6 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		// check if user exists and create a wallet if not
 		_, exists := bot.UserExists(to.Telegram)
 		if !exists {
-			log.Infof("[faucet] User %s has no wallet.", toUserStr)
 			to, err = bot.CreateWalletForTelegramUser(to.Telegram)
 			if err != nil {
 				errmsg := fmt.Errorf("[faucet] Error: Could not create wallet for %s", toUserStr)
@@ -295,7 +294,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		if !success {
 			bot.trySendMessage(from.Telegram, Translate(ctx, "sendErrorMessage"))
 			errMsg := fmt.Sprintf("[faucet] Transaction failed: %s", err)
-			log.Errorln(errMsg)
+			log.Warnln(errMsg)
 			return
 		}
 
