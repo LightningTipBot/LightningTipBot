@@ -26,9 +26,9 @@ const (
 	TipTooltipKeyPattern        = "tip-tool-tip:*"
 )
 
-func createBunt() *storage.DB {
+func createBunt(file string) *storage.DB {
 	// create bunt database
-	bunt := storage.NewBunt(internal.Configuration.Database.BuntDbPath)
+	bunt := storage.NewBunt(file)
 	// create bunt database index for ascending (searching) TipTooltips
 	err := bunt.CreateIndex(MessageOrderedByReplyToFrom, TipTooltipKeyPattern, buntdb.IndexJSON(MessageOrderedByReplyToFrom))
 	if err != nil {

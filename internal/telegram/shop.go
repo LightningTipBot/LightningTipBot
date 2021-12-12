@@ -35,7 +35,7 @@ type ShopItem struct {
 	FileTypes    []string     `json:"fileTypes"`   // Telegram file type of the item files
 	Title        string       `json:"title"`       // Title of the item
 	Description  string       `json:"description"` // Description of the item
-	Price        int          `json:"price"`       // price of the item
+	Price        int64        `json:"price"`       // price of the item
 	NSold        int          `json:"nSold"`       // number of times item was sold
 	TbPhoto      *tb.Photo    `json:"tbPhoto"`     // Telegram photo object
 	LanguageCode string       `json:"languagecode"`
@@ -158,7 +158,7 @@ func (bot *TipBot) enterShopItemPriceHandler(ctx context.Context, m *tb.Message)
 		return
 	}
 
-	var amount int
+	var amount int64
 	if m.Text == "0" {
 		amount = 0
 	} else {
@@ -177,7 +177,7 @@ func (bot *TipBot) enterShopItemPriceHandler(ctx context.Context, m *tb.Message)
 	}
 	item.Price = amount
 	shop.Items[item.ID] = item
-	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
+	runtime.IgnoreError(shop.Set(shop, bot.ShopBunt))
 	bot.tryDeleteMessage(m)
 	bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("✅ Price set."))
 	ResetUserState(user, bot)
@@ -245,7 +245,7 @@ func (bot *TipBot) enterShopItemTitleHandler(ctx context.Context, m *tb.Message)
 	item.Title = m.Text
 	item.TbPhoto.Caption = m.Text
 	shop.Items[item.ID] = item
-	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
+	runtime.IgnoreError(shop.Set(shop, bot.ShopBunt))
 	bot.tryDeleteMessage(m)
 	bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("✅ Title set."))
 	ResetUserState(user, bot)
@@ -306,7 +306,7 @@ func (bot *TipBot) shopItemDeleteHandler(ctx context.Context, c *tb.Callback) {
 	}
 	// delete item itself
 	delete(shop.Items, item.ID)
-	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
+	runtime.IgnoreError(shop.Set(shop, bot.ShopBunt))
 
 	ResetUserState(user, bot)
 	bot.sendStatusMessage(ctx, c.Message.Chat, fmt.Sprintf("✅ Item deleted."))
@@ -537,8 +537,8 @@ func (bot *TipBot) addShopItem(ctx context.Context, shopId string) (*Shop, ShopI
 	if shop.Owner.Telegram.ID != user.Telegram.ID {
 		return shop, ShopItem{}, fmt.Errorf("not owner")
 	}
-	err = shop.Lock(shop, bot.Bunt)
-	defer shop.Release(shop, bot.Bunt)
+	err = shop.Lock(shop, bot.ShopBunt)
+	defer shop.Release(shop, bot.ShopBunt)
 
 	itemId := fmt.Sprintf("item-%s-%s", shop.ID, RandStringRunes(8))
 	item := ShopItem{
@@ -551,7 +551,7 @@ func (bot *TipBot) addShopItem(ctx context.Context, shopId string) (*Shop, ShopI
 	}
 	shop.Items[itemId] = item
 	shop.ItemIds = append(shop.ItemIds, itemId)
-	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
+	runtime.IgnoreError(shop.Set(shop, bot.ShopBunt))
 	return shop, shop.Items[itemId], nil
 }
 
@@ -580,12 +580,12 @@ func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) {
 	}
 
 	shop, item, err := bot.addShopItem(ctx, state_shop.ID)
-	// err = shop.Lock(shop, bot.Bunt)
-	// defer shop.Release(shop, bot.Bunt)
+	// err = shop.Lock(shop, bot.ShopBunt)
+	// defer shop.Release(shop, bot.ShopBunt)
 	item.TbPhoto = m.Photo
 	item.Title = m.Caption
 	shop.Items[item.ID] = item
-	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
+	runtime.IgnoreError(shop.Set(shop, bot.ShopBunt))
 
 	bot.tryDeleteMessage(m)
 	bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("✅ Image added."))
@@ -680,7 +680,7 @@ func (bot *TipBot) addItemFileHandler(ctx context.Context, m *tb.Message) {
 	}
 	shop.Items[item.ID] = item
 
-	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
+	runtime.IgnoreError(shop.Set(shop, bot.ShopBunt))
 	bot.tryDeleteMessage(m)
 	bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("✅ File added."))
 	time.Sleep(time.Duration(2) * time.Second)
@@ -761,7 +761,7 @@ func (bot *TipBot) shopConfirmBuyHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 	transactionMemo := fmt.Sprintf("Buy item %s (%d sat).", toUserStr, amount)
-	t := NewTransaction(bot, from, to, int(amount), TransactionType("shop"))
+	t := NewTransaction(bot, from, to, amount, TransactionType("shop"))
 	t.Memo = transactionMemo
 
 	success, err := t.Send()
@@ -1120,7 +1120,7 @@ func (bot *TipBot) enterShopsDescriptionHandler(ctx context.Context, m *tb.Messa
 		m.Text = m.Text[:SHOPS_DESCRIPTION_MAX_LENGTH]
 	}
 	shops.Description = m.Text
-	runtime.IgnoreError(shops.Set(shops, bot.Bunt))
+	runtime.IgnoreError(shops.Set(shops, bot.ShopBunt))
 	bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("✅ Description set."))
 	ResetUserState(user, bot)
 	time.Sleep(time.Duration(2) * time.Second)
@@ -1140,7 +1140,7 @@ func (bot *TipBot) shopsResetHandler(ctx context.Context, c *tb.Callback) {
 	if shops.Owner.Telegram.ID != c.Sender.ID {
 		return
 	}
-	runtime.IgnoreError(shops.Delete(shops, bot.Bunt))
+	runtime.IgnoreError(shops.Delete(shops, bot.ShopBunt))
 	bot.sendStatusMessage(ctx, c.Sender, fmt.Sprintf("✅ Shops reset."))
 	time.Sleep(time.Duration(2) * time.Second)
 	bot.shopViewDeleteAllStatusMsgs(ctx, user)
@@ -1195,10 +1195,10 @@ func (bot *TipBot) shopSelectDelete(ctx context.Context, c *tb.Callback) {
 			break
 		}
 	}
-	runtime.IgnoreError(shops.Set(shops, bot.Bunt))
+	runtime.IgnoreError(shops.Set(shops, bot.ShopBunt))
 
 	// then, delete shop
-	runtime.IgnoreError(shop.Delete(shop, bot.Bunt))
+	runtime.IgnoreError(shop.Delete(shop, bot.ShopBunt))
 
 	// then update buttons
 	bot.shopsDeleteShopBrowser(ctx, c)
@@ -1292,7 +1292,7 @@ func (bot *TipBot) enterShopTitleHandler(ctx context.Context, m *tb.Message) {
 		m.Text = m.Text[:SHOP_TITLE_MAX_LENGTH]
 	}
 	shop.Title = m.Text
-	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
+	runtime.IgnoreError(shop.Set(shop, bot.ShopBunt))
 	bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("✅ Shop added."))
 	ResetUserState(user, bot)
 	time.Sleep(time.Duration(2) * time.Second)

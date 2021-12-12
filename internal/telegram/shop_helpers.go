@@ -193,14 +193,14 @@ func (bot *TipBot) initUserShops(ctx context.Context, user *lnbits.User) (*Shops
 		Shops:    []string{},
 		MaxShops: MAX_SHOPS,
 	}
-	runtime.IgnoreError(shops.Set(shops, bot.Bunt))
+	runtime.IgnoreError(shops.Set(shops, bot.ShopBunt))
 	return shops, nil
 }
 
 // getUserShops returns the Shops for the user
 func (bot *TipBot) getUserShops(ctx context.Context, user *lnbits.User) (*Shops, error) {
 	tx := &Shops{Base: transaction.New(transaction.ID(fmt.Sprintf("shops-%d", user.Telegram.ID)))}
-	sn, err := tx.Get(tx, bot.Bunt)
+	sn, err := tx.Get(tx, bot.ShopBunt)
 	if err != nil {
 		log.Errorf("[getUserShops] User: %s (%d): %s", GetUserStr(user.Telegram), user.Telegram.ID, err)
 		return &Shops{}, err
@@ -227,16 +227,16 @@ func (bot *TipBot) addUserShop(ctx context.Context, user *lnbits.User) (*Shop, e
 		ShopsID:      shops.ID,
 		MaxItems:     MAX_ITEMS_PER_SHOP,
 	}
-	runtime.IgnoreError(shop.Set(shop, bot.Bunt))
+	runtime.IgnoreError(shop.Set(shop, bot.ShopBunt))
 	shops.Shops = append(shops.Shops, shopId)
-	runtime.IgnoreError(shops.Set(shops, bot.Bunt))
+	runtime.IgnoreError(shops.Set(shops, bot.ShopBunt))
 	return shop, nil
 }
 
 // getShop returns the Shop for the given ID
 func (bot *TipBot) getShop(ctx context.Context, shopId string) (*Shop, error) {
 	tx := &Shop{Base: transaction.New(transaction.ID(shopId))}
-	sn, err := tx.Get(tx, bot.Bunt)
+	sn, err := tx.Get(tx, bot.ShopBunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[getShop] %s", err)

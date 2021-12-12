@@ -22,6 +22,7 @@ import (
 type TipBot struct {
 	Database *gorm.DB
 	Bunt     *storage.DB
+	ShopBunt *storage.DB
 	logger   *gorm.DB
 	Telegram *telebot.Bot
 	Client   *lnbits.Client
@@ -48,7 +49,8 @@ func NewBot() TipBot {
 		Database: db,
 		Client:   lnbits.NewClient(internal.Configuration.Lnbits.AdminKey, internal.Configuration.Lnbits.Url),
 		logger:   txLogger,
-		Bunt:     createBunt(),
+		Bunt:     createBunt(internal.Configuration.Database.BuntDbPath),
+		ShopBunt: createBunt(internal.Configuration.Database.ShopBuntDbPath),
 		Telegram: newTelegramBot(),
 		Cache:    Cache{GoCacheStore: gocacheStore},
 	}
