@@ -1,12 +1,14 @@
 package telegram
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/eko/gocache/store"
+	"github.com/skip2/go-qrcode"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -25,7 +27,8 @@ var (
 
 type InlineReceive struct {
 	*transaction.Base
-	Message           string       `json:"inline_receive_message"`
+	MessageText       string       `json:"inline_receive_messagetext"`
+	Message           *tb.Message  `json:"inline_receive_message"`
 	Amount            int64        `json:"inline_receive_amount"`
 	From              *lnbits.User `json:"inline_receive_from"`
 	To                *lnbits.User `json:"inline_receive_to"`
@@ -117,7 +120,7 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 		// create persistend inline send struct
 		inlineReceive := InlineReceive{
 			Base:              transaction.New(transaction.ID(id)),
-			Message:           inlineMessage,
+			MessageText:       inlineMessage,
 			To:                to,
 			Memo:              memo,
 			Amount:            amount,
@@ -147,6 +150,56 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 		return
 	}
 	inlineReceive := rn.(*InlineReceive)
+	if !inlineReceive.Active {
+		log.Errorf("[acceptInlineReceiveHandler] inline receive not active anymore")
+		return
+	}
+
+	// user `from` is the one who is SENDING
+	// user `to` is the one who is RECEIVING
+	from := LoadUser(ctx)
+	// check if this payment is requested from a specific user
+	if inlineReceive.From_SpecificUser {
+		if inlineReceive.From.Telegram.ID != from.Telegram.ID {
+			// log.Infof("User %d is not User %d", inlineReceive.From.Telegram.ID, from.Telegram.ID)
+			return
+		}
+	} else {
+		// otherwise, we just set it to the user who has clicked
+		inlineReceive.From = from
+
+	}
+	inlineReceive.Message = c.Message
+	runtime.IgnoreError(inlineReceive.Set(inlineReceive, bot.Bunt))
+
+	to := inlineReceive.To
+	if from.Telegram.ID == to.Telegram.ID {
+		bot.trySendMessage(from.Telegram, Translate(ctx, "sendYourselfMessage"))
+		return
+	}
+
+	if from.Wallet == nil || from.Wallet.Balance < inlineReceive.Amount {
+		// if user has no wallet, show invoice
+		bot.tryEditMessage(inlineReceive.Message, inlineReceive.MessageText, &tb.ReplyMarkup{})
+		// runtime.IgnoreError(inlineReceive.Set(inlineReceive, bot.Bunt))
+		bot.inlineReceiveInvoice(ctx, c, inlineReceive)
+		return
+	} else {
+		// else, do an internal transaction
+		bot.sendInlineReceiveHandler(ctx, c)
+		return
+	}
+}
+
+func (bot *TipBot) sendInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
+	tx := &InlineReceive{Base: transaction.New(transaction.ID(c.Data))}
+	rn, err := tx.Get(tx, bot.Bunt)
+	// immediatelly set intransaction to block duplicate calls
+	if err != nil {
+		log.Errorf("[getInlineReceive] %s", err)
+		return
+	}
+	inlineReceive := rn.(*InlineReceive)
 	err = inlineReceive.Lock(inlineReceive, bot.Bunt)
 	if err != nil {
 		log.Errorf("[acceptInlineReceiveHandler] %s", err)
@@ -158,35 +211,13 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 		return
 	}
 
-	defer inlineReceive.Release(inlineReceive, bot.Bunt)
+	// defer inlineReceive.Release(inlineReceive, bot.Bunt)
 
-	// user `from` is the one who is SENDING
-	// user `to` is the one who is RECEIVING
+	// from := inlineReceive.From
 	from := LoadUser(ctx)
-	if from.Wallet == nil {
-		return
-	}
-	// check if this payment is requested from a specific user
-	if inlineReceive.From_SpecificUser {
-		if inlineReceive.From.Telegram.ID != from.Telegram.ID {
-			// log.Infof("User %d is not User %d", inlineReceive.From.Telegram.ID, from.Telegram.ID)
-			return
-		}
-	} else {
-		// otherwise, we just set it to the user who has clicked
-		inlineReceive.From = from
-	}
-
 	to := inlineReceive.To
-	toUserStrMd := GetUserStrMd(to.Telegram)
-	fromUserStrMd := GetUserStrMd(from.Telegram)
 	toUserStr := GetUserStr(to.Telegram)
 	fromUserStr := GetUserStr(from.Telegram)
-
-	if from.Telegram.ID == to.Telegram.ID {
-		bot.trySendMessage(from.Telegram, Translate(ctx, "sendYourselfMessage"))
-		return
-	}
 	// balance check of the user
 	balance, err := bot.GetUserBalanceCached(from)
 	if err != nil {
@@ -217,18 +248,76 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	}
 
 	log.Infof("[💸 inlineReceive] Send from %s to %s (%d sat).", fromUserStr, toUserStr, inlineReceive.Amount)
+	inlineReceive.Release(inlineReceive, bot.Bunt)
+	bot.finishInlineReceiveHandler(ctx, c)
+}
 
-	inlineReceive.Message = fmt.Sprintf("%s", fmt.Sprintf(i18n.Translate(inlineReceive.LanguageCode, "inlineSendUpdateMessageAccept"), inlineReceive.Amount, fromUserStrMd, toUserStrMd))
+func (bot *TipBot) inlineReceiveInvoice(ctx context.Context, c *tb.Callback, inlineReceive *InlineReceive) {
+	if !inlineReceive.Active {
+		log.Errorf("[acceptInlineReceiveHandler] inline receive not active anymore")
+		return
+	}
+	invoice, err := bot.createInvoiceEvent(ctx, inlineReceive.To, inlineReceive.Amount, fmt.Sprintf("Pay to %s", GetUserStr(inlineReceive.To.Telegram)), InvoiceCallbackInlineReceive, inlineReceive.ID)
+	if err != nil {
+		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err)
+		bot.tryEditMessage(inlineReceive.Message, Translate(ctx, "errorTryLaterMessage"))
+		log.Errorln(errmsg)
+		return
+	}
+
+	// create qr code
+	qr, err := qrcode.Encode(invoice.PaymentRequest, qrcode.Medium, 256)
+	if err != nil {
+		errmsg := fmt.Sprintf("[/invoice] Failed to create QR code for invoice: %s", err)
+		bot.tryEditMessage(inlineReceive.Message, Translate(ctx, "errorTryLaterMessage"))
+		log.Errorln(errmsg)
+		return
+	}
+
+	// send the invoice data to user
+	var msg *tb.Message
+	if inlineReceive.Message.Chat != nil {
+		msg = bot.trySendMessage(inlineReceive.Message.Chat, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
+	} else {
+		msg = bot.trySendMessage(c.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
+		bot.tryEditMessage(inlineReceive.Message, fmt.Sprintf("%s\n\nPay this invoice:\n```%s```", inlineReceive.MessageText, invoice.PaymentRequest))
+	}
+	invoice.InvoiceMessage = msg
+	runtime.IgnoreError(bot.Bunt.Set(invoice))
+	log.Printf("[/invoice] Incvoice created. User: %s, amount: %d sat.", GetUserStr(inlineReceive.To.Telegram), inlineReceive.Amount)
+
+}
+func (bot *TipBot) inlineReceiveEvent(invoiceEvent *InvocieEvent) {
+	bot.tryDeleteMessage(invoiceEvent.InvoiceMessage)
+	bot.finishInlineReceiveHandler(nil, &tb.Callback{Data: string(invoiceEvent.CallbackData)})
+}
+
+func (bot *TipBot) finishInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
+	tx := &InlineReceive{Base: transaction.New(transaction.ID(c.Data))}
+	rn, err := tx.Get(tx, bot.Bunt)
+	// immediatelly set intransaction to block duplicate calls
+	if err != nil {
+		log.Errorf("[getInlineReceive] %s", err)
+		return
+	}
+	inlineReceive := rn.(*InlineReceive)
+
+	from := inlineReceive.From
+	to := inlineReceive.To
+	toUserStrMd := GetUserStrMd(to.Telegram)
+	fromUserStrMd := GetUserStrMd(from.Telegram)
+	toUserStr := GetUserStr(to.Telegram)
+	inlineReceive.MessageText = fmt.Sprintf("%s", fmt.Sprintf(i18n.Translate(inlineReceive.LanguageCode, "inlineSendUpdateMessageAccept"), inlineReceive.Amount, fromUserStrMd, toUserStrMd))
 	memo := inlineReceive.Memo
 	if len(memo) > 0 {
-		inlineReceive.Message = inlineReceive.Message + fmt.Sprintf(i18n.Translate(inlineReceive.LanguageCode, "inlineReceiveAppendMemo"), memo)
+		inlineReceive.MessageText += fmt.Sprintf(i18n.Translate(inlineReceive.LanguageCode, "inlineReceiveAppendMemo"), memo)
 	}
 
 	if !to.Initialized {
-		inlineReceive.Message += "\n\n" + fmt.Sprintf(i18n.Translate(inlineReceive.LanguageCode, "inlineSendCreateWalletMessage"), GetUserStrMd(bot.Telegram.Me))
+		inlineReceive.MessageText += "\n\n" + fmt.Sprintf(i18n.Translate(inlineReceive.LanguageCode, "inlineSendCreateWalletMessage"), GetUserStrMd(bot.Telegram.Me))
 	}
 
-	bot.tryEditMessage(c.Message, inlineReceive.Message, &tb.ReplyMarkup{})
+	bot.tryEditMessage(inlineReceive.Message, inlineReceive.MessageText, &tb.ReplyMarkup{})
 	// notify users
 	_, err = bot.Telegram.Send(to.Telegram, fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "sendReceivedMessage"), fromUserStrMd, inlineReceive.Amount))
 	_, err = bot.Telegram.Send(from.Telegram, fmt.Sprintf(i18n.Translate(from.Telegram.LanguageCode, "sendSentMessage"), inlineReceive.Amount, toUserStrMd))
@@ -236,6 +325,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 		errmsg := fmt.Errorf("[acceptInlineReceiveHandler] Error: Receive message to %s: %s", toUserStr, err)
 		log.Warnln(errmsg)
 	}
+	// inlineReceive.Release(inlineReceive, bot.Bunt)
 }
 
 func (bot *TipBot) cancelInlineReceiveHandler(ctx context.Context, c *tb.Callback) {

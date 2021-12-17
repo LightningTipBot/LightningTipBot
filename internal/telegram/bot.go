@@ -89,5 +89,6 @@ func (bot TipBot) Start() {
 		log.Errorf("Could not initialize bot wallet: %s", err.Error())
 	}
 	bot.registerTelegramHandlers()
+	initInvoiceEventCallbacks(bot)
 	bot.Telegram.Start()
 }
