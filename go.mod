@@ -20,7 +20,7 @@ require (
 	github.com/tidwall/gjson v1.10.2
 	golang.org/x/text v0.3.5
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
-	gopkg.in/lightningtipbot/telebot.v2 v2.4.2-0.20211207185736-224e4f70c5ad
+	gopkg.in/lightningtipbot/telebot.v2 v2.4.2-0.20211217193303-c005cce171ac
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.21.12
 )
