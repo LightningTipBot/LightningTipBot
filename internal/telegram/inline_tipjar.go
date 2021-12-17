@@ -162,10 +162,10 @@ func (bot TipBot) makeTipjarKeyboard(ctx context.Context, inlineTipjar *InlineTi
 	// inlineTipjarMenu := &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	// slice of buttons
 	buttons := make([]tb.Btn, 0)
-	acceptInlineTipjarButton := inlineTipjarMenu.Data(Translate(ctx, "payReceiveButtonMessage"), "confirm_tipjar_inline", inlineTipjar.ID)
-	buttons = append(buttons, acceptInlineTipjarButton)
 	cancelInlineTipjarButton := inlineTipjarMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_tipjar_inline", inlineTipjar.ID)
 	buttons = append(buttons, cancelInlineTipjarButton)
+	acceptInlineTipjarButton := inlineTipjarMenu.Data(Translate(ctx, "payReceiveButtonMessage"), "confirm_tipjar_inline", inlineTipjar.ID)
+	buttons = append(buttons, acceptInlineTipjarButton)
 
 	inlineTipjarMenu.Inline(
 		inlineTipjarMenu.Row(buttons...))
