@@ -107,13 +107,13 @@ func (w Server) receive(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		log.Errorln(err)
 	}
+	writer.WriteHeader(200)
 
-	// if this invoice is saved in bunt.db, we load it and display the comment from an LNURL invoice
+	// legacy (should be replaced with the invoice listener below)
+	// check if invoice corresponds to an LNURL-p request, we load it and display the comment from an LNURL invoice
 	tx := &lnurl.Invoice{PaymentHash: depositEvent.PaymentHash}
 	err = w.buntdb.Get(tx)
-	if err != nil {
-		log.Errorln(err)
-	} else {
+	if err == nil {
 		if len(tx.Comment) > 0 {
 			_, err = w.bot.Send(user.Telegram, fmt.Sprintf(`✉️ %s`, str.MarkdownEscape(tx.Comment)))
 			if err != nil {
@@ -121,5 +121,16 @@ func (w Server) receive(writer http.ResponseWriter, request *http.Request) {
 			}
 		}
 	}
-	writer.WriteHeader(200)
+
+	// trigger invoice events
+	txInvoiceEvent := &telegram.InvocieEvent{PaymentHash: depositEvent.PaymentHash}
+	err = w.buntdb.Get(txInvoiceEvent)
+	if err != nil {
+		log.Errorln(err)
+	} else {
+		// do something with the event
+		if c := telegram.InvoiceCallback[txInvoiceEvent.Callback]; c != nil {
+			c(txInvoiceEvent)
+		}
+	}
 }
