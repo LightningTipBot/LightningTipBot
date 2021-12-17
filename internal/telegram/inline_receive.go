@@ -41,8 +41,9 @@ func (bot TipBot) makeReceiveKeyboard(ctx context.Context, id string) *tb.ReplyM
 	cancelInlineReceiveButton.Data = id
 	inlineReceiveMenu.Inline(
 		inlineReceiveMenu.Row(
+			cancelInlineReceiveButton,
 			acceptInlineReceiveButton,
-			cancelInlineReceiveButton),
+		),
 	)
 	return inlineReceiveMenu
 }
