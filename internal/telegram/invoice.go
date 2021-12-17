@@ -10,6 +10,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/skip2/go-qrcode"
@@ -156,5 +157,5 @@ func (bot *TipBot) createInvoiceEvent(ctx context.Context, user *lnbits.User, am
 }
 
 func (bot *TipBot) triggerInvoiceEvent(invoiceEvent *InvocieEvent) {
-	log.Infof("Invoice triggered: %s", invoiceEvent.PaymentHash)
+	bot.trySendMessage(invoiceEvent.User.Telegram, fmt.Sprintf(i18n.Translate(invoiceEvent.User.Telegram.LanguageCode, "invoiceReceivedMessage"), invoiceEvent.Amount))
 }
