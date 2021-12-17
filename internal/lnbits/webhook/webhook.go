@@ -119,7 +119,7 @@ func (w Server) receive(writer http.ResponseWriter, request *http.Request) {
 		}
 	}
 
-	// else, send a message to the user
+	// else, send a message to the user if there is no callback for this invoice
 	_, err = w.bot.Send(user.Telegram, fmt.Sprintf(i18n.Translate(user.Telegram.LanguageCode, "invoiceReceivedMessage"), depositEvent.Amount/1000))
 	if err != nil {
 		log.Errorln(err)
