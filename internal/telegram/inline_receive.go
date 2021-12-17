@@ -173,12 +173,12 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	runtime.IgnoreError(inlineReceive.Set(inlineReceive, bot.Bunt))
 
 	to := inlineReceive.To
-	if from.Telegram.ID == to.Telegram.ID && 1 > 2 {
+	if from.Telegram.ID == to.Telegram.ID {
 		bot.trySendMessage(from.Telegram, Translate(ctx, "sendYourselfMessage"))
 		return
 	}
 
-	if from.Wallet == nil || from.Wallet.Balance < inlineReceive.Amount || inlineReceive.Amount == 10 {
+	if from.Wallet == nil || from.Wallet.Balance < inlineReceive.Amount {
 		// if user has no wallet, show invoice
 		bot.tryEditMessage(inlineReceive.Message, inlineReceive.MessageText, &tb.ReplyMarkup{})
 		// runtime.IgnoreError(inlineReceive.Set(inlineReceive, bot.Bunt))
