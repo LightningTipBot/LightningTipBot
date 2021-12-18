@@ -62,7 +62,7 @@ func (p *PriceWatcher) Watch() error {
 		for currency, _ := range p.Currencies {
 			avg_price := 0.0
 			n_responses := 0
-			for exchange, getPrice := range p.Exchanges {
+			for _, getPrice := range p.Exchanges {
 				fprice, err := getPrice(currency)
 				if err != nil {
 					// log.Debug(err)
@@ -71,11 +71,11 @@ func (p *PriceWatcher) Watch() error {
 				}
 				n_responses++
 				avg_price += fprice
-				log.Debugf("[PriceWatcher] %s %s price: %f", exchange, currency, fprice)
+				// log.Debugf("[PriceWatcher] %s %s price: %f", exchange, currency, fprice)
 				time.Sleep(time.Second * time.Duration(2))
 			}
 			Price[currency] = avg_price / float64(n_responses)
-			log.Debugf("[PriceWatcher] Average %s price: %f", currency, Price[currency])
+			// log.Debugf("[PriceWatcher] Average %s price: %f", currency, Price[currency])
 		}
 		time.Sleep(p.UpdateInterval)
 	}
