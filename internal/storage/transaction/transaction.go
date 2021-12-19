@@ -81,7 +81,7 @@ func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error
 		case <-ticker.C:
 			return nil, fmt.Errorf("transaction timeout")
 		default:
-			time.Sleep(time.Duration(100) * time.Millisecond)
+			time.Sleep(time.Duration(75) * time.Millisecond)
 			err = db.Get(s)
 		}
 	}
