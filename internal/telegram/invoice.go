@@ -27,7 +27,7 @@ func initInvoiceEventCallbacks(bot *TipBot) {
 	InvoiceCallback = InvoiceEventCallback{
 		InvoiceCallbackGeneric:         bot.notifyInvoiceReceivedEvent,
 		InvoiceCallbackInlineReceive:   bot.inlineReceiveEvent,
-		InvoiceCallbackLNURLPayReceive: bot.notifyInvoiceReceivedEvent,
+		InvoiceCallbackLNURLPayReceive: bot.lnurlReceiveEvent,
 	}
 }
 
@@ -168,13 +168,14 @@ type LNURLInvoice struct {
 }
 
 func (lnurlInvoice LNURLInvoice) Key() string {
-	return fmt.Sprintf("payment-hash:%s", lnurlInvoice.PaymentHash)
+	return fmt.Sprintf("lnurl-p:%s", lnurlInvoice.PaymentHash)
 }
 
 func (bot *TipBot) lnurlReceiveEvent(invoiceEvent *InvoiceEvent) {
 	bot.notifyInvoiceReceivedEvent(invoiceEvent)
 	tx := &LNURLInvoice{Invoice: &Invoice{PaymentHash: invoiceEvent.PaymentHash}}
 	err := bot.Bunt.Get(tx)
+	log.Debugf("[lnurl-p] Received invoice for %s of %d sat.", GetUserStr(invoiceEvent.User.Telegram), tx.Amount)
 	if err == nil {
 		if len(tx.Comment) > 0 {
 			bot.trySendMessage(tx.User.Telegram, fmt.Sprintf(`✉️ %s`, str.MarkdownEscape(tx.Comment)))
