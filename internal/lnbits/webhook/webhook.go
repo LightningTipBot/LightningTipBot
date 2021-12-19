@@ -7,7 +7,6 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 
 	log "github.com/sirupsen/logrus"
@@ -15,17 +14,12 @@ import (
 
 	"net/http"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/gorilla/mux"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
-)
-
-const (
-// invoiceReceivedMessage = "⚡️ You received %d sat."
 )
 
 type Server struct {
@@ -37,17 +31,16 @@ type Server struct {
 }
 
 type Webhook struct {
-	CheckingID  string `json:"checking_id"`
-	Pending     int    `json:"pending"`
-	Amount      int    `json:"amount"`
-	Fee         int    `json:"fee"`
-	Memo        string `json:"memo"`
-	Time        int    `json:"time"`
-	Bolt11      string `json:"bolt11"`
-	Preimage    string `json:"preimage"`
-	PaymentHash string `json:"payment_hash"`
-	Extra       struct {
-	} `json:"extra"`
+	CheckingID    string      `json:"checking_id"`
+	Pending       int         `json:"pending"`
+	Amount        int         `json:"amount"`
+	Fee           int         `json:"fee"`
+	Memo          string      `json:"memo"`
+	Time          int         `json:"time"`
+	Bolt11        string      `json:"bolt11"`
+	Preimage      string      `json:"preimage"`
+	PaymentHash   string      `json:"payment_hash"`
+	Extra         struct{}    `json:"extra"`
 	WalletID      string      `json:"wallet_id"`
 	Webhook       string      `json:"webhook"`
 	WebhookStatus interface{} `json:"webhook_status"`
@@ -55,8 +48,7 @@ type Webhook struct {
 
 func NewServer(bot *telegram.TipBot) *Server {
 	srv := &http.Server{
-		Addr: internal.Configuration.Lnbits.WebhookServerUrl.Host,
-		// Good practice: enforce timeouts for servers you create!
+		Addr:         internal.Configuration.Lnbits.WebhookServerUrl.Host,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
@@ -88,7 +80,7 @@ func (w *Server) newRouter() *mux.Router {
 	return router
 }
 
-func (w Server) receive(writer http.ResponseWriter, request *http.Request) {
+func (w *Server) receive(writer http.ResponseWriter, request *http.Request) {
 	webhookEvent := Webhook{}
 	// need to delete the header otherwise the Decode will fail
 	request.Header.Del("content-length")
@@ -107,7 +99,7 @@ func (w Server) receive(writer http.ResponseWriter, request *http.Request) {
 	writer.WriteHeader(200)
 
 	// trigger invoice events
-	txInvoiceEvent := &telegram.InvocieEvent{Invoice: &telegram.Invoice{PaymentHash: webhookEvent.PaymentHash}}
+	txInvoiceEvent := &telegram.InvoiceEvent{Invoice: &telegram.Invoice{PaymentHash: webhookEvent.PaymentHash}}
 	err = w.buntdb.Get(txInvoiceEvent)
 	if err != nil {
 		log.Errorln(err)
@@ -119,23 +111,9 @@ func (w Server) receive(writer http.ResponseWriter, request *http.Request) {
 		}
 	}
 
-	// else, send a message to the user if there is no callback for this invoice
+	// fallback: send a message to the user if there is no callback for this invoice
 	_, err = w.bot.Send(user.Telegram, fmt.Sprintf(i18n.Translate(user.Telegram.LanguageCode, "invoiceReceivedMessage"), webhookEvent.Amount/1000))
 	if err != nil {
 		log.Errorln(err)
 	}
-
-	// legacy (should be replaced with the invoice listener above)
-	// check if invoice corresponds to an LNURL-p request, we load it and display the comment from an LNURL invoice
-	tx := &lnurl.LNURLInvoice{Invoice: &telegram.Invoice{PaymentHash: webhookEvent.PaymentHash}}
-	err = w.buntdb.Get(tx)
-	if err == nil {
-		if len(tx.Comment) > 0 {
-			_, err = w.bot.Send(user.Telegram, fmt.Sprintf(`✉️ %s`, str.MarkdownEscape(tx.Comment)))
-			if err != nil {
-				log.Errorln(err)
-			}
-		}
-	}
-
 }

@@ -26,8 +26,8 @@ type LNURLInvoice struct {
 	PaidAt    time.Time    `json:"paid_at"`
 }
 
-func (msg LNURLInvoice) Key() string {
-	return fmt.Sprintf("payment-hash:%s", msg.PaymentHash)
+func (lnurlInvoice LNURLInvoice) Key() string {
+	return fmt.Sprintf("payment-hash:%s", lnurlInvoice.PaymentHash)
 }
 
 func (w Server) handleLnUrl(writer http.ResponseWriter, request *http.Request) {
@@ -169,17 +169,25 @@ func (w Server) serveLNURLpSecond(username string, amount int64, comment string)
 		}
 		return resp, err
 	}
-	// save invoice struct for later use
+	invoiceStruct := &telegram.Invoice{
+		PaymentRequest: invoice.PaymentRequest,
+		PaymentHash:    invoice.PaymentHash,
+		Amount:         amount,
+	}
+	// save lnurl invoice struct for later use (will hold the comment or other metdata for a notification when paid)
 	runtime.IgnoreError(w.buntdb.Set(
 		LNURLInvoice{
-			Invoice: &telegram.Invoice{
-				PaymentRequest: invoice.PaymentRequest,
-				PaymentHash:    invoice.PaymentHash,
-				Amount:         amount,
-			},
+			Invoice:   invoiceStruct,
 			User:      user,
 			Comment:   comment,
 			CreatedAt: time.Now(),
+		}))
+	// save the invoice Event that will be loaded when the invoice is paid and trigger the comment display callback
+	runtime.IgnoreError(w.buntdb.Set(
+		telegram.InvoiceEvent{
+			Invoice:  invoiceStruct,
+			User:     user,
+			Callback: telegram.InvoiceCallbackLNURLPayReceive,
 		}))
 
 	return &lnurl.LNURLPayValues{

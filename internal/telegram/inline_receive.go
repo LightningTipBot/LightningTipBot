@@ -293,8 +293,9 @@ func (bot *TipBot) inlineReceiveInvoice(ctx context.Context, c *tb.Callback, inl
 	log.Printf("[/invoice] Incvoice created. User: %s, amount: %d sat.", GetUserStr(inlineReceive.To.Telegram), inlineReceive.Amount)
 
 }
-func (bot *TipBot) inlineReceiveEvent(invoiceEvent *InvocieEvent) {
+func (bot *TipBot) inlineReceiveEvent(invoiceEvent *InvoiceEvent) {
 	bot.tryDeleteMessage(invoiceEvent.InvoiceMessage)
+	bot.notifyInvoiceReceivedEvent(invoiceEvent)
 	bot.finishInlineReceiveHandler(nil, &tb.Callback{Data: string(invoiceEvent.CallbackData)})
 }
 
