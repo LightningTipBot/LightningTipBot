@@ -11,24 +11,23 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	"github.com/fiatjaf/go-lnurl"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )
 
-type Invoice struct {
-	PaymentRequest string       `json:"payment_request"`
-	PaymentHash    string       `json:"payment_hash"`
-	Amount         int64        `json:"amount"`
-	Comment        string       `json:"comment"`
-	ToUser         *lnbits.User `json:"to_user"`
-	CreatedAt      time.Time    `json:"created_at"`
-	Paid           bool         `json:"paid"`
-	PaidAt         time.Time    `json:"paid_at"`
+type LNURLInvoice struct {
+	*telegram.Invoice
+	Comment   string       `json:"comment"`
+	User      *lnbits.User `json:"user"`
+	CreatedAt time.Time    `json:"created_at"`
+	Paid      bool         `json:"paid"`
+	PaidAt    time.Time    `json:"paid_at"`
 }
 
-func (msg Invoice) Key() string {
-	return fmt.Sprintf("payment-hash:%s", msg.PaymentHash)
+func (lnurlInvoice LNURLInvoice) Key() string {
+	return fmt.Sprintf("lnurl-p:%s", lnurlInvoice.PaymentHash)
 }
 
 func (w Server) handleLnUrl(writer http.ResponseWriter, request *http.Request) {
@@ -98,9 +97,9 @@ func (w Server) serveLNURLpFirst(username string) (*lnurl.LNURLPayParams, error)
 }
 
 // serveLNURLpSecond serves the second LNURL response with the payment request with the correct description hash
-func (w Server) serveLNURLpSecond(username string, amount int64, comment string) (*lnurl.LNURLPayValues, error) {
+func (w Server) serveLNURLpSecond(username string, amount_msat int64, comment string) (*lnurl.LNURLPayValues, error) {
 	log.Infof("[LNURL] Serving invoice for user %s", username)
-	if amount < minSendable || amount > MaxSendable {
+	if amount_msat < minSendable || amount_msat > MaxSendable {
 		// amount is not ok
 		return &lnurl.LNURLPayValues{
 			LNURLResponse: lnurl.LNURLResponse{
@@ -156,7 +155,7 @@ func (w Server) serveLNURLpSecond(username string, amount int64, comment string)
 	}
 	invoice, err := user.Wallet.Invoice(
 		lnbits.InvoiceParams{
-			Amount:          amount / 1000,
+			Amount:          amount_msat / 1000,
 			Out:             false,
 			DescriptionHash: descriptionHash,
 			Webhook:         w.WebhookServer},
@@ -170,15 +169,25 @@ func (w Server) serveLNURLpSecond(username string, amount int64, comment string)
 		}
 		return resp, err
 	}
-	// save invoice struct for later use
+	invoiceStruct := &telegram.Invoice{
+		PaymentRequest: invoice.PaymentRequest,
+		PaymentHash:    invoice.PaymentHash,
+		Amount:         amount_msat / 1000,
+	}
+	// save lnurl invoice struct for later use (will hold the comment or other metdata for a notification when paid)
 	runtime.IgnoreError(w.buntdb.Set(
-		Invoice{
-			ToUser:         user,
-			Amount:         amount,
-			Comment:        comment,
-			PaymentRequest: invoice.PaymentRequest,
-			PaymentHash:    invoice.PaymentHash,
-			CreatedAt:      time.Now(),
+		LNURLInvoice{
+			Invoice:   invoiceStruct,
+			User:      user,
+			Comment:   comment,
+			CreatedAt: time.Now(),
+		}))
+	// save the invoice Event that will be loaded when the invoice is paid and trigger the comment display callback
+	runtime.IgnoreError(w.buntdb.Set(
+		telegram.InvoiceEvent{
+			Invoice:  invoiceStruct,
+			User:     user,
+			Callback: telegram.InvoiceCallbackLNURLPayReceive,
 		}))
 
 	return &lnurl.LNURLPayValues{

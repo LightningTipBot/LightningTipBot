@@ -81,7 +81,7 @@ func (bot TipBot) initBotWallet() error {
 }
 
 // Start will initialize the Telegram bot and lnbits.
-func (bot TipBot) Start() {
+func (bot *TipBot) Start() {
 	log.Infof("[Telegram] Authorized on account @%s", bot.Telegram.Me.Username)
 	// initialize the bot wallet
 	err := bot.initBotWallet()

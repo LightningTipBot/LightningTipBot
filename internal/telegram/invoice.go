@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 
@@ -13,18 +14,20 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"github.com/skip2/go-qrcode"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
-type InvoiceEventCallback map[int]func(*InvocieEvent)
+type InvoiceEventCallback map[int]func(*InvoiceEvent)
 
 var InvoiceCallback InvoiceEventCallback
 
-func initInvoiceEventCallbacks(bot TipBot) {
+func initInvoiceEventCallbacks(bot *TipBot) {
 	InvoiceCallback = InvoiceEventCallback{
-		InvoiceCallbackGeneric:       bot.triggerInvoiceEvent,
-		InvoiceCallbackInlineReceive: bot.inlineReceiveEvent,
+		InvoiceCallbackGeneric:         bot.notifyInvoiceReceivedEvent,
+		InvoiceCallbackInlineReceive:   bot.inlineReceiveEvent,
+		InvoiceCallbackLNURLPayReceive: bot.lnurlReceiveEvent,
 	}
 }
 
@@ -33,13 +36,17 @@ type InvoiceEventKey int
 const (
 	InvoiceCallbackGeneric = iota + 1
 	InvoiceCallbackInlineReceive
+	InvoiceCallbackLNURLPayReceive
 )
 
-type InvocieEvent struct {
-	PaymentHash    string       `json:"payment_hash"`
-	PaymentRequest string       `json:"payment_request"`
-	Amount         int64        `json:"amount"`
-	Memo           string       `json:"memo"`
+type Invoice struct {
+	PaymentHash    string `json:"payment_hash"`
+	PaymentRequest string `json:"payment_request"`
+	Amount         int64  `json:"amount"`
+	Memo           string `json:"memo"`
+}
+type InvoiceEvent struct {
+	*Invoice
 	User           *lnbits.User `json:"user"`
 	Message        *tb.Message  `json:"message"`
 	InvoiceMessage *tb.Message  `json:"invoice_message"`
@@ -48,7 +55,7 @@ type InvocieEvent struct {
 	CallbackData   string       `json:"callbackdata"`
 }
 
-func (invoiceEvent InvocieEvent) Key() string {
+func (invoiceEvent InvoiceEvent) Key() string {
 	return fmt.Sprintf("invoice:%s", invoiceEvent.PaymentHash)
 }
 
@@ -95,15 +102,7 @@ func (bot *TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 
 	creatingMsg := bot.trySendMessage(m.Sender, Translate(ctx, "lnurlGettingUserMessage"))
 	log.Infof("[/invoice] Creating invoice for %s of %d sat.", userStr, amount)
-	// generate invoice
-	// invoice, err := user.Wallet.Invoice(
-	// 	lnbits.InvoiceParams{
-	// 		Out:     false,
-	// 		Amount:  int64(amount),
-	// 		Memo:    memo,
-	// 		Webhook: internal.Configuration.Lnbits.WebhookServer},
-	// 	bot.Client)
-	invoice, err := bot.createInvoiceEvent(ctx, user, amount, memo, InvoiceCallbackGeneric, "")
+	invoice, err := bot.createInvoiceWithEvent(ctx, user, amount, memo, InvoiceCallbackGeneric, "")
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err)
 		bot.tryEditMessage(creatingMsg, Translate(ctx, "errorTryLaterMessage"))
@@ -127,7 +126,7 @@ func (bot *TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 	return
 }
 
-func (bot *TipBot) createInvoiceEvent(ctx context.Context, user *lnbits.User, amount int64, memo string, callback int, callbackData string) (InvocieEvent, error) {
+func (bot *TipBot) createInvoiceWithEvent(ctx context.Context, user *lnbits.User, amount int64, memo string, callback int, callbackData string) (InvoiceEvent, error) {
 	invoice, err := user.Wallet.Invoice(
 		lnbits.InvoiceParams{
 			Out:     false,
@@ -138,24 +137,48 @@ func (bot *TipBot) createInvoiceEvent(ctx context.Context, user *lnbits.User, am
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err)
 		log.Errorln(errmsg)
-		return InvocieEvent{}, err
+		return InvoiceEvent{}, err
 	}
-
-	invoiceEvent := InvocieEvent{
-		PaymentHash:    invoice.PaymentHash,
-		PaymentRequest: invoice.PaymentRequest,
-		Amount:         amount,
-		Memo:           memo,
-		User:           user,
-		Callback:       callback,
-		CallbackData:   callbackData,
-		LanguageCode:   ctx.Value("publicLanguageCode").(string),
+	invoiceEvent := InvoiceEvent{
+		Invoice: &Invoice{PaymentHash: invoice.PaymentHash,
+			PaymentRequest: invoice.PaymentRequest,
+			Amount:         amount,
+			Memo:           memo},
+		User:         user,
+		Callback:     callback,
+		CallbackData: callbackData,
+		LanguageCode: ctx.Value("publicLanguageCode").(string),
 	}
 	// save invoice struct for later use
 	runtime.IgnoreError(bot.Bunt.Set(invoiceEvent))
 	return invoiceEvent, nil
 }
 
-func (bot *TipBot) triggerInvoiceEvent(invoiceEvent *InvocieEvent) {
+func (bot *TipBot) notifyInvoiceReceivedEvent(invoiceEvent *InvoiceEvent) {
 	bot.trySendMessage(invoiceEvent.User.Telegram, fmt.Sprintf(i18n.Translate(invoiceEvent.User.Telegram.LanguageCode, "invoiceReceivedMessage"), invoiceEvent.Amount))
+}
+
+type LNURLInvoice struct {
+	*Invoice
+	Comment   string       `json:"comment"`
+	User      *lnbits.User `json:"user"`
+	CreatedAt time.Time    `json:"created_at"`
+	Paid      bool         `json:"paid"`
+	PaidAt    time.Time    `json:"paid_at"`
+}
+
+func (lnurlInvoice LNURLInvoice) Key() string {
+	return fmt.Sprintf("lnurl-p:%s", lnurlInvoice.PaymentHash)
+}
+
+func (bot *TipBot) lnurlReceiveEvent(invoiceEvent *InvoiceEvent) {
+	bot.notifyInvoiceReceivedEvent(invoiceEvent)
+	tx := &LNURLInvoice{Invoice: &Invoice{PaymentHash: invoiceEvent.PaymentHash}}
+	err := bot.Bunt.Get(tx)
+	log.Debugf("[lnurl-p] Received invoice for %s of %d sat.", GetUserStr(invoiceEvent.User.Telegram), tx.Amount)
+	if err == nil {
+		if len(tx.Comment) > 0 {
+			bot.trySendMessage(tx.User.Telegram, fmt.Sprintf(`✉️ %s`, str.MarkdownEscape(tx.Comment)))
+		}
+	}
 }

@@ -70,18 +70,9 @@ func NewTransaction(bot *TipBot, from *lnbits.User, to *lnbits.User, amount int6
 }
 
 func (t *Transaction) Send() (success bool, err error) {
-	// maybe remove comments, GTP-3 dreamed this up but it's nice:
-	// if t.From.ID == t.To.ID {
-	// 	err = fmt.Errorf("Can not send transaction to yourself.")
-	// 	return false, err
-	// }
-
-	// todo: remove this commend if the backend is back up
 	success, err = t.SendTransaction(t.Bot, t.From, t.To, t.Amount, t.Memo)
-	// success = true
 	if success {
 		t.Success = success
-		// TODO: call post-send methods
 	}
 
 	// save transaction to db
@@ -90,7 +81,6 @@ func (t *Transaction) Send() (success bool, err error) {
 		errMsg := fmt.Sprintf("Error: Could not log transaction: %s", err.Error())
 		log.Errorln(errMsg)
 	}
-
 	return success, err
 }
 
@@ -100,19 +90,20 @@ func (t *Transaction) SendTransaction(bot *TipBot, from *lnbits.User, to *lnbits
 
 	t.FromWallet = from.Wallet.ID
 	t.FromLNbitsID = from.ID
-	// check if fromUser has balance
-	balance, err := bot.GetUserBalance(from)
-	if err != nil {
-		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
-		log.Errorln(errmsg)
-		return false, err
-	}
-	// check if fromUser has balance
-	if balance < amount {
-		errmsg := fmt.Sprintf("balance too low.")
-		log.Warnf("Balance of user %s too low", fromUserStr)
-		return false, fmt.Errorf(errmsg)
-	}
+
+	// // check if fromUser has balance
+	// balance, err := bot.GetUserBalance(from)
+	// if err != nil {
+	// 	errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
+	// 	log.Errorln(errmsg)
+	// 	return false, err
+	// }
+	// // check if fromUser has balance
+	// if balance < amount {
+	// 	errmsg := fmt.Sprintf("balance too low.")
+	// 	log.Warnf("Balance of user %s too low", fromUserStr)
+	// 	return false, fmt.Errorf(errmsg)
+	// }
 
 	t.ToWallet = to.ID
 	t.ToLNbitsID = to.ID
@@ -125,7 +116,7 @@ func (t *Transaction) SendTransaction(bot *TipBot, from *lnbits.User, to *lnbits
 			Memo:   memo},
 		bot.Client)
 	if err != nil {
-		errmsg := fmt.Sprintf("[SendTransaction] Error: Could not create invoice for user %s", toUserStr)
+		errmsg := fmt.Sprintf("[Send] Error: Could not create invoice for user %s", toUserStr)
 		log.Errorln(errmsg)
 		return false, err
 	}
@@ -133,8 +124,8 @@ func (t *Transaction) SendTransaction(bot *TipBot, from *lnbits.User, to *lnbits
 	// pay invoice
 	_, err = from.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoice.PaymentRequest}, bot.Client)
 	if err != nil {
-		errmsg := fmt.Sprintf("[SendTransaction] Error: Payment from %s to %s of %d sat failed", fromUserStr, toUserStr, amount)
-		log.Errorln(errmsg)
+		errmsg := fmt.Sprintf("[Send] Payment failed (%s to %s of %d sat): %s", fromUserStr, toUserStr, amount, err.Error())
+		log.Warnf(errmsg)
 		return false, err
 	}
 	return true, err
