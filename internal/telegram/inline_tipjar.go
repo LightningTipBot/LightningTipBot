@@ -259,7 +259,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 	}
 	// // check if to user has already given to the tipjar
 	for _, a := range inlineTipjar.From {
-		if a.Telegram.ID == to.Telegram.ID {
+		if a.Telegram.ID == from.Telegram.ID {
 			// to user is already in To slice, has taken from facuet
 			// log.Infof("[tipjar] %s already gave to tipjar %s", GetUserStr(to.Telegram), inlineTipjar.ID)
 			return
