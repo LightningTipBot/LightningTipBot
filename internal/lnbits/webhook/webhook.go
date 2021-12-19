@@ -89,25 +89,25 @@ func (w *Server) newRouter() *mux.Router {
 }
 
 func (w Server) receive(writer http.ResponseWriter, request *http.Request) {
-	depositEvent := Webhook{}
+	webhookEvent := Webhook{}
 	// need to delete the header otherwise the Decode will fail
 	request.Header.Del("content-length")
-	err := json.NewDecoder(request.Body).Decode(&depositEvent)
+	err := json.NewDecoder(request.Body).Decode(&webhookEvent)
 	if err != nil {
 		writer.WriteHeader(400)
 		return
 	}
-	user, err := w.GetUserByWalletId(depositEvent.WalletID)
+	user, err := w.GetUserByWalletId(webhookEvent.WalletID)
 	if err != nil {
 		writer.WriteHeader(400)
 		return
 	}
-	log.Infoln(fmt.Sprintf("[⚡️ WebHook] User %s (%d) received invoice of %d sat.", telegram.GetUserStr(user.Telegram), user.Telegram.ID, depositEvent.Amount/1000))
+	log.Infoln(fmt.Sprintf("[⚡️ WebHook] User %s (%d) received invoice of %d sat.", telegram.GetUserStr(user.Telegram), user.Telegram.ID, webhookEvent.Amount/1000))
 
 	writer.WriteHeader(200)
 
 	// trigger invoice events
-	txInvoiceEvent := &telegram.InvocieEvent{PaymentHash: depositEvent.PaymentHash}
+	txInvoiceEvent := &telegram.InvocieEvent{Invoice: &telegram.Invoice{PaymentHash: webhookEvent.PaymentHash}}
 	err = w.buntdb.Get(txInvoiceEvent)
 	if err != nil {
 		log.Errorln(err)
@@ -120,14 +120,14 @@ func (w Server) receive(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// else, send a message to the user if there is no callback for this invoice
-	_, err = w.bot.Send(user.Telegram, fmt.Sprintf(i18n.Translate(user.Telegram.LanguageCode, "invoiceReceivedMessage"), depositEvent.Amount/1000))
+	_, err = w.bot.Send(user.Telegram, fmt.Sprintf(i18n.Translate(user.Telegram.LanguageCode, "invoiceReceivedMessage"), webhookEvent.Amount/1000))
 	if err != nil {
 		log.Errorln(err)
 	}
 
 	// legacy (should be replaced with the invoice listener above)
 	// check if invoice corresponds to an LNURL-p request, we load it and display the comment from an LNURL invoice
-	tx := &lnurl.Invoice{PaymentHash: depositEvent.PaymentHash}
+	tx := &lnurl.LNURLInvoice{Invoice: &telegram.Invoice{PaymentHash: webhookEvent.PaymentHash}}
 	err = w.buntdb.Get(tx)
 	if err == nil {
 		if len(tx.Comment) > 0 {

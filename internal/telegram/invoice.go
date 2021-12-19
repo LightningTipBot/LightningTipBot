@@ -35,11 +35,14 @@ const (
 	InvoiceCallbackInlineReceive
 )
 
+type Invoice struct {
+	PaymentHash    string `json:"payment_hash"`
+	PaymentRequest string `json:"payment_request"`
+	Amount         int64  `json:"amount"`
+	Memo           string `json:"memo"`
+}
 type InvocieEvent struct {
-	PaymentHash    string       `json:"payment_hash"`
-	PaymentRequest string       `json:"payment_request"`
-	Amount         int64        `json:"amount"`
-	Memo           string       `json:"memo"`
+	*Invoice
 	User           *lnbits.User `json:"user"`
 	Message        *tb.Message  `json:"message"`
 	InvoiceMessage *tb.Message  `json:"invoice_message"`
@@ -142,14 +145,14 @@ func (bot *TipBot) createInvoiceEvent(ctx context.Context, user *lnbits.User, am
 	}
 
 	invoiceEvent := InvocieEvent{
-		PaymentHash:    invoice.PaymentHash,
-		PaymentRequest: invoice.PaymentRequest,
-		Amount:         amount,
-		Memo:           memo,
-		User:           user,
-		Callback:       callback,
-		CallbackData:   callbackData,
-		LanguageCode:   ctx.Value("publicLanguageCode").(string),
+		Invoice: &Invoice{PaymentHash: invoice.PaymentHash,
+			PaymentRequest: invoice.PaymentRequest,
+			Amount:         amount,
+			Memo:           memo},
+		User:         user,
+		Callback:     callback,
+		CallbackData: callbackData,
+		LanguageCode: ctx.Value("publicLanguageCode").(string),
 	}
 	// save invoice struct for later use
 	runtime.IgnoreError(bot.Bunt.Set(invoiceEvent))

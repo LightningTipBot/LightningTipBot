@@ -11,23 +11,22 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	"github.com/fiatjaf/go-lnurl"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )
 
-type Invoice struct {
-	PaymentRequest string       `json:"payment_request"`
-	PaymentHash    string       `json:"payment_hash"`
-	Amount         int64        `json:"amount"`
-	Comment        string       `json:"comment"`
-	ToUser         *lnbits.User `json:"to_user"`
-	CreatedAt      time.Time    `json:"created_at"`
-	Paid           bool         `json:"paid"`
-	PaidAt         time.Time    `json:"paid_at"`
+type LNURLInvoice struct {
+	*telegram.Invoice
+	Comment   string       `json:"comment"`
+	User      *lnbits.User `json:"user"`
+	CreatedAt time.Time    `json:"created_at"`
+	Paid      bool         `json:"paid"`
+	PaidAt    time.Time    `json:"paid_at"`
 }
 
-func (msg Invoice) Key() string {
+func (msg LNURLInvoice) Key() string {
 	return fmt.Sprintf("payment-hash:%s", msg.PaymentHash)
 }
 
@@ -172,13 +171,15 @@ func (w Server) serveLNURLpSecond(username string, amount int64, comment string)
 	}
 	// save invoice struct for later use
 	runtime.IgnoreError(w.buntdb.Set(
-		Invoice{
-			ToUser:         user,
-			Amount:         amount,
-			Comment:        comment,
-			PaymentRequest: invoice.PaymentRequest,
-			PaymentHash:    invoice.PaymentHash,
-			CreatedAt:      time.Now(),
+		LNURLInvoice{
+			Invoice: &telegram.Invoice{
+				PaymentRequest: invoice.PaymentRequest,
+				PaymentHash:    invoice.PaymentHash,
+				Amount:         amount,
+			},
+			User:      user,
+			Comment:   comment,
+			CreatedAt: time.Now(),
 		}))
 
 	return &lnurl.LNURLPayValues{
