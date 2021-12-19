@@ -178,7 +178,13 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 		return
 	}
 
-	if from.Wallet == nil || from.Wallet.Balance < inlineReceive.Amount {
+	balance, err := bot.GetUserBalance(from)
+	if err != nil {
+		errmsg := fmt.Sprintf("[inlineReceive] Error: Could not get user balance: %s", err)
+		log.Warnln(errmsg)
+	}
+
+	if from.Wallet == nil || balance < inlineReceive.Amount {
 		// if user has no wallet, show invoice
 		bot.tryEditMessage(inlineReceive.Message, inlineReceive.MessageText, &tb.ReplyMarkup{})
 		// runtime.IgnoreError(inlineReceive.Set(inlineReceive, bot.Bunt))
