@@ -236,7 +236,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 	tx := &InlineTipjar{Base: transaction.New(transaction.ID(c.Data))}
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[tipjar] %s", err)
+		// log.Errorf("[tipjar] %s", err)
 		return
 	}
 	inlineTipjar := fn.(*InlineTipjar)

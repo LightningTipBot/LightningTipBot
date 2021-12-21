@@ -235,7 +235,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	tx := &InlineFaucet{Base: transaction.New(transaction.ID(c.Data))}
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[faucet] %s", err)
+		// log.Errorf("[faucet] %s", err)
 		return
 	}
 	inlineFaucet := fn.(*InlineFaucet)
