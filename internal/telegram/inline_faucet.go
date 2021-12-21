@@ -295,6 +295,10 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 			bot.trySendMessage(from.Telegram, Translate(ctx, "sendErrorMessage"))
 			errMsg := fmt.Sprintf("[faucet] Transaction failed: %s", err)
 			log.Warnln(errMsg)
+
+			// if faucet fails, cancel it:
+			c.Sender.ID = inlineFaucet.From.Telegram.ID // overwrite the sender of the callback to be the faucet owner
+			bot.cancelInlineFaucetHandler(ctx, c)
 			return
 		}
 
