@@ -162,7 +162,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 	sn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
-		log.Errorf("[acceptInlineSendHandler] %s", err)
+		// log.Errorf("[acceptInlineSendHandler] %s", err)
 		return
 	}
 	inlineSend := sn.(*InlineSend)

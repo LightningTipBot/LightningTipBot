@@ -202,7 +202,7 @@ func (bot *TipBot) sendInlineReceiveHandler(ctx context.Context, c *tb.Callback)
 	rn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
-		log.Errorf("[getInlineReceive] %s", err)
+		// log.Errorf("[getInlineReceive] %s", err)
 		return
 	}
 	inlineReceive := rn.(*InlineReceive)

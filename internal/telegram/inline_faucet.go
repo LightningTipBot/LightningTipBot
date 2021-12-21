@@ -235,7 +235,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	tx := &InlineFaucet{Base: transaction.New(transaction.ID(c.Data))}
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[faucet] %s", err)
+		// log.Errorf("[faucet] %s", err)
 		return
 	}
 	inlineFaucet := fn.(*InlineFaucet)
@@ -295,6 +295,11 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 			bot.trySendMessage(from.Telegram, Translate(ctx, "sendErrorMessage"))
 			errMsg := fmt.Sprintf("[faucet] Transaction failed: %s", err)
 			log.Warnln(errMsg)
+
+			// if faucet fails, cancel it:
+			c.Sender.ID = inlineFaucet.From.Telegram.ID // overwrite the sender of the callback to be the faucet owner
+			log.Debugf("[faucet] Canceling faucet %s...", inlineFaucet.ID)
+			bot.cancelInlineFaucetHandler(ctx, c)
 			return
 		}
 
@@ -350,5 +355,6 @@ func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		inlineFaucet.InTransaction = false
 		runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.Bunt))
 	}
+	log.Debugf("[faucet] Faucet %s canceled.", inlineFaucet.ID)
 	return
 }
