@@ -109,10 +109,10 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.loadUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -125,11 +125,11 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
 					bot.loadReplyToInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -142,10 +142,10 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -158,10 +158,10 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -174,10 +174,10 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -190,11 +190,11 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
 					bot.loadReplyToInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -207,10 +207,10 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -223,10 +223,10 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -239,10 +239,10 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.loadUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -255,10 +255,10 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.loadUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -271,10 +271,10 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -287,10 +287,10 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -303,10 +303,10 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -319,10 +319,10 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -336,10 +336,10 @@ func (bot TipBot) getHandler() []Handler {
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.requirePrivateChatInterceptor,
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -353,10 +353,10 @@ func (bot TipBot) getHandler() []Handler {
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.requirePrivateChatInterceptor, // Respond to any text only in private chat
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.loadUserInterceptor, // need to use loadUserInterceptor instead of requireUserInterceptor, because user might not be registered yet
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -369,9 +369,9 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: QueryInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -388,9 +388,9 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -403,9 +403,9 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -418,9 +418,9 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -433,9 +433,9 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -448,9 +448,9 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -463,9 +463,9 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -478,9 +478,9 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -493,9 +493,9 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -508,9 +508,9 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -523,9 +523,9 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -538,9 +538,9 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -553,9 +553,9 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -568,9 +568,9 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
@@ -583,9 +583,9 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
-					bot.lockInterceptor,
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
