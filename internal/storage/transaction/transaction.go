@@ -115,7 +115,7 @@ func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error
 		select {
 		case <-ticker.C:
 			unlock(tx.ID)
-			return nil, fmt.Errorf("[Bunt Lock] transaction timeout")
+			return nil, fmt.Errorf("[Bunt Lock] transaction timeout %s", tx.ID)
 		default:
 			time.Sleep(time.Duration(75) * time.Millisecond)
 			err = db.Get(s)
