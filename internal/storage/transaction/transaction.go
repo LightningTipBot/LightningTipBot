@@ -60,7 +60,7 @@ func (tx *Base) Lock(s storage.Storable, db *storage.DB) error {
 	log.Debugf("[Lock] %s", tx.ID)
 	return nil
 }
-func unlock(id string) {
+func Unlock(id string) {
 	transactionMapMutex.Lock()
 	if transactionMutex[id] != nil {
 		transactionMutex[id].Unlock()
@@ -79,7 +79,7 @@ func (tx *Base) Release(s storage.Storable, db *storage.DB) error {
 		return err
 	}
 	log.Debugf("[Bunt Release] %s", tx.ID)
-	unlock(tx.ID)
+	Unlock(tx.ID)
 	return nil
 }
 
@@ -105,7 +105,7 @@ func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error
 
 	err := db.Get(s)
 	if err != nil {
-		unlock(tx.ID)
+		Unlock(tx.ID)
 		return s, err
 	}
 	// to avoid race conditions, we block the call if there is
@@ -114,7 +114,7 @@ func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error
 	for tx.InTransaction {
 		select {
 		case <-ticker.C:
-			unlock(tx.ID)
+			Unlock(tx.ID)
 			return nil, fmt.Errorf("[Bunt Lock] transaction timeout %s", tx.ID)
 		default:
 			time.Sleep(time.Duration(75) * time.Millisecond)
@@ -122,7 +122,7 @@ func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error
 		}
 	}
 	if err != nil {
-		unlock(tx.ID)
+		Unlock(tx.ID)
 		return nil, fmt.Errorf("could not get transaction")
 	}
 
