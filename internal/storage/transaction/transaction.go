@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 type Base struct {
@@ -44,8 +45,10 @@ func (tx *Base) Lock(s storage.Storable, db *storage.DB) error {
 	tx.InTransaction = true
 	err := tx.Set(s, db)
 	if err != nil {
+		log.Debugf("[Lock] %s Error: %s", tx.ID, err.Error())
 		return err
 	}
+	log.Debugf("[Lock] %s", tx.ID)
 	return nil
 }
 
@@ -54,8 +57,10 @@ func (tx *Base) Release(s storage.Storable, db *storage.DB) error {
 	tx.InTransaction = false
 	err := tx.Set(s, db)
 	if err != nil {
+		log.Debugf("[Release] %s Error: %s", tx.ID, err.Error())
 		return err
 	}
+	log.Debugf("[Release] %s", tx.ID)
 	return nil
 }
 
@@ -63,8 +68,10 @@ func (tx *Base) Inactivate(s storage.Storable, db *storage.DB) error {
 	tx.Active = false
 	err := tx.Set(s, db)
 	if err != nil {
+		log.Debugf("[Inactivate] %s Error: %s", tx.ID, err.Error())
 		return err
 	}
+	log.Debugf("[Inactivate] %s", tx.ID)
 	return nil
 }
 
