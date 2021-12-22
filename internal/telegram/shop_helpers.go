@@ -243,6 +243,7 @@ func (bot *TipBot) getShop(ctx context.Context, shopId string) (*Shop, error) {
 		log.Errorf("[getShop] %s", err)
 		return &Shop{}, err
 	}
+	transaction.Unlock(tx.ID)
 	shop := sn.(*Shop)
 	if shop.Owner == nil {
 		return &Shop{}, fmt.Errorf("shop has no owner")
