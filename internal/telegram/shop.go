@@ -234,8 +234,10 @@ func (bot *TipBot) enterShopItemTitleHandler(ctx context.Context, m *tb.Message)
 	if len(m.Text) == 0 {
 		ResetUserState(user, bot)
 		bot.sendStatusMessage(ctx, m.Sender, "🚫 Action cancelled.")
-		time.Sleep(time.Duration(2) * time.Second)
-		bot.shopViewDeleteAllStatusMsgs(ctx, user)
+		go func() {
+			time.Sleep(time.Duration(5) * time.Second)
+			bot.shopViewDeleteAllStatusMsgs(ctx, user)
+		}()
 		return
 	}
 	// crop item title
@@ -656,6 +658,7 @@ func (bot *TipBot) addItemFileHandler(ctx context.Context, m *tb.Message) {
 	if m.Photo != nil {
 		item.FileIDs = append(item.FileIDs, m.Photo.FileID)
 		item.FileTypes = append(item.FileTypes, "photo")
+		bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("ℹ️ To send more than one photo at a time, send them as files."))
 	} else if m.Document != nil {
 		item.FileIDs = append(item.FileIDs, m.Document.FileID)
 		item.FileTypes = append(item.FileTypes, "document")
@@ -683,8 +686,11 @@ func (bot *TipBot) addItemFileHandler(ctx context.Context, m *tb.Message) {
 	runtime.IgnoreError(shop.Set(shop, bot.ShopBunt))
 	bot.tryDeleteMessage(m)
 	bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("✅ File added."))
-	time.Sleep(time.Duration(2) * time.Second)
-	bot.shopViewDeleteAllStatusMsgs(ctx, user)
+
+	go func() {
+		time.Sleep(time.Duration(5) * time.Second)
+		bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	}()
 	bot.displayShopItem(ctx, shopView.Message, shop)
 	log.Infof("[🛍 shop] %s added a file to shop:item %s:%s.", GetUserStr(user.Telegram), shop.ID, item.ID)
 }
@@ -1115,8 +1121,10 @@ func (bot *TipBot) enterShopsDescriptionHandler(ctx context.Context, m *tb.Messa
 	if len(m.Text) == 0 {
 		ResetUserState(user, bot)
 		bot.sendStatusMessage(ctx, m.Sender, "🚫 Action cancelled.")
-		time.Sleep(time.Duration(2) * time.Second)
-		bot.shopViewDeleteAllStatusMsgs(ctx, user)
+		go func() {
+			time.Sleep(time.Duration(5) * time.Second)
+			bot.shopViewDeleteAllStatusMsgs(ctx, user)
+		}()
 		return
 	}
 
@@ -1287,8 +1295,10 @@ func (bot *TipBot) enterShopTitleHandler(ctx context.Context, m *tb.Message) {
 	if len(m.Text) == 0 {
 		ResetUserState(user, bot)
 		bot.sendStatusMessage(ctx, m.Sender, "🚫 Action cancelled.")
-		time.Sleep(time.Duration(2) * time.Second)
-		bot.shopViewDeleteAllStatusMsgs(ctx, user)
+		go func() {
+			time.Sleep(time.Duration(5) * time.Second)
+			bot.shopViewDeleteAllStatusMsgs(ctx, user)
+		}()
 		return
 	}
 	// crop shop title
