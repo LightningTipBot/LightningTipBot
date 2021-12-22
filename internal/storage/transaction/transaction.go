@@ -67,7 +67,15 @@ func Unlock(id string) {
 		log.Tracef("[TX mutex] Release %s", id)
 	}
 	transactionMapMutex.Unlock()
+}
 
+func Lock(id string) {
+	transactionMapMutex.Lock()
+	if transactionMutex[id] == nil {
+		transactionMutex[id] = &sync.Mutex{}
+	}
+	transactionMapMutex.Unlock()
+	transactionMutex[id].Lock()
 }
 
 func (tx *Base) Release(s storage.Storable, db *storage.DB) error {
@@ -92,14 +100,6 @@ func (tx *Base) Inactivate(s storage.Storable, db *storage.DB) error {
 	}
 	log.Debugf("[Bunt Inactivate] %s", tx.ID)
 	return nil
-}
-func Lock(id string) {
-	transactionMapMutex.Lock()
-	if transactionMutex[id] == nil {
-		transactionMutex[id] = &sync.Mutex{}
-	}
-	transactionMapMutex.Unlock()
-	transactionMutex[id].Lock()
 }
 
 func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error) {
