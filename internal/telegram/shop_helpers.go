@@ -205,6 +205,7 @@ func (bot *TipBot) getUserShops(ctx context.Context, user *lnbits.User) (*Shops,
 		log.Errorf("[getUserShops] User: %s (%d): %s", GetUserStr(user.Telegram), user.Telegram.ID, err)
 		return &Shops{}, err
 	}
+	transaction.Unlock(tx.ID)
 	shops := sn.(*Shops)
 	return shops, nil
 }
