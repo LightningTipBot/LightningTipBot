@@ -162,7 +162,7 @@ func (bot TipBot) requirePrivateChatInterceptor(ctx context.Context, i interface
 	case *tb.Message:
 		m := i.(*tb.Message)
 		if m.Chat.Type != tb.ChatPrivate {
-			return nil, fmt.Errorf("no private chat")
+			return nil, fmt.Errorf("[requirePrivateChatInterceptor] no private chat")
 		}
 		return ctx, nil
 	}
