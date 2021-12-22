@@ -40,9 +40,9 @@ func getDefaultAfterInterceptor(bot TipBot) []intercept.Func {
 
 // registerHandlerWithInterceptor will register a handler with all the predefined interceptors, based on the interceptor type
 func (bot TipBot) registerHandlerWithInterceptor(h Handler) {
-	h.Interceptor.Before = append(getDefaultBeforeInterceptor(bot), h.Interceptor.Before...)
-	h.Interceptor.After = append(h.Interceptor.After, getDefaultAfterInterceptor(bot)...)
-	h.Interceptor.OnDefer = append(h.Interceptor.OnDefer, getDefaultDeferInterceptor(bot)...)
+	//h.Interceptor.Before = append(getDefaultBeforeInterceptor(bot), h.Interceptor.Before...)
+	//h.Interceptor.After = append(h.Interceptor.After, getDefaultAfterInterceptor(bot)...)
+	//h.Interceptor.OnDefer = append(h.Interceptor.OnDefer, getDefaultDeferInterceptor(bot)...)
 
 	switch h.Interceptor.Type {
 	case MessageInterceptor:
@@ -109,9 +109,15 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.loadUserInterceptor,
-				}},
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{"/tip"},
@@ -119,10 +125,16 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
 					bot.loadReplyToInterceptor,
-				}},
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{"/pay"},
@@ -130,9 +142,15 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
-				}},
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{"/invoice"},
@@ -140,9 +158,15 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
-				}},
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{"/balance"},
@@ -150,9 +174,15 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
-				}},
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{"/send"},
@@ -160,10 +190,16 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
 					bot.loadReplyToInterceptor,
-				}},
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{"/faucet", "/zapfhahn", "/kraan", "/grifo"},
@@ -171,9 +207,15 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
-				}},
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{"/tipjar", "/spendendose"},
@@ -181,9 +223,15 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
-				}},
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{"/help"},
@@ -191,9 +239,15 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.loadUserInterceptor,
-				}},
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{"/basics"},
@@ -201,9 +255,15 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.loadUserInterceptor,
-				}},
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{"/donate"},
@@ -211,9 +271,15 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
-				}},
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{"/advanced"},
@@ -221,9 +287,15 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
-				}},
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{"/link"},
@@ -231,8 +303,15 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
-					bot.requireUserInterceptor}},
+					bot.requireUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{"/lnurl"},
@@ -240,8 +319,15 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
-					bot.requireUserInterceptor}},
+					bot.requireUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{tb.OnPhoto},
@@ -250,8 +336,15 @@ func (bot TipBot) getHandler() []Handler {
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.requirePrivateChatInterceptor,
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
-					bot.requireUserInterceptor}},
+					bot.requireUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{tb.OnText},
@@ -260,9 +353,15 @@ func (bot TipBot) getHandler() []Handler {
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.requirePrivateChatInterceptor, // Respond to any text only in private chat
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.loadUserInterceptor, // need to use loadUserInterceptor instead of requireUserInterceptor, because user might not be registered yet
-				}},
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{tb.OnQuery},
@@ -270,9 +369,14 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: QueryInterceptor,
 				Before: []intercept.Func{
-					bot.requireUserInterceptor,
+					bot.lockInterceptor,
 					bot.localizerInterceptor,
-				}},
+					bot.requireUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{tb.OnChosenInlineResult},
@@ -282,99 +386,211 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnPay},
 			Handler:   bot.confirmPayHandler,
 			Interceptor: &Interceptor{
-				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.requireUserInterceptor}},
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{&btnCancelPay},
 			Handler:   bot.cancelPaymentHandler,
 			Interceptor: &Interceptor{
-				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.requireUserInterceptor}},
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{&btnSend},
 			Handler:   bot.confirmSendHandler,
 			Interceptor: &Interceptor{
-				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.requireUserInterceptor}},
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{&btnCancelSend},
 			Handler:   bot.cancelSendHandler,
 			Interceptor: &Interceptor{
-				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.requireUserInterceptor}},
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{&btnAcceptInlineSend},
 			Handler:   bot.acceptInlineSendHandler,
 			Interceptor: &Interceptor{
-				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
+					bot.loadUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{&btnCancelInlineSend},
 			Handler:   bot.cancelInlineSendHandler,
 			Interceptor: &Interceptor{
-				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.requireUserInterceptor}},
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{&btnAcceptInlineReceive},
 			Handler:   bot.acceptInlineReceiveHandler,
 			Interceptor: &Interceptor{
-				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
+					bot.loadUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{&btnCancelInlineReceive},
 			Handler:   bot.cancelInlineReceiveHandler,
 			Interceptor: &Interceptor{
-				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.requireUserInterceptor}},
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{&btnAcceptInlineFaucet},
 			Handler:   bot.acceptInlineFaucetHandler,
 			Interceptor: &Interceptor{
-				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
+					bot.loadUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{&btnCancelInlineFaucet},
 			Handler:   bot.cancelInlineFaucetHandler,
 			Interceptor: &Interceptor{
-				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.requireUserInterceptor}},
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{&btnAcceptInlineTipjar},
 			Handler:   bot.acceptInlineTipjarHandler,
 			Interceptor: &Interceptor{
-				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.requireUserInterceptor}},
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{&btnCancelInlineTipjar},
 			Handler:   bot.cancelInlineTipjarHandler,
 			Interceptor: &Interceptor{
-				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.requireUserInterceptor}},
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{&btnWithdraw},
 			Handler:   bot.confirmWithdrawHandler,
 			Interceptor: &Interceptor{
-				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.requireUserInterceptor}},
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{&btnCancelWithdraw},
 			Handler:   bot.cancelWithdrawHandler,
 			Interceptor: &Interceptor{
-				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.requireUserInterceptor}},
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.lockInterceptor,
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 	}
 }
