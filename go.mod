@@ -12,6 +12,7 @@ require (
 	github.com/jinzhu/configor v1.2.1
 	github.com/makiuchi-d/gozxing v0.0.2
 	github.com/nicksnyder/go-i18n/v2 v2.1.2
+	github.com/orcaman/concurrent-map v1.0.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/sethvargo/go-limiter v0.7.2
 	github.com/sirupsen/logrus v1.6.0

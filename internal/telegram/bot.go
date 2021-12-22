@@ -14,7 +14,6 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	gocache "github.com/patrickmn/go-cache"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/lightningtipbot/telebot.v2"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 	"gorm.io/gorm"
 )
@@ -24,7 +23,7 @@ type TipBot struct {
 	Bunt     *storage.DB
 	ShopBunt *storage.DB
 	logger   *gorm.DB
-	Telegram *telebot.Bot
+	Telegram *tb.Bot
 	Client   *lnbits.Client
 	limiter  map[string]limiter.Limiter
 	Cache
