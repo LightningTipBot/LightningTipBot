@@ -54,15 +54,14 @@ func interceptMessage(ctx context.Context, message *tb.Message, hm MessageChain)
 }
 
 func HandlerWithMessage(handler MessageFuncHandler, option ...MessageInterceptOption) func(message *tb.Message) {
-
 	hm := &handlerMessageInterceptor{handler: handler}
 	for _, opt := range option {
 		opt(hm)
 	}
 	return func(message *tb.Message) {
 		ctx := context.Background()
-		defer interceptMessage(ctx, message, hm.onDefer)
 		ctx, err := interceptMessage(ctx, message, hm.before)
+		defer interceptMessage(ctx, message, hm.onDefer)
 		if err != nil {
 			log.Traceln(err)
 			return

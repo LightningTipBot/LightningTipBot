@@ -57,8 +57,8 @@ func HandlerWithCallback(handler CallbackFuncHandler, option ...CallbackIntercep
 	}
 	return func(c *tb.Callback) {
 		ctx := context.Background()
-		defer interceptCallback(ctx, c, hm.onDefer)
 		ctx, err := interceptCallback(ctx, c, hm.before)
+		defer interceptCallback(ctx, c, hm.onDefer)
 		if err != nil {
 			log.Traceln(err)
 			return
