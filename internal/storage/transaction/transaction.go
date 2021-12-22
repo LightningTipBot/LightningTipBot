@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -15,6 +16,14 @@ type Base struct {
 	CreatedAt     time.Time `json:"created"`
 	UpdatedAt     time.Time `json:"updated"`
 }
+
+func init() {
+	transactionMutex = make(map[string]*sync.Mutex, 0)
+	transactionMapMutex = &sync.Mutex{}
+}
+
+var transactionMutex map[string]*sync.Mutex
+var transactionMapMutex *sync.Mutex
 
 type Option func(b *Base)
 
@@ -45,11 +54,20 @@ func (tx *Base) Lock(s storage.Storable, db *storage.DB) error {
 	tx.InTransaction = true
 	err := tx.Set(s, db)
 	if err != nil {
-		log.Debugf("[Lock] %s Error: %s", tx.ID, err.Error())
+		log.Debugf("[Bunt Lock] %s Error: %s", tx.ID, err.Error())
 		return err
 	}
 	log.Debugf("[Lock] %s", tx.ID)
 	return nil
+}
+func unlock(id string) {
+	transactionMapMutex.Lock()
+	if transactionMutex[id] != nil {
+		transactionMutex[id].Unlock()
+		log.Tracef("[TX mutex] Release %s", id)
+	}
+	transactionMapMutex.Unlock()
+
 }
 
 func (tx *Base) Release(s storage.Storable, db *storage.DB) error {
@@ -57,10 +75,11 @@ func (tx *Base) Release(s storage.Storable, db *storage.DB) error {
 	tx.InTransaction = false
 	err := tx.Set(s, db)
 	if err != nil {
-		log.Debugf("[Release] %s Error: %s", tx.ID, err.Error())
+		log.Debugf("[Bunt Release] %s Error: %s", tx.ID, err.Error())
 		return err
 	}
-	log.Debugf("[Release] %s", tx.ID)
+	log.Debugf("[Bunt Release] %s", tx.ID)
+	unlock(tx.ID)
 	return nil
 }
 
@@ -68,16 +87,25 @@ func (tx *Base) Inactivate(s storage.Storable, db *storage.DB) error {
 	tx.Active = false
 	err := tx.Set(s, db)
 	if err != nil {
-		log.Debugf("[Inactivate] %s Error: %s", tx.ID, err.Error())
+		log.Debugf("[Bunt Inactivate] %s Error: %s", tx.ID, err.Error())
 		return err
 	}
-	log.Debugf("[Inactivate] %s", tx.ID)
+	log.Debugf("[Bunt Inactivate] %s", tx.ID)
 	return nil
 }
 
 func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error) {
+	transactionMapMutex.Lock()
+	if transactionMutex[tx.ID] == nil {
+		transactionMutex[tx.ID] = &sync.Mutex{}
+	}
+	transactionMapMutex.Unlock()
+	transactionMutex[tx.ID].Lock()
+	log.Tracef("[TX mutex] Lock %s", tx.ID)
+
 	err := db.Get(s)
 	if err != nil {
+		unlock(tx.ID)
 		return s, err
 	}
 	// to avoid race conditions, we block the call if there is
@@ -86,13 +114,15 @@ func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error
 	for tx.InTransaction {
 		select {
 		case <-ticker.C:
-			return nil, fmt.Errorf("transaction timeout")
+			unlock(tx.ID)
+			return nil, fmt.Errorf("[Bunt Lock] transaction timeout %s", tx.ID)
 		default:
 			time.Sleep(time.Duration(75) * time.Millisecond)
 			err = db.Get(s)
 		}
 	}
 	if err != nil {
+		unlock(tx.ID)
 		return nil, fmt.Errorf("could not get transaction")
 	}
 

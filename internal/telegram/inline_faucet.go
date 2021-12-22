@@ -245,12 +245,12 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		log.Errorf("[faucet] LockFaucet %s error: %s", inlineFaucet.ID, err)
 		return
 	}
+	defer inlineFaucet.Release(inlineFaucet, bot.Bunt)
 	if !inlineFaucet.Active {
 		log.Errorf(fmt.Sprintf("[faucet] faucet %s inactive.", inlineFaucet.ID))
 		return
 	}
 	// release faucet no matter what
-	defer inlineFaucet.Release(inlineFaucet, bot.Bunt)
 
 	if from.Telegram.ID == to.Telegram.ID {
 		bot.trySendMessage(from.Telegram, Translate(ctx, "sendYourselfMessage"))
