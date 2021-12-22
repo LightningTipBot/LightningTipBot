@@ -2,7 +2,7 @@ package transaction
 
 import (
 	"fmt"
-	"sync"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -16,14 +16,6 @@ type Base struct {
 	CreatedAt     time.Time `json:"created"`
 	UpdatedAt     time.Time `json:"updated"`
 }
-
-func init() {
-	transactionMutex = make(map[string]*sync.Mutex, 0)
-	transactionMapMutex = &sync.Mutex{}
-}
-
-var transactionMutex map[string]*sync.Mutex
-var transactionMapMutex *sync.Mutex
 
 type Option func(b *Base)
 
@@ -61,21 +53,11 @@ func (tx *Base) Lock(s storage.Storable, db *storage.DB) error {
 	return nil
 }
 func Unlock(id string) {
-	transactionMapMutex.Lock()
-	if transactionMutex[id] != nil {
-		transactionMutex[id].Unlock()
-		log.Tracef("[TX mutex] Release %s", id)
-	}
-	transactionMapMutex.Unlock()
+	runtime.Unlock(id)
 }
 
 func Lock(id string) {
-	transactionMapMutex.Lock()
-	if transactionMutex[id] == nil {
-		transactionMutex[id] = &sync.Mutex{}
-	}
-	transactionMapMutex.Unlock()
-	transactionMutex[id].Lock()
+	runtime.Lock(id)
 }
 
 func (tx *Base) Release(s storage.Storable, db *storage.DB) error {

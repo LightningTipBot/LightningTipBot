@@ -3,10 +3,10 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"sync"
-
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	i18n2 "github.com/nicksnyder/go-i18n/v2/i18n"
+	"strconv"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
@@ -22,11 +22,6 @@ const (
 	QueryInterceptor
 )
 
-func init() {
-	handlerMutex = make(map[int64]*sync.Mutex)
-	handlerMapMutex = &sync.Mutex{}
-}
-
 var invalidTypeError = fmt.Errorf("invalid type")
 
 type Interceptor struct {
@@ -36,21 +31,11 @@ type Interceptor struct {
 	OnDefer []intercept.Func
 }
 
-// handlerMapMutex to prevent concurrent map read / writes on HandlerMutex map
-var handlerMapMutex *sync.Mutex
-
-// handlerMutex map holds mutex for every telegram user. Mutex locket as first before interceptor and unlocked on defer intercept
-var handlerMutex map[int64]*sync.Mutex
-
 // unlockInterceptor invoked as onDefer interceptor
 func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	user := getTelegramUserFromInterface(i)
 	if user != nil {
-		handlerMapMutex.Lock()
-		if handlerMutex[user.ID] != nil {
-			handlerMutex[user.ID].Unlock()
-		}
-		handlerMapMutex.Unlock()
+		runtime.Unlock(strconv.FormatInt(user.ID, 10))
 		log.Tracef("[User mutex] Unlocked user %d", user.ID)
 	}
 	return ctx, nil
@@ -60,12 +45,7 @@ func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context
 func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	user := getTelegramUserFromInterface(i)
 	if user != nil {
-		handlerMapMutex.Lock()
-		if handlerMutex[user.ID] == nil {
-			handlerMutex[user.ID] = &sync.Mutex{}
-		}
-		handlerMapMutex.Unlock()
-		handlerMutex[user.ID].Lock()
+		runtime.Lock(strconv.FormatInt(user.ID, 10))
 		log.Tracef("[User mutex] Locked user %d", user.ID)
 		return ctx, nil
 	}
