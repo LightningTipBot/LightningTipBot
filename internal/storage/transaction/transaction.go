@@ -60,6 +60,15 @@ func (tx *Base) Lock(s storage.Storable, db *storage.DB) error {
 	log.Debugf("[Lock] %s", tx.ID)
 	return nil
 }
+func unlock(id string) {
+	transactionMapMutex.Lock()
+	if transactionMutex[id] != nil {
+		transactionMutex[id].Unlock()
+		log.Tracef("[TX mutex] Release %s", id)
+	}
+	transactionMapMutex.Unlock()
+
+}
 
 func (tx *Base) Release(s storage.Storable, db *storage.DB) error {
 	// immediatelly set intransaction to block duplicate calls
@@ -70,13 +79,7 @@ func (tx *Base) Release(s storage.Storable, db *storage.DB) error {
 		return err
 	}
 	log.Debugf("[Bunt Release] %s", tx.ID)
-	transactionMapMutex.Lock()
-	if transactionMutex[tx.ID] != nil {
-		transactionMutex[tx.ID].Unlock()
-		log.Tracef("[TX mutex] Release %s", tx.ID)
-	}
-	transactionMapMutex.Unlock()
-
+	unlock(tx.ID)
 	return nil
 }
 
@@ -102,6 +105,7 @@ func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error
 
 	err := db.Get(s)
 	if err != nil {
+		unlock(tx.ID)
 		return s, err
 	}
 	// to avoid race conditions, we block the call if there is
@@ -110,6 +114,7 @@ func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error
 	for tx.InTransaction {
 		select {
 		case <-ticker.C:
+			unlock(tx.ID)
 			return nil, fmt.Errorf("[Bunt Lock] transaction timeout")
 		default:
 			time.Sleep(time.Duration(75) * time.Millisecond)
@@ -117,6 +122,7 @@ func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error
 		}
 	}
 	if err != nil {
+		unlock(tx.ID)
 		return nil, fmt.Errorf("could not get transaction")
 	}
 
