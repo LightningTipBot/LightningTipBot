@@ -338,7 +338,7 @@ func (bot *TipBot) cancelInlineTipjarHandler(ctx context.Context, c *tb.Callback
 	tx := &InlineTipjar{Base: transaction.New(transaction.ID(c.Data))}
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[cancelInlineSendHandler] %s", err)
+		log.Errorf("[cancelInlineTipjarHandler] %s", err)
 		return
 	}
 	inlineTipjar := fn.(*InlineTipjar)

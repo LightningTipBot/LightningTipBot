@@ -196,7 +196,7 @@ func (bot TipBot) faucetHandler(ctx context.Context, m *tb.Message) {
 func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) {
 	inlineFaucet, err := bot.makeQueryFaucet(ctx, q, false)
 	if err != nil {
-		// log.Errorf("[faucet] %s", err)
+		log.Errorf("[handleInlineFaucetQuery] %s", err)
 		return
 	}
 	urls := []string{
@@ -235,7 +235,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	tx := &InlineFaucet{Base: transaction.New(transaction.ID(c.Data))}
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		// log.Errorf("[faucet] %s", err)
+		log.Debugf("[acceptInlineFaucetHandler] %s", err)
 		return
 	}
 	inlineFaucet := fn.(*InlineFaucet)
@@ -344,7 +344,7 @@ func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	tx := &InlineFaucet{Base: transaction.New(transaction.ID(c.Data))}
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[cancelInlineSendHandler] %s", err)
+		log.Debugf("[cancelInlineFaucetHandler] %s", err)
 		return
 	}
 	inlineFaucet := fn.(*InlineFaucet)
