@@ -93,14 +93,17 @@ func (tx *Base) Inactivate(s storage.Storable, db *storage.DB) error {
 	log.Debugf("[Bunt Inactivate] %s", tx.ID)
 	return nil
 }
-
-func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error) {
+func Lock(id string) {
 	transactionMapMutex.Lock()
-	if transactionMutex[tx.ID] == nil {
-		transactionMutex[tx.ID] = &sync.Mutex{}
+	if transactionMutex[id] == nil {
+		transactionMutex[id] = &sync.Mutex{}
 	}
 	transactionMapMutex.Unlock()
-	transactionMutex[tx.ID].Lock()
+	transactionMutex[id].Lock()
+}
+
+func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error) {
+	Lock(tx.ID)
 	log.Tracef("[TX mutex] Lock %s", tx.ID)
 
 	err := db.Get(s)
