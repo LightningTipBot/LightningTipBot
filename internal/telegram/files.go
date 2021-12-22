@@ -4,8 +4,6 @@ import (
 	"context"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/orcaman/concurrent-map"
-	"time"
-
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
@@ -28,7 +26,7 @@ func (bot *TipBot) fileHandler(ctx context.Context, m *tb.Message) {
 			t.(*runtime.ResettableFunctionTicker).ResetChan <- struct{}{}
 		} else {
 			// state reset ticker not found. creating new one.
-			ticker := runtime.NewResettableFunctionTicker(runtime.WithDuration(time.Second * 10))
+			ticker := runtime.NewResettableFunctionTicker()
 			// storing reset ticker in mem
 			fileStateResetTicker.Set(user.ID, ticker)
 			go func() {
