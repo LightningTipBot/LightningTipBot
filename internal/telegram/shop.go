@@ -537,8 +537,8 @@ func (bot *TipBot) addShopItem(ctx context.Context, shopId string) (*Shop, ShopI
 	if shop.Owner.Telegram.ID != user.Telegram.ID {
 		return shop, ShopItem{}, fmt.Errorf("not owner")
 	}
-	err = shop.Lock(shop, bot.ShopBunt)
-	defer shop.Release(shop, bot.ShopBunt)
+	// err = shop.Lock(shop, bot.ShopBunt)
+	// defer shop.Release(shop, bot.ShopBunt)
 
 	itemId := fmt.Sprintf("item-%s-%s", shop.ID, RandStringRunes(8))
 	item := ShopItem{
@@ -629,7 +629,7 @@ func (bot *TipBot) shopItemAddItemHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 	SetUserState(user, bot, lnbits.UserStateShopItemSendItemFile, c.Data)
-	bot.sendStatusMessage(ctx, c.Sender, fmt.Sprintf("💾 Send me a file."))
+	bot.sendStatusMessage(ctx, c.Sender, fmt.Sprintf("💾 Send me one or more files."))
 }
 
 // addItemFileHandler is invoked when the users sends a new file for the item
@@ -773,7 +773,12 @@ func (bot *TipBot) shopConfirmBuyHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 	bot.trySendMessage(user.Telegram, fmt.Sprintf("🛍 %d sat sent to %s.", amount, toUserStrMd), &tb.ReplyMarkup{})
-	bot.trySendMessage(to.Telegram, fmt.Sprintf("🛍 Someone bought `%s` from you for %d sat.", str.MarkdownEscape(item.Title), amount))
+	shopItemTitle := "an item"
+	if len(item.Title) > 0 {
+		shopItemTitle = fmt.Sprintf("`%s`", item.Title)
+	}
+	bot.trySendMessage(to.Telegram, fmt.Sprintf("🛍 Someone bought %s from your shop `%s` for %d sat.", str.MarkdownEscape(shopItemTitle), str.MarkdownEscape(shop.Title), amount))
+	bot.trySendMessage(from.Telegram, fmt.Sprintf("🛍 You bought %s from shop `%s` for %d sat.", str.MarkdownEscape(shopItemTitle), str.MarkdownEscape(shop.Title), amount))
 	log.Infof("[🛍 shop] %s paid %s %d sat.", GetUserStr(user.Telegram), GetUserStr(shop.Owner.Telegram), item.Price)
 	bot.shopSendItemFilesToUser(ctx, user, itemID)
 }
