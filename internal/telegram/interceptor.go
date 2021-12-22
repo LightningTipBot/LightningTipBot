@@ -51,6 +51,7 @@ func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context
 			handlerMutex[user.ID].Unlock()
 		}
 		handlerMapMutex.Unlock()
+		log.Debugf("[mutex] Unlocked user %d", user.ID)
 	}
 	return ctx, nil
 }
@@ -65,6 +66,7 @@ func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.C
 		}
 		handlerMapMutex.Unlock()
 		handlerMutex[user.ID].Lock()
+		log.Debugf("[mutex] Locked user %d", user.ID)
 		return ctx, nil
 	}
 	return nil, invalidTypeError
