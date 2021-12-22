@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"context"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/orcaman/concurrent-map"
 	"time"
 
@@ -20,18 +21,23 @@ func (bot *TipBot) fileHandler(ctx context.Context, m *tb.Message) {
 	}
 	user := LoadUser(ctx)
 	if c := stateCallbackMessage[user.StateKey]; c != nil {
+		// found handler for this state
+		// now looking for user state reset ticker
 		if t, ok := fileStateResetTicker.Get(user.ID); ok {
-			t.(UserStateTicker).ticketResetChan <- struct{}{}
+			// state reset ticker found. resetting ticker.
+			t.(*runtime.ResettableFunctionTicker).ResetChan <- struct{}{}
 		} else {
-			ticker := UserStateTicker{
-				ticketResetChan: make(chan struct{}, 1),
-				user:            user,
-				bot:             bot,
-				ticker:          time.NewTicker(tickerCoolDown)}
+			// state reset ticker not found. creating new one.
+			ticker := runtime.NewResettableFunctionTicker(runtime.WithDuration(time.Second * 10))
+			// storing reset ticker in mem
 			fileStateResetTicker.Set(user.ID, ticker)
 			go func() {
-				ticker.Do()
-				fileStateResetTicker.Remove(ticker.user.ID)
+				// starting ticker
+				ticker.Do(func() {
+					ResetUserState(user, bot)
+					// removing ticker asap done
+					fileStateResetTicker.Remove(user.ID)
+				})
 			}()
 		}
 		c(ctx, m)

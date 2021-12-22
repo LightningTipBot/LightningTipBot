@@ -2,8 +2,6 @@ package telegram
 
 import (
 	"context"
-	"time"
-
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
@@ -23,26 +21,5 @@ func initializeStateCallbackMessage(bot *TipBot) {
 		lnbits.UserStateShopItemSendTitle:    bot.enterShopItemTitleHandler,
 		lnbits.UserStateShopItemSendItemFile: bot.addItemFileHandler,
 		lnbits.UserEnterShopsDescription:     bot.enterShopsDescriptionHandler,
-	}
-}
-
-var tickerCoolDown = time.Second * 10
-
-type UserStateTicker struct {
-	user            *lnbits.User
-	ticker          *time.Ticker
-	bot             *TipBot
-	ticketResetChan chan struct{}
-}
-
-func (t UserStateTicker) Do() {
-	for {
-		select {
-		case <-t.ticker.C:
-			ResetUserState(t.user, t.bot)
-			return
-		case <-t.ticketResetChan:
-			t.ticker = time.NewTicker(tickerCoolDown)
-		}
 	}
 }
