@@ -32,11 +32,11 @@ type Server struct {
 
 type Webhook struct {
 	CheckingID    string      `json:"checking_id"`
-	Pending       int         `json:"pending"`
-	Amount        int         `json:"amount"`
-	Fee           int         `json:"fee"`
+	Pending       bool        `json:"pending"`
+	Amount        int64       `json:"amount"`
+	Fee           int64       `json:"fee"`
 	Memo          string      `json:"memo"`
-	Time          int         `json:"time"`
+	Time          int64       `json:"time"`
 	Bolt11        string      `json:"bolt11"`
 	Preimage      string      `json:"preimage"`
 	PaymentHash   string      `json:"payment_hash"`
@@ -81,16 +81,19 @@ func (w *Server) newRouter() *mux.Router {
 }
 
 func (w *Server) receive(writer http.ResponseWriter, request *http.Request) {
+	log.Debugln("[Webhook] Received request")
 	webhookEvent := Webhook{}
 	// need to delete the header otherwise the Decode will fail
 	request.Header.Del("content-length")
 	err := json.NewDecoder(request.Body).Decode(&webhookEvent)
 	if err != nil {
+		log.Errorf("[Webhook] Error decoding request: %s", err)
 		writer.WriteHeader(400)
 		return
 	}
 	user, err := w.GetUserByWalletId(webhookEvent.WalletID)
 	if err != nil {
+		log.Errorf("[Webhook] Error getting user: %s", err)
 		writer.WriteHeader(400)
 		return
 	}
