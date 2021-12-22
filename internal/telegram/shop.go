@@ -171,9 +171,9 @@ func (bot *TipBot) enterShopItemPriceHandler(ctx context.Context, m *tb.Message)
 		}
 	}
 
-	if amount > 0 {
-		bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("ℹ️ During development, price can be max 1 sat."))
-		amount = 1
+	if amount > 200 {
+		bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("ℹ️ During alpha testing, price can be max 200 sat."))
+		amount = 200
 	}
 	item.Price = amount
 	shop.Items[item.ID] = item
@@ -181,8 +181,10 @@ func (bot *TipBot) enterShopItemPriceHandler(ctx context.Context, m *tb.Message)
 	bot.tryDeleteMessage(m)
 	bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("✅ Price set."))
 	ResetUserState(user, bot)
-	time.Sleep(time.Duration(2) * time.Second)
-	bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	go func() {
+		time.Sleep(time.Duration(5) * time.Second)
+		bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	}()
 	bot.displayShopItem(ctx, shopView.Message, shop)
 }
 
@@ -251,8 +253,10 @@ func (bot *TipBot) enterShopItemTitleHandler(ctx context.Context, m *tb.Message)
 	bot.tryDeleteMessage(m)
 	bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("✅ Title set."))
 	ResetUserState(user, bot)
-	time.Sleep(time.Duration(2) * time.Second)
-	bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	go func() {
+		time.Sleep(time.Duration(5) * time.Second)
+		bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	}()
 	bot.displayShopItem(ctx, shopView.Message, shop)
 }
 
@@ -312,8 +316,10 @@ func (bot *TipBot) shopItemDeleteHandler(ctx context.Context, c *tb.Callback) {
 
 	ResetUserState(user, bot)
 	bot.sendStatusMessage(ctx, c.Message.Chat, fmt.Sprintf("✅ Item deleted."))
-	time.Sleep(time.Duration(2) * time.Second)
-	bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	go func() {
+		time.Sleep(time.Duration(5) * time.Second)
+		bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	}()
 	if shopView.Page > 0 {
 		shopView.Page--
 	}
@@ -592,8 +598,10 @@ func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) {
 	bot.tryDeleteMessage(m)
 	bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("✅ Image added."))
 	ResetUserState(user, bot)
-	time.Sleep(time.Duration(2) * time.Second)
-	bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	go func() {
+		time.Sleep(time.Duration(5) * time.Second)
+		bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	}()
 
 	shopView, err := bot.getUserShopview(ctx, user)
 	shopView.Page = len(shop.Items) - 1
@@ -778,14 +786,14 @@ func (bot *TipBot) shopConfirmBuyHandler(ctx context.Context, c *tb.Callback) {
 		bot.trySendMessage(user.Telegram, i18n.Translate(user.Telegram.LanguageCode, "sendErrorMessage"), &tb.ReplyMarkup{})
 		return
 	}
-	bot.trySendMessage(user.Telegram, fmt.Sprintf("🛍 %d sat sent to %s.", amount, toUserStrMd), &tb.ReplyMarkup{})
+	// bot.trySendMessage(user.Telegram, fmt.Sprintf("🛍 %d sat sent to %s.", amount, toUserStrMd), &tb.ReplyMarkup{})
 	shopItemTitle := "an item"
 	if len(item.Title) > 0 {
-		shopItemTitle = fmt.Sprintf("`%s`", item.Title)
+		shopItemTitle = fmt.Sprintf("%s", item.Title)
 	}
-	bot.trySendMessage(to.Telegram, fmt.Sprintf("🛍 Someone bought %s from your shop `%s` for %d sat.", str.MarkdownEscape(shopItemTitle), str.MarkdownEscape(shop.Title), amount))
-	bot.trySendMessage(from.Telegram, fmt.Sprintf("🛍 You bought %s from shop `%s` for %d sat.", str.MarkdownEscape(shopItemTitle), str.MarkdownEscape(shop.Title), amount))
-	log.Infof("[🛍 shop] %s paid %s %d sat.", GetUserStr(user.Telegram), GetUserStr(shop.Owner.Telegram), item.Price)
+	bot.trySendMessage(to.Telegram, fmt.Sprintf("🛍 Someone bought `%s` from your shop `%s` for `%d sat`.", str.MarkdownEscape(shopItemTitle), str.MarkdownEscape(shop.Title), amount))
+	bot.trySendMessage(from.Telegram, fmt.Sprintf("🛍 You bought `%s` from %s's shop `%s` for `%d sat`.", str.MarkdownEscape(shopItemTitle), toUserStrMd, str.MarkdownEscape(shop.Title), amount))
+	log.Infof("[🛍 shop] %s bought `%s` from %s's shop `%s` for `%d sat`.", str.MarkdownEscape(shopItemTitle), toUserStrMd, str.MarkdownEscape(shop.Title), amount)
 	bot.shopSendItemFilesToUser(ctx, user, itemID)
 }
 
@@ -937,7 +945,7 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 			log.Errorf("[shopsHandler] %s", err)
 			return
 		}
-		shopTitles += fmt.Sprintf("\n· %s (%d items)", str.MarkdownEscape(shop.Title), len(shop.Items))
+		shopTitles += fmt.Sprintf("\n· %s (%s, %d items)", str.MarkdownEscape(shop.Title), shop.ID, len(shop.Items))
 
 	}
 
@@ -1136,8 +1144,10 @@ func (bot *TipBot) enterShopsDescriptionHandler(ctx context.Context, m *tb.Messa
 	runtime.IgnoreError(shops.Set(shops, bot.ShopBunt))
 	bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("✅ Description set."))
 	ResetUserState(user, bot)
-	time.Sleep(time.Duration(2) * time.Second)
-	bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	go func() {
+		time.Sleep(time.Duration(5) * time.Second)
+		bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	}()
 	bot.shopsHandler(ctx, m)
 	bot.tryDeleteMessage(m)
 }
@@ -1155,8 +1165,10 @@ func (bot *TipBot) shopsResetHandler(ctx context.Context, c *tb.Callback) {
 	}
 	runtime.IgnoreError(shops.Delete(shops, bot.ShopBunt))
 	bot.sendStatusMessage(ctx, c.Sender, fmt.Sprintf("✅ Shops reset."))
-	time.Sleep(time.Duration(2) * time.Second)
-	bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	go func() {
+		time.Sleep(time.Duration(5) * time.Second)
+		bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	}()
 	bot.shopsHandlerCallback(ctx, c)
 }
 
@@ -1310,8 +1322,10 @@ func (bot *TipBot) enterShopTitleHandler(ctx context.Context, m *tb.Message) {
 	runtime.IgnoreError(shop.Set(shop, bot.ShopBunt))
 	bot.sendStatusMessage(ctx, m.Sender, fmt.Sprintf("✅ Shop added."))
 	ResetUserState(user, bot)
-	time.Sleep(time.Duration(2) * time.Second)
-	bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	go func() {
+		time.Sleep(time.Duration(5) * time.Second)
+		bot.shopViewDeleteAllStatusMsgs(ctx, user)
+	}()
 	bot.shopsHandler(ctx, m)
 	bot.tryDeleteMessage(m)
 	log.Infof("[🛍 shop] %s added new shop %s.", GetUserStr(user.Telegram), shop.ID)
