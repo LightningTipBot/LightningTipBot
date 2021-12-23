@@ -244,7 +244,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	}
 	inlineFaucet := fn.(*InlineFaucet)
 	from := inlineFaucet.From
-	defer inlineFaucet.Set(inlineFaucet, bot.Bunt)
+
 	if !inlineFaucet.Active {
 		log.Errorf(fmt.Sprintf("[faucet] faucet %s inactive.", inlineFaucet.ID))
 		return
@@ -263,6 +263,8 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 			return
 		}
 	}
+
+	defer inlineFaucet.Set(inlineFaucet, bot.Bunt)
 
 	if inlineFaucet.RemainingAmount >= inlineFaucet.PerUserAmount {
 		toUserStrMd := GetUserStrMd(to.Telegram)

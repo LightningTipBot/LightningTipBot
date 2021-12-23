@@ -174,7 +174,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	}
 	// object that holds all information about the send payment
 	id := fmt.Sprintf("send-%d-%d-%s", m.Sender.ID, amount, RandStringRunes(5))
-	sendData := SendData{
+	sendData := &SendData{
 		From:           user,
 		Base:           storage.New(storage.ID(id)),
 		Amount:         int64(amount),

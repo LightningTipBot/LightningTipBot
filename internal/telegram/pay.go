@@ -130,7 +130,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 			cancelButton),
 	)
 	payMessage := bot.trySendMessage(m.Chat, confirmText, paymentConfirmationMenu)
-	payData := PayData{
+	payData := &PayData{
 		Base:            storage.New(storage.ID(id)),
 		From:            user,
 		Invoice:         paymentRequest,
