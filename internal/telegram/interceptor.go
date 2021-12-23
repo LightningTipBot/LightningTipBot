@@ -38,7 +38,6 @@ func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context
 	user := getTelegramUserFromInterface(i)
 	if user != nil {
 		mutex.Unlock(strconv.FormatInt(user.ID, 10))
-		log.Tracef("[User mutex] Unlocked user %d", user.ID)
 	}
 	return nil, invalidTypeError
 }
@@ -48,7 +47,6 @@ func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.C
 	user := getTelegramUserFromInterface(i)
 	if user != nil {
 		mutex.Lock(strconv.FormatInt(user.ID, 10))
-		log.Tracef("[User mutex] Locked user %d", user.ID)
 		return ctx, nil
 	}
 	return nil, invalidTypeError
