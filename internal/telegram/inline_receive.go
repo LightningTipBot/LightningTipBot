@@ -203,8 +203,6 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 
 func (bot *TipBot) sendInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
 	tx := &InlineReceive{Base: storage.New(storage.ID(c.Data))}
-	mutex.Lock(tx.ID)
-	defer mutex.Unlock(tx.ID)
 	rn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
@@ -302,8 +300,6 @@ func (bot *TipBot) inlineReceiveEvent(invoiceEvent *InvoiceEvent) {
 
 func (bot *TipBot) finishInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
 	tx := &InlineReceive{Base: storage.New(storage.ID(c.Data))}
-	mutex.Lock(tx.ID)
-	defer mutex.Unlock(tx.ID)
 	// immediatelly set intransaction to block duplicate calls
 	rn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
