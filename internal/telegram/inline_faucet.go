@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"strings"
 	"time"
 
@@ -233,6 +234,8 @@ func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) {
 func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback) {
 	to := LoadUser(ctx)
 	tx := &InlineFaucet{Base: transaction.New(transaction.ID(c.Data))}
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Debugf("[acceptInlineFaucetHandler] %s", err)
@@ -342,11 +345,14 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback) {
 	tx := &InlineFaucet{Base: transaction.New(transaction.ID(c.Data))}
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Debugf("[cancelInlineFaucetHandler] %s", err)
 		return
 	}
+
 	inlineFaucet := fn.(*InlineFaucet)
 	if c.Sender.ID == inlineFaucet.From.Telegram.ID {
 		bot.tryEditMessage(c.Message, i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetCancelledMessage"), &tb.ReplyMarkup{})
@@ -354,7 +360,7 @@ func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		inlineFaucet.Active = false
 		inlineFaucet.InTransaction = false
 		runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.Bunt))
+		log.Debugf("[faucet] Faucet %s canceled.", inlineFaucet.ID)
 	}
-	log.Debugf("[faucet] Faucet %s canceled.", inlineFaucet.ID)
 	return
 }

@@ -1,4 +1,4 @@
-package runtime
+package mutex
 
 import (
 	cmap "github.com/orcaman/concurrent-map"

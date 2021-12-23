@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"strings"
 	"time"
 
@@ -234,6 +235,8 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 		return
 	}
 	tx := &InlineTipjar{Base: transaction.New(transaction.ID(c.Data))}
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		// log.Errorf("[tipjar] %s", err)
@@ -336,6 +339,8 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 
 func (bot *TipBot) cancelInlineTipjarHandler(ctx context.Context, c *tb.Callback) {
 	tx := &InlineTipjar{Base: transaction.New(transaction.ID(c.Data))}
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[cancelInlineTipjarHandler] %s", err)

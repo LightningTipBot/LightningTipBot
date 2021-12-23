@@ -3,11 +3,11 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"reflect"
 	"strconv"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	i18n2 "github.com/nicksnyder/go-i18n/v2/i18n"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -37,8 +37,7 @@ type Interceptor struct {
 func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	user := getTelegramUserFromInterface(i)
 	if user != nil {
-		runtime.Unlock(strconv.FormatInt(user.ID, 10))
-		log.Tracef("[User mutex] Unlocked user %d", user.ID)
+		mutex.Unlock(strconv.FormatInt(user.ID, 10))
 	}
 	return nil, invalidTypeError
 }
@@ -47,8 +46,7 @@ func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context
 func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	user := getTelegramUserFromInterface(i)
 	if user != nil {
-		runtime.Lock(strconv.FormatInt(user.ID, 10))
-		log.Tracef("[User mutex] Locked user %d", user.ID)
+		mutex.Lock(strconv.FormatInt(user.ID, 10))
 		return ctx, nil
 	}
 	return nil, invalidTypeError

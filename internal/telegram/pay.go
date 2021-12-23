@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
@@ -146,6 +147,8 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 // confirmPayHandler when user clicked pay on payment confirmation
 func (bot *TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 	tx := &PayData{Base: transaction.New(transaction.ID(c.Data))}
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
@@ -237,8 +240,10 @@ func (bot *TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 	user := LoadUser(ctx)
 	ResetUserState(user, bot)
 	tx := &PayData{Base: transaction.New(transaction.ID(c.Data))}
-	sn, err := tx.Get(tx, bot.Bunt)
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	// immediatelly set intransaction to block duplicate calls
+	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[cancelPaymentHandler] %s", err.Error())
 		return
