@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"strconv"
 	"strings"
 
@@ -158,11 +159,12 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 	switch EnterAmountStateData.Type {
 	case "LnurlPayState":
 		tx := &LnurlPayState{Base: transaction.New(transaction.ID(EnterAmountStateData.ID))}
+		mutex.Lock(tx.ID)
+		defer mutex.Unlock(tx.ID)
 		sn, err := tx.Get(tx, bot.Bunt)
 		if err != nil {
 			return
 		}
-		defer transaction.Unlock(tx.ID)
 		LnurlPayState := sn.(*LnurlPayState)
 		LnurlPayState.Amount = amount * 1000 // mSat
 		// add result to persistent struct
@@ -179,11 +181,12 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 		return
 	case "LnurlWithdrawState":
 		tx := &LnurlWithdrawState{Base: transaction.New(transaction.ID(EnterAmountStateData.ID))}
+		mutex.Lock(tx.ID)
+		defer mutex.Unlock(tx.ID)
 		sn, err := tx.Get(tx, bot.Bunt)
 		if err != nil {
 			return
 		}
-		defer transaction.Unlock(tx.ID)
 		LnurlWithdrawState := sn.(*LnurlWithdrawState)
 		LnurlWithdrawState.Amount = amount * 1000 // mSat
 		// add result to persistent struct

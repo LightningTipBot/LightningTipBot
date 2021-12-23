@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"io/ioutil"
 	"net/url"
 
@@ -139,13 +140,14 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 
 	// use the enter amount state of the user to load the LNURL payment state
 	tx := &LnurlWithdrawState{Base: transaction.New(transaction.ID(enterAmountData.ID))}
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}
-	defer transaction.Unlock(tx.ID)
 	var lnurlWithdrawState *LnurlWithdrawState
 	switch fn.(type) {
 	case *LnurlWithdrawState:
@@ -184,6 +186,8 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 // confirmPayHandler when user clicked pay on payment confirmation
 func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) {
 	tx := &LnurlWithdrawState{Base: transaction.New(transaction.ID(c.Data))}
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[confirmWithdrawHandler] Error: %s", err.Error())
@@ -310,12 +314,13 @@ func (bot *TipBot) cancelWithdrawHandler(ctx context.Context, c *tb.Callback) {
 	user := LoadUser(ctx)
 	ResetUserState(user, bot)
 	tx := &LnurlWithdrawState{Base: transaction.New(transaction.ID(c.Data))}
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[cancelWithdrawHandler] Error: %s", err.Error())
 		return
 	}
-	defer transaction.Unlock(tx.ID)
 	var lnurlWithdrawState *LnurlWithdrawState
 	switch fn.(type) {
 	case *LnurlWithdrawState:

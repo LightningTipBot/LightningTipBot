@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"io/ioutil"
 	"net/url"
 	"strconv"
@@ -127,13 +128,14 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) {
 
 	// use the enter amount state of the user to load the LNURL payment state
 	tx := &LnurlPayState{Base: transaction.New(transaction.ID(enterAmountData.ID))}
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}
-	defer transaction.Unlock(tx.ID)
 	lnurlPayState := fn.(*LnurlPayState)
 
 	// LnurlPayState loaded

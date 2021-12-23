@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -158,7 +159,7 @@ func (bot *TipBot) getUserShopview(ctx context.Context, user *lnbits.User) (shop
 	return
 }
 func (bot *TipBot) shopViewDeleteAllStatusMsgs(ctx context.Context, user *lnbits.User, start int) (shopView ShopView, err error) {
-	runtime.Lock(fmt.Sprintf("shopview-delete-%d", user.Telegram.ID))
+	mutex.Lock(fmt.Sprintf("shopview-delete-%d", user.Telegram.ID))
 	shopView, err = bot.getUserShopview(ctx, user)
 	if err != nil {
 		return
@@ -170,7 +171,7 @@ func (bot *TipBot) shopViewDeleteAllStatusMsgs(ctx context.Context, user *lnbits
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 
 	deleteStatusMessages(start, statusMessages, bot)
-	runtime.Unlock(fmt.Sprintf("shopview-delete-%d", user.Telegram.ID))
+	mutex.Unlock(fmt.Sprintf("shopview-delete-%d", user.Telegram.ID))
 	return
 }
 
@@ -188,7 +189,7 @@ func (bot *TipBot) sendStatusMessage(ctx context.Context, to tb.Recipient, what 
 	id := fmt.Sprintf("shopview-delete-%d", user.Telegram.ID)
 
 	// write into cache
-	runtime.Lock(id)
+	mutex.Lock(id)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
 		return nil
@@ -196,7 +197,7 @@ func (bot *TipBot) sendStatusMessage(ctx context.Context, to tb.Recipient, what 
 	statusMsg := bot.trySendMessage(to, what, options...)
 	shopView.StatusMessages = append(shopView.StatusMessages, statusMsg)
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
-	runtime.Unlock(id)
+	mutex.Unlock(id)
 	return statusMsg
 }
 
@@ -239,12 +240,13 @@ func (bot *TipBot) initUserShops(ctx context.Context, user *lnbits.User) (*Shops
 // getUserShops returns the Shops for the user
 func (bot *TipBot) getUserShops(ctx context.Context, user *lnbits.User) (*Shops, error) {
 	tx := &Shops{Base: transaction.New(transaction.ID(fmt.Sprintf("shops-%d", user.Telegram.ID)))}
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	sn, err := tx.Get(tx, bot.ShopBunt)
 	if err != nil {
 		log.Errorf("[getUserShops] User: %s (%d): %s", GetUserStr(user.Telegram), user.Telegram.ID, err)
 		return &Shops{}, err
 	}
-	defer transaction.Unlock(tx.ID)
 	shops := sn.(*Shops)
 	return shops, nil
 }
@@ -276,13 +278,14 @@ func (bot *TipBot) addUserShop(ctx context.Context, user *lnbits.User) (*Shop, e
 // getShop returns the Shop for the given ID
 func (bot *TipBot) getShop(ctx context.Context, shopId string) (*Shop, error) {
 	tx := &Shop{Base: transaction.New(transaction.ID(shopId))}
-	sn, err := tx.Get(tx, bot.ShopBunt)
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	// immediatelly set intransaction to block duplicate calls
+	sn, err := tx.Get(tx, bot.ShopBunt)
 	if err != nil {
 		log.Errorf("[getShop] %s", err)
 		return &Shop{}, err
 	}
-	defer transaction.Unlock(tx.ID)
 	shop := sn.(*Shop)
 	if shop.Owner == nil {
 		return &Shop{}, fmt.Errorf("shop has no owner")

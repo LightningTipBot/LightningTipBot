@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"strings"
 	"time"
 
@@ -159,6 +160,8 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) {
 	to := LoadUser(ctx)
 	tx := &InlineSend{Base: transaction.New(transaction.ID(c.Data))}
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
@@ -252,13 +255,14 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 
 func (bot *TipBot) cancelInlineSendHandler(ctx context.Context, c *tb.Callback) {
 	tx := &InlineSend{Base: transaction.New(transaction.ID(c.Data))}
-	sn, err := tx.Get(tx, bot.Bunt)
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	// immediatelly set intransaction to block duplicate calls
+	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[cancelInlineSendHandler] %s", err)
 		return
 	}
-	defer transaction.Unlock(tx.ID)
 	inlineSend := sn.(*InlineSend)
 	if c.Sender.ID == inlineSend.From.Telegram.ID {
 		bot.tryEditMessage(c.Message, i18n.Translate(inlineSend.LanguageCode, "sendCancelledMessage"), &tb.ReplyMarkup{})
