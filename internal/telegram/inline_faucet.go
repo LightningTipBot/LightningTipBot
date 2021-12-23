@@ -235,8 +235,8 @@ func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) {
 func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback) {
 	to := LoadUser(ctx)
 	tx := &InlineFaucet{Base: storage.New(storage.ID(c.Data))}
-	mutex.LockSoft(tx.ID)
-	defer mutex.UnlockSoft(tx.ID)
+	mutex.LockWithContext(ctx, tx.ID)
+	defer mutex.UnlockWithContext(ctx, tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Debugf("[acceptInlineFaucetHandler] %s", err)
@@ -343,8 +343,8 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback) {
 	tx := &InlineFaucet{Base: storage.New(storage.ID(c.Data))}
-	mutex.LockSoft(tx.ID)
-	defer mutex.UnlockSoft(tx.ID)
+	mutex.LockWithContext(ctx, tx.ID)
+	defer mutex.UnlockWithContext(ctx, tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Debugf("[cancelInlineFaucetHandler] %s", err)

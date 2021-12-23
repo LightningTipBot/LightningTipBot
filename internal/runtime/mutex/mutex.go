@@ -1,6 +1,7 @@
 package mutex
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -27,31 +28,35 @@ func checkSoftLock(s string) int {
 
 // LockSoft locks a mutex only if it hasn't been locked before. If it has, it increments the
 // nLocks in the mutexMap. This is supposed to lock only if nLock == 0.
-func LockSoft(s string) {
-	Lock(fmt.Sprintf("mutex-sync:%s", s))
-	var nLocks = checkSoftLock(s)
+func LockWithContext(ctx context.Context, s string) {
+	uid := ctx.Value("uid").(string)
+	Lock(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
+	var nLocks = checkSoftLock(uid)
 	if nLocks == 0 {
 		Lock(s)
 	} else {
 		log.Tracef("[Mutex] LockSoft (nLocks: %d)", nLocks)
 	}
 	nLocks++
-	mutexMap.Set(fmt.Sprintf("nLocks:%s", s), nLocks)
+	mutexMap.Set(fmt.Sprintf("nLocks:%s", uid), nLocks)
+	Unlock(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
 }
 
 // UnlockSoft unlock a mutex only if it has been locked once. If it has been locked more than once
 // it only decrements nLocks and skips the unlock of the mutex. This is supposed to unlock only for
 // nLocks == 1
-func UnlockSoft(s string) {
-	var nLocks = checkSoftLock(s)
-	if nLocks == 1 {
+func UnlockWithContext(ctx context.Context, s string) {
+	uid := ctx.Value("uid").(string)
+	Lock(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
+	var nLocks = checkSoftLock(uid)
+	nLocks--
+	mutexMap.Set(fmt.Sprintf("nLocks:%s", uid), nLocks)
+	if nLocks == 0 {
 		Unlock(s)
 	} else {
 		log.Tracef("[Mutex] UnlockSoft with nLocks: %d ", nLocks)
 	}
-	nLocks--
-	mutexMap.Set(fmt.Sprintf("nLocks:%s", s), nLocks)
-	Unlock(fmt.Sprintf("mutex-sync:%s", s))
+	Unlock(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
 }
 
 // Lock locks a mutex in the mutexMap.

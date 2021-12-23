@@ -146,8 +146,8 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
 	tx := &InlineReceive{Base: storage.New(storage.ID(c.Data))}
 	// immediatelly set intransaction to block duplicate calls
-	mutex.LockSoft(tx.ID)
-	defer mutex.UnlockSoft(tx.ID)
+	mutex.LockWithContext(ctx, tx.ID)
+	defer mutex.UnlockWithContext(ctx, tx.ID)
 	rn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[getInlineReceive] %s", err)
@@ -203,8 +203,8 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 
 func (bot *TipBot) sendInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
 	tx := &InlineReceive{Base: storage.New(storage.ID(c.Data))}
-	mutex.LockSoft(tx.ID)
-	defer mutex.UnlockSoft(tx.ID)
+	mutex.LockWithContext(ctx, tx.ID)
+	defer mutex.UnlockWithContext(ctx, tx.ID)
 	rn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
@@ -303,8 +303,8 @@ func (bot *TipBot) inlineReceiveEvent(invoiceEvent *InvoiceEvent) {
 func (bot *TipBot) finishInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
 	tx := &InlineReceive{Base: storage.New(storage.ID(c.Data))}
 	// immediatelly set intransaction to block duplicate calls
-	mutex.LockSoft(tx.ID)
-	defer mutex.UnlockSoft(tx.ID)
+	mutex.LockWithContext(ctx, tx.ID)
+	defer mutex.UnlockWithContext(ctx, tx.ID)
 	rn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[getInlineReceive] %s", err)
@@ -340,8 +340,8 @@ func (bot *TipBot) finishInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 
 func (bot *TipBot) cancelInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
 	tx := &InlineReceive{Base: storage.New(storage.ID(c.Data))}
-	mutex.LockSoft(tx.ID)
-	defer mutex.UnlockSoft(tx.ID)
+	mutex.LockWithContext(ctx, tx.ID)
+	defer mutex.UnlockWithContext(ctx, tx.ID)
 	// immediatelly set intransaction to block duplicate calls
 	rn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {

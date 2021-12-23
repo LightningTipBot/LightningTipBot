@@ -149,8 +149,8 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 // confirmPayHandler when user clicked pay on payment confirmation
 func (bot *TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 	tx := &PayData{Base: storage.New(storage.ID(c.Data))}
-	mutex.LockSoft(tx.ID)
-	defer mutex.UnlockSoft(tx.ID)
+	mutex.LockWithContext(ctx, tx.ID)
+	defer mutex.UnlockWithContext(ctx, tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
@@ -233,8 +233,8 @@ func (bot *TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 	user := LoadUser(ctx)
 	ResetUserState(user, bot)
 	tx := &PayData{Base: storage.New(storage.ID(c.Data))}
-	mutex.LockSoft(tx.ID)
-	defer mutex.UnlockSoft(tx.ID)
+	mutex.LockWithContext(ctx, tx.ID)
+	defer mutex.UnlockWithContext(ctx, tx.ID)
 	// immediatelly set intransaction to block duplicate calls
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
