@@ -217,8 +217,8 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 // sendHandler invoked when user clicked send on payment confirmation
 func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	tx := &SendData{Base: storage.New(storage.ID(c.Data))}
-	mutex.LockSoft(tx.ID)
-	defer mutex.UnlockSoft(tx.ID)
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
@@ -303,8 +303,8 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	user := LoadUser(ctx)
 	ResetUserState(user, bot)
 	tx := &SendData{Base: storage.New(storage.ID(c.Data))}
-	mutex.LockSoft(tx.ID)
-	defer mutex.UnlockSoft(tx.ID)
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
