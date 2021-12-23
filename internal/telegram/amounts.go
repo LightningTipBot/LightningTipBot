@@ -162,6 +162,7 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 		if err != nil {
 			return
 		}
+		defer transaction.Unlock(tx.ID)
 		LnurlPayState := sn.(*LnurlPayState)
 		LnurlPayState.Amount = amount * 1000 // mSat
 		// add result to persistent struct
@@ -182,6 +183,7 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 		if err != nil {
 			return
 		}
+		defer transaction.Unlock(tx.ID)
 		LnurlWithdrawState := sn.(*LnurlWithdrawState)
 		LnurlWithdrawState.Amount = amount * 1000 // mSat
 		// add result to persistent struct

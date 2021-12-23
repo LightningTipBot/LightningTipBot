@@ -310,6 +310,8 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 		log.Errorf("[acceptSendHandler] %s", err)
 		return
 	}
+	defer transaction.Unlock(tx.ID)
+
 	sendData := sn.(*SendData)
 	// onnly the correct user can press
 	if sendData.From.Telegram.ID != c.Sender.ID {

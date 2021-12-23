@@ -149,6 +149,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 		log.Errorf("[getInlineReceive] %s", err)
 		return
 	}
+	defer transaction.Unlock(tx.ID)
 	inlineReceive := rn.(*InlineReceive)
 	if !inlineReceive.Active {
 		log.Errorf("[acceptInlineReceiveHandler] inline receive not active anymore")
@@ -307,6 +308,7 @@ func (bot *TipBot) finishInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 		log.Errorf("[getInlineReceive] %s", err)
 		return
 	}
+	defer transaction.Unlock(tx.ID)
 	inlineReceive := rn.(*InlineReceive)
 
 	from := inlineReceive.From
@@ -343,6 +345,7 @@ func (bot *TipBot) cancelInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 		log.Errorf("[cancelInlineReceiveHandler] %s", err)
 		return
 	}
+	defer transaction.Unlock(tx.ID)
 	inlineReceive := rn.(*InlineReceive)
 	if c.Sender.ID == inlineReceive.To.Telegram.ID {
 		bot.tryEditMessage(c.Message, i18n.Translate(inlineReceive.LanguageCode, "inlineReceiveCancelledMessage"), &tb.ReplyMarkup{})

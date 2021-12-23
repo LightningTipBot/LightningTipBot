@@ -243,6 +243,7 @@ func (bot *TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 		log.Errorf("[cancelPaymentHandler] %s", err.Error())
 		return
 	}
+	defer transaction.Unlock(tx.ID)
 	payData := sn.(*PayData)
 	// onnly the correct user can press
 	if payData.From.Telegram.ID != c.Sender.ID {

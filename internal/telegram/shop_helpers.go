@@ -244,7 +244,7 @@ func (bot *TipBot) getUserShops(ctx context.Context, user *lnbits.User) (*Shops,
 		log.Errorf("[getUserShops] User: %s (%d): %s", GetUserStr(user.Telegram), user.Telegram.ID, err)
 		return &Shops{}, err
 	}
-	transaction.Unlock(tx.ID)
+	defer transaction.Unlock(tx.ID)
 	shops := sn.(*Shops)
 	return shops, nil
 }
@@ -282,7 +282,7 @@ func (bot *TipBot) getShop(ctx context.Context, shopId string) (*Shop, error) {
 		log.Errorf("[getShop] %s", err)
 		return &Shop{}, err
 	}
-	transaction.Unlock(tx.ID)
+	defer transaction.Unlock(tx.ID)
 	shop := sn.(*Shop)
 	if shop.Owner == nil {
 		return &Shop{}, fmt.Errorf("shop has no owner")

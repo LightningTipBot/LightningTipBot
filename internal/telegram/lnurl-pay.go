@@ -133,6 +133,7 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) {
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}
+	defer transaction.Unlock(tx.ID)
 	lnurlPayState := fn.(*LnurlPayState)
 
 	// LnurlPayState loaded

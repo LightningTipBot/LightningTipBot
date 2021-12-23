@@ -347,6 +347,8 @@ func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		log.Debugf("[cancelInlineFaucetHandler] %s", err)
 		return
 	}
+	defer transaction.Unlock(tx.ID)
+
 	inlineFaucet := fn.(*InlineFaucet)
 	if c.Sender.ID == inlineFaucet.From.Telegram.ID {
 		bot.tryEditMessage(c.Message, i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetCancelledMessage"), &tb.ReplyMarkup{})
@@ -354,7 +356,7 @@ func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		inlineFaucet.Active = false
 		inlineFaucet.InTransaction = false
 		runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.Bunt))
+		log.Debugf("[faucet] Faucet %s canceled.", inlineFaucet.ID)
 	}
-	log.Debugf("[faucet] Faucet %s canceled.", inlineFaucet.ID)
 	return
 }

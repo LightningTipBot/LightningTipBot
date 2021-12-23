@@ -258,6 +258,7 @@ func (bot *TipBot) cancelInlineSendHandler(ctx context.Context, c *tb.Callback) 
 		log.Errorf("[cancelInlineSendHandler] %s", err)
 		return
 	}
+	defer transaction.Unlock(tx.ID)
 	inlineSend := sn.(*InlineSend)
 	if c.Sender.ID == inlineSend.From.Telegram.ID {
 		bot.tryEditMessage(c.Message, i18n.Translate(inlineSend.LanguageCode, "sendCancelledMessage"), &tb.ReplyMarkup{})

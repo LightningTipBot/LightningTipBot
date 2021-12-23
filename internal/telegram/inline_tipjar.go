@@ -341,6 +341,7 @@ func (bot *TipBot) cancelInlineTipjarHandler(ctx context.Context, c *tb.Callback
 		log.Errorf("[cancelInlineTipjarHandler] %s", err)
 		return
 	}
+	defer transaction.Unlock(tx.ID)
 	inlineTipjar := fn.(*InlineTipjar)
 	if c.Sender.ID == inlineTipjar.To.Telegram.ID {
 		bot.tryEditMessage(c.Message, i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarCancelledMessage"), &tb.ReplyMarkup{})

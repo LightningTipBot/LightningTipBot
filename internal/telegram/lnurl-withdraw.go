@@ -145,6 +145,7 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return
 	}
+	defer transaction.Unlock(tx.ID)
 	var lnurlWithdrawState *LnurlWithdrawState
 	switch fn.(type) {
 	case *LnurlWithdrawState:
@@ -188,6 +189,7 @@ func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) {
 		log.Errorf("[confirmWithdrawHandler] Error: %s", err.Error())
 		return
 	}
+
 	var lnurlWithdrawState *LnurlWithdrawState
 	switch fn.(type) {
 	case *LnurlWithdrawState:
@@ -313,6 +315,7 @@ func (bot *TipBot) cancelWithdrawHandler(ctx context.Context, c *tb.Callback) {
 		log.Errorf("[cancelWithdrawHandler] Error: %s", err.Error())
 		return
 	}
+	defer transaction.Unlock(tx.ID)
 	var lnurlWithdrawState *LnurlWithdrawState
 	switch fn.(type) {
 	case *LnurlWithdrawState:
