@@ -29,7 +29,7 @@ func (bot TipBot) registerTelegramHandlers() {
 }
 
 func getDefaultBeforeInterceptor(bot TipBot) []intercept.Func {
-	return []intercept.Func{bot.lockInterceptor, bot.localizerInterceptor}
+	return []intercept.Func{bot.idInterceptor}
 }
 func getDefaultDeferInterceptor(bot TipBot) []intercept.Func {
 	return []intercept.Func{bot.unlockInterceptor}
@@ -40,7 +40,7 @@ func getDefaultAfterInterceptor(bot TipBot) []intercept.Func {
 
 // registerHandlerWithInterceptor will register a handler with all the predefined interceptors, based on the interceptor type
 func (bot TipBot) registerHandlerWithInterceptor(h Handler) {
-	//h.Interceptor.Before = append(getDefaultBeforeInterceptor(bot), h.Interceptor.Before...)
+	h.Interceptor.Before = append(getDefaultBeforeInterceptor(bot), h.Interceptor.Before...)
 	//h.Interceptor.After = append(h.Interceptor.After, getDefaultAfterInterceptor(bot)...)
 	//h.Interceptor.OnDefer = append(h.Interceptor.OnDefer, getDefaultDeferInterceptor(bot)...)
 
