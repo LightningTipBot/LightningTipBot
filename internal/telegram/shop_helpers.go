@@ -3,12 +3,14 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
+
 	"github.com/eko/gocache/store"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
@@ -227,7 +229,7 @@ func (bot *TipBot) sendStatusMessageAndDelete(ctx context.Context, to tb.Recipie
 func (bot *TipBot) initUserShops(ctx context.Context, user *lnbits.User) (*Shops, error) {
 	id := fmt.Sprintf("shops-%d", user.Telegram.ID)
 	shops := &Shops{
-		Base:     transaction.New(transaction.ID(id)),
+		Base:     storage.New(storage.ID(id)),
 		ID:       id,
 		Owner:    user,
 		Shops:    []string{},
@@ -239,7 +241,7 @@ func (bot *TipBot) initUserShops(ctx context.Context, user *lnbits.User) (*Shops
 
 // getUserShops returns the Shops for the user
 func (bot *TipBot) getUserShops(ctx context.Context, user *lnbits.User) (*Shops, error) {
-	tx := &Shops{Base: transaction.New(transaction.ID(fmt.Sprintf("shops-%d", user.Telegram.ID)))}
+	tx := &Shops{Base: storage.New(storage.ID(fmt.Sprintf("shops-%d", user.Telegram.ID)))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	sn, err := tx.Get(tx, bot.ShopBunt)
@@ -259,7 +261,7 @@ func (bot *TipBot) addUserShop(ctx context.Context, user *lnbits.User) (*Shop, e
 	}
 	shopId := fmt.Sprintf("shop-%s", RandStringRunes(10))
 	shop := &Shop{
-		Base:         transaction.New(transaction.ID(shopId)),
+		Base:         storage.New(storage.ID(shopId)),
 		ID:           shopId,
 		Title:        fmt.Sprintf("Shop %d (%s)", len(shops.Shops)+1, shopId),
 		Owner:        user,
@@ -277,7 +279,7 @@ func (bot *TipBot) addUserShop(ctx context.Context, user *lnbits.User) (*Shop, e
 
 // getShop returns the Shop for the given ID
 func (bot *TipBot) getShop(ctx context.Context, shopId string) (*Shop, error) {
-	tx := &Shop{Base: transaction.New(transaction.ID(shopId))}
+	tx := &Shop{Base: storage.New(storage.ID(shopId))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	// immediatelly set intransaction to block duplicate calls

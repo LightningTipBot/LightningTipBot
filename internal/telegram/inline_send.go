@@ -3,16 +3,17 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"strings"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/eko/gocache/store"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"
@@ -26,7 +27,7 @@ var (
 )
 
 type InlineSend struct {
-	*transaction.Base
+	*storage.Base
 	Message         string       `json:"inline_send_message"`
 	Amount          int64        `json:"inline_send_amount"`
 	From            *lnbits.User `json:"inline_send_from"`
@@ -133,7 +134,7 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 
 		// add data to persistent object
 		inlineSend := InlineSend{
-			Base:            transaction.New(transaction.ID(id)),
+			Base:            storage.New(storage.ID(id)),
 			Message:         inlineMessage,
 			From:            fromUser,
 			To:              toUserDb,
@@ -159,7 +160,7 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 
 func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) {
 	to := LoadUser(ctx)
-	tx := &InlineSend{Base: transaction.New(transaction.ID(c.Data))}
+	tx := &InlineSend{Base: storage.New(storage.ID(c.Data))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
@@ -171,18 +172,12 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 	inlineSend := sn.(*InlineSend)
 
 	fromUser := inlineSend.From
-	// immediatelly set intransaction to block duplicate calls
-	err = inlineSend.Lock(inlineSend, bot.Bunt)
-	if err != nil {
-		log.Errorf("[getInlineSend] %s", err)
-		return
-	}
 	if !inlineSend.Active {
 		log.Errorf("[acceptInlineSendHandler] inline send not active anymore")
 		return
 	}
 
-	defer inlineSend.Release(inlineSend, bot.Bunt)
+	defer inlineSend.Set(inlineSend, bot.Bunt)
 
 	amount := inlineSend.Amount
 
@@ -254,7 +249,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 }
 
 func (bot *TipBot) cancelInlineSendHandler(ctx context.Context, c *tb.Callback) {
-	tx := &InlineSend{Base: transaction.New(transaction.ID(c.Data))}
+	tx := &InlineSend{Base: storage.New(storage.ID(c.Data))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	// immediatelly set intransaction to block duplicate calls
@@ -268,7 +263,6 @@ func (bot *TipBot) cancelInlineSendHandler(ctx context.Context, c *tb.Callback) 
 		bot.tryEditMessage(c.Message, i18n.Translate(inlineSend.LanguageCode, "sendCancelledMessage"), &tb.ReplyMarkup{})
 		// set the inlineSend inactive
 		inlineSend.Active = false
-		inlineSend.InTransaction = false
 		runtime.IgnoreError(inlineSend.Set(inlineSend, bot.Bunt))
 	}
 	return

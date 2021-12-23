@@ -3,16 +3,17 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"strings"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/eko/gocache/store"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"
@@ -26,7 +27,7 @@ var (
 )
 
 type InlineTipjar struct {
-	*transaction.Base
+	*storage.Base
 	Message       string         `json:"inline_tipjar_message"`
 	Amount        int64          `json:"inline_tipjar_amount"`
 	GivenAmount   int64          `json:"inline_tipjar_givenamount"`
@@ -84,7 +85,7 @@ func (bot TipBot) createTipjar(ctx context.Context, text string, sender *tb.User
 	id := fmt.Sprintf("inl-tipjar-%d-%d-%s", sender.ID, amount, RandStringRunes(5))
 
 	return &InlineTipjar{
-		Base:          transaction.New(transaction.ID(id)),
+		Base:          storage.New(storage.ID(id)),
 		Message:       inlineMessage,
 		Amount:        amount,
 		To:            toUser,
@@ -234,7 +235,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 	if from.Wallet == nil {
 		return
 	}
-	tx := &InlineTipjar{Base: transaction.New(transaction.ID(c.Data))}
+	tx := &InlineTipjar{Base: storage.New(storage.ID(c.Data))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
@@ -244,17 +245,10 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 	}
 	inlineTipjar := fn.(*InlineTipjar)
 	to := inlineTipjar.To
-	err = inlineTipjar.Lock(inlineTipjar, bot.Bunt)
-	if err != nil {
-		log.Errorf("[tipjar] LockTipjar %s error: %s", inlineTipjar.ID, err)
-		return
-	}
 	if !inlineTipjar.Active {
 		log.Errorf(fmt.Sprintf("[tipjar] tipjar %s inactive.", inlineTipjar.ID))
 		return
 	}
-	// release tipjar no matter what
-	defer inlineTipjar.Release(inlineTipjar, bot.Bunt)
 
 	if from.Telegram.ID == to.Telegram.ID {
 		bot.trySendMessage(from.Telegram, Translate(ctx, "sendYourselfMessage"))
@@ -338,7 +332,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 }
 
 func (bot *TipBot) cancelInlineTipjarHandler(ctx context.Context, c *tb.Callback) {
-	tx := &InlineTipjar{Base: transaction.New(transaction.ID(c.Data))}
+	tx := &InlineTipjar{Base: storage.New(storage.ID(c.Data))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
@@ -351,7 +345,6 @@ func (bot *TipBot) cancelInlineTipjarHandler(ctx context.Context, c *tb.Callback
 		bot.tryEditMessage(c.Message, i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarCancelledMessage"), &tb.ReplyMarkup{})
 		// set the inlineTipjar inactive
 		inlineTipjar.Active = false
-		inlineTipjar.InTransaction = false
 		runtime.IgnoreError(inlineTipjar.Set(inlineTipjar, bot.Bunt))
 	}
 	return

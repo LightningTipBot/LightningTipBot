@@ -10,7 +10,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"github.com/eko/gocache/store"
 	log "github.com/sirupsen/logrus"
@@ -43,7 +43,7 @@ type ShopItem struct {
 }
 
 type Shop struct {
-	*transaction.Base
+	*storage.Base
 	ID           string              `json:"ID"`          // holds the ID of the tx object in bunt db
 	Owner        *lnbits.User        `json:"owner"`       // owner of the shop
 	Type         string              `json:"Type"`        // type of the shop
@@ -57,7 +57,7 @@ type Shop struct {
 }
 
 type Shops struct {
-	*transaction.Base
+	*storage.Base
 	ID          string       `json:"ID"`    // holds the ID of the tx object in bunt db
 	Owner       *lnbits.User `json:"owner"` // owner of the shop
 	Shops       []string     `json:"shop"`  //
