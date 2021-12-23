@@ -76,8 +76,6 @@ func (tx *Base) Inactivate(s storage.Storable, db *storage.DB) error {
 }
 
 func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error) {
-	log.Tracef("[TX mutex] Lock %s", tx.ID)
-
 	err := db.Get(s)
 	if err != nil {
 		return s, err
