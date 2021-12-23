@@ -49,7 +49,7 @@ func UnlockSoft(s string) {
 		log.Tracef("[Mutex] skipping UnlockSoft with nLocks: %d ", nLocks)
 	}
 	nLocks--
-	mutexMap.Set(fmt.Sprintf("state:%s", s), nLocks)
+	mutexMap.Set(fmt.Sprintf("nLocks:%s", s), nLocks)
 }
 
 // Lock locks a mutex in the mutexMap.
