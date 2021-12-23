@@ -40,7 +40,7 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 	}
 	// object that holds all information about the send payment
 	id := fmt.Sprintf("lnurlp-%d-%s", m.Sender.ID, RandStringRunes(5))
-	lnurlPayState := LnurlPayState{
+	lnurlPayState := &LnurlPayState{
 		Base:           storage.New(storage.ID(id)),
 		From:           user,
 		LNURLPayParams: payParams.LNURLPayParams,
