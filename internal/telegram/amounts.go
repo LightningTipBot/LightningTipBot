@@ -160,8 +160,8 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 	switch EnterAmountStateData.Type {
 	case "LnurlPayState":
 		tx := &LnurlPayState{Base: storage.New(storage.ID(EnterAmountStateData.ID))}
-		mutex.Lock(tx.ID)
-		defer mutex.Unlock(tx.ID)
+		mutex.LockWithContext(ctx, tx.ID)
+		defer mutex.UnlockWithContext(ctx, tx.ID)
 		sn, err := tx.Get(tx, bot.Bunt)
 		if err != nil {
 			return
@@ -182,8 +182,8 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 		return
 	case "LnurlWithdrawState":
 		tx := &LnurlWithdrawState{Base: storage.New(storage.ID(EnterAmountStateData.ID))}
-		mutex.Lock(tx.ID)
-		defer mutex.Unlock(tx.ID)
+		mutex.LockWithContext(ctx, tx.ID)
+		defer mutex.UnlockWithContext(ctx, tx.ID)
 		sn, err := tx.Get(tx, bot.Bunt)
 		if err != nil {
 			return

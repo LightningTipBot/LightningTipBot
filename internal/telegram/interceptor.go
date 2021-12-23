@@ -39,7 +39,10 @@ func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context
 	if user != nil {
 		mutex.Unlock(strconv.FormatInt(user.ID, 10))
 	}
-	return nil, invalidTypeError
+	return ctx, invalidTypeError
+}
+func (bot TipBot) idInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
+	return context.WithValue(ctx, "uid", RandStringRunes(64)), nil
 }
 
 // lockInterceptor invoked as first before interceptor

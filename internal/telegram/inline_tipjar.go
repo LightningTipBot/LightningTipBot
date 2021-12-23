@@ -236,8 +236,8 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 		return
 	}
 	tx := &InlineTipjar{Base: storage.New(storage.ID(c.Data))}
-	mutex.Lock(tx.ID)
-	defer mutex.Unlock(tx.ID)
+	mutex.LockWithContext(ctx, tx.ID)
+	defer mutex.UnlockWithContext(ctx, tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		// log.Errorf("[tipjar] %s", err)
@@ -333,8 +333,8 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 
 func (bot *TipBot) cancelInlineTipjarHandler(ctx context.Context, c *tb.Callback) {
 	tx := &InlineTipjar{Base: storage.New(storage.ID(c.Data))}
-	mutex.Lock(tx.ID)
-	defer mutex.Unlock(tx.ID)
+	mutex.LockWithContext(ctx, tx.ID)
+	defer mutex.UnlockWithContext(ctx, tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[cancelInlineTipjarHandler] %s", err)

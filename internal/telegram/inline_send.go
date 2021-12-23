@@ -161,8 +161,8 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) {
 	to := LoadUser(ctx)
 	tx := &InlineSend{Base: storage.New(storage.ID(c.Data))}
-	mutex.Lock(tx.ID)
-	defer mutex.Unlock(tx.ID)
+	mutex.LockWithContext(ctx, tx.ID)
+	defer mutex.UnlockWithContext(ctx, tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
@@ -250,8 +250,8 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 
 func (bot *TipBot) cancelInlineSendHandler(ctx context.Context, c *tb.Callback) {
 	tx := &InlineSend{Base: storage.New(storage.ID(c.Data))}
-	mutex.Lock(tx.ID)
-	defer mutex.Unlock(tx.ID)
+	mutex.LockWithContext(ctx, tx.ID)
+	defer mutex.UnlockWithContext(ctx, tx.ID)
 	// immediatelly set intransaction to block duplicate calls
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
