@@ -2,9 +2,10 @@ package mutex
 
 import (
 	"fmt"
+	"sync"
+
 	cmap "github.com/orcaman/concurrent-map"
 	log "github.com/sirupsen/logrus"
-	"sync"
 )
 
 var mutexMap cmap.ConcurrentMap
@@ -27,6 +28,7 @@ func checkSoftLock(s string) int {
 // LockSoft locks a mutex only if it hasn't been locked before. If it has, it increments the
 // nLocks in the mutexMap. This is supposed to lock only if nLock == 0.
 func LockSoft(s string) {
+	Lock(fmt.Sprintf("mutex-sync:%s", s))
 	var nLocks = checkSoftLock(s)
 	if nLocks == 0 {
 		Lock(s)
@@ -35,13 +37,14 @@ func LockSoft(s string) {
 	}
 	nLocks++
 	mutexMap.Set(fmt.Sprintf("nLocks:%s", s), nLocks)
-
+	Unlock(fmt.Sprintf("mutex-sync:%s", s))
 }
 
 // UnlockSoft unlock a mutex only if it has been locked once. If it has been locked more than once
 // it only decrements nLocks and skips the unlock of the mutex. This is supposed to unlock only for
 // nLocks == 1
 func UnlockSoft(s string) {
+	Lock(fmt.Sprintf("mutex-sync:%s", s))
 	var nLocks = checkSoftLock(s)
 	if nLocks == 1 {
 		Unlock(s)
@@ -50,6 +53,7 @@ func UnlockSoft(s string) {
 	}
 	nLocks--
 	mutexMap.Set(fmt.Sprintf("nLocks:%s", s), nLocks)
+	Unlock(fmt.Sprintf("mutex-sync:%s", s))
 }
 
 // Lock locks a mutex in the mutexMap.
