@@ -12,7 +12,7 @@ import (
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
-func (bot TipBot) anyTextHandler(ctx context.Context, m *tb.Message) {
+func (bot *TipBot) anyTextHandler(ctx context.Context, m *tb.Message) {
 	if m.Chat.Type != tb.ChatPrivate {
 		return
 	}
@@ -36,18 +36,10 @@ func (bot TipBot) anyTextHandler(ctx context.Context, m *tb.Message) {
 		bot.lnurlHandler(ctx, m)
 		return
 	}
-
-	// could be a LNURL
-	// var lnurlregex = regexp.MustCompile(`.*?((lnurl)([0-9]{1,}[a-z0-9]+){1})`)
-
-	// inputs asked for
-	if user.StateKey == lnbits.UserStateLNURLEnterAmount || user.StateKey == lnbits.UserEnterAmount {
-		bot.enterAmountHandler(ctx, m)
+	if c := stateCallbackMessage[user.StateKey]; c != nil {
+		c(ctx, m)
+		//ResetUserState(user, bot)
 	}
-	if user.StateKey == lnbits.UserEnterUser {
-		bot.enterUserHandler(ctx, m)
-	}
-
 }
 
 type EnterUserStateData struct {
@@ -114,7 +106,6 @@ func (bot *TipBot) enterUserHandler(ctx context.Context, m *tb.Message) {
 	switch EnterUserStateData.Type {
 	case "CreateSendState":
 		m.Text = fmt.Sprintf("/send %s", userstr)
-		SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
 		bot.sendHandler(ctx, m)
 		return
 	default:

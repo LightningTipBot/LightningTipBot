@@ -26,6 +26,7 @@ const (
 
 type TipTooltip struct {
 	Message
+	ID        string     `json:"id"`
 	TipAmount int64      `json:"tip_amount"`
 	Ntips     int        `json:"ntips"`
 	LastTip   time.Time  `json:"last_tip"`
@@ -33,7 +34,7 @@ type TipTooltip struct {
 }
 
 func (ttt TipTooltip) Key() string {
-	return fmt.Sprintf("tip-tool-tip:%s", strconv.Itoa(ttt.Message.Message.ReplyTo.ID))
+	return fmt.Sprintf("tip-tool-tip:%s", ttt.ID)
 }
 
 const maxNamesInTipperMessage = 5
@@ -54,6 +55,7 @@ func Tips(nTips int) TipTooltipOption {
 
 func NewTipTooltip(m *tb.Message, opts ...TipTooltipOption) *TipTooltip {
 	tipTooltip := &TipTooltip{
+		ID: fmt.Sprintf("%d-%d", m.Chat.ID, m.ReplyTo.ID),
 		Message: Message{
 			Message: m,
 		},
@@ -103,8 +105,8 @@ func getTippersString(tippers []*tb.User) string {
 }
 
 // tipTooltipExists checks if this tip is already known
-func tipTooltipExists(replyToId int, bot *TipBot) (bool, *TipTooltip) {
-	message := NewTipTooltip(&tb.Message{ReplyTo: &tb.Message{ID: replyToId}})
+func tipTooltipExists(m *tb.Message, bot *TipBot) (bool, *TipTooltip) {
+	message := NewTipTooltip(m)
 	err := bot.Bunt.Get(message)
 	if err != nil {
 		return false, message
@@ -116,7 +118,8 @@ func tipTooltipExists(replyToId int, bot *TipBot) (bool, *TipTooltip) {
 // tipTooltipHandler function to update the tooltip below a tipped message. either updates or creates initial tip tool tip
 func tipTooltipHandler(m *tb.Message, bot *TipBot, amount int64, initializedWallet bool) (hasTip bool) {
 	// todo: this crashes if the tooltip message (maybe also the original tipped message) was deleted in the mean time!!! need to check for existence!
-	hasTip, ttt := tipTooltipExists(m.ReplyTo.ID, bot)
+	hasTip, ttt := tipTooltipExists(m, bot)
+	log.Debugf("[tip] %s has tip: %t", ttt.ID, hasTip)
 	if hasTip {
 		// update the tooltip with new tippers
 		err := ttt.updateTooltip(bot, m.Sender, amount, !initializedWallet)
@@ -183,6 +186,6 @@ func tipTooltipInitializedHandler(user *tb.User, bot TipBot) {
 // editTooltip updates the tooltip message with the new tip amount and tippers and edits it
 func (ttt *TipTooltip) editTooltip(bot *TipBot, notInitializedWallet bool) {
 	tipToolTip := ttt.getUpdatedTipTooltipMessage(GetUserStrMd(bot.Telegram.Me), notInitializedWallet)
-	m := bot.tryEditMessage(ttt.Message.Message, tipToolTip)
-	ttt.Message.Message.Text = m.Text
+	bot.tryEditMessage(ttt.Message.Message, tipToolTip)
+	// ttt.Message.Message.Text = m.Text
 }

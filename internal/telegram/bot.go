@@ -14,7 +14,6 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	gocache "github.com/patrickmn/go-cache"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/lightningtipbot/telebot.v2"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 	"gorm.io/gorm"
 )
@@ -22,8 +21,9 @@ import (
 type TipBot struct {
 	Database *gorm.DB
 	Bunt     *storage.DB
+	ShopBunt *storage.DB
 	logger   *gorm.DB
-	Telegram *telebot.Bot
+	Telegram *tb.Bot
 	Client   *lnbits.Client
 	limiter  map[string]limiter.Limiter
 	Cache
@@ -48,7 +48,8 @@ func NewBot() TipBot {
 		Database: db,
 		Client:   lnbits.NewClient(internal.Configuration.Lnbits.AdminKey, internal.Configuration.Lnbits.Url),
 		logger:   txLogger,
-		Bunt:     createBunt(),
+		Bunt:     createBunt(internal.Configuration.Database.BuntDbPath),
+		ShopBunt: createBunt(internal.Configuration.Database.ShopBuntDbPath),
 		Telegram: newTelegramBot(),
 		Cache:    Cache{GoCacheStore: gocacheStore},
 	}
@@ -90,5 +91,6 @@ func (bot *TipBot) Start() {
 	}
 	bot.registerTelegramHandlers()
 	initInvoiceEventCallbacks(bot)
+	initializeStateCallbackMessage(bot)
 	bot.Telegram.Start()
 }

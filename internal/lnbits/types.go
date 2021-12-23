@@ -36,6 +36,13 @@ const (
 	UserHasEnteredAmount
 	UserEnterUser
 	UserHasEnteredUser
+	UserEnterShopTitle
+	UserStateShopItemSendPhoto
+	UserStateShopItemSendTitle
+	UserStateShopItemSendDescription
+	UserStateShopItemSendPrice
+	UserStateShopItemSendItemFile
+	UserEnterShopsDescription
 )
 
 type UserStateKey int

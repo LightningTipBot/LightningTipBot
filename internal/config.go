@@ -30,6 +30,7 @@ type TelegramConfiguration struct {
 }
 type DatabaseConfiguration struct {
 	DbPath           string `yaml:"db_path"`
+	ShopBuntDbPath   string `yaml:"shop_buntdb_path"`
 	BuntDbPath       string `yaml:"buntdb_path"`
 	TransactionsPath string `yaml:"transactions_path"`
 }

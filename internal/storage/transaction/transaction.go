@@ -2,7 +2,7 @@ package transaction
 
 import (
 	"fmt"
-	"sync"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -16,14 +16,6 @@ type Base struct {
 	CreatedAt     time.Time `json:"created"`
 	UpdatedAt     time.Time `json:"updated"`
 }
-
-func init() {
-	transactionMutex = make(map[string]*sync.Mutex, 0)
-	transactionMapMutex = &sync.Mutex{}
-}
-
-var transactionMutex map[string]*sync.Mutex
-var transactionMapMutex *sync.Mutex
 
 type Option func(b *Base)
 
@@ -60,14 +52,12 @@ func (tx *Base) Lock(s storage.Storable, db *storage.DB) error {
 	log.Debugf("[Lock] %s", tx.ID)
 	return nil
 }
-func unlock(id string) {
-	transactionMapMutex.Lock()
-	if transactionMutex[id] != nil {
-		transactionMutex[id].Unlock()
-		log.Tracef("[TX mutex] Release %s", id)
-	}
-	transactionMapMutex.Unlock()
+func Unlock(id string) {
+	runtime.Unlock(id)
+}
 
+func Lock(id string) {
+	runtime.Lock(id)
 }
 
 func (tx *Base) Release(s storage.Storable, db *storage.DB) error {
@@ -79,7 +69,7 @@ func (tx *Base) Release(s storage.Storable, db *storage.DB) error {
 		return err
 	}
 	log.Debugf("[Bunt Release] %s", tx.ID)
-	unlock(tx.ID)
+	Unlock(tx.ID)
 	return nil
 }
 
@@ -95,17 +85,12 @@ func (tx *Base) Inactivate(s storage.Storable, db *storage.DB) error {
 }
 
 func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error) {
-	transactionMapMutex.Lock()
-	if transactionMutex[tx.ID] == nil {
-		transactionMutex[tx.ID] = &sync.Mutex{}
-	}
-	transactionMapMutex.Unlock()
-	transactionMutex[tx.ID].Lock()
+	Lock(tx.ID)
 	log.Tracef("[TX mutex] Lock %s", tx.ID)
 
 	err := db.Get(s)
 	if err != nil {
-		unlock(tx.ID)
+		Unlock(tx.ID)
 		return s, err
 	}
 	// to avoid race conditions, we block the call if there is
@@ -114,7 +99,7 @@ func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error
 	for tx.InTransaction {
 		select {
 		case <-ticker.C:
-			unlock(tx.ID)
+			Unlock(tx.ID)
 			return nil, fmt.Errorf("[Bunt Lock] transaction timeout %s", tx.ID)
 		default:
 			time.Sleep(time.Duration(75) * time.Millisecond)
@@ -122,7 +107,7 @@ func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error
 		}
 	}
 	if err != nil {
-		unlock(tx.ID)
+		Unlock(tx.ID)
 		return nil, fmt.Errorf("could not get transaction")
 	}
 
@@ -132,4 +117,9 @@ func (tx *Base) Get(s storage.Storable, db *storage.DB) (storage.Storable, error
 func (tx *Base) Set(s storage.Storable, db *storage.DB) error {
 	tx.UpdatedAt = time.Now()
 	return db.Set(s)
+}
+
+func (tx *Base) Delete(s storage.Storable, db *storage.DB) error {
+	tx.UpdatedAt = time.Now()
+	return db.Delete(s.Key(), s)
 }
