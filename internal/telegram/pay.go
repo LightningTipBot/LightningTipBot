@@ -3,13 +3,15 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	decodepay "github.com/fiatjaf/ln-decodepay"
 	log "github.com/sirupsen/logrus"
@@ -31,7 +33,7 @@ func helpPayInvoiceUsage(ctx context.Context, errormsg string) string {
 }
 
 type PayData struct {
-	*transaction.Base
+	*storage.Base
 	From            *lnbits.User `json:"from"`
 	Invoice         string       `json:"invoice"`
 	Hash            string       `json:"hash"`
@@ -129,7 +131,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 	)
 	payMessage := bot.trySendMessage(m.Chat, confirmText, paymentConfirmationMenu)
 	payData := PayData{
-		Base:            transaction.New(transaction.ID(id)),
+		Base:            storage.New(storage.ID(id)),
 		From:            user,
 		Invoice:         paymentRequest,
 		Amount:          int64(amount),
@@ -146,7 +148,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 
 // confirmPayHandler when user clicked pay on payment confirmation
 func (bot *TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
-	tx := &PayData{Base: transaction.New(transaction.ID(c.Data))}
+	tx := &PayData{Base: storage.New(storage.ID(c.Data))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
@@ -161,21 +163,13 @@ func (bot *TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 	if payData.From.Telegram.ID != c.Sender.ID {
 		return
 	}
-	// immediatelly set intransaction to block duplicate calls
-	err = payData.Lock(payData, bot.Bunt)
-	if err != nil {
-		log.Errorf("[acceptSendHandler] %s", err)
-		bot.tryDeleteMessage(c.Message)
-		bot.tryEditMessage(c.Message, i18n.Translate(payData.LanguageCode, "errorTryLaterMessage"), &tb.ReplyMarkup{})
-		return
-	}
 	if !payData.Active {
 		log.Errorf("[confirmPayHandler] send not active anymore")
 		bot.tryEditMessage(c.Message, i18n.Translate(payData.LanguageCode, "errorTryLaterMessage"), &tb.ReplyMarkup{})
 		bot.tryDeleteMessage(c.Message)
 		return
 	}
-	defer payData.Release(payData, bot.Bunt)
+	defer payData.Set(payData, bot.Bunt)
 
 	// remove buttons from confirmation message
 	// bot.tryEditMessage(c.Message, MarkdownEscape(payData.Message), &tb.ReplyMarkup{})
@@ -220,7 +214,6 @@ func (bot *TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 	payData.Hash = invoice.PaymentHash
-	payData.InTransaction = false
 
 	if c.Message.Private() {
 		// if the command was invoked in private chat
@@ -239,7 +232,7 @@ func (bot *TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 	// reset state immediately
 	user := LoadUser(ctx)
 	ResetUserState(user, bot)
-	tx := &PayData{Base: transaction.New(transaction.ID(c.Data))}
+	tx := &PayData{Base: storage.New(storage.ID(c.Data))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	// immediatelly set intransaction to block duplicate calls
@@ -254,6 +247,5 @@ func (bot *TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 	bot.tryEditMessage(c.Message, i18n.Translate(payData.LanguageCode, "paymentCancelledMessage"), &tb.ReplyMarkup{})
-	payData.InTransaction = false
 	payData.Inactivate(payData, bot.Bunt)
 }

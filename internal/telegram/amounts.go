@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"strconv"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/price"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
@@ -158,7 +159,7 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 	// we stored this in the EnterAmountStateData before
 	switch EnterAmountStateData.Type {
 	case "LnurlPayState":
-		tx := &LnurlPayState{Base: transaction.New(transaction.ID(EnterAmountStateData.ID))}
+		tx := &LnurlPayState{Base: storage.New(storage.ID(EnterAmountStateData.ID))}
 		mutex.Lock(tx.ID)
 		defer mutex.Unlock(tx.ID)
 		sn, err := tx.Get(tx, bot.Bunt)
@@ -180,7 +181,7 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 		bot.lnurlPayHandlerSend(ctx, m)
 		return
 	case "LnurlWithdrawState":
-		tx := &LnurlWithdrawState{Base: transaction.New(transaction.ID(EnterAmountStateData.ID))}
+		tx := &LnurlWithdrawState{Base: storage.New(storage.ID(EnterAmountStateData.ID))}
 		mutex.Lock(tx.ID)
 		defer mutex.Unlock(tx.ID)
 		sn, err := tx.Get(tx, bot.Bunt)
