@@ -33,23 +33,21 @@ func LockSoft(s string) {
 	if nLocks == 0 {
 		Lock(s)
 	} else {
-		log.Tracef("[Mutex] skipping LockSoft with nLocks: %d ", nLocks)
+		log.Tracef("[Mutex] LockSoft (nLocks: %d)", nLocks)
 	}
 	nLocks++
 	mutexMap.Set(fmt.Sprintf("nLocks:%s", s), nLocks)
-	Unlock(fmt.Sprintf("mutex-sync:%s", s))
 }
 
 // UnlockSoft unlock a mutex only if it has been locked once. If it has been locked more than once
 // it only decrements nLocks and skips the unlock of the mutex. This is supposed to unlock only for
 // nLocks == 1
 func UnlockSoft(s string) {
-	Lock(fmt.Sprintf("mutex-sync:%s", s))
 	var nLocks = checkSoftLock(s)
 	if nLocks == 1 {
 		Unlock(s)
 	} else {
-		log.Tracef("[Mutex] skipping UnlockSoft with nLocks: %d ", nLocks)
+		log.Tracef("[Mutex] UnlockSoft with nLocks: %d ", nLocks)
 	}
 	nLocks--
 	mutexMap.Set(fmt.Sprintf("nLocks:%s", s), nLocks)
