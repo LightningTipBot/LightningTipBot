@@ -157,7 +157,7 @@ func (bot *TipBot) getUserShopview(ctx context.Context, user *lnbits.User) (shop
 	shopView = sv.(ShopView)
 	return
 }
-func (bot *TipBot) shopViewDeleteAllStatusMsgs(ctx context.Context, user *lnbits.User) (shopView ShopView, err error) {
+func (bot *TipBot) shopViewDeleteAllStatusMsgs(ctx context.Context, user *lnbits.User, start int) (shopView ShopView, err error) {
 	runtime.Lock(fmt.Sprintf("shopview-delete-%d", user.Telegram.ID))
 	shopView, err = bot.getUserShopview(ctx, user)
 	if err != nil {
@@ -166,15 +166,19 @@ func (bot *TipBot) shopViewDeleteAllStatusMsgs(ctx context.Context, user *lnbits
 
 	statusMessages := shopView.StatusMessages
 	// delete all status messages from cache
-	shopView.StatusMessages = []*tb.Message{}
+	shopView.StatusMessages = append([]*tb.Message{}, statusMessages[0:start]...)
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 
-	// delete all status messages from telegram
-	for _, msg := range statusMessages {
-		bot.tryDeleteMessage(msg)
-	}
+	deleteStatusMessages(start, statusMessages, bot)
 	runtime.Unlock(fmt.Sprintf("shopview-delete-%d", user.Telegram.ID))
 	return
+}
+
+func deleteStatusMessages(start int, messages []*tb.Message, bot *TipBot) {
+	// delete all status messages from telegram
+	for _, msg := range messages[start:] {
+		bot.tryDeleteMessage(msg)
+	}
 }
 
 // sendStatusMessage adds a status message to the shopVoew.statusMessages
@@ -206,7 +210,7 @@ func (bot *TipBot) sendStatusMessageAndDelete(ctx context.Context, to tb.Recipie
 	ticker := runtime.GetTicker(id, runtime.WithDuration(5*time.Second))
 	if !ticker.Started {
 		ticker.Do(func() {
-			bot.shopViewDeleteAllStatusMsgs(ctx, user)
+			bot.shopViewDeleteAllStatusMsgs(ctx, user, 1)
 			// removing ticker asap done
 			runtime.RemoveTicker(id)
 		})

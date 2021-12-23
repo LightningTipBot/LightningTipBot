@@ -238,7 +238,7 @@ func (bot *TipBot) enterShopItemTitleHandler(ctx context.Context, m *tb.Message)
 		bot.sendStatusMessageAndDelete(ctx, m.Sender, "🚫 Action cancelled.")
 		go func() {
 			time.Sleep(time.Duration(5) * time.Second)
-			bot.shopViewDeleteAllStatusMsgs(ctx, user)
+			bot.shopViewDeleteAllStatusMsgs(ctx, user, 1)
 		}()
 		return
 	}
@@ -1163,7 +1163,7 @@ func (bot *TipBot) enterShopsDescriptionHandler(ctx context.Context, m *tb.Messa
 		bot.sendStatusMessageAndDelete(ctx, m.Sender, "🚫 Action cancelled.")
 		go func() {
 			time.Sleep(time.Duration(5) * time.Second)
-			bot.shopViewDeleteAllStatusMsgs(ctx, user)
+			bot.shopViewDeleteAllStatusMsgs(ctx, user, 1)
 		}()
 		return
 	}
@@ -1341,7 +1341,7 @@ func (bot *TipBot) enterShopTitleHandler(ctx context.Context, m *tb.Message) {
 		bot.sendStatusMessageAndDelete(ctx, m.Sender, "🚫 Action cancelled.")
 		go func() {
 			time.Sleep(time.Duration(5) * time.Second)
-			bot.shopViewDeleteAllStatusMsgs(ctx, user)
+			bot.shopViewDeleteAllStatusMsgs(ctx, user, 1)
 		}()
 		return
 	}
