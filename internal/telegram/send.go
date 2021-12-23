@@ -308,12 +308,13 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	user := LoadUser(ctx)
 	ResetUserState(user, bot)
 	tx := &SendData{Base: transaction.New(transaction.ID(c.Data))}
+	mutex.Lock(tx.ID)
+	defer mutex.Unlock(tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err)
 		return
 	}
-	defer mutex.Unlock(tx.ID)
 
 	sendData := sn.(*SendData)
 	// onnly the correct user can press
