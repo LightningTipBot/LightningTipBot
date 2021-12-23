@@ -4,16 +4,17 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"strings"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/eko/gocache/store"
 	"github.com/skip2/go-qrcode"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"
@@ -27,7 +28,7 @@ var (
 )
 
 type InlineReceive struct {
-	*transaction.Base
+	*storage.Base
 	MessageText       string       `json:"inline_receive_messagetext"`
 	Message           *tb.Message  `json:"inline_receive_message"`
 	Amount            int64        `json:"inline_receive_amount"`
@@ -120,7 +121,7 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 		results[i].SetResultID(id)
 		// create persistend inline send struct
 		inlineReceive := InlineReceive{
-			Base:              transaction.New(transaction.ID(id)),
+			Base:              storage.New(storage.ID(id)),
 			MessageText:       inlineMessage,
 			To:                to,
 			Memo:              memo,
@@ -143,7 +144,7 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 }
 
 func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
-	tx := &InlineReceive{Base: transaction.New(transaction.ID(c.Data))}
+	tx := &InlineReceive{Base: storage.New(storage.ID(c.Data))}
 	// immediatelly set intransaction to block duplicate calls
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
@@ -201,7 +202,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 }
 
 func (bot *TipBot) sendInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
-	tx := &InlineReceive{Base: transaction.New(transaction.ID(c.Data))}
+	tx := &InlineReceive{Base: storage.New(storage.ID(c.Data))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	rn, err := tx.Get(tx, bot.Bunt)
@@ -211,11 +212,6 @@ func (bot *TipBot) sendInlineReceiveHandler(ctx context.Context, c *tb.Callback)
 		return
 	}
 	inlineReceive := rn.(*InlineReceive)
-	err = inlineReceive.Lock(inlineReceive, bot.Bunt)
-	if err != nil {
-		log.Errorf("[acceptInlineReceiveHandler] %s", err)
-		return
-	}
 
 	if !inlineReceive.Active {
 		log.Errorf("[acceptInlineReceiveHandler] inline receive not active anymore")
@@ -259,7 +255,7 @@ func (bot *TipBot) sendInlineReceiveHandler(ctx context.Context, c *tb.Callback)
 	}
 
 	log.Infof("[💸 inlineReceive] Send from %s to %s (%d sat).", fromUserStr, toUserStr, inlineReceive.Amount)
-	inlineReceive.Release(inlineReceive, bot.Bunt)
+	inlineReceive.Set(inlineReceive, bot.Bunt)
 	bot.finishInlineReceiveHandler(ctx, c)
 }
 
@@ -305,7 +301,7 @@ func (bot *TipBot) inlineReceiveEvent(invoiceEvent *InvoiceEvent) {
 }
 
 func (bot *TipBot) finishInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
-	tx := &InlineReceive{Base: transaction.New(transaction.ID(c.Data))}
+	tx := &InlineReceive{Base: storage.New(storage.ID(c.Data))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	// immediatelly set intransaction to block duplicate calls
@@ -343,7 +339,7 @@ func (bot *TipBot) finishInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 }
 
 func (bot *TipBot) cancelInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
-	tx := &InlineReceive{Base: transaction.New(transaction.ID(c.Data))}
+	tx := &InlineReceive{Base: storage.New(storage.ID(c.Data))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	// immediatelly set intransaction to block duplicate calls
@@ -357,7 +353,6 @@ func (bot *TipBot) cancelInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 		bot.tryEditMessage(c.Message, i18n.Translate(inlineReceive.LanguageCode, "inlineReceiveCancelledMessage"), &tb.ReplyMarkup{})
 		// set the inlineReceive inactive
 		inlineReceive.Active = false
-		inlineReceive.InTransaction = false
 		runtime.IgnoreError(inlineReceive.Set(inlineReceive, bot.Bunt))
 	}
 	return

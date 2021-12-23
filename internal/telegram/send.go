@@ -4,13 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
 	log "github.com/sirupsen/logrus"
@@ -40,7 +42,7 @@ func (bot *TipBot) SendCheckSyntax(ctx context.Context, m *tb.Message) (bool, st
 }
 
 type SendData struct {
-	*transaction.Base
+	*storage.Base
 	From           *lnbits.User `json:"from"`
 	ToTelegramId   int64        `json:"to_telegram_id"`
 	ToTelegramUser string       `json:"to_telegram_user"`
@@ -174,7 +176,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	id := fmt.Sprintf("send-%d-%d-%s", m.Sender.ID, amount, RandStringRunes(5))
 	sendData := SendData{
 		From:           user,
-		Base:           transaction.New(transaction.ID(id)),
+		Base:           storage.New(storage.ID(id)),
 		Amount:         int64(amount),
 		ToTelegramId:   toUserDb.Telegram.ID,
 		ToTelegramUser: toUserStrWithoutAt,
@@ -214,7 +216,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 
 // sendHandler invoked when user clicked send on payment confirmation
 func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
-	tx := &SendData{Base: transaction.New(transaction.ID(c.Data))}
+	tx := &SendData{Base: storage.New(storage.ID(c.Data))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
@@ -227,19 +229,12 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	if sendData.From.Telegram.ID != c.Sender.ID {
 		return
 	}
-	// immediatelly set intransaction to block duplicate calls
-	err = sendData.Lock(sendData, bot.Bunt)
-	if err != nil {
-		log.Errorf("[acceptSendHandler] %s", err)
-		bot.tryDeleteMessage(c.Message)
-		return
-	}
 	if !sendData.Active {
 		log.Errorf("[acceptSendHandler] send not active anymore")
 		// bot.tryDeleteMessage(c.Message)
 		return
 	}
-	defer sendData.Release(sendData, bot.Bunt)
+	defer sendData.Set(sendData, bot.Bunt)
 
 	// // remove buttons from confirmation message
 	// bot.tryEditMessage(c.Message, MarkdownEscape(sendData.Message), &tb.ReplyMarkup{})
@@ -307,7 +302,7 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	// reset state immediately
 	user := LoadUser(ctx)
 	ResetUserState(user, bot)
-	tx := &SendData{Base: transaction.New(transaction.ID(c.Data))}
+	tx := &SendData{Base: storage.New(storage.ID(c.Data))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
@@ -323,6 +318,5 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	}
 	// remove buttons from confirmation message
 	bot.tryEditMessage(c.Message, i18n.Translate(sendData.LanguageCode, "sendCancelledMessage"), &tb.ReplyMarkup{})
-	sendData.InTransaction = false
 	sendData.Inactivate(sendData, bot.Bunt)
 }

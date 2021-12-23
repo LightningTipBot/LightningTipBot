@@ -4,15 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"io/ioutil"
 	"net/url"
 	"strconv"
 	"strings"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
+
 	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
@@ -20,7 +22,7 @@ import (
 
 // LnurlPayState saves the state of the user for an LNURL payment
 type LnurlPayState struct {
-	*transaction.Base
+	*storage.Base
 	From           *lnbits.User         `json:"from"`
 	LNURLPayParams lnurl.LNURLPayParams `json:"LNURLPayParams"`
 	LNURLPayValues lnurl.LNURLPayValues `json:"LNURLPayValues"`
@@ -39,7 +41,7 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 	// object that holds all information about the send payment
 	id := fmt.Sprintf("lnurlp-%d-%s", m.Sender.ID, RandStringRunes(5))
 	lnurlPayState := LnurlPayState{
-		Base:           transaction.New(transaction.ID(id)),
+		Base:           storage.New(storage.ID(id)),
 		From:           user,
 		LNURLPayParams: payParams.LNURLPayParams,
 		LanguageCode:   ctx.Value("publicLanguageCode").(string),
@@ -127,7 +129,7 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) {
 	}
 
 	// use the enter amount state of the user to load the LNURL payment state
-	tx := &LnurlPayState{Base: transaction.New(transaction.ID(enterAmountData.ID))}
+	tx := &LnurlPayState{Base: storage.New(storage.ID(enterAmountData.ID))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)

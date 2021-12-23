@@ -4,15 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"io/ioutil"
 	"net/url"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"
@@ -27,7 +29,7 @@ var (
 
 // LnurlWithdrawState saves the state of the user for an LNURL payment
 type LnurlWithdrawState struct {
-	*transaction.Base
+	*storage.Base
 	From                  *lnbits.User                `json:"from"`
 	LNURLWithdrawResponse lnurl.LNURLWithdrawResponse `json:"LNURLWithdrawResponse"`
 	LNURResponse          lnurl.LNURLResponse         `json:"LNURLResponse"`
@@ -61,7 +63,7 @@ func (bot *TipBot) lnurlWithdrawHandler(ctx context.Context, m *tb.Message, with
 	// object that holds all information about the send payment
 	id := fmt.Sprintf("lnurlw-%d-%s", m.Sender.ID, RandStringRunes(5))
 	LnurlWithdrawState := LnurlWithdrawState{
-		Base:                  transaction.New(transaction.ID(id)),
+		Base:                  storage.New(storage.ID(id)),
 		From:                  user,
 		LNURLWithdrawResponse: withdrawParams.LNURLWithdrawResponse,
 		LanguageCode:          ctx.Value("publicLanguageCode").(string),
@@ -139,7 +141,7 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 	}
 
 	// use the enter amount state of the user to load the LNURL payment state
-	tx := &LnurlWithdrawState{Base: transaction.New(transaction.ID(enterAmountData.ID))}
+	tx := &LnurlWithdrawState{Base: storage.New(storage.ID(enterAmountData.ID))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
@@ -185,7 +187,7 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 
 // confirmPayHandler when user clicked pay on payment confirmation
 func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) {
-	tx := &LnurlWithdrawState{Base: transaction.New(transaction.ID(c.Data))}
+	tx := &LnurlWithdrawState{Base: storage.New(storage.ID(c.Data))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
@@ -206,21 +208,13 @@ func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) {
 	if lnurlWithdrawState.From.Telegram.ID != c.Sender.ID {
 		return
 	}
-	// immediatelly set intransaction to block duplicate calls
-	err = lnurlWithdrawState.Lock(lnurlWithdrawState, bot.Bunt)
-	if err != nil {
-		log.Errorf("[confirmWithdrawHandler] %s", err)
-		bot.tryDeleteMessage(c.Message)
-		bot.tryEditMessage(c.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"), &tb.ReplyMarkup{})
-		return
-	}
 	if !lnurlWithdrawState.Active {
 		log.Errorf("[confirmPayHandler] send not active anymore")
 		bot.tryEditMessage(c.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"), &tb.ReplyMarkup{})
 		bot.tryDeleteMessage(c.Message)
 		return
 	}
-	defer lnurlWithdrawState.Release(lnurlWithdrawState, bot.Bunt)
+	defer lnurlWithdrawState.Set(lnurlWithdrawState, bot.Bunt)
 
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
@@ -313,7 +307,7 @@ func (bot *TipBot) cancelWithdrawHandler(ctx context.Context, c *tb.Callback) {
 	// reset state immediately
 	user := LoadUser(ctx)
 	ResetUserState(user, bot)
-	tx := &LnurlWithdrawState{Base: transaction.New(transaction.ID(c.Data))}
+	tx := &LnurlWithdrawState{Base: storage.New(storage.ID(c.Data))}
 	mutex.Lock(tx.ID)
 	defer mutex.Unlock(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
@@ -333,6 +327,5 @@ func (bot *TipBot) cancelWithdrawHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 	bot.tryEditMessage(c.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlWithdrawCancelled"), &tb.ReplyMarkup{})
-	lnurlWithdrawState.InTransaction = false
 	lnurlWithdrawState.Inactivate(lnurlWithdrawState, bot.Bunt)
 }
