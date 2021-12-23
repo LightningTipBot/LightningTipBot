@@ -142,8 +142,8 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 
 	// use the enter amount state of the user to load the LNURL payment state
 	tx := &LnurlWithdrawState{Base: storage.New(storage.ID(enterAmountData.ID))}
-	mutex.Lock(tx.ID)
-	defer mutex.Unlock(tx.ID)
+	mutex.LockSoft(tx.ID)
+	defer mutex.UnlockSoft(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
@@ -188,8 +188,8 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 // confirmPayHandler when user clicked pay on payment confirmation
 func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) {
 	tx := &LnurlWithdrawState{Base: storage.New(storage.ID(c.Data))}
-	mutex.Lock(tx.ID)
-	defer mutex.Unlock(tx.ID)
+	mutex.LockSoft(tx.ID)
+	defer mutex.UnlockSoft(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[confirmWithdrawHandler] Error: %s", err.Error())
@@ -308,8 +308,8 @@ func (bot *TipBot) cancelWithdrawHandler(ctx context.Context, c *tb.Callback) {
 	user := LoadUser(ctx)
 	ResetUserState(user, bot)
 	tx := &LnurlWithdrawState{Base: storage.New(storage.ID(c.Data))}
-	mutex.Lock(tx.ID)
-	defer mutex.Unlock(tx.ID)
+	mutex.LockSoft(tx.ID)
+	defer mutex.UnlockSoft(tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[cancelWithdrawHandler] Error: %s", err.Error())

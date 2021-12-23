@@ -242,8 +242,8 @@ func (bot *TipBot) initUserShops(ctx context.Context, user *lnbits.User) (*Shops
 // getUserShops returns the Shops for the user
 func (bot *TipBot) getUserShops(ctx context.Context, user *lnbits.User) (*Shops, error) {
 	tx := &Shops{Base: storage.New(storage.ID(fmt.Sprintf("shops-%d", user.Telegram.ID)))}
-	mutex.Lock(tx.ID)
-	defer mutex.Unlock(tx.ID)
+	mutex.LockSoft(tx.ID)
+	defer mutex.UnlockSoft(tx.ID)
 	sn, err := tx.Get(tx, bot.ShopBunt)
 	if err != nil {
 		log.Errorf("[getUserShops] User: %s (%d): %s", GetUserStr(user.Telegram), user.Telegram.ID, err)
@@ -280,8 +280,8 @@ func (bot *TipBot) addUserShop(ctx context.Context, user *lnbits.User) (*Shop, e
 // getShop returns the Shop for the given ID
 func (bot *TipBot) getShop(ctx context.Context, shopId string) (*Shop, error) {
 	tx := &Shop{Base: storage.New(storage.ID(shopId))}
-	mutex.Lock(tx.ID)
-	defer mutex.Unlock(tx.ID)
+	mutex.LockSoft(tx.ID)
+	defer mutex.UnlockSoft(tx.ID)
 	// immediatelly set intransaction to block duplicate calls
 	sn, err := tx.Get(tx, bot.ShopBunt)
 	if err != nil {
