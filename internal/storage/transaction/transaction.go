@@ -48,7 +48,7 @@ func (tx *Base) Lock(s storage.Storable, db *storage.DB) error {
 		log.Debugf("[Bunt Lock] %s Error: %s", tx.ID, err.Error())
 		return err
 	}
-	log.Debugf("[Lock] %s", tx.ID)
+	log.Tracef("[Bunt Lock] %s", tx.ID)
 	return nil
 }
 
@@ -57,10 +57,10 @@ func (tx *Base) Release(s storage.Storable, db *storage.DB) error {
 	tx.InTransaction = false
 	err := tx.Set(s, db)
 	if err != nil {
-		log.Debugf("[Bunt Release] %s Error: %s", tx.ID, err.Error())
+		log.Tracef("[Bunt Release] %s Error: %s", tx.ID, err.Error())
 		return err
 	}
-	log.Debugf("[Bunt Release] %s", tx.ID)
+	log.Tracef("[Bunt Release] %s", tx.ID)
 	return nil
 }
 
@@ -68,10 +68,10 @@ func (tx *Base) Inactivate(s storage.Storable, db *storage.DB) error {
 	tx.Active = false
 	err := tx.Set(s, db)
 	if err != nil {
-		log.Debugf("[Bunt Inactivate] %s Error: %s", tx.ID, err.Error())
+		log.Tracef("[Bunt Inactivate] %s Error: %s", tx.ID, err.Error())
 		return err
 	}
-	log.Debugf("[Bunt Inactivate] %s", tx.ID)
+	log.Tracef("[Bunt Inactivate] %s", tx.ID)
 	return nil
 }
 
