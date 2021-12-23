@@ -117,7 +117,6 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 
 	// update tooltip if necessary
 	messageHasTip := tipTooltipHandler(m, bot, amount, to.Initialized)
-	log.Debugf("[tip] Has tip: %t", messageHasTip)
 
 	log.Infof("[💸 tip] Tip from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
 
