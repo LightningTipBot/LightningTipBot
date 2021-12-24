@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"runtime/debug"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits/webhook"
@@ -8,6 +9,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/price"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	log "github.com/sirupsen/logrus"
+	_ "net/http/pprof"
 )
 
 // setLogger will initialize the log format
@@ -22,6 +24,7 @@ func setLogger() {
 func main() {
 	// set logger
 	setLogger()
+	go http.ListenAndServe("0.0.0.0:6060", nil)
 	defer withRecovery()
 	bot := telegram.NewBot()
 	webhook.NewServer(&bot)
