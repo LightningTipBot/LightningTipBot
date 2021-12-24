@@ -247,6 +247,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 	if !inlineFaucet.Active {
 		log.Errorf(fmt.Sprintf("[faucet] faucet %s inactive.", inlineFaucet.ID))
+		bot.cancelInlineFaucet(ctx, c, true) // cancel without ID check
 		return
 	}
 	// release faucet no matter what
@@ -296,11 +297,10 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 			bot.trySendMessage(from.Telegram, Translate(ctx, "sendErrorMessage"))
 			errMsg := fmt.Sprintf("[faucet] Transaction failed: %s", err)
 			log.Warnln(errMsg)
-
 			// if faucet fails, cancel it:
-			c.Sender.ID = inlineFaucet.From.Telegram.ID // overwrite the sender of the callback to be the faucet owner
-			log.Debugf("[faucet] Canceling faucet %s...", inlineFaucet.ID)
-			bot.cancelInlineFaucetHandler(ctx, c)
+			// c.Sender.ID = inlineFaucet.From.Telegram.ID // overwrite the sender of the callback to be the faucet owner
+			// log.Debugf("[faucet] Canceling faucet %s...", inlineFaucet.ID)
+			bot.cancelInlineFaucet(ctx, c, true) // cancel without ID check
 			return
 		}
 
@@ -341,7 +341,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 }
 
-func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback) {
+func (bot *TipBot) cancelInlineFaucet(ctx context.Context, c *tb.Callback, ignoreID bool) {
 	tx := &InlineFaucet{Base: storage.New(storage.ID(c.Data))}
 	mutex.LockWithContext(ctx, tx.ID)
 	defer mutex.UnlockWithContext(ctx, tx.ID)
@@ -352,12 +352,16 @@ func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	}
 
 	inlineFaucet := fn.(*InlineFaucet)
-	if c.Sender.ID == inlineFaucet.From.Telegram.ID {
+	if ignoreID || c.Sender.ID == inlineFaucet.From.Telegram.ID {
 		bot.tryEditMessage(c.Message, i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetCancelledMessage"), &tb.ReplyMarkup{})
 		// set the inlineFaucet inactive
 		inlineFaucet.Active = false
 		runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.Bunt))
 		log.Debugf("[faucet] Faucet %s canceled.", inlineFaucet.ID)
 	}
+	return
+}
+func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback) {
+	bot.cancelInlineFaucet(ctx, c, false)
 	return
 }
