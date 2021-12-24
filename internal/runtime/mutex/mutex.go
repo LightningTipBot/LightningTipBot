@@ -81,6 +81,6 @@ func Unlock(s string) {
 	if m, ok := mutexMap.Get(s); ok {
 		log.Tracef("[Mutex] Unlock %s", s)
 		m.(*sync.Mutex).Unlock()
-
+		mutexMap.Remove(s)
 	}
 }
