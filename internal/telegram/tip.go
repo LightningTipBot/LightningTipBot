@@ -110,7 +110,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	if !success {
 		NewMessage(m, WithDuration(0, bot))
 		bot.trySendMessage(m.Sender, fmt.Sprintf("%s %s", Translate(ctx, "tipErrorMessage"), err))
-		errMsg := fmt.Sprintf("[/tip] Transaction failed: %s", err)
+		errMsg := fmt.Sprintf("[/tip] Transaction failed: %s", err.Error())
 		log.Warnln(errMsg)
 		return
 	}

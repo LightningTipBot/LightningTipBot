@@ -40,7 +40,7 @@ func (bot *TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
 	// create qr code
 	qr, err := qrcode.Encode(lndhubUrl, qrcode.Medium, 256)
 	if err != nil {
-		errmsg := fmt.Sprintf("[/invoice] Failed to create QR code for invoice: %s", err)
+		errmsg := fmt.Sprintf("[/invoice] Failed to create QR code for invoice: %s", err.Error())
 		log.Errorln(errmsg)
 		return
 	}

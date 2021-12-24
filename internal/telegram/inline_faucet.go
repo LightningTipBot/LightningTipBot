@@ -75,7 +75,7 @@ func (bot TipBot) createFaucet(ctx context.Context, text string, sender *tb.User
 	}
 	// check if fromUser has balance
 	if balance < amount {
-		return nil, errors.New(errors.BalanceToLowError, fmt.Errorf("[faucet] Balance of user %s too low: %v", fromUserStr, err))
+		return nil, errors.New(errors.BalanceToLowError, fmt.Errorf("[faucet] Balance of user %s too low", fromUserStr))
 	}
 	// // check for memo in command
 	memo := GetMemoFromCommand(text, 3)
@@ -228,7 +228,7 @@ func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) {
 		CacheTime: 1,
 	})
 	if err != nil {
-		log.Errorln(err)
+		log.Errorln(err.Error())
 	}
 }
 
@@ -239,7 +239,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Debugf("[acceptInlineFaucetHandler] %s", err)
+		log.Debugf("[acceptInlineFaucetHandler] %s", err.Error())
 		return
 	}
 	inlineFaucet := fn.(*InlineFaucet)
@@ -247,7 +247,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 	if !inlineFaucet.Active {
 		log.Errorf(fmt.Sprintf("[faucet] faucet %s inactive.", inlineFaucet.ID))
-		bot.cancelInlineFaucet(ctx, c, true) // cancel without ID check
+		//bot.cancelInlineFaucet(ctx, c, true) // cancel without ID check
 		return
 	}
 	// release faucet no matter what
@@ -295,7 +295,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		success, err := t.Send()
 		if !success {
 			bot.trySendMessage(from.Telegram, Translate(ctx, "sendErrorMessage"))
-			errMsg := fmt.Sprintf("[faucet] Transaction failed: %s", err)
+			errMsg := fmt.Sprintf("[faucet] Transaction failed: %s", err.Error())
 			log.Warnln(errMsg)
 			// if faucet fails, cancel it:
 			// c.Sender.ID = inlineFaucet.From.Telegram.ID // overwrite the sender of the callback to be the faucet owner
@@ -312,7 +312,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		_, err = bot.Telegram.Send(to.Telegram, fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "inlineFaucetReceivedMessage"), fromUserStrMd, inlineFaucet.PerUserAmount))
 		_, err = bot.Telegram.Send(from.Telegram, fmt.Sprintf(i18n.Translate(from.Telegram.LanguageCode, "inlineFaucetSentMessage"), inlineFaucet.PerUserAmount, toUserStrMd))
 		if err != nil {
-			errmsg := fmt.Errorf("[faucet] Error: Send message to %s: %s", toUserStr, err)
+			errmsg := fmt.Errorf("[faucet] Error: Send message to %s: %s", toUserStr, err.Error())
 			log.Warnln(errmsg)
 		}
 
@@ -347,7 +347,7 @@ func (bot *TipBot) cancelInlineFaucet(ctx context.Context, c *tb.Callback, ignor
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Debugf("[cancelInlineFaucetHandler] %s", err)
+		log.Debugf("[cancelInlineFaucetHandler] %s", err.Error())
 		return
 	}
 

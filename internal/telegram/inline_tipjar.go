@@ -183,7 +183,7 @@ func (bot TipBot) tipjarHandler(ctx context.Context, m *tb.Message) {
 	ctx = bot.mapTipjarLanguage(ctx, m.Text)
 	inlineTipjar, err := bot.makeTipjar(ctx, m, false)
 	if err != nil {
-		log.Errorf("[tipjar] %s", err)
+		log.Errorf("[tipjar] %s", err.Error())
 		return
 	}
 	toUserStr := GetUserStr(m.Sender)
@@ -195,7 +195,7 @@ func (bot TipBot) tipjarHandler(ctx context.Context, m *tb.Message) {
 func (bot TipBot) handleInlineTipjarQuery(ctx context.Context, q *tb.Query) {
 	inlineTipjar, err := bot.makeQueryTipjar(ctx, q, false)
 	if err != nil {
-		// log.Errorf("[tipjar] %s", err)
+		// log.Errorf("[tipjar] %s", err.Error())
 		return
 	}
 	urls := []string{
@@ -240,7 +240,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		// log.Errorf("[tipjar] %s", err)
+		// log.Errorf("[tipjar] %s", err.Error())
 		return
 	}
 	inlineTipjar := fn.(*InlineTipjar)
@@ -276,7 +276,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 		success, err := t.Send()
 		if !success {
 			bot.trySendMessage(from.Telegram, Translate(ctx, "sendErrorMessage"))
-			errMsg := fmt.Sprintf("[tipjar] Transaction failed: %s", err)
+			errMsg := fmt.Sprintf("[tipjar] Transaction failed: %s", err.Error())
 			log.Errorln(errMsg)
 			return
 		}
@@ -337,7 +337,7 @@ func (bot *TipBot) cancelInlineTipjarHandler(ctx context.Context, c *tb.Callback
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[cancelInlineTipjarHandler] %s", err)
+		log.Errorf("[cancelInlineTipjarHandler] %s", err.Error())
 		return
 	}
 	inlineTipjar := fn.(*InlineTipjar)

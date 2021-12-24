@@ -85,7 +85,7 @@ func (bot TipBot) createWallet(user *lnbits.User) error {
 		internal.Configuration.Lnbits.AdminId,
 		UserStr)
 	if err != nil {
-		errormsg := fmt.Sprintf("[createWallet] Create wallet error: %s", err)
+		errormsg := fmt.Sprintf("[createWallet] Create wallet error: %s", err.Error())
 		log.Errorln(errormsg)
 		return err
 	}
@@ -94,7 +94,7 @@ func (bot TipBot) createWallet(user *lnbits.User) error {
 	user.Name = u.Name
 	wallet, err := bot.Client.Wallets(*user)
 	if err != nil {
-		errormsg := fmt.Sprintf("[createWallet] Get wallet error: %s", err)
+		errormsg := fmt.Sprintf("[createWallet] Get wallet error: %s", err.Error())
 		log.Errorln(errormsg)
 		return err
 	}
@@ -104,7 +104,7 @@ func (bot TipBot) createWallet(user *lnbits.User) error {
 	user.CreatedAt = time.Now()
 	err = UpdateUserRecord(user, bot)
 	if err != nil {
-		errormsg := fmt.Sprintf("[createWallet] Update user record error: %s", err)
+		errormsg := fmt.Sprintf("[createWallet] Update user record error: %s", err.Error())
 		log.Errorln(errormsg)
 		return err
 	}

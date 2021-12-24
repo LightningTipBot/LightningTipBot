@@ -166,7 +166,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 	sn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
-		// log.Errorf("[acceptInlineSendHandler] %s", err)
+		// log.Errorf("[acceptInlineSendHandler] %s", err.Error())
 		return
 	}
 	inlineSend := sn.(*InlineSend)
@@ -222,7 +222,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 	t.Memo = transactionMemo
 	success, err := t.Send()
 	if !success {
-		errMsg := fmt.Sprintf("[sendInline] Transaction failed: %s", err)
+		errMsg := fmt.Sprintf("[sendInline] Transaction failed: %s", err.Error())
 		log.Errorln(errMsg)
 		bot.tryEditMessage(c.Message, i18n.Translate(inlineSend.LanguageCode, "inlineSendFailedMessage"), &tb.ReplyMarkup{})
 		return
@@ -255,7 +255,7 @@ func (bot *TipBot) cancelInlineSendHandler(ctx context.Context, c *tb.Callback) 
 	// immediatelly set intransaction to block duplicate calls
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[cancelInlineSendHandler] %s", err)
+		log.Errorf("[cancelInlineSendHandler] %s", err.Error())
 		return
 	}
 	inlineSend := sn.(*InlineSend)

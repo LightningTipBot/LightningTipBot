@@ -57,7 +57,7 @@ func (w Server) handleLnUrl(writer http.ResponseWriter, request *http.Request) {
 	// check if error was returned from first or second handlers
 	if err != nil {
 		// log the error
-		log.Errorf("[LNURL] %v", err)
+		log.Errorf("[LNURL] %v", err.Error())
 		if response != nil {
 			// there is a valid error response
 			err = writeResponse(writer, response)
@@ -161,7 +161,7 @@ func (w Server) serveLNURLpSecond(username string, amount_msat int64, comment st
 			Webhook:         w.WebhookServer},
 		w.c)
 	if err != nil {
-		err = fmt.Errorf("[serveLNURLpSecond] Couldn't create invoice: %v", err)
+		err = fmt.Errorf("[serveLNURLpSecond] Couldn't create invoice: %v", err.Error())
 		resp = &lnurl.LNURLPayValues{
 			LNURLResponse: lnurl.LNURLResponse{
 				Status: statusError,

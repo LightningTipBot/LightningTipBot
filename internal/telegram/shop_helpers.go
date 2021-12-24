@@ -285,7 +285,7 @@ func (bot *TipBot) getShop(ctx context.Context, shopId string) (*Shop, error) {
 	// immediatelly set intransaction to block duplicate calls
 	sn, err := tx.Get(tx, bot.ShopBunt)
 	if err != nil {
-		log.Errorf("[getShop] %s", err)
+		log.Errorf("[getShop] %s", err.Error())
 		return &Shop{}, err
 	}
 	shop := sn.(*Shop)

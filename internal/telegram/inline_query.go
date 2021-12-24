@@ -102,7 +102,7 @@ func (bot TipBot) anyChosenInlineHandler(q *tb.ChosenInlineResult) {
 	inlineObject, err := bot.Cache.Get(q.ResultID)
 	// check error
 	if err != nil {
-		log.Errorf("[anyChosenInlineHandler] could not find inline object in cache. %v", err)
+		log.Errorf("[anyChosenInlineHandler] could not find inline object in cache. %v", err.Error())
 		return
 	}
 	switch inlineObject.(type) {

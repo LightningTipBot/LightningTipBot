@@ -21,7 +21,7 @@ func IsInvoice(message string) bool {
 
 func IsLnurl(message string) bool {
 	message = strings.ToLower(message)
-	if strings.HasPrefix(message, "lnurl") {
+	if strings.HasPrefix(message, "lnurl") || strings.HasPrefix(message, "lightning:lnurl") {
 		// string must be a single word
 		if !strings.Contains(message, " ") {
 			return true

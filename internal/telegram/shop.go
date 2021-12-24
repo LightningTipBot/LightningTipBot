@@ -480,7 +480,7 @@ func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) {
 		var err error
 		shop, err = bot.getShop(ctx, shopID)
 		if err != nil {
-			log.Errorf("[shopHandler] %s", err)
+			log.Errorf("[shopHandler] %s", err.Error())
 			return
 		}
 	}
@@ -511,7 +511,7 @@ func (bot *TipBot) shopNewItemHandler(ctx context.Context, c *tb.Callback) {
 	user := LoadUser(ctx)
 	shop, err := bot.getShop(ctx, c.Data)
 	if err != nil {
-		log.Errorf("[shopNewItemHandler] %s", err)
+		log.Errorf("[shopNewItemHandler] %s", err.Error())
 		return
 	}
 	if shop.Owner.Telegram.ID != c.Sender.ID {
@@ -537,7 +537,7 @@ func (bot *TipBot) shopNewItemHandler(ctx context.Context, c *tb.Callback) {
 func (bot *TipBot) addShopItem(ctx context.Context, shopId string) (*Shop, ShopItem, error) {
 	shop, err := bot.getShop(ctx, shopId)
 	if err != nil {
-		log.Errorf("[addShopItem] %s", err)
+		log.Errorf("[addShopItem] %s", err.Error())
 		return shop, ShopItem{}, err
 	}
 	user := LoadUser(ctx)
@@ -626,7 +626,7 @@ func (bot *TipBot) shopItemAddItemHandler(ctx context.Context, c *tb.Callback) {
 
 	shop, err := bot.getShop(ctx, shopView.ShopID)
 	if err != nil {
-		log.Errorf("[shopNewItemHandler] %s", err)
+		log.Errorf("[shopNewItemHandler] %s", err.Error())
 		return
 	}
 
@@ -656,7 +656,7 @@ func (bot *TipBot) addItemFileHandler(ctx context.Context, m *tb.Message) {
 
 	shop, err := bot.getShop(ctx, shopView.ShopID)
 	if err != nil {
-		log.Errorf("[shopNewItemHandler] %s", err)
+		log.Errorf("[shopNewItemHandler] %s", err.Error())
 		return
 	}
 
@@ -746,7 +746,7 @@ func (bot *TipBot) shopGetItemFilesHandler(ctx context.Context, c *tb.Callback) 
 	}
 	shop, err := bot.getShop(ctx, shopView.ShopID)
 	if err != nil {
-		log.Errorf("[shopNewItemHandler] %s", err)
+		log.Errorf("[shopNewItemHandler] %s", err.Error())
 		return
 	}
 	itemID := c.Data
@@ -784,7 +784,7 @@ func (bot *TipBot) shopConfirmBuyHandler(ctx context.Context, c *tb.Callback) {
 	}
 	shop, err := bot.getShop(ctx, shopView.ShopID)
 	if err != nil {
-		log.Errorf("[shopConfirmBuyHandler] %s", err)
+		log.Errorf("[shopConfirmBuyHandler] %s", err.Error())
 		return
 	}
 	itemID := c.Data
@@ -812,7 +812,7 @@ func (bot *TipBot) shopConfirmBuyHandler(ctx context.Context, c *tb.Callback) {
 	success, err := t.Send()
 	if !success || err != nil {
 		// bot.trySendMessage(c.Sender, sendErrorMessage)
-		errmsg := fmt.Sprintf("[shop] Error: Transaction failed. %s", err)
+		errmsg := fmt.Sprintf("[shop] Error: Transaction failed. %s", err.Error())
 		log.Errorln(errmsg)
 		bot.trySendMessage(user.Telegram, i18n.Translate(user.Telegram.LanguageCode, "sendErrorMessage"), &tb.ReplyMarkup{})
 		return
@@ -841,7 +841,7 @@ func (bot *TipBot) shopSendItemFilesToUser(ctx context.Context, toUser *lnbits.U
 	}
 	shop, err := bot.getShop(ctx, shopView.ShopID)
 	if err != nil {
-		log.Errorf("[shopNewItemHandler] %s", err)
+		log.Errorf("[shopNewItemHandler] %s", err.Error())
 		return
 	}
 	item := shop.Items[itemID]
@@ -958,7 +958,7 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 	if err != nil && user.Telegram.ID == shopOwner.Telegram.ID {
 		shops, err = bot.initUserShops(ctx, user)
 		if err != nil {
-			log.Errorf("[shopsHandler] %s", err)
+			log.Errorf("[shopsHandler] %s", err.Error())
 			return
 		}
 	}
@@ -973,7 +973,7 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 	for _, shopId := range shops.Shops {
 		shop, err := bot.getShop(ctx, shopId)
 		if err != nil {
-			log.Errorf("[shopsHandler] %s", err)
+			log.Errorf("[shopsHandler] %s", err.Error())
 			return
 		}
 		shopTitles += fmt.Sprintf("\n· %s (%d items)", str.MarkdownEscape(shop.Title), len(shop.Items))
@@ -1140,7 +1140,7 @@ func (bot *TipBot) shopsDescriptionHandler(ctx context.Context, c *tb.Callback) 
 	user := LoadUser(ctx)
 	shops, err := bot.getUserShops(ctx, user)
 	if err != nil {
-		log.Errorf("[shopsDescriptionHandler] %s", err)
+		log.Errorf("[shopsDescriptionHandler] %s", err.Error())
 		return
 	}
 	SetUserState(user, bot, lnbits.UserEnterShopsDescription, shops.ID)
@@ -1152,7 +1152,7 @@ func (bot *TipBot) enterShopsDescriptionHandler(ctx context.Context, m *tb.Messa
 	user := LoadUser(ctx)
 	shops, err := bot.getUserShops(ctx, user)
 	if err != nil {
-		log.Errorf("[enterShopsDescriptionHandler] %s", err)
+		log.Errorf("[enterShopsDescriptionHandler] %s", err.Error())
 		return
 	}
 	if shops.Owner.Telegram.ID != m.Sender.ID {
@@ -1189,7 +1189,7 @@ func (bot *TipBot) shopsResetHandler(ctx context.Context, c *tb.Callback) {
 	user := LoadUser(ctx)
 	shops, err := bot.getUserShops(ctx, user)
 	if err != nil {
-		log.Errorf("[shopsResetHandler] %s", err)
+		log.Errorf("[shopsResetHandler] %s", err.Error())
 		return
 	}
 	if shops.Owner.Telegram.ID != c.Sender.ID {
@@ -1312,7 +1312,7 @@ func (bot *TipBot) shopNewShopHandler(ctx context.Context, c *tb.Callback) {
 	user := LoadUser(ctx)
 	shops, err := bot.getUserShops(ctx, user)
 	if err != nil {
-		log.Errorf("[shopNewShopHandler] %s", err)
+		log.Errorf("[shopNewShopHandler] %s", err.Error())
 		return
 	}
 	if len(shops.Shops) >= shops.MaxShops {

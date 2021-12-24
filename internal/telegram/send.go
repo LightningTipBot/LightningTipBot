@@ -221,7 +221,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[acceptSendHandler] %s", err)
+		log.Errorf("[acceptSendHandler] %s", err.Error())
 		return
 	}
 	sendData := sn.(*SendData)
@@ -269,7 +269,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	success, err := t.Send()
 	if !success || err != nil {
 		// bot.trySendMessage(c.Sender, sendErrorMessage)
-		errmsg := fmt.Sprintf("[/send] Error: Transaction failed. %s", err)
+		errmsg := fmt.Sprintf("[/send] Error: Transaction failed. %s", err.Error())
 		log.Errorln(errmsg)
 		bot.tryEditMessage(c.Message, i18n.Translate(sendData.LanguageCode, "sendErrorMessage"), &tb.ReplyMarkup{})
 		return
@@ -307,7 +307,7 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[acceptSendHandler] %s", err)
+		log.Errorf("[acceptSendHandler] %s", err.Error())
 		return
 	}
 

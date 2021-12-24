@@ -87,13 +87,13 @@ func (w *Server) receive(writer http.ResponseWriter, request *http.Request) {
 	request.Header.Del("content-length")
 	err := json.NewDecoder(request.Body).Decode(&webhookEvent)
 	if err != nil {
-		log.Errorf("[Webhook] Error decoding request: %s", err)
+		log.Errorf("[Webhook] Error decoding request: %s", err.Error())
 		writer.WriteHeader(400)
 		return
 	}
 	user, err := w.GetUserByWalletId(webhookEvent.WalletID)
 	if err != nil {
-		log.Errorf("[Webhook] Error getting user: %s", err)
+		log.Errorf("[Webhook] Error getting user: %s", err.Error())
 		writer.WriteHeader(400)
 		return
 	}

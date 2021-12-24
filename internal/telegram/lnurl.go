@@ -72,7 +72,8 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 
-	// assume payment
+	// get rid of the URI prefix
+	lnurlSplit = strings.TrimPrefix(lnurlSplit, "lightning:")
 	// HandleLNURL by fiatjaf/go-lnurl
 	_, params, err := bot.HandleLNURL(lnurlSplit)
 	if err != nil {
@@ -140,14 +141,14 @@ func (bot TipBot) lnurlReceiveHandler(ctx context.Context, m *tb.Message) {
 	fromUser := LoadUser(ctx)
 	lnurlEncode, err := UserGetLNURL(fromUser)
 	if err != nil {
-		errmsg := fmt.Sprintf("[userLnurlHandler] Failed to get LNURL: %s", err)
+		errmsg := fmt.Sprintf("[userLnurlHandler] Failed to get LNURL: %s", err.Error())
 		log.Errorln(errmsg)
 		bot.Telegram.Send(m.Sender, Translate(ctx, "lnurlNoUsernameMessage"))
 	}
 	// create qr code
 	qr, err := qrcode.Encode(lnurlEncode, qrcode.Medium, 256)
 	if err != nil {
-		errmsg := fmt.Sprintf("[userLnurlHandler] Failed to create QR code for LNURL: %s", err)
+		errmsg := fmt.Sprintf("[userLnurlHandler] Failed to create QR code for LNURL: %s", err.Error())
 		log.Errorln(errmsg)
 		return
 	}

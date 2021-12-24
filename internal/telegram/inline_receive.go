@@ -150,7 +150,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	rn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[getInlineReceive] %s", err)
+		log.Errorf("[getInlineReceive] %s", err.Error())
 		return
 	}
 	inlineReceive := rn.(*InlineReceive)
@@ -184,7 +184,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 
 	balance, err := bot.GetUserBalance(from)
 	if err != nil {
-		errmsg := fmt.Sprintf("[inlineReceive] Error: Could not get user balance: %s", err)
+		errmsg := fmt.Sprintf("[inlineReceive] Error: Could not get user balance: %s", err.Error())
 		log.Warnln(errmsg)
 	}
 
@@ -208,7 +208,7 @@ func (bot *TipBot) sendInlineReceiveHandler(ctx context.Context, c *tb.Callback)
 	rn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
-		// log.Errorf("[getInlineReceive] %s", err)
+		// log.Errorf("[getInlineReceive] %s", err.Error())
 		return
 	}
 	inlineReceive := rn.(*InlineReceive)
@@ -248,7 +248,7 @@ func (bot *TipBot) sendInlineReceiveHandler(ctx context.Context, c *tb.Callback)
 	t.Memo = transactionMemo
 	success, err := t.Send()
 	if !success {
-		errMsg := fmt.Sprintf("[acceptInlineReceiveHandler] Transaction failed: %s", err)
+		errMsg := fmt.Sprintf("[acceptInlineReceiveHandler] Transaction failed: %s", err.Error())
 		log.Errorln(errMsg)
 		bot.tryEditMessage(c.Message, i18n.Translate(inlineReceive.LanguageCode, "inlineReceiveFailedMessage"), &tb.ReplyMarkup{})
 		return
@@ -266,7 +266,7 @@ func (bot *TipBot) inlineReceiveInvoice(ctx context.Context, c *tb.Callback, inl
 	}
 	invoice, err := bot.createInvoiceWithEvent(ctx, inlineReceive.To, inlineReceive.Amount, fmt.Sprintf("Pay to %s", GetUserStr(inlineReceive.To.Telegram)), InvoiceCallbackInlineReceive, inlineReceive.ID)
 	if err != nil {
-		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err)
+		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
 		bot.tryEditMessage(inlineReceive.Message, Translate(ctx, "errorTryLaterMessage"))
 		log.Errorln(errmsg)
 		return
@@ -275,7 +275,7 @@ func (bot *TipBot) inlineReceiveInvoice(ctx context.Context, c *tb.Callback, inl
 	// create qr code
 	qr, err := qrcode.Encode(invoice.PaymentRequest, qrcode.Medium, 256)
 	if err != nil {
-		errmsg := fmt.Sprintf("[/invoice] Failed to create QR code for invoice: %s", err)
+		errmsg := fmt.Sprintf("[/invoice] Failed to create QR code for invoice: %s", err.Error())
 		bot.tryEditMessage(inlineReceive.Message, Translate(ctx, "errorTryLaterMessage"))
 		log.Errorln(errmsg)
 		return
@@ -307,7 +307,7 @@ func (bot *TipBot) finishInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	rn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[getInlineReceive] %s", err)
+		log.Errorf("[getInlineReceive] %s", err.Error())
 		return
 	}
 	inlineReceive := rn.(*InlineReceive)
@@ -345,7 +345,7 @@ func (bot *TipBot) cancelInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	// immediatelly set intransaction to block duplicate calls
 	rn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[cancelInlineReceiveHandler] %s", err)
+		log.Errorf("[cancelInlineReceiveHandler] %s", err.Error())
 		return
 	}
 	inlineReceive := rn.(*InlineReceive)
