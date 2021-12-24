@@ -198,7 +198,7 @@ func (bot TipBot) faucetHandler(ctx context.Context, m *tb.Message) {
 func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) {
 	inlineFaucet, err := bot.makeQueryFaucet(ctx, q, false)
 	if err != nil {
-		log.Errorf("[handleInlineFaucetQuery] %s", err)
+		log.Errorf("[handleInlineFaucetQuery] %s", err.Error())
 		return
 	}
 	urls := []string{
