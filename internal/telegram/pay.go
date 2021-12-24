@@ -63,7 +63,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 	if err != nil {
 		NewMessage(m, WithDuration(0, bot))
 		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(ctx, Translate(ctx, "invalidInvoiceHelpMessage")))
-		errmsg := fmt.Sprintf("[/pay] Error: Could not getArgumentFromCommand: %s", err)
+		errmsg := fmt.Sprintf("[/pay] Error: Could not getArgumentFromCommand: %s", err.Error())
 		log.Errorln(errmsg)
 		return
 	}
@@ -75,7 +75,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 	bolt11, err := decodepay.Decodepay(paymentRequest)
 	if err != nil {
 		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(ctx, Translate(ctx, "invalidInvoiceHelpMessage")))
-		errmsg := fmt.Sprintf("[/pay] Error: Could not decode invoice: %s", err)
+		errmsg := fmt.Sprintf("[/pay] Error: Could not decode invoice: %s", err.Error())
 		log.Errorln(errmsg)
 		return
 	}
@@ -92,7 +92,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 	balance, err := bot.GetUserBalance(user)
 	if err != nil {
 		NewMessage(m, WithDuration(0, bot))
-		errmsg := fmt.Sprintf("[/pay] Error: Could not get user balance: %s", err)
+		errmsg := fmt.Sprintf("[/pay] Error: Could not get user balance: %s", err.Error())
 		log.Errorln(errmsg)
 		bot.trySendMessage(m.Sender, Translate(ctx, "errorTryLaterMessage"))
 		return
@@ -154,7 +154,7 @@ func (bot *TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 	sn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
-		log.Errorf("[confirmPayHandler] %s", err)
+		log.Errorf("[confirmPayHandler] %s", err.Error())
 		return
 	}
 	payData := sn.(*PayData)

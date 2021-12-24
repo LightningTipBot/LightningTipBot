@@ -1,9 +1,10 @@
 package storage
 
 import (
+	"time"
+
 	"github.com/eko/gocache/store"
 	gocache "github.com/patrickmn/go-cache"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -55,7 +56,6 @@ func (tx *Base) Inactivate(s Storable, db *DB) error {
 func (tx *Base) Get(s Storable, db *DB) (Storable, error) {
 	cacheTx, err := transactionCache.Get(s.Key())
 	if err != nil {
-		log.Errorf("[Bunt Cache] could not get bunt object: %v", err)
 		err := db.Get(s)
 		if err != nil {
 			return s, err
@@ -72,13 +72,13 @@ func (tx *Base) Set(s Storable, db *DB) error {
 	tx.UpdatedAt = time.Now()
 	err := db.Set(s)
 	if err != nil {
-		log.Errorf("[Bunt] could not set object: %v", err)
+		log.Errorf("[Bunt] could not set object: %v", err.Error())
 		return err
 	}
 	log.Tracef("[Bunt] set object %s", s.Key())
 	err = transactionCache.Set(s.Key(), s, &store.Options{Expiration: 5 * time.Minute})
 	if err != nil {
-		log.Errorf("[Bunt Cache] could not set object: %v", err)
+		log.Errorf("[Bunt Cache] could not set object: %v", err.Error())
 	}
 	log.Tracef("[Bunt Cache] set object: %s", s.Key())
 	return err

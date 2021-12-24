@@ -51,18 +51,18 @@ func (bot *TipBot) photoHandler(ctx context.Context, m *tb.Message) {
 	// get file reader closer from Telegram api
 	reader, err := bot.Telegram.GetFile(m.Photo.MediaFile())
 	if err != nil {
-		log.Errorf("[photoHandler] getfile error: %v\n", err)
+		log.Errorf("[photoHandler] getfile error: %v\n", err.Error())
 		return
 	}
 	// decode to jpeg image
 	img, err := jpeg.Decode(reader)
 	if err != nil {
-		log.Errorf("[photoHandler] image.Decode error: %v\n", err)
+		log.Errorf("[photoHandler] image.Decode error: %v\n", err.Error())
 		return
 	}
 	data, err := TryRecognizeQrCode(img)
 	if err != nil {
-		log.Errorf("[photoHandler] tryRecognizeQrCodes error: %v\n", err)
+		log.Errorf("[photoHandler] tryRecognizeQrCodes error: %v\n", err.Error())
 		bot.trySendMessage(m.Sender, Translate(ctx, "photoQrNotRecognizedMessage"))
 		return
 	}

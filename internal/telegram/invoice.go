@@ -104,7 +104,7 @@ func (bot *TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 	log.Infof("[/invoice] Creating invoice for %s of %d sat.", userStr, amount)
 	invoice, err := bot.createInvoiceWithEvent(ctx, user, amount, memo, InvoiceCallbackGeneric, "")
 	if err != nil {
-		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err)
+		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
 		bot.tryEditMessage(creatingMsg, Translate(ctx, "errorTryLaterMessage"))
 		log.Errorln(errmsg)
 		return
@@ -113,7 +113,7 @@ func (bot *TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 	// create qr code
 	qr, err := qrcode.Encode(invoice.PaymentRequest, qrcode.Medium, 256)
 	if err != nil {
-		errmsg := fmt.Sprintf("[/invoice] Failed to create QR code for invoice: %s", err)
+		errmsg := fmt.Sprintf("[/invoice] Failed to create QR code for invoice: %s", err.Error())
 		bot.tryEditMessage(creatingMsg, Translate(ctx, "errorTryLaterMessage"))
 		log.Errorln(errmsg)
 		return
@@ -135,7 +135,7 @@ func (bot *TipBot) createInvoiceWithEvent(ctx context.Context, user *lnbits.User
 			Webhook: internal.Configuration.Lnbits.WebhookServer},
 		bot.Client)
 	if err != nil {
-		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err)
+		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
 		log.Errorln(errmsg)
 		return InvoiceEvent{}, err
 	}
