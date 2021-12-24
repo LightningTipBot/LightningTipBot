@@ -247,7 +247,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 	if !inlineFaucet.Active {
 		log.Debugf(fmt.Sprintf("[faucet] faucet %s inactive. Remaining: %d sat", inlineFaucet.ID, inlineFaucet.RemainingAmount))
-		if inlineFaucet.RemainingAmount > 0 {
+		if inlineFaucet.RemainingAmount > 0 || !inlineFaucet.Canceled {
 			// something went wrong with this faucet, let's get rid of it.
 			log.Errorf(fmt.Sprintf("[faucet] Canceling inactive faucet %s.", inlineFaucet.ID))
 			bot.cancelInlineFaucet(ctx, c, true) // cancel without ID check
@@ -361,6 +361,7 @@ func (bot *TipBot) cancelInlineFaucet(ctx context.Context, c *tb.Callback, ignor
 		bot.tryEditMessage(c.Message, i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetCancelledMessage"), &tb.ReplyMarkup{})
 		// set the inlineFaucet inactive
 		inlineFaucet.Active = false
+		inlineFaucet.Canceled = true
 		runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.Bunt))
 		log.Debugf("[faucet] Faucet %s canceled.", inlineFaucet.ID)
 	}
