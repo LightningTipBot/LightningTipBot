@@ -14,6 +14,7 @@ var transactionCache = store.NewGoCache(gocache.New(5*time.Minute, 10*time.Minut
 type Base struct {
 	ID        string    `json:"id"`
 	Active    bool      `json:"active"`
+	Canceled  bool      `json:"canceled"`
 	CreatedAt time.Time `json:"created"`
 	UpdatedAt time.Time `json:"updated"`
 }
