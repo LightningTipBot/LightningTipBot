@@ -63,7 +63,7 @@ func (bot TipBot) createFaucet(ctx context.Context, text string, sender *tb.User
 	if err != nil {
 		return nil, errors.New(errors.InvalidAmountError, err)
 	}
-	if perUserAmount < 1 || amount%perUserAmount != 0 {
+	if perUserAmount < 5 || amount%perUserAmount != 0 {
 		return nil, errors.New(errors.InvalidAmountPerUserError, fmt.Errorf("invalid amount per user"))
 	}
 	nTotal := int(amount / perUserAmount)
