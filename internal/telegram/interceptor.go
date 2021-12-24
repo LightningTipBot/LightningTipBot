@@ -45,6 +45,22 @@ func (bot TipBot) idInterceptor(ctx context.Context, i interface{}) (context.Con
 	return context.WithValue(ctx, "uid", RandStringRunes(64)), nil
 }
 
+func (bot TipBot) answerCallbackInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
+	switch i.(type) {
+	case *tb.Callback:
+		c := i.(*tb.Callback)
+		ctxcr := ctx.Value("callback_response")
+		var res []*tb.CallbackResponse
+		if ctxcr != nil {
+			res = append(res, &tb.CallbackResponse{CallbackID: c.ID, Text: ctxcr.(string)})
+		}
+		var err error
+		err = bot.Telegram.Respond(c, res...)
+		return ctx, err
+	}
+	return ctx, invalidTypeError
+}
+
 // lockInterceptor invoked as first before interceptor
 func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	user := getTelegramUserFromInterface(i)
