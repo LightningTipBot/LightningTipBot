@@ -342,6 +342,8 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		}
 		bot.tryEditMessage(c.Message, inlineFaucet.Message)
 		inlineFaucet.Active = false
+		inlineFaucet.Canceled = true
+		log.Debugf("[faucet] Faucet finished %s", inlineFaucet.ID)
 	}
 
 }
