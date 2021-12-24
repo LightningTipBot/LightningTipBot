@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -244,7 +245,10 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	}
 	inlineFaucet := fn.(*InlineFaucet)
 	from := inlineFaucet.From
-
+	// log faucet link if possible
+	if c.Message != nil && c.Message.Chat != nil {
+		log.Debugf("[faucet] Link: https://t.me/c/%s/%d", strconv.FormatInt(c.Message.Chat.ID, 10)[4:], c.Message.ID)
+	}
 	if !inlineFaucet.Active {
 		log.Debugf(fmt.Sprintf("[faucet] faucet %s inactive. Remaining: %d sat", inlineFaucet.ID, inlineFaucet.RemainingAmount))
 
