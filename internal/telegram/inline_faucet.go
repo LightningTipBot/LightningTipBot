@@ -75,7 +75,7 @@ func (bot TipBot) createFaucet(ctx context.Context, text string, sender *tb.User
 	}
 	// check if fromUser has balance
 	if balance < amount {
-		return nil, errors.New(errors.BalanceToLowError, fmt.Errorf("[faucet] Balance of user %s too low: %v", fromUserStr, err.Error()))
+		return nil, errors.New(errors.BalanceToLowError, fmt.Errorf("[faucet] Balance of user %s too low", fromUserStr))
 	}
 	// // check for memo in command
 	memo := GetMemoFromCommand(text, 3)
