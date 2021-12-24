@@ -246,13 +246,14 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	from := inlineFaucet.From
 
 	if !inlineFaucet.Active {
-		log.Errorf(fmt.Sprintf("[faucet] faucet %s inactive.", inlineFaucet.ID))
+		log.Debugf(fmt.Sprintf("[faucet] faucet %s inactive.", inlineFaucet.ID))
 		//bot.cancelInlineFaucet(ctx, c, true) // cancel without ID check
 		return
 	}
 	// release faucet no matter what
 
 	if from.Telegram.ID == to.Telegram.ID {
+		log.Debugf("[faucet] %s is the owner faucet %s", GetUserStr(to.Telegram), inlineFaucet.ID)
 		bot.trySendMessage(from.Telegram, Translate(ctx, "sendYourselfMessage"))
 		return
 	}
@@ -260,7 +261,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	for _, a := range inlineFaucet.To {
 		if a.Telegram.ID == to.Telegram.ID {
 			// to user is already in To slice, has taken from facuet
-			// log.Infof("[faucet] %s already took from faucet %s", GetUserStr(to.Telegram), inlineFaucet.ID)
+			log.Debugf("[faucet] %s already took from faucet %s", GetUserStr(to.Telegram), inlineFaucet.ID)
 			return
 		}
 	}
