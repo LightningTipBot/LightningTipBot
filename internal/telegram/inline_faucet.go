@@ -246,7 +246,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	from := inlineFaucet.From
 
 	if !inlineFaucet.Active {
-		log.Debugf(fmt.Sprintf("[faucet] faucet %s inactive. Remaining: %d sat", inlineFaucet.ID, inlineFaucet.RemainingAmount))
+		log.Debugf(fmt.Sprintf("[faucet] faucet %s inactive. Canceled: %t, Remaining: %d sat", inlineFaucet.ID, inlineFaucet.Canceled, inlineFaucet.RemainingAmount))
 		if inlineFaucet.RemainingAmount > 0 || !inlineFaucet.Canceled {
 			// something went wrong with this faucet, let's get rid of it.
 			log.Errorf(fmt.Sprintf("[faucet] Canceling inactive faucet %s.", inlineFaucet.ID))
