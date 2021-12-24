@@ -247,7 +247,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 	if !inlineFaucet.Active {
 		log.Errorf(fmt.Sprintf("[faucet] faucet %s inactive.", inlineFaucet.ID))
-		bot.cancelInlineFaucet(ctx, c, true) // cancel without ID check
+		//bot.cancelInlineFaucet(ctx, c, true) // cancel without ID check
 		return
 	}
 	// release faucet no matter what
