@@ -50,11 +50,13 @@ func (bot TipBot) answerCallbackInterceptor(ctx context.Context, i interface{}) 
 	case *tb.Callback:
 		c := i.(*tb.Callback)
 		ctxcr := ctx.Value("callback_response")
-		var res *tb.CallbackResponse
+		var res []*tb.CallbackResponse
 		if ctxcr != nil {
-			res = &tb.CallbackResponse{CallbackID: c.ID, Text: ctxcr.(string)}
+			res = append(res, &tb.CallbackResponse{CallbackID: c.ID, Text: ctxcr.(string)})
 		}
-		return ctx, bot.Telegram.Respond(c, res)
+		var err error
+		err = bot.Telegram.Respond(c, res...)
+		return ctx, err
 	}
 	return ctx, invalidTypeError
 }
