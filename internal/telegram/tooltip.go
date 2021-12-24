@@ -106,7 +106,7 @@ func getTippersString(tippers []*tb.User) string {
 
 // tipTooltipExists checks if this tip is already known
 func tipTooltipExists(m *tb.Message, bot *TipBot) (bool, *TipTooltip) {
-	message := NewTipTooltip(m)
+	message := NewTipTooltip(&tb.Message{Chat: &tb.Chat{ID: m.Chat.ID}, ReplyTo: &tb.Message{ID: m.ReplyTo.ID}})
 	err := bot.Bunt.Get(message)
 	if err != nil {
 		return false, message
