@@ -13,13 +13,22 @@ import (
 // appendMainMenu will check if to (recipient) ID is from private or group chat.
 // this function will only add a keyboard if this is a private chat and no force reply.
 func appendMainMenu(to int64, options []interface{}) []interface{} {
-	var isForceReply bool
+	appendKeyboard := true
 	for _, option := range options {
 		if option == tb.ForceReply {
-			isForceReply = true
+			appendKeyboard = false
+		}
+		switch option.(type) {
+		case *tb.ReplyMarkup:
+			appendKeyboard = false
+			//option.(*tb.ReplyMarkup).ReplyKeyboard = mainMenu.ReplyKeyboard
+			//if option.(*tb.ReplyMarkup).InlineKeyboard == nil {
+			//	options = append(options[:i], options[i+1:]...)
+			//}
 		}
 	}
-	if to > 0 && !isForceReply {
+	// to > 0 is private chats
+	if to > 0 && appendKeyboard {
 		options = append(options, mainMenu)
 	}
 	return options
@@ -76,7 +85,7 @@ func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...in
 	//rate.CheckLimit(to)
 	var err error
 	_, chatId := to.MessageSig()
-	msg, err = bot.Telegram.Edit(to, appendMainMenu(chatId, options), what)
+	msg, err = bot.Telegram.Edit(to, what, appendMainMenu(chatId, options)...)
 	if err != nil {
 		log.Warnln(err.Error())
 	}
