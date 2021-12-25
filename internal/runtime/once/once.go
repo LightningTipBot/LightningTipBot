@@ -28,6 +28,7 @@ func Once(k1, k2 string) error {
 	}
 	userMap := cmap.New()
 	onceMap.Set(k1, userMap)
+	log.Tracef("[Once] Added key %s to onceMap (len=%d)", k1, len(onceMap.Keys()))
 	return setOrReturn(userMap, k2)
 }
 
@@ -44,5 +45,5 @@ func setOrReturn(objectMap cmap.ConcurrentMap, k2 string) error {
 // the object k1 finished.
 func Remove(k1 string) {
 	onceMap.Remove(k1)
-	log.Tracef("Removed key %s from onceMap (len=%d)", k1, len(onceMap.Keys()))
+	log.Tracef("[Once] Removed key %s from onceMap (len=%d)", k1, len(onceMap.Keys()))
 }
