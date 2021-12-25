@@ -3,10 +3,10 @@ package telegram
 import tb "gopkg.in/lightningtipbot/telebot.v2"
 
 const (
-	CommandSend    = "💸 Send"
-	CommandBalance = "👑 Balance"
-	CommandInvoice = "⚡️ Invoice"
-	CommandHelp    = "📖 Help"
+	CommandSend    = "💸-Send"
+	CommandBalance = "👑-Balance"
+	CommandInvoice = "⚡️-Invoice"
+	CommandHelp    = "📖-Help"
 )
 
 var (
