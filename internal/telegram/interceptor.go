@@ -3,9 +3,11 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"reflect"
 	"strconv"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/once"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	i18n2 "github.com/nicksnyder/go-i18n/v2/i18n"
@@ -31,6 +33,17 @@ type Interceptor struct {
 	Before  []intercept.Func
 	After   []intercept.Func
 	OnDefer []intercept.Func
+}
+
+// singletonClickInterceptor uses the onceMap to determine whether the object k1 already interacted
+// with the user k2. If so, it will return an error.
+func (bot TipBot) singletonCallbackInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
+	switch i.(type) {
+	case *tb.Callback:
+		c := i.(*tb.Callback)
+		return ctx, once.Once(c.Data, strconv.FormatInt(c.Sender.ID, 10))
+	}
+	return ctx, invalidTypeError
 }
 
 // unlockInterceptor invoked as onDefer interceptor

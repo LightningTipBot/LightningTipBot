@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/once"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/eko/gocache/store"
@@ -366,6 +367,7 @@ func (bot *TipBot) cancelInlineFaucet(ctx context.Context, c *tb.Callback, ignor
 		inlineFaucet.Canceled = true
 		runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.Bunt))
 		log.Debugf("[faucet] Faucet %s canceled.", inlineFaucet.ID)
+		once.Remove(inlineFaucet.ID)
 	}
 	return
 }
@@ -378,6 +380,7 @@ func (bot *TipBot) finishFaucet(ctx context.Context, c *tb.Callback, inlineFauce
 	bot.tryEditMessage(c.Message, inlineFaucet.Message, &tb.ReplyMarkup{})
 	inlineFaucet.Active = false
 	log.Debugf("[faucet] Faucet finished %s", inlineFaucet.ID)
+	once.Remove(inlineFaucet.ID)
 }
 
 func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback) {
