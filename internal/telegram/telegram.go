@@ -130,7 +130,6 @@ func (bot TipBot) tryEditStack(to tb.Editable, what interface{}, options ...inte
 }
 
 func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...interface{}) (msg *tb.Message) {
-	fmt.Println("edit message")
 	rate.CheckLimit(to)
 	var err error
 	_, chatId := to.MessageSig()
