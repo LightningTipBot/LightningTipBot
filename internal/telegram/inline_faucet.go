@@ -343,13 +343,6 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	}
 	if inlineFaucet.RemainingAmount < inlineFaucet.PerUserAmount {
 		// faucet is depleted
-		// inlineFaucet.Message = fmt.Sprintf(i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetEndedMessage"), inlineFaucet.Amount, inlineFaucet.NTaken)
-		// if inlineFaucet.UserNeedsWallet {
-		// 	inlineFaucet.Message += "\n\n" + fmt.Sprintf(i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetCreateWalletMessage"), GetUserStrMd(bot.Telegram.Me))
-		// }
-		// bot.tryEditMessage(c.Message, inlineFaucet.Message, &tb.ReplyMarkup{})
-		// inlineFaucet.Active = false
-		// log.Debugf("[faucet] Faucet finished %s", inlineFaucet.ID)
 		bot.finishFaucet(ctx, c, inlineFaucet)
 	}
 
