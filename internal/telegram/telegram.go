@@ -6,12 +6,43 @@ import (
 	"github.com/eko/gocache/store"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
+	"strconv"
 	"time"
 )
 
+// appendMainMenu will check if to (recipient) ID is from private or group chat.
+// this function will only add a keyboard if this is a private chat and no force reply.
+func appendMainMenu(to int64, options []interface{}) []interface{} {
+	var isForceReply bool
+	for _, option := range options {
+		if option == tb.ForceReply {
+			isForceReply = true
+		}
+	}
+	if to > 0 && !isForceReply {
+		options = append(options, mainMenu)
+	}
+	return options
+}
+
+// getChatIdFromRecipient will parse the recipient to int64
+func getChatIdFromRecipient(to tb.Recipient) (int64, error) {
+	chatId, err := strconv.ParseInt(to.Recipient(), 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return chatId, nil
+}
+
 func (bot TipBot) tryForwardMessage(to tb.Recipient, what tb.Editable, options ...interface{}) (msg *tb.Message) {
 	rate.CheckLimit(to)
-	msg, err := bot.Telegram.Forward(to, what, options...)
+	// ChatId is used for the keyboard
+	chatId, err := getChatIdFromRecipient(to)
+	if err != nil {
+		log.Errorf("[tryForwardMessage] error converting message recipient to int64: %v", err)
+		return
+	}
+	msg, err = bot.Telegram.Forward(to, what, appendMainMenu(chatId, options)...)
 	if err != nil {
 		log.Warnln(err.Error())
 	}
@@ -19,7 +50,13 @@ func (bot TipBot) tryForwardMessage(to tb.Recipient, what tb.Editable, options .
 }
 func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...interface{}) (msg *tb.Message) {
 	rate.CheckLimit(to)
-	msg, err := bot.Telegram.Send(to, what, options...)
+	// ChatId is used for the keyboard
+	chatId, err := getChatIdFromRecipient(to)
+	if err != nil {
+		log.Errorf("[trySendMessage] error converting message recipient to int64: %v", err)
+		return
+	}
+	msg, err = bot.Telegram.Send(to, what, appendMainMenu(chatId, options)...)
 	if err != nil {
 		log.Warnln(err.Error())
 	}
@@ -28,7 +65,7 @@ func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...i
 
 func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...interface{}) (msg *tb.Message) {
 	rate.CheckLimit(to)
-	msg, err := bot.Telegram.Reply(to, what, options...)
+	msg, err := bot.Telegram.Reply(to, what, appendMainMenu(to.Chat.ID, options)...)
 	if err != nil {
 		log.Warnln(err.Error())
 	}
@@ -38,7 +75,8 @@ func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...i
 func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...interface{}) (msg *tb.Message) {
 	//rate.CheckLimit(to)
 	var err error
-	msg, err = bot.Telegram.Edit(to, what, options...)
+	_, chatId := to.MessageSig()
+	msg, err = bot.Telegram.Edit(to, appendMainMenu(chatId, options), what)
 	if err != nil {
 		log.Warnln(err.Error())
 	}

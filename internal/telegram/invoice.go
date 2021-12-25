@@ -119,7 +119,9 @@ func (bot *TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 
-	bot.tryDeleteMessage(creatingMsg)
+	// deleting messages will delete the main menu.
+	//bot.tryDeleteMessage(creatingMsg)
+
 	// send the invoice data to user
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
 	log.Printf("[/invoice] Incvoice created. User: %s, amount: %d sat.", userStr, amount)
