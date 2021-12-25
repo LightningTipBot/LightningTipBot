@@ -89,6 +89,7 @@ func (bot *TipBot) Start() {
 	if err != nil {
 		log.Errorf("Could not initialize bot wallet: %s", err.Error())
 	}
+	bot.startEditWorker()
 	bot.registerTelegramHandlers()
 	initInvoiceEventCallbacks(bot)
 	initializeStateCallbackMessage(bot)

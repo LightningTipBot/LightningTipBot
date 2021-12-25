@@ -2,6 +2,8 @@ package telegram
 
 import (
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	cmap "github.com/orcaman/concurrent-map"
 	"strconv"
 	"time"
 
@@ -58,6 +60,51 @@ func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...i
 	return
 }
 
+var editStack cmap.ConcurrentMap
+
+type edit struct {
+	to      tb.Editable
+	what    interface{}
+	options []interface{}
+	edited  bool
+}
+
+func init() {
+	editStack = cmap.New()
+
+}
+func (bot TipBot) startEditWorker() {
+	go func() {
+		for {
+			mutex.Lock("edit-stack")
+			for _, k := range editStack.Keys() {
+				if e, ok := editStack.Get(k); ok {
+					editFromStack := e.(edit)
+					if !editFromStack.edited {
+						bot.tryEditMessage(editFromStack.to, editFromStack.what, editFromStack.options...)
+					}
+					editStack.Remove(k)
+				}
+			}
+			mutex.Unlock("edit-stack")
+			time.Sleep(time.Second)
+		}
+	}()
+
+}
+
+func (bot TipBot) tryEditStack(to tb.Editable, what interface{}, options ...interface{}) {
+	mutex.Lock("edit-stack")
+	msgSig, _ := to.MessageSig()
+	e := edit{options: options, what: what, to: to}
+	if _, ok := editStack.Get(msgSig); !ok {
+		e.edited = true
+		bot.tryEditMessage(to, what, options)
+	}
+	editStack.Set(msgSig, e)
+	mutex.Unlock("edit-stack")
+}
+
 func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...interface{}) (msg *tb.Message) {
 	// do not attempt edit if the message did not change
 	switch to.(type) {
@@ -80,7 +127,6 @@ func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...in
 		log.Warnln(err.Error())
 	}
 	return
-
 }
 
 func (bot TipBot) tryDeleteMessage(msg tb.Editable) {
