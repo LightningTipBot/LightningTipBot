@@ -222,7 +222,7 @@ func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) {
 		results[i].SetResultID(inlineFaucet.ID)
 
 		bot.Cache.Set(inlineFaucet.ID, inlineFaucet, &store.Options{Expiration: 5 * time.Minute})
-		log.Infof("[faucet] %s created inline faucet %s: %d sat (%d per user)", GetUserStr(inlineFaucet.From.Telegram), inlineFaucet.ID, inlineFaucet.Amount, inlineFaucet.PerUserAmount)
+		log.Infof("[faucet] %s:%d created inline faucet %s: %d sat (%d per user)", GetUserStr(inlineFaucet.From.Telegram), inlineFaucet.From.Telegram.ID, inlineFaucet.ID, inlineFaucet.Amount, inlineFaucet.PerUserAmount)
 	}
 
 	err = bot.Telegram.Answer(q, &tb.QueryResponse{
@@ -266,7 +266,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	for _, a := range inlineFaucet.To {
 		if a.Telegram.ID == to.Telegram.ID {
 			// to user is already in To slice, has taken from facuet
-			log.Debugf("[faucet] %s already took from faucet %s", GetUserStr(to.Telegram), inlineFaucet.ID)
+			log.Debugf("[faucet] %s:%d already took from faucet %s", GetUserStr(to.Telegram), to.Telegram.ID, inlineFaucet.ID)
 			return
 		}
 	}
@@ -310,7 +310,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 			return
 		}
 
-		log.Infof("[💸 faucet] Faucet %s from %s to %s (%d sat).", inlineFaucet.ID, fromUserStr, toUserStr, inlineFaucet.PerUserAmount)
+		log.Infof("[💸 faucet] Faucet %s from %s to %s:%d (%d sat).", inlineFaucet.ID, fromUserStr, toUserStr, to.Telegram.ID, inlineFaucet.PerUserAmount)
 		inlineFaucet.NTaken += 1
 		inlineFaucet.To = append(inlineFaucet.To, to)
 		inlineFaucet.RemainingAmount = inlineFaucet.RemainingAmount - inlineFaucet.PerUserAmount
