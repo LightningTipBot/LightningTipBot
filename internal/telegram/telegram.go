@@ -76,7 +76,7 @@ func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...in
 	//rate.CheckLimit(to)
 	var err error
 	_, chatId := to.MessageSig()
-	msg, err = bot.Telegram.Edit(to, appendMainMenu(chatId, options), what)
+	msg, err = bot.Telegram.Edit(to, what, appendMainMenu(chatId, options)...)
 	if err != nil {
 		log.Warnln(err.Error())
 	}
