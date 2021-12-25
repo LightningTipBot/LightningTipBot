@@ -2,12 +2,13 @@ package telegram
 
 import (
 	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/rate"
 	"github.com/eko/gocache/store"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
-	"strconv"
-	"time"
 )
 
 // appendMainMenu will check if to (recipient) ID is from private or group chat.
@@ -82,7 +83,7 @@ func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...i
 }
 
 func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...interface{}) (msg *tb.Message) {
-	//rate.CheckLimit(to)
+	rate.CheckLimit(to)
 	var err error
 	_, chatId := to.MessageSig()
 	msg, err = bot.Telegram.Edit(to, what, appendMainMenu(chatId, options)...)
