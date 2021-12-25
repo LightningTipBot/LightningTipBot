@@ -251,6 +251,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	}
 	if !inlineFaucet.Active {
 		log.Debugf(fmt.Sprintf("[faucet] faucet %s inactive. Remaining: %d sat", inlineFaucet.ID, inlineFaucet.RemainingAmount))
+		bot.finishFaucet(ctx, c, inlineFaucet)
 		return
 	}
 	// release faucet no matter what
@@ -342,13 +343,14 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	}
 	if inlineFaucet.RemainingAmount < inlineFaucet.PerUserAmount {
 		// faucet is depleted
-		inlineFaucet.Message = fmt.Sprintf(i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetEndedMessage"), inlineFaucet.Amount, inlineFaucet.NTaken)
-		if inlineFaucet.UserNeedsWallet {
-			inlineFaucet.Message += "\n\n" + fmt.Sprintf(i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetCreateWalletMessage"), GetUserStrMd(bot.Telegram.Me))
-		}
-		bot.tryEditMessage(c.Message, inlineFaucet.Message, &tb.ReplyMarkup{})
-		inlineFaucet.Active = false
-		log.Debugf("[faucet] Faucet finished %s", inlineFaucet.ID)
+		// inlineFaucet.Message = fmt.Sprintf(i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetEndedMessage"), inlineFaucet.Amount, inlineFaucet.NTaken)
+		// if inlineFaucet.UserNeedsWallet {
+		// 	inlineFaucet.Message += "\n\n" + fmt.Sprintf(i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetCreateWalletMessage"), GetUserStrMd(bot.Telegram.Me))
+		// }
+		// bot.tryEditMessage(c.Message, inlineFaucet.Message, &tb.ReplyMarkup{})
+		// inlineFaucet.Active = false
+		// log.Debugf("[faucet] Faucet finished %s", inlineFaucet.ID)
+		bot.finishFaucet(ctx, c, inlineFaucet)
 	}
 
 }
@@ -374,6 +376,17 @@ func (bot *TipBot) cancelInlineFaucet(ctx context.Context, c *tb.Callback, ignor
 	}
 	return
 }
+
+func (bot *TipBot) finishFaucet(ctx context.Context, c *tb.Callback, inlineFaucet *InlineFaucet) {
+	inlineFaucet.Message = fmt.Sprintf(i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetEndedMessage"), inlineFaucet.Amount, inlineFaucet.NTaken)
+	if inlineFaucet.UserNeedsWallet {
+		inlineFaucet.Message += "\n\n" + fmt.Sprintf(i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetCreateWalletMessage"), GetUserStrMd(bot.Telegram.Me))
+	}
+	bot.tryEditMessage(c.Message, inlineFaucet.Message, &tb.ReplyMarkup{})
+	inlineFaucet.Active = false
+	log.Debugf("[faucet] Faucet finished %s", inlineFaucet.ID)
+}
+
 func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback) {
 	bot.cancelInlineFaucet(ctx, c, false)
 	return
