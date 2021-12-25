@@ -2,8 +2,8 @@ package once
 
 import (
 	"fmt"
+
 	cmap "github.com/orcaman/concurrent-map"
-	"strconv"
 )
 
 var onceMap cmap.ConcurrentMap
@@ -16,25 +16,31 @@ func New(objectKey string) {
 	onceMap.Set(objectKey, cmap.New())
 }
 
-func Once(key string, telegramUserId int64) error {
-	i, ok := onceMap.Get(key)
+// Once creates a map of keys k1 with a map of keys k2.
+// The idea is that an object with ID k1 can create a list of users k2
+// that have already interacted with the object. If the user k2 is in the list,
+// the object is not allowed to accessed again.
+func Once(k1, k2 string) error {
+	i, ok := onceMap.Get(k1)
 	if ok {
-		return writeOnceOrQuit(i.(cmap.ConcurrentMap), telegramUserId)
+		return setOrReturn(i.(cmap.ConcurrentMap), k2)
 	}
 	userMap := cmap.New()
-	onceMap.Set(key, userMap)
-	return writeOnceOrQuit(userMap, telegramUserId)
+	onceMap.Set(k1, userMap)
+	return setOrReturn(userMap, k2)
 }
 
-func writeOnceOrQuit(objectMap cmap.ConcurrentMap, telegramUserId int64) error {
-	telegramUserString := strconv.FormatInt(telegramUserId, 10)
-	if _, ok := objectMap.Get(telegramUserString); ok {
-		return fmt.Errorf("user already consumed object")
+// setOrReturn sets the key k2 in the map i if it is not already set.
+func setOrReturn(objectMap cmap.ConcurrentMap, k2 string) error {
+	if _, ok := objectMap.Get(k2); ok {
+		return fmt.Errorf("%s already consumed object", k2)
 	}
-	objectMap.Set(telegramUserString, true)
+	objectMap.Set(k2, true)
 	return nil
 }
 
-func Remove(key string) {
-	onceMap.Remove(key)
+// Remove removes the key k1 from the map. Should be called after Once was called and
+// the object k1 finished.
+func Remove(k1 string) {
+	onceMap.Remove(k1)
 }
