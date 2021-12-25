@@ -153,7 +153,7 @@ func (bot TipBot) getHandler() []Handler {
 			},
 		},
 		{
-			Endpoints: []interface{}{"/invoice"},
+			Endpoints: []interface{}{"/invoice", &btnInvoiceMainMenu},
 			Handler:   bot.invoiceHandler,
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
@@ -200,7 +200,7 @@ func (bot TipBot) getHandler() []Handler {
 				}},
 		},
 		{
-			Endpoints: []interface{}{"/balance"},
+			Endpoints: []interface{}{"/balance", &btnBalanceMainMenu},
 			Handler:   bot.balanceHandler,
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
@@ -216,7 +216,7 @@ func (bot TipBot) getHandler() []Handler {
 			},
 		},
 		{
-			Endpoints: []interface{}{"/send"},
+			Endpoints: []interface{}{"/send", &btnSendMainMenu},
 			Handler:   bot.sendHandler,
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
@@ -265,7 +265,7 @@ func (bot TipBot) getHandler() []Handler {
 			},
 		},
 		{
-			Endpoints: []interface{}{"/help"},
+			Endpoints: []interface{}{"/help", &btnHelpMainMenu},
 			Handler:   bot.helpHandler,
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
