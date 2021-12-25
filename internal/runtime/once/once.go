@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	cmap "github.com/orcaman/concurrent-map"
+	log "github.com/sirupsen/logrus"
 )
 
 var onceMap cmap.ConcurrentMap
@@ -43,4 +44,5 @@ func setOrReturn(objectMap cmap.ConcurrentMap, k2 string) error {
 // the object k1 finished.
 func Remove(k1 string) {
 	onceMap.Remove(k1)
+	log.Tracef("Removed key %s from onceMap (len=%d)", k1, len(onceMap.Keys()))
 }
