@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/once"
 	"reflect"
 	"strconv"
 
@@ -31,6 +32,15 @@ type Interceptor struct {
 	Before  []intercept.Func
 	After   []intercept.Func
 	OnDefer []intercept.Func
+}
+
+func (bot TipBot) singletonClickInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
+	switch i.(type) {
+	case *tb.Callback:
+		c := i.(*tb.Callback)
+		return ctx, once.Once(c.Data, c.Sender.ID)
+	}
+	return ctx, invalidTypeError
 }
 
 // unlockInterceptor invoked as onDefer interceptor
