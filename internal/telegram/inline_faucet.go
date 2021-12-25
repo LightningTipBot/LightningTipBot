@@ -304,7 +304,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 			// if faucet fails, cancel it:
 			// c.Sender.ID = inlineFaucet.From.Telegram.ID // overwrite the sender of the callback to be the faucet owner
 			// log.Debugf("[faucet] Canceling faucet %s...", inlineFaucet.ID)
-			bot.cancelInlineFaucet(ctx, c, true) // cancel without ID check
+			// bot.cancelInlineFaucet(ctx, c, true) // cancel without ID check
 			return
 		}
 
@@ -332,7 +332,9 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		}
 		// update message
 		log.Infoln(inlineFaucet.Message)
-		bot.tryEditMessage(c.Message, inlineFaucet.Message, bot.makeFaucetKeyboard(ctx, inlineFaucet.ID))
+		go func() {
+			bot.tryEditMessage(c.Message, inlineFaucet.Message, bot.makeFaucetKeyboard(ctx, inlineFaucet.ID))
+		}()
 	}
 	if inlineFaucet.RemainingAmount < inlineFaucet.PerUserAmount {
 		// faucet is depleted
