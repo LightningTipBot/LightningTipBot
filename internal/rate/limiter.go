@@ -2,10 +2,11 @@ package rate
 
 import (
 	"context"
-	"golang.org/x/time/rate"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
 	"strconv"
 	"sync"
+
+	"golang.org/x/time/rate"
+	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
 // Limiter
@@ -21,7 +22,7 @@ var globalLimiter *rate.Limiter
 
 // NewLimiter creates both chat and global rate limiters.
 func Start() {
-	idLimiter = newIdRateLimiter(rate.Limit(0.3), 20)
+	idLimiter = newIdRateLimiter(rate.Limit(1), 20)
 	globalLimiter = rate.NewLimiter(rate.Limit(30), 30)
 }
 
