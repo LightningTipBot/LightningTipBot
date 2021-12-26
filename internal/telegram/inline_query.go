@@ -152,7 +152,7 @@ func (bot TipBot) anyQueryHandler(ctx context.Context, q *tb.Query) {
 			c := strings.Split(q.Text, " ")[0]
 			ctx = bot.commandTranslationMap(ctx, c)
 		}
-		bot.handleInlineFaucetQuery(ctx, q)
+		bot.createInlineFaucetHandler(ctx, q)
 	}
 	if strings.HasPrefix(q.Text, "tipjar") || strings.HasPrefix(q.Text, "spendendose") {
 		if len(strings.Split(q.Text, " ")) > 1 {

@@ -234,7 +234,7 @@ func (bot TipBot) getHandler() []Handler {
 		},
 		{
 			Endpoints: []interface{}{"/faucet", "/zapfhahn", "/kraan", "/grifo"},
-			Handler:   bot.faucetHandler,
+			Handler:   bot.createFaucetHandler,
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
@@ -545,7 +545,7 @@ func (bot TipBot) getHandler() []Handler {
 		},
 		{
 			Endpoints: []interface{}{&btnAcceptInlineFaucet},
-			Handler:   bot.acceptInlineFaucetHandler,
+			Handler:   bot.acceptFaucetHandler,
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
