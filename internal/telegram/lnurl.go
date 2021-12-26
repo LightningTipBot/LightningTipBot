@@ -143,7 +143,7 @@ func (bot TipBot) lnurlReceiveHandler(ctx context.Context, m *tb.Message) {
 	if err != nil {
 		errmsg := fmt.Sprintf("[userLnurlHandler] Failed to get LNURL: %s", err.Error())
 		log.Errorln(errmsg)
-		bot.Telegram.Send(m.Sender, Translate(ctx, "lnurlNoUsernameMessage"))
+		bot.trySendMessage(m.Sender, Translate(ctx, "lnurlNoUsernameMessage"))
 	}
 	// create qr code
 	qr, err := qrcode.Encode(lnurlEncode, qrcode.Medium, 256)

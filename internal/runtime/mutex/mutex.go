@@ -3,6 +3,8 @@ package mutex
 import (
 	"context"
 	"fmt"
+	"github.com/gorilla/mux"
+	"net/http"
 	"sync"
 
 	cmap "github.com/orcaman/concurrent-map"
@@ -13,6 +15,21 @@ var mutexMap cmap.ConcurrentMap
 
 func init() {
 	mutexMap = cmap.New()
+}
+
+func ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(fmt.Sprintf("Current number of locks: %d\nLocks: %+v\nUse /mutex/unlock endpoint to unlock all users", len(mutexMap.Keys()), mutexMap.Keys())))
+}
+
+func UnlockHTTP(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	if m, ok := mutexMap.Get(vars["id"]); ok {
+		m.(*sync.Mutex).Unlock()
+		w.Write([]byte(fmt.Sprintf("Unlocked %s mutexe.\nCurrent number of locks: %d\nLocks: %+v",
+			vars["id"], len(mutexMap.Keys()), mutexMap.Keys())))
+		return
+	}
+	w.Write([]byte(fmt.Sprintf("Mutex %s not found!", vars["id"])))
 }
 
 // checkSoftLock checks in mutexMap how often an existing mutex was already SoftLocked.
@@ -62,8 +79,9 @@ func UnlockWithContext(ctx context.Context, s string) {
 	} else {
 		log.Tracef("[Mutex] Skip unlock (nLocks: %d)", nLocks)
 	}
+	mutexMap.Remove(fmt.Sprintf("nLocks:%s", uid))
 	Unlock(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
-	mutexMap.Remove(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
+	//mutexMap.Remove(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
 }
 
 // Lock locks a mutex in the mutexMap. If the mutex is already in the map, it locks the current call.

@@ -230,7 +230,6 @@ func (bot *TipBot) initUserShops(ctx context.Context, user *lnbits.User) (*Shops
 	id := fmt.Sprintf("shops-%d", user.Telegram.ID)
 	shops := &Shops{
 		Base:     storage.New(storage.ID(id)),
-		ID:       id,
 		Owner:    user,
 		Shops:    []string{},
 		MaxShops: MAX_SHOPS,
@@ -262,7 +261,6 @@ func (bot *TipBot) addUserShop(ctx context.Context, user *lnbits.User) (*Shop, e
 	shopId := fmt.Sprintf("shop-%s", RandStringRunes(10))
 	shop := &Shop{
 		Base:         storage.New(storage.ID(shopId)),
-		ID:           shopId,
 		Title:        fmt.Sprintf("Shop %d (%s)", len(shops.Shops)+1, shopId),
 		Owner:        user,
 		Type:         "photo",

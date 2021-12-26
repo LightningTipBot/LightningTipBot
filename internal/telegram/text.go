@@ -25,7 +25,7 @@ func (bot *TipBot) anyTextHandler(ctx context.Context, m *tb.Message) {
 	}
 
 	// check if the user clicked on the balance button
-	if strings.HasPrefix(m.Text, CommandBalance) {
+	if strings.HasPrefix(m.Text, MainMenuCommandBalance) {
 		bot.tryDeleteMessage(m)
 		// overwrite the message text so it doesn't cause an infinite loop
 		// because balanceHandler calls anyTextHAndler...
