@@ -43,6 +43,9 @@ func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...i
 		return
 	}
 	msg, err = bot.Telegram.Send(to, what, bot.appendMainMenu(chatId, to, options)...)
+	if err != nil {
+		log.Warnln(err.Error())
+	}
 	return
 }
 

@@ -22,7 +22,7 @@ var globalLimiter *rate.Limiter
 
 // NewLimiter creates both chat and global rate limiters.
 func Start() {
-	idLimiter = newIdRateLimiter(rate.Limit(0.25), 20)
+	idLimiter = newIdRateLimiter(rate.Limit(0.29), 19)
 	globalLimiter = rate.NewLimiter(rate.Limit(30), 30)
 }
 
