@@ -2,7 +2,6 @@ package telegram
 
 import (
 	"fmt"
-	cmap "github.com/orcaman/concurrent-map"
 	"strconv"
 	"time"
 
@@ -58,65 +57,6 @@ func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...i
 	}
 	return
 }
-
-var editStack cmap.ConcurrentMap
-
-type edit struct {
-	to       tb.Editable
-	what     interface{}
-	options  []interface{}
-	lastEdit time.Time
-	edited   bool
-}
-
-func init() {
-	editStack = cmap.New()
-
-}
-func (bot TipBot) startEditWorker() {
-	go func() {
-		for {
-			for _, k := range editStack.Keys() {
-				if e, ok := editStack.Get(k); ok {
-					editFromStack := e.(edit)
-					if !editFromStack.edited {
-						_, err := bot.tryEditMessage(editFromStack.to, editFromStack.what, editFromStack.options...)
-						if err != nil && err.Error() != resultTrueError {
-							return
-						}
-						editFromStack.lastEdit = time.Now()
-						editFromStack.edited = true
-						editStack.Set(k, editFromStack)
-					} else {
-						if editFromStack.lastEdit.Before(time.Now().Add(-(time.Duration(5) * time.Second))) {
-							editStack.Remove(k)
-						}
-					}
-				}
-			}
-			time.Sleep(time.Second)
-		}
-	}()
-
-}
-
-func (bot TipBot) tryEditStack(to tb.Editable, what interface{}, options ...interface{}) {
-	msgSig, _ := to.MessageSig()
-
-	if e, ok := editStack.Get(msgSig); ok {
-		editFromStack := e.(edit)
-
-		if editFromStack.what == what.(string) {
-			log.Tracef("[tryEditMessage] message did not change, not attempting to edit")
-			return
-		}
-	}
-	e := edit{options: options, what: what, to: to}
-
-	editStack.Set(msgSig, e)
-}
-
-const resultTrueError = "telebot: result is True"
 
 func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...interface{}) (msg *tb.Message, err error) {
 	// do not attempt edit if the message did not change
