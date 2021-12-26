@@ -91,19 +91,19 @@ func (t *Transaction) SendTransaction(bot *TipBot, from *lnbits.User, to *lnbits
 	t.FromWallet = from.Wallet.ID
 	t.FromLNbitsID = from.ID
 
-	// // check if fromUser has balance
-	// balance, err := bot.GetUserBalance(from)
-	// if err != nil {
-	// 	errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
-	// 	log.Errorln(errmsg)
-	// 	return false, err
-	// }
-	// // check if fromUser has balance
-	// if balance < amount {
-	// 	errmsg := fmt.Sprintf("balance too low.")
-	// 	log.Warnf("Balance of user %s too low", fromUserStr)
-	// 	return false, fmt.Errorf(errmsg)
-	// }
+	// check if fromUser has balance
+	balance, err := bot.GetUserBalance(from)
+	if err != nil {
+		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
+		log.Errorln(errmsg)
+		return false, err
+	}
+	// check if fromUser has balance
+	if balance < amount {
+		errmsg := fmt.Sprintf("balance too low.")
+		log.Warnf("Balance of user %s too low", fromUserStr)
+		return false, fmt.Errorf(errmsg)
+	}
 
 	t.ToWallet = to.ID
 	t.ToLNbitsID = to.ID
@@ -128,5 +128,20 @@ func (t *Transaction) SendTransaction(bot *TipBot, from *lnbits.User, to *lnbits
 		log.Warnf(errmsg)
 		return false, err
 	}
+
+	// check if fromUser has balance
+	_, err = bot.GetUserBalance(from)
+	if err != nil {
+		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
+		log.Errorln(errmsg)
+		return false, err
+	}
+	_, err = bot.GetUserBalance(to)
+	if err != nil {
+		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
+		log.Errorln(errmsg)
+		return false, err
+	}
+
 	return true, err
 }

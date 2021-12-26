@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/rate"
 	"github.com/eko/gocache/store"
 	log "github.com/sirupsen/logrus"
@@ -13,7 +14,30 @@ import (
 
 // appendMainMenu will check if to (recipient) ID is from private or group chat.
 // this function will only add a keyboard if this is a private chat and no force reply.
-func appendMainMenu(to int64, options []interface{}) []interface{} {
+func (bot *TipBot) appendMainMenu(to int64, recipient interface{}, options []interface{}) []interface{} {
+
+	var user *lnbits.User
+	var err error
+	if user, err = getCachedUser(&tb.User{ID: to}, *bot); err != nil {
+		user, err = GetLnbitsUser(&tb.User{ID: to}, *bot)
+		if err != nil {
+			return options
+		}
+		updateCachedUser(user, *bot)
+	}
+	if user.Wallet != nil {
+		amount, err := bot.GetUserBalanceCached(user)
+		if err == nil {
+			log.Infof("[appendMainMenu] user %s balance %d sat", GetUserStr(user.Telegram), amount)
+			CommandBalance := fmt.Sprintf("%s %d sat", CommandBalance, amount)
+			btnBalanceMainMenu = mainMenu.Text(CommandBalance)
+			mainMenu.Reply(
+				mainMenu.Row(btnBalanceMainMenu),
+				mainMenu.Row(btnInvoiceMainMenu, btnSendMainMenu, btnHelpMainMenu),
+			)
+		}
+	}
+
 	appendKeyboard := true
 	for _, option := range options {
 		if option == tb.ForceReply {
@@ -36,7 +60,7 @@ func appendMainMenu(to int64, options []interface{}) []interface{} {
 }
 
 // getChatIdFromRecipient will parse the recipient to int64
-func getChatIdFromRecipient(to tb.Recipient) (int64, error) {
+func (bot *TipBot) getChatIdFromRecipient(to tb.Recipient) (int64, error) {
 	chatId, err := strconv.ParseInt(to.Recipient(), 10, 64)
 	if err != nil {
 		return 0, err
@@ -47,12 +71,12 @@ func getChatIdFromRecipient(to tb.Recipient) (int64, error) {
 func (bot TipBot) tryForwardMessage(to tb.Recipient, what tb.Editable, options ...interface{}) (msg *tb.Message) {
 	rate.CheckLimit(to)
 	// ChatId is used for the keyboard
-	chatId, err := getChatIdFromRecipient(to)
+	chatId, err := bot.getChatIdFromRecipient(to)
 	if err != nil {
 		log.Errorf("[tryForwardMessage] error converting message recipient to int64: %v", err)
 		return
 	}
-	msg, err = bot.Telegram.Forward(to, what, appendMainMenu(chatId, options)...)
+	msg, err = bot.Telegram.Forward(to, what, bot.appendMainMenu(chatId, to, options)...)
 	if err != nil {
 		log.Warnln(err.Error())
 	}
@@ -61,12 +85,12 @@ func (bot TipBot) tryForwardMessage(to tb.Recipient, what tb.Editable, options .
 func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...interface{}) (msg *tb.Message) {
 	rate.CheckLimit(to)
 	// ChatId is used for the keyboard
-	chatId, err := getChatIdFromRecipient(to)
+	chatId, err := bot.getChatIdFromRecipient(to)
 	if err != nil {
 		log.Errorf("[trySendMessage] error converting message recipient to int64: %v", err)
 		return
 	}
-	msg, err = bot.Telegram.Send(to, what, appendMainMenu(chatId, options)...)
+	msg, err = bot.Telegram.Send(to, what, bot.appendMainMenu(chatId, to, options)...)
 	if err != nil {
 		log.Warnln(err.Error())
 	}
@@ -75,7 +99,7 @@ func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...i
 
 func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...interface{}) (msg *tb.Message) {
 	rate.CheckLimit(to)
-	msg, err := bot.Telegram.Reply(to, what, appendMainMenu(to.Chat.ID, options)...)
+	msg, err := bot.Telegram.Reply(to, what, bot.appendMainMenu(to.Chat.ID, to, options)...)
 	if err != nil {
 		log.Warnln(err.Error())
 	}
@@ -86,7 +110,7 @@ func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...in
 	rate.CheckLimit(to)
 	var err error
 	_, chatId := to.MessageSig()
-	msg, err = bot.Telegram.Edit(to, what, appendMainMenu(chatId, options)...)
+	msg, err = bot.Telegram.Edit(to, what, bot.appendMainMenu(chatId, to, options)...)
 	if err != nil {
 		log.Warnln(err.Error())
 	}
