@@ -58,20 +58,20 @@ func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...i
 	return
 }
 
-func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...interface{}) (msg *tb.Message) {
+func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...interface{}) (msg *tb.Message, err error) {
+	// do not attempt edit if the message did not change
+
 	sig, chat := to.MessageSig()
 	if chat != 0 {
 		sig = strconv.FormatInt(chat, 10)
 	}
 	rate.CheckLimit(sig)
-	var err error
 	_, chatId := to.MessageSig()
 	msg, err = bot.Telegram.Edit(to, what, bot.appendMainMenu(chatId, to, options)...)
 	if err != nil {
 		log.Warnln(err.Error())
 	}
 	return
-
 }
 
 func (bot TipBot) tryDeleteMessage(msg tb.Editable) {

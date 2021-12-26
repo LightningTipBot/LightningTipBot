@@ -19,7 +19,7 @@ func (bot *TipBot) fileHandler(ctx context.Context, m *tb.Message) {
 			ticker.Do(func() {
 				ResetUserState(user, bot)
 				// removing ticker asap done
-				bot.shopViewDeleteAllStatusMsgs(ctx, user, 0)
+				bot.shopViewDeleteAllStatusMsgs(ctx, user)
 				runtime.RemoveTicker(user.ID)
 			})
 		} else {

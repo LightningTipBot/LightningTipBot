@@ -76,10 +76,10 @@ func UnlockWithContext(ctx context.Context, s string) {
 	mutexMap.Set(fmt.Sprintf("nLocks:%s", uid), nLocks)
 	if nLocks == 0 {
 		Unlock(s)
+		mutexMap.Remove(fmt.Sprintf("nLocks:%s", uid))
 	} else {
 		log.Tracef("[Mutex] Skip unlock (nLocks: %d)", nLocks)
 	}
-	mutexMap.Remove(fmt.Sprintf("nLocks:%s", uid))
 	Unlock(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
 	//mutexMap.Remove(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
 }
