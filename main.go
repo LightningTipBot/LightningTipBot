@@ -29,7 +29,7 @@ func main() {
 	router := mux.NewRouter()
 	router.PathPrefix("/debug/pprof/").Handler(http.DefaultServeMux)
 	router.Handle("/mutex", http.HandlerFunc(mutex.ServeHTTP))
-	router.Handle("/mutex/unlock", http.HandlerFunc(mutex.UnlockHTTP))
+	router.Handle("/mutex/unlock/{id}", http.HandlerFunc(mutex.UnlockHTTP))
 	go http.ListenAndServe("0.0.0.0:6060", router)
 	defer withRecovery()
 	bot := telegram.NewBot()
