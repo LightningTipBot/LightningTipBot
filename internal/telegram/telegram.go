@@ -5,59 +5,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/rate"
 	"github.com/eko/gocache/store"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
-
-// appendMainMenu will check if to (recipient) ID is from private or group chat.
-// this function will only add a keyboard if this is a private chat and no force reply.
-func (bot *TipBot) appendMainMenu(to int64, recipient interface{}, options []interface{}) []interface{} {
-
-	var user *lnbits.User
-	var err error
-	if user, err = getCachedUser(&tb.User{ID: to}, *bot); err != nil {
-		user, err = GetLnbitsUser(&tb.User{ID: to}, *bot)
-		if err != nil {
-			return options
-		}
-		updateCachedUser(user, *bot)
-	}
-	if user.Wallet != nil {
-		amount, err := bot.GetUserBalanceCached(user)
-		if err == nil {
-			log.Infof("[appendMainMenu] user %s balance %d sat", GetUserStr(user.Telegram), amount)
-			CommandBalance := fmt.Sprintf("%s %d sat", CommandBalance, amount)
-			btnBalanceMainMenu = mainMenu.Text(CommandBalance)
-			mainMenu.Reply(
-				mainMenu.Row(btnBalanceMainMenu),
-				mainMenu.Row(btnInvoiceMainMenu, btnSendMainMenu, btnHelpMainMenu),
-			)
-		}
-	}
-
-	appendKeyboard := true
-	for _, option := range options {
-		if option == tb.ForceReply {
-			appendKeyboard = false
-		}
-		switch option.(type) {
-		case *tb.ReplyMarkup:
-			appendKeyboard = false
-			//option.(*tb.ReplyMarkup).ReplyKeyboard = mainMenu.ReplyKeyboard
-			//if option.(*tb.ReplyMarkup).InlineKeyboard == nil {
-			//	options = append(options[:i], options[i+1:]...)
-			//}
-		}
-	}
-	// to > 0 is private chats
-	if to > 0 && appendKeyboard {
-		options = append(options, mainMenu)
-	}
-	return options
-}
 
 // getChatIdFromRecipient will parse the recipient to int64
 func (bot *TipBot) getChatIdFromRecipient(to tb.Recipient) (int64, error) {
@@ -91,9 +43,6 @@ func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...i
 		return
 	}
 	msg, err = bot.Telegram.Send(to, what, bot.appendMainMenu(chatId, to, options)...)
-	if err != nil {
-		log.Warnln(err.Error())
-	}
 	return
 }
 

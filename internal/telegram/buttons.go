@@ -1,21 +1,27 @@
 package telegram
 
-import tb "gopkg.in/lightningtipbot/telebot.v2"
+import (
+	"fmt"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	log "github.com/sirupsen/logrus"
+	tb "gopkg.in/lightningtipbot/telebot.v2"
+)
 
 // we can't use space in the label of buttons, because string splitting will mess everything up.
 const (
-	CommandSend    = "💸 Send"
-	CommandBalance = "Balance"
-	CommandInvoice = "⚡️ Invoice"
-	CommandHelp    = "📖 Help"
+	MainMenuCommandSend    = "💸 Send"
+	MainMenuCommandBalance = "Balance"
+	MainMenuCommandInvoice = "⚡️ Invoice"
+	MainMenuCommandHelp    = "📖 Help"
 )
 
 var (
 	mainMenu           = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
-	btnHelpMainMenu    = mainMenu.Text(CommandHelp)
-	btnSendMainMenu    = mainMenu.Text(CommandSend)
-	btnBalanceMainMenu = mainMenu.Text(CommandBalance)
-	btnInvoiceMainMenu = mainMenu.Text(CommandInvoice)
+	btnHelpMainMenu    = mainMenu.Text(MainMenuCommandHelp)
+	btnSendMainMenu    = mainMenu.Text(MainMenuCommandSend)
+	btnBalanceMainMenu = mainMenu.Text(MainMenuCommandBalance)
+	btnInvoiceMainMenu = mainMenu.Text(MainMenuCommandInvoice)
 )
 
 func init() {
@@ -44,4 +50,60 @@ func buttonWrapper(buttons []tb.Btn, markup *tb.ReplyMarkup, length int) []tb.Ro
 	}
 	rows = append(rows, markup.Row(buttons...))
 	return rows
+}
+
+// mainMenuBalanceButtonUpdate updates the balance button in the mainMenu
+func (bot *TipBot) mainMenuBalanceButtonUpdate(to int64) {
+	var user *lnbits.User
+	var err error
+	if user, err = getCachedUser(&tb.User{ID: to}, *bot); err != nil {
+		user, err = GetLnbitsUser(&tb.User{ID: to}, *bot)
+		if err != nil {
+			return
+		}
+		updateCachedUser(user, *bot)
+	}
+	if user.Wallet != nil {
+		amount, err := bot.GetUserBalanceCached(user)
+		if err == nil {
+			log.Infof("[appendMainMenu] user %s balance %d sat", GetUserStr(user.Telegram), amount)
+			MainMenuCommandBalance := fmt.Sprintf("%s %d sat", MainMenuCommandBalance, amount)
+			btnBalanceMainMenu = mainMenu.Text(MainMenuCommandBalance)
+			mainMenu.Reply(
+				mainMenu.Row(btnBalanceMainMenu),
+				mainMenu.Row(btnInvoiceMainMenu, btnSendMainMenu, btnHelpMainMenu),
+			)
+		}
+	}
+}
+
+// appendMainMenu will check if to (recipient) ID is from private or group chat.
+// appendMainMenu is called in telegram.go every time a user receives a PM from the bot.
+// this function will only add a keyboard if this is a private chat and no force reply.
+func (bot *TipBot) appendMainMenu(to int64, recipient interface{}, options []interface{}) []interface{} {
+
+	// update the balance button
+	if to > 0 {
+		bot.mainMenuBalanceButtonUpdate(to)
+	}
+
+	appendKeyboard := true
+	for _, option := range options {
+		if option == tb.ForceReply {
+			appendKeyboard = false
+		}
+		switch option.(type) {
+		case *tb.ReplyMarkup:
+			appendKeyboard = false
+			//option.(*tb.ReplyMarkup).ReplyKeyboard = mainMenu.ReplyKeyboard
+			//if option.(*tb.ReplyMarkup).InlineKeyboard == nil {
+			//	options = append(options[:i], options[i+1:]...)
+			//}
+		}
+	}
+	// to > 0 is private chats
+	if to > 0 && appendKeyboard {
+		options = append(options, mainMenu)
+	}
+	return options
 }

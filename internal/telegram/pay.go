@@ -224,7 +224,6 @@ func (bot *TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 
 	if c.Message.Private() {
 		// if the command was invoked in private chat
-		// if the command was invoked in private chat
 		// the edit below was cool, but we need to get rid of the replymarkup inline keyboard thingy for the main menu button update to work (for the new balance)
 		// bot.tryEditMessage(c.Message, i18n.Translate(payData.LanguageCode, "invoicePaidMessage"), &tb.ReplyMarkup{})
 		bot.tryDeleteMessage(c.Message)
