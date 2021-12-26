@@ -215,9 +215,20 @@ func (bot *TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 	}
 	payData.Hash = invoice.PaymentHash
 
+	// do balance check for keyboard update
+	_, err = bot.GetUserBalance(user)
+	if err != nil {
+		errmsg := fmt.Sprintf("could not get balance of user %s", userStr)
+		log.Errorln(errmsg)
+	}
+
 	if c.Message.Private() {
 		// if the command was invoked in private chat
-		bot.tryEditMessage(c.Message, i18n.Translate(payData.LanguageCode, "invoicePaidMessage"), &tb.ReplyMarkup{})
+		// if the command was invoked in private chat
+		// the edit below was cool, but we need to get rid of the replymarkup inline keyboard thingy for the main menu button update to work (for the new balance)
+		// bot.tryEditMessage(c.Message, i18n.Translate(payData.LanguageCode, "invoicePaidMessage"), &tb.ReplyMarkup{})
+		bot.tryDeleteMessage(c.Message)
+		bot.trySendMessage(c.Sender, i18n.Translate(payData.LanguageCode, "invoicePaidMessage"))
 	} else {
 		// if the command was invoked in group chat
 		bot.trySendMessage(c.Sender, i18n.Translate(payData.LanguageCode, "invoicePaidMessage"))
