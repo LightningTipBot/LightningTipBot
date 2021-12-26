@@ -44,7 +44,6 @@ type ShopItem struct {
 
 type Shop struct {
 	*storage.Base
-	ID           string              `json:"ID"`          // holds the ID of the tx object in bunt db
 	Owner        *lnbits.User        `json:"owner"`       // owner of the shop
 	Type         string              `json:"Type"`        // type of the shop
 	Title        string              `json:"title"`       // Title of the item
