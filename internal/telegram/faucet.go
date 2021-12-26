@@ -263,7 +263,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	}
 	// release faucet no matter what
 
-	/*if from.Telegram.ID == to.Telegram.ID {
+	if from.Telegram.ID == to.Telegram.ID {
 		log.Debugf("[faucet] %s is the owner faucet %s", GetUserStr(to.Telegram), inlineFaucet.ID)
 		bot.trySendMessage(from.Telegram, Translate(ctx, "sendYourselfMessage"))
 		return
@@ -275,7 +275,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 			log.Debugf("[faucet] %s:%d already took from faucet %s", GetUserStr(to.Telegram), to.Telegram.ID, inlineFaucet.ID)
 			return
 		}
-	}*/
+	}
 
 	defer inlineFaucet.Set(inlineFaucet, bot.Bunt)
 
