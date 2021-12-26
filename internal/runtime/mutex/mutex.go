@@ -3,6 +3,7 @@ package mutex
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"sync"
 
 	cmap "github.com/orcaman/concurrent-map"
@@ -13,6 +14,20 @@ var mutexMap cmap.ConcurrentMap
 
 func init() {
 	mutexMap = cmap.New()
+}
+
+func ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(fmt.Sprintf("Current number of locks: %d\nLocks: %+v\nUse /mutex/unlock endpoint to unlock all users", len(mutexMap.Keys()), mutexMap.Keys())))
+}
+
+func UnlockHTTP(w http.ResponseWriter, r *http.Request) {
+	var i []string
+	for k, m := range mutexMap.Items() {
+		i = append(i, k)
+		m.(*sync.Mutex).Unlock()
+	}
+	w.Write([]byte(fmt.Sprintf("Unlocked %d mutexes. \n%+v\nCurrent number of locks: %d\nLocks: %+v",
+		len(i), i, len(mutexMap.Keys()), mutexMap.Keys())))
 }
 
 // checkSoftLock checks in mutexMap how often an existing mutex was already SoftLocked.

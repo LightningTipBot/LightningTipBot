@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"github.com/gorilla/mux"
 	"net/http"
 	"runtime/debug"
 
@@ -24,7 +26,11 @@ func setLogger() {
 func main() {
 	// set logger
 	setLogger()
-	go http.ListenAndServe("0.0.0.0:6060", nil)
+	router := mux.NewRouter()
+	router.PathPrefix("/debug/pprof/").Handler(http.DefaultServeMux)
+	router.Handle("/mutex", http.HandlerFunc(mutex.ServeHTTP))
+	router.Handle("/mutex/unlock", http.HandlerFunc(mutex.UnlockHTTP))
+	go http.ListenAndServe("0.0.0.0:6060", router)
 	defer withRecovery()
 	bot := telegram.NewBot()
 	webhook.NewServer(&bot)
