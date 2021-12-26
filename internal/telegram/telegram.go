@@ -59,6 +59,15 @@ func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...i
 }
 
 func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...interface{}) (msg *tb.Message) {
+	// do not attempt edit if the message did not change
+	switch to.(type) {
+	case *tb.Message:
+		if to.(*tb.Message).Text == what.(string) {
+			log.Tracef("[tryEditMessage] message did not change, not attempting to edit")
+			return
+		}
+	}
+
 	sig, chat := to.MessageSig()
 	if chat != 0 {
 		sig = strconv.FormatInt(chat, 10)
