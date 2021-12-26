@@ -2,6 +2,7 @@ package rate
 
 import (
 	"context"
+	log "github.com/sirupsen/logrus"
 	"strconv"
 	"sync"
 
@@ -42,6 +43,8 @@ func CheckLimit(to interface{}) {
 	globalLimiter.Wait(context.Background())
 	var id string
 	switch to.(type) {
+	case string:
+		id = to.(string)
 	case *tb.Chat:
 		id = strconv.FormatInt(to.(*tb.Chat).ID, 10)
 	case *tb.User:
@@ -54,8 +57,11 @@ func CheckLimit(to interface{}) {
 		}
 	}
 	if len(id) > 0 {
+		log.Tracef("[Check Limit] limiter for %+v", id)
 		idLimiter.GetLimiter(id).Wait(context.Background())
+		return
 	}
+	log.Tracef("[Check Limit] skipping id limiter for %+v", to)
 }
 
 // Add creates a new rate limiter and adds it to the keys map,
