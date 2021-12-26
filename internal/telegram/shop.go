@@ -415,7 +415,7 @@ func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Sho
 	if len(shop.Items) == 0 {
 		no_items_message := "There are no items in this shop yet."
 		if len(shopView.Message.Text) > 0 {
-			shopView.Message = bot.tryEditMessage(shopView.Message, no_items_message, bot.shopMenu(ctx, shop, &ShopItem{}))
+			shopView.Message, _ = bot.tryEditMessage(shopView.Message, no_items_message, bot.shopMenu(ctx, shop, &ShopItem{}))
 		} else {
 			bot.tryDeleteMessage(shopView.Message)
 			shopView.Message = bot.trySendMessage(shopView.Message.Chat, no_items_message, bot.shopMenu(ctx, shop, &ShopItem{}))
@@ -434,14 +434,14 @@ func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Sho
 		if item.TbPhoto != nil {
 			if shopView.Message.Photo != nil {
 				// can only edit photo messages with another photo
-				shopView.Message = bot.tryEditMessage(shopView.Message, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
+				shopView.Message, _ = bot.tryEditMessage(shopView.Message, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
 			} else {
 				// if editing failes
 				bot.tryDeleteMessage(shopView.Message)
 				shopView.Message = bot.trySendMessage(shopView.Message.Chat, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
 			}
 		} else if item.Title != "" {
-			shopView.Message = bot.tryEditMessage(shopView.Message, item.Title, bot.shopMenu(ctx, shop, &item))
+			shopView.Message, _ = bot.tryEditMessage(shopView.Message, item.Title, bot.shopMenu(ctx, shop, &item))
 			if shopView.Message == nil {
 				shopView.Message = bot.trySendMessage(shopView.Message.Chat, item.Title, bot.shopMenu(ctx, shop, &item))
 			}
@@ -1011,7 +1011,7 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 	if err == nil && !strings.HasPrefix(strings.Split(m.Text, " ")[0], "/shop") {
 		// the user is returning to a shops view from a back button callback
 		if shopView.Message.Photo == nil {
-			shopsMsg = bot.tryEditMessage(shopView.Message, ShopsText, bot.shopsMainMenu(ctx, shops))
+			shopsMsg, _ = bot.tryEditMessage(shopView.Message, ShopsText, bot.shopsMainMenu(ctx, shops))
 		}
 		if shopsMsg == nil {
 			// if editing has failed, we will send a new message
@@ -1278,7 +1278,7 @@ func (bot *TipBot) shopsBrowser(ctx context.Context, c *tb.Callback) {
 	}
 	shopShopsButton := shopKeyboard.Data("⬅️ Back", "shops_shops", shops.ID)
 	shopKeyboard.Inline(buttonWrapper(append(bot.makseShopSelectionButtons(s, "select_shop"), shopShopsButton), shopKeyboard, 1)...)
-	shopMessage := bot.tryEditMessage(c.Message, "Select a shop you want to browse.", shopKeyboard)
+	shopMessage, _ := bot.tryEditMessage(c.Message, "Select a shop you want to browse.", shopKeyboard)
 	shopView, err = bot.getUserShopview(ctx, user)
 	if err != nil {
 		shopView.Message = shopMessage
