@@ -3,6 +3,7 @@ package mutex
 import (
 	"context"
 	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 	"sync"
 
@@ -21,13 +22,14 @@ func ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func UnlockHTTP(w http.ResponseWriter, r *http.Request) {
-	var i []string
-	for k, m := range mutexMap.Items() {
-		i = append(i, k)
+	vars := mux.Vars(r)
+	if m, ok := mutexMap.Get(vars["id"]); ok {
 		m.(*sync.Mutex).Unlock()
+		w.Write([]byte(fmt.Sprintf("Unlocked %s mutexe.\nCurrent number of locks: %d\nLocks: %+v",
+			vars["id"], len(mutexMap.Keys()), mutexMap.Keys())))
+		return
 	}
-	w.Write([]byte(fmt.Sprintf("Unlocked %d mutexes. \n%+v\nCurrent number of locks: %d\nLocks: %+v",
-		len(i), i, len(mutexMap.Keys()), mutexMap.Keys())))
+	w.Write([]byte(fmt.Sprintf("Mutex %s not found!", vars["id"])))
 }
 
 // checkSoftLock checks in mutexMap how often an existing mutex was already SoftLocked.
