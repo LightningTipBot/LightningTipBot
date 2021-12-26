@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"time"
 
 	"github.com/eko/gocache/store"
@@ -87,5 +88,6 @@ func (tx *Base) Set(s Storable, db *DB) error {
 
 func (tx *Base) Delete(s Storable, db *DB) error {
 	tx.UpdatedAt = time.Now()
+	runtime.IgnoreError(transactionCache.Delete(s.Key()))
 	return db.Delete(s.Key(), s)
 }

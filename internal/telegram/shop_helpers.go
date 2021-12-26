@@ -167,12 +167,9 @@ func (bot *TipBot) shopViewDeleteAllStatusMsgs(ctx context.Context, user *lnbits
 		return
 	}
 
-	statusMessages := shopView.StatusMessages
-	// delete all status messages from cache
-	shopView.StatusMessages = append([]*tb.Message{}, statusMessages...)
+	deleteStatusMessages(shopView.StatusMessages, bot)
+	shopView.StatusMessages = make([]*tb.Message, 0)
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
-
-	deleteStatusMessages(statusMessages, bot)
 	mutex.Unlock(fmt.Sprintf("shopview-delete-%d", user.Telegram.ID))
 	return
 }
