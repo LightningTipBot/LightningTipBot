@@ -77,8 +77,9 @@ func UnlockWithContext(ctx context.Context, s string) {
 	} else {
 		log.Tracef("[Mutex] Skip unlock (nLocks: %d)", nLocks)
 	}
+	mutexMap.Remove(fmt.Sprintf("nLocks:%s", uid))
 	Unlock(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
-	mutexMap.Remove(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
+	//mutexMap.Remove(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
 }
 
 // Lock locks a mutex in the mutexMap. If the mutex is already in the map, it locks the current call.
