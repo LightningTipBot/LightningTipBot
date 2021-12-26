@@ -163,7 +163,7 @@ func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
 		log.Errorln(errmsg)
 		return tx.Error
 	}
-	log.Debugf("[UpdateUserRecord] Records of user %s updated.", GetUserStr(user.Telegram))
+	log.Tracef("[UpdateUserRecord] Records of user %s updated.", GetUserStr(user.Telegram))
 	if bot.Cache.GoCacheStore != nil {
 		updateCachedUser(user, bot)
 	}

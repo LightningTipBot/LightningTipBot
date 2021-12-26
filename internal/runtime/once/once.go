@@ -35,7 +35,7 @@ func Once(k1, k2 string) error {
 // setOrReturn sets the key k2 in the map i if it is not already set.
 func setOrReturn(objectMap cmap.ConcurrentMap, k2 string) error {
 	if _, ok := objectMap.Get(k2); ok {
-		return fmt.Errorf("%s already consumed object", k2)
+		return fmt.Errorf("[Once] %s already consumed object", k2)
 	}
 	objectMap.Set(k2, true)
 	return nil

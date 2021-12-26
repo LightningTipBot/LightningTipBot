@@ -192,8 +192,14 @@ func (bot TipBot) faucetHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 	fromUserStr := GetUserStr(m.Sender)
-	bot.trySendMessage(m.Chat, inlineFaucet.Message, bot.makeFaucetKeyboard(ctx, inlineFaucet.ID))
+	mFaucet := bot.trySendMessage(m.Chat, inlineFaucet.Message, bot.makeFaucetKeyboard(ctx, inlineFaucet.ID))
 	log.Infof("[faucet] %s created faucet %s: %d sat (%d per user)", fromUserStr, inlineFaucet.ID, inlineFaucet.Amount, inlineFaucet.PerUserAmount)
+
+	// log faucet link if possible
+	if mFaucet != nil && mFaucet.Chat != nil {
+		log.Infof("[faucet] Link: https://t.me/c/%s/%d", strconv.FormatInt(mFaucet.Chat.ID, 10)[4:], mFaucet.ID)
+	}
+
 	runtime.IgnoreError(inlineFaucet.Set(inlineFaucet, bot.Bunt))
 }
 
@@ -248,7 +254,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	from := inlineFaucet.From
 	// log faucet link if possible
 	if c.Message != nil && c.Message.Chat != nil {
-		log.Debugf("[faucet] Link: https://t.me/c/%s/%d", strconv.FormatInt(c.Message.Chat.ID, 10)[4:], c.Message.ID)
+		log.Infof("[faucet] Link: https://t.me/c/%s/%d", strconv.FormatInt(c.Message.Chat.ID, 10)[4:], c.Message.ID)
 	}
 	if !inlineFaucet.Active {
 		log.Debugf(fmt.Sprintf("[faucet] faucet %s inactive. Remaining: %d sat", inlineFaucet.ID, inlineFaucet.RemainingAmount))
