@@ -24,6 +24,16 @@ func (bot *TipBot) anyTextHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 
+	// check if the user clicked on the balance button
+	if strings.HasPrefix(m.Text, CommandBalance) {
+		bot.tryDeleteMessage(m)
+		// overwrite the message text so it doesn't cause an infinite loop
+		// because balanceHandler calls anyTextHAndler...
+		m.Text = ""
+		bot.balanceHandler(ctx, m)
+		return
+	}
+
 	// could be an invoice
 	anyText := strings.ToLower(m.Text)
 	if lightning.IsInvoice(anyText) {

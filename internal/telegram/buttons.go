@@ -5,7 +5,7 @@ import tb "gopkg.in/lightningtipbot/telebot.v2"
 // we can't use space in the label of buttons, because string splitting will mess everything up.
 const (
 	CommandSend    = "💸 Send"
-	CommandBalance = "👑 Balance"
+	CommandBalance = "Balance"
 	CommandInvoice = "⚡️ Invoice"
 	CommandHelp    = "📖 Help"
 )
