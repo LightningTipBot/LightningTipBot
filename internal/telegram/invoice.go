@@ -157,6 +157,13 @@ func (bot *TipBot) createInvoiceWithEvent(ctx context.Context, user *lnbits.User
 }
 
 func (bot *TipBot) notifyInvoiceReceivedEvent(invoiceEvent *InvoiceEvent) {
+	// do balance check for keyboard update
+	_, err := bot.GetUserBalance(invoiceEvent.User)
+	if err != nil {
+		errmsg := fmt.Sprintf("could not get balance of user %s", GetUserStr(invoiceEvent.User.Telegram))
+		log.Errorln(errmsg)
+	}
+
 	bot.trySendMessage(invoiceEvent.User.Telegram, fmt.Sprintf(i18n.Translate(invoiceEvent.User.Telegram.LanguageCode, "invoiceReceivedMessage"), invoiceEvent.Amount))
 }
 
