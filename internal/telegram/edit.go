@@ -2,10 +2,11 @@ package telegram
 
 import (
 	"fmt"
+	"time"
+
 	cmap "github.com/orcaman/concurrent-map"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
-	"time"
 )
 
 var editStack cmap.ConcurrentMap
@@ -49,7 +50,7 @@ func (bot TipBot) startEditWorker() {
 					}
 				}
 			}
-			time.Sleep(time.Second)
+			time.Sleep(time.Millisecond * 100)
 		}
 	}()
 
