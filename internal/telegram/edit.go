@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	cmap "github.com/orcaman/concurrent-map"
@@ -24,6 +25,7 @@ func init() {
 }
 
 const resultTrueError = "telebot: result is True"
+const editSameStringError = "specified new message content and reply markup are exactly the same as a current content and reply markup of the message"
 
 // startEditWorker will loop through the editStack and run tryEditMessage on not edited messages.
 // if editFromStack is older than 5 seconds, editFromStack will be removed.
@@ -35,7 +37,13 @@ func (bot TipBot) startEditWorker() {
 					editFromStack := e.(edit)
 					if !editFromStack.edited {
 						_, err := bot.tryEditMessage(editFromStack.to, editFromStack.what, editFromStack.options...)
-						if err != nil && err.Error() != resultTrueError {
+						if err != nil && strings.Contains(err.Error(), editSameStringError) {
+							// this error is returned if the edit is the same as the current message
+							// we just pretend as if the edit worked
+							log.Tracef("[startEditWorker] Edit duplicate error: %s", err.Error())
+							editFromStack.edited = true
+						} else if err != nil && err.Error() != resultTrueError {
+							// any other error should not be ignored
 							log.Tracef("[startEditWorker] Edit error: %s", err.Error())
 							return
 						}
@@ -51,7 +59,7 @@ func (bot TipBot) startEditWorker() {
 					}
 				}
 			}
-			time.Sleep(time.Millisecond * 100)
+			time.Sleep(time.Millisecond * 500)
 		}
 	}()
 
