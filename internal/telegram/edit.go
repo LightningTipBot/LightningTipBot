@@ -37,20 +37,19 @@ func (bot TipBot) startEditWorker() {
 					editFromStack := e.(edit)
 					if !editFromStack.edited {
 						_, err := bot.tryEditMessage(editFromStack.to, editFromStack.what, editFromStack.options...)
-						if err != nil && strings.Contains(err.Error(), editSameStringError) {
-							// this error is returned if the edit is the same as the current message
-							// we just pretend as if the edit worked
-							log.Tracef("[startEditWorker] Edit duplicate error: %s", err.Error())
-							editFromStack.edited = true
-						} else if err != nil && err.Error() != resultTrueError {
+						if err != nil && err.Error() != resultTrueError && !strings.Contains(err.Error(), editSameStringError) {
 							// any other error should not be ignored
-							log.Tracef("[startEditWorker] Edit error: %s", err.Error())
-							return
+							log.Tracef("[startEditWorker] Skip edit error: %s", err.Error())
+
+						} else {
+							if err != nil {
+								log.Tracef("[startEditWorker] Edit error: %s", err.Error())
+							}
+							log.Tracef("[startEditWorker] message from stack edited %+v", editFromStack)
+							editFromStack.lastEdit = time.Now()
+							editFromStack.edited = true
+							editStack.Set(k, editFromStack)
 						}
-						log.Tracef("[startEditWorker] message from stack edited %+v", editFromStack)
-						editFromStack.lastEdit = time.Now()
-						editFromStack.edited = true
-						editStack.Set(k, editFromStack)
 					} else {
 						if editFromStack.lastEdit.Before(time.Now().Add(-(time.Duration(5) * time.Second))) {
 							log.Tracef("[startEditWorker] removing message edit from stack %+v", editFromStack)
@@ -71,7 +70,6 @@ func (bot TipBot) tryEditStack(to tb.Editable, what interface{}, options ...inte
 	var sig = fmt.Sprintf("%s-%d", msgSig, chat)
 	if e, ok := editStack.Get(sig); ok {
 		editFromStack := e.(edit)
-
 		if editFromStack.what == what.(string) {
 			log.Tracef("[tryEditStack] Message already in edit stack. Skipping")
 			return
