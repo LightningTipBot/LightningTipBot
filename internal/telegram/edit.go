@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	cmap "github.com/orcaman/concurrent-map"
@@ -24,6 +25,7 @@ func init() {
 }
 
 const resultTrueError = "telebot: result is True"
+const editSameStringError = "specified new message content and reply markup are exactly the same as a current content and reply markup of the message"
 
 // startEditWorker will loop through the editStack and run tryEditMessage on not edited messages.
 // if editFromStack is older than 5 seconds, editFromStack will be removed.
@@ -35,14 +37,19 @@ func (bot TipBot) startEditWorker() {
 					editFromStack := e.(edit)
 					if !editFromStack.edited {
 						_, err := bot.tryEditMessage(editFromStack.to, editFromStack.what, editFromStack.options...)
-						if err != nil && err.Error() != resultTrueError {
-							log.Tracef("[startEditWorker] Edit error: %s", err.Error())
-							return
+						if err != nil && err.Error() != resultTrueError && !strings.Contains(err.Error(), editSameStringError) {
+							// any other error should not be ignored
+							log.Tracef("[startEditWorker] Skip edit error: %s", err.Error())
+
+						} else {
+							if err != nil {
+								log.Tracef("[startEditWorker] Edit error: %s", err.Error())
+							}
+							log.Tracef("[startEditWorker] message from stack edited %+v", editFromStack)
+							editFromStack.lastEdit = time.Now()
+							editFromStack.edited = true
+							editStack.Set(k, editFromStack)
 						}
-						log.Tracef("[startEditWorker] message from stack edited %+v", editFromStack)
-						editFromStack.lastEdit = time.Now()
-						editFromStack.edited = true
-						editStack.Set(k, editFromStack)
 					} else {
 						if editFromStack.lastEdit.Before(time.Now().Add(-(time.Duration(5) * time.Second))) {
 							log.Tracef("[startEditWorker] removing message edit from stack %+v", editFromStack)
@@ -51,7 +58,7 @@ func (bot TipBot) startEditWorker() {
 					}
 				}
 			}
-			time.Sleep(time.Millisecond * 100)
+			time.Sleep(time.Millisecond * 500)
 		}
 	}()
 
@@ -63,7 +70,6 @@ func (bot TipBot) tryEditStack(to tb.Editable, what interface{}, options ...inte
 	var sig = fmt.Sprintf("%s-%d", msgSig, chat)
 	if e, ok := editStack.Get(sig); ok {
 		editFromStack := e.(edit)
-
 		if editFromStack.what == what.(string) {
 			log.Tracef("[tryEditStack] Message already in edit stack. Skipping")
 			return
