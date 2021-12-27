@@ -26,6 +26,7 @@ func init() {
 
 const resultTrueError = "telebot: result is True"
 const editSameStringError = "specified new message content and reply markup are exactly the same as a current content and reply markup of the message"
+const retryAfterError = "retry after"
 
 // startEditWorker will loop through the editStack and run tryEditMessage on not edited messages.
 // if editFromStack is older than 5 seconds, editFromStack will be removed.
@@ -37,22 +38,22 @@ func (bot TipBot) startEditWorker() {
 					editFromStack := e.(edit)
 					if !editFromStack.edited {
 						_, err := bot.tryEditMessage(editFromStack.to, editFromStack.what, editFromStack.options...)
-						if err != nil && err.Error() != resultTrueError && !strings.Contains(err.Error(), editSameStringError) {
-							// any other error should not be ignored
-							log.Tracef("[startEditWorker] Skip edit error: %s", err.Error())
+						if err != nil && strings.Contains(err.Error(), retryAfterError) {
+							// ignore any other error than retry after
+							log.Errorf("[startEditWorker] Edit error: %s. len(editStack)=%d", err.Error(), len(editStack.Keys()))
 
 						} else {
 							if err != nil {
-								log.Tracef("[startEditWorker] Edit error: %s", err.Error())
+								log.Errorf("[startEditWorker] Ignoring edit error: %s. len(editStack)=%d", err.Error(), len(editStack.Keys()))
 							}
-							log.Tracef("[startEditWorker] message from stack edited %+v", editFromStack)
+							log.Tracef("[startEditWorker] message from stack edited %+v. len(editStack)=%d", editFromStack, len(editStack.Keys()))
 							editFromStack.lastEdit = time.Now()
 							editFromStack.edited = true
 							editStack.Set(k, editFromStack)
 						}
 					} else {
 						if editFromStack.lastEdit.Before(time.Now().Add(-(time.Duration(5) * time.Second))) {
-							log.Tracef("[startEditWorker] removing message edit from stack %+v", editFromStack)
+							log.Tracef("[startEditWorker] removing message edit from stack %+v. len(editStack)=%d", editFromStack, len(editStack.Keys()))
 							editStack.Remove(k)
 						}
 					}
