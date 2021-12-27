@@ -36,6 +36,7 @@ func (bot TipBot) startEditWorker() {
 					if !editFromStack.edited {
 						_, err := bot.tryEditMessage(editFromStack.to, editFromStack.what, editFromStack.options...)
 						if err != nil && err.Error() != resultTrueError {
+							log.Tracef("[startEditWorker] Edit error: %s", err.Error())
 							return
 						}
 						log.Tracef("[startEditWorker] message from stack edited %+v", editFromStack)
@@ -64,11 +65,12 @@ func (bot TipBot) tryEditStack(to tb.Editable, what interface{}, options ...inte
 		editFromStack := e.(edit)
 
 		if editFromStack.what == what.(string) {
-			log.Tracef("[tryEditMessage] message did not change, not attempting to edit")
+			log.Tracef("[tryEditStack] Message already in edit stack. Skipping")
 			return
 		}
 	}
 	e := edit{options: options, what: what, to: to}
 
 	editStack.Set(sig, e)
+	log.Tracef("[tryEditStack] Added message %s to edit stack. len(editStack)=%d", sig, len(editStack.Keys()))
 }
