@@ -214,6 +214,46 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	}
 }
 
+// keyboardSendHandler will be called when the user presses the Send button on the keyboard
+// it will pop up a new keyboard with the last interacted contacts to send funds to
+// then, the flow is handled as if the user entered /send (then ask for contacts from keyboard or entry,
+// then ask for an amount).
+func (bot *TipBot) keyboardSendHandler(ctx context.Context, m *tb.Message) {
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return // errors.New("user has no wallet"), 0
+	}
+	enterUserStateData := &EnterUserStateData{
+		ID:              "id",
+		Type:            "CreateSendState",
+		OiringalCommand: "/send",
+	}
+	// set LNURLPayParams in the state of the user
+	stateDataJson, err := json.Marshal(enterUserStateData)
+	if err != nil {
+		log.Errorln(err)
+		return
+	}
+	SetUserState(user, bot, lnbits.UserEnterUser, string(stateDataJson))
+	sendToButtons = bot.makeContactsButtons(ctx)
+
+	// if no contact is found (one entry will always be inside, it's the enter user button)
+	// immediatelly go to the send handler
+	if len(sendToButtons) == 1 {
+		m.Text = "/send"
+		bot.sendHandler(ctx, m)
+		return
+	}
+
+	// Attention! We need to ues the original Telegram.Send command here!
+	// bot.trySendMessage will replace the keyboard with the default one and we want to send a different keyboard here
+	// this is suboptimal because Telegram.Send is not rate limited etc. but it's the only way to send a custom keyboard for now
+	_, err = bot.Telegram.Send(user.Telegram, Translate(ctx, "enterUserMessage"), sendToMenu)
+	if err != nil {
+		log.Errorln(err.Error())
+	}
+}
+
 // sendHandler invoked when user clicked send on payment confirmation
 func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	tx := &SendData{Base: storage.New(storage.ID(c.Data))}
@@ -319,7 +359,8 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	if sendData.From.Telegram.ID != c.Sender.ID {
 		return
 	}
-	// remove buttons from confirmation message
-	bot.tryEditMessage(c.Message, i18n.Translate(sendData.LanguageCode, "sendCancelledMessage"), &tb.ReplyMarkup{})
+	// delete and send instead of edit for the keyboard to pop up after sending
+	bot.tryDeleteMessage(c.Message)
+	bot.trySendMessage(c.Message.Chat, i18n.Translate(sendData.LanguageCode, "sendCancelledMessage"))
 	sendData.Inactivate(sendData, bot.Bunt)
 }

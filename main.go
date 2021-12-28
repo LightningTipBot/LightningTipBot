@@ -18,7 +18,7 @@ import (
 
 // setLogger will initialize the log format
 func setLogger() {
-	log.SetLevel(log.TraceLevel)
+	log.SetLevel(log.DebugLevel)
 	customFormatter := new(log.TextFormatter)
 	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
 	customFormatter.FullTimestamp = true
