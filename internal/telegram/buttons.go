@@ -85,7 +85,7 @@ func (bot *TipBot) mainMenuBalanceButtonUpdate(to int64) {
 
 // makeContactsButtons will create a slice of buttons for the send menu
 // it will show the 5 most recently interacted contacts and one button to use a custom contact
-func (bot *TipBot) makeContactsButtons(ctx context.Context) {
+func (bot *TipBot) makeContactsButtons(ctx context.Context) []tb.Btn {
 	var records []Transaction
 
 	sendToButtons = []tb.Btn{}
@@ -104,6 +104,7 @@ func (bot *TipBot) makeContactsButtons(ctx context.Context) {
 	// add the "enter a username" button to the end
 	sendToButtons = append(sendToButtons, tb.Btn{Text: SendMenuCommandEnter})
 	sendToMenu.Reply(buttonWrapper(sendToButtons, sendToMenu, 3)...)
+	return sendToButtons
 }
 
 // appendMainMenu will check if to (recipient) ID is from private or group chat.

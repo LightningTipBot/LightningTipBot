@@ -235,7 +235,15 @@ func (bot *TipBot) keyboardSendHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 	SetUserState(user, bot, lnbits.UserEnterUser, string(stateDataJson))
-	bot.makeContactsButtons(ctx)
+	sendToButtons = bot.makeContactsButtons(ctx)
+
+	// if no contact is found (one entry will always be inside, it's the enter user button)
+	// immediatelly go to the send handler
+	if len(sendToButtons) == 1 {
+		m.Text = "/send"
+		bot.sendHandler(ctx, m)
+		return
+	}
 
 	// Attention! We need to ues the original Telegram.Send command here!
 	// bot.trySendMessage will replace the keyboard with the default one and we want to send a different keyboard here
