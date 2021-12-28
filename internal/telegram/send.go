@@ -240,7 +240,7 @@ func (bot *TipBot) keyboardSendHandler(ctx context.Context, m *tb.Message) {
 	// Attention! We need to ues the original Telegram.Send command here!
 	// bot.trySendMessage will replace the keyboard with the default one and we want to send a different keyboard here
 	// this is suboptimal because Telegram.Send is not rate limited etc. but it's the only way to send a custom keyboard for now
-	_, err = bot.Telegram.Send(user.Telegram, "Enter a user", sendToMenu)
+	_, err = bot.Telegram.Send(user.Telegram, Translate(ctx, "enterUserMessage"), sendToMenu)
 	if err != nil {
 		log.Errorln(err.Error())
 	}
