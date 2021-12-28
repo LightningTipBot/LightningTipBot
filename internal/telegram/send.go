@@ -351,7 +351,8 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	if sendData.From.Telegram.ID != c.Sender.ID {
 		return
 	}
-	// remove buttons from confirmation message
-	bot.tryEditMessage(c.Message, i18n.Translate(sendData.LanguageCode, "sendCancelledMessage"), &tb.ReplyMarkup{})
+	// delete and send instead of edit for the keyboard to pop up after sending
+	bot.tryDeleteMessage(c.Message)
+	bot.trySendMessage(c.Message.Chat, i18n.Translate(sendData.LanguageCode, "sendCancelledMessage"))
 	sendData.Inactivate(sendData, bot.Bunt)
 }

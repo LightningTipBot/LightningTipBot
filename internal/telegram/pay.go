@@ -256,6 +256,9 @@ func (bot *TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 	if payData.From.Telegram.ID != c.Sender.ID {
 		return
 	}
-	bot.tryEditMessage(c.Message, i18n.Translate(payData.LanguageCode, "paymentCancelledMessage"), &tb.ReplyMarkup{})
+	// delete and send instead of edit for the keyboard to pop up after sending
+	bot.tryDeleteMessage(c.Message)
+	bot.trySendMessage(c.Message.Chat, i18n.Translate(payData.LanguageCode, "paymentCancelledMessage"))
+	// bot.tryEditMessage(c.Message, i18n.Translate(payData.LanguageCode, "paymentCancelledMessage"), &tb.ReplyMarkup{})
 	payData.Inactivate(payData, bot.Bunt)
 }
