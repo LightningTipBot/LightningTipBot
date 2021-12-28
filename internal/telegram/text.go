@@ -96,7 +96,7 @@ func (bot *TipBot) enterUserHandler(ctx context.Context, m *tb.Message) {
 		ResetUserState(user, bot)
 		return // errors.New("user state does not match"), 0
 	}
-	if len(m.Text) < 4 || strings.HasPrefix(m.Text, "/") {
+	if len(m.Text) < 4 || strings.HasPrefix(m.Text, "/") || m.Text == SendMenuCommandEnter {
 		ResetUserState(user, bot)
 		return
 	}

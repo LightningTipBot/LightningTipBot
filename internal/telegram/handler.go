@@ -216,8 +216,25 @@ func (bot TipBot) getHandler() []Handler {
 			},
 		},
 		{
-			Endpoints: []interface{}{"/send", &btnSendMainMenu},
+			Endpoints: []interface{}{"/send", &btnSendMenuEnter},
 			Handler:   bot.sendHandler,
+			Interceptor: &Interceptor{
+				Type: MessageInterceptor,
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+					bot.loadReplyToInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{&btnSendMainMenu},
+			Handler:   bot.keyboardSendHandler,
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{

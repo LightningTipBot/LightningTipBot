@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -14,6 +15,7 @@ const (
 	MainMenuCommandBalance = "Balance"
 	MainMenuCommandInvoice = "⚡️ Invoice"
 	MainMenuCommandHelp    = "📖 Help"
+	SendMenuCommandEnter   = "👤 Enter"
 )
 
 var (
@@ -22,6 +24,10 @@ var (
 	btnSendMainMenu    = mainMenu.Text(MainMenuCommandSend)
 	btnBalanceMainMenu = mainMenu.Text(MainMenuCommandBalance)
 	btnInvoiceMainMenu = mainMenu.Text(MainMenuCommandInvoice)
+
+	sendToMenu       = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	sendToButtons    = []tb.Btn{}
+	btnSendMenuEnter = mainMenu.Text(SendMenuCommandEnter)
 )
 
 func init() {
@@ -75,6 +81,28 @@ func (bot *TipBot) mainMenuBalanceButtonUpdate(to int64) {
 			)
 		}
 	}
+}
+
+// makeContactsButtons will create a slice of buttons for the send menu
+// it will show the 5 most recently interacted contacts and one button to use a custom contact
+func (bot *TipBot) makeContactsButtons(ctx context.Context) {
+	var records []Transaction
+
+	sendToButtons = []tb.Btn{}
+	user := LoadUser(ctx)
+	// get all recent transactions
+	bot.logger.Where("from_id = ? AND to_user LIKE ?", user.Telegram.ID, "@%").Distinct("to_user").Order("id desc").Limit(5).Find(&records)
+	log.Debugf("[makeContactsButtons] found %d records", len(records))
+
+	// get all contacts and add them to the buttons
+	for i, r := range records {
+		log.Tracef("[makeContactsButtons] toNames[%d] = %s (id=%d)", i, r.ToUser, r.ID)
+		sendToButtons = append(sendToButtons, tb.Btn{Text: fmt.Sprintf("%s", r.ToUser)})
+	}
+
+	// add the "enter a username" button to the end
+	sendToButtons = append(sendToButtons, tb.Btn{Text: SendMenuCommandEnter})
+	sendToMenu.Reply(buttonWrapper(sendToButtons, sendToMenu, 3)...)
 }
 
 // appendMainMenu will check if to (recipient) ID is from private or group chat.
