@@ -90,7 +90,7 @@ func (bot *TipBot) makeContactsButtons(ctx context.Context) {
 
 	sendToButtons = []tb.Btn{}
 	user := LoadUser(ctx)
-	// get 5 most recent transactions with distint to_user
+	// get 5 most recent transactions by from_id with distint to_user
 	// where to_user starts with an @ and is not the user itself
 	bot.logger.Where("from_id = ? AND to_user LIKE ? AND to_user <> ?", user.Telegram.ID, "@%", GetUserStr(user.Telegram)).Distinct("to_user").Order("id desc").Limit(5).Find(&records)
 	log.Debugf("[makeContactsButtons] found %d records", len(records))
