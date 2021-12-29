@@ -51,8 +51,8 @@ func (bot *TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
 	go func() {
 		time.Sleep(time.Second * 60)
 		bot.tryDeleteMessage(linkmsg)
+		bot.trySendMessage(m.Sender, Translate(ctx, "linkHiddenMessage"))
 	}()
-	bot.trySendMessage(m.Sender, Translate(ctx, "linkHiddenMessage"))
 	// auto delete the message
 	// NewMessage(linkmsg, WithDuration(time.Second*time.Duration(internal.Configuration.Telegram.MessageDisposeDuration), bot))
 
