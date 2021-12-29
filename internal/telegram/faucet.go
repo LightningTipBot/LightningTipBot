@@ -247,7 +247,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Debugf("[acceptInlineFaucetHandler] %s", err.Error())
+		log.Errorf("[acceptInlineFaucetHandler] c.Data: %s, Error: %s", c.Data, err.Error())
 		return
 	}
 	inlineFaucet := fn.(*InlineFaucet)
