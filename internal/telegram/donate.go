@@ -74,8 +74,11 @@ func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
 		return
 	}
-	bot.tryEditMessage(msg, Translate(ctx, "donationSuccess"))
-
+	// hotfix because the edit doesn't work!
+	// todo: fix edit
+	// bot.tryEditMessage(msg, Translate(ctx, "donationSuccess"))
+	bot.tryDeleteMessage(msg)
+	bot.trySendMessage(m.Chat, Translate(ctx, "donationSuccess"))
 }
 
 func init() {
