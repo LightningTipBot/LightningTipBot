@@ -42,6 +42,7 @@ func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...i
 		log.Errorf("[trySendMessage] error converting message recipient to int64: %v", err)
 		return
 	}
+	log.Tracef("[trySendMessage] chatId: %d", chatId)
 	msg, err = bot.Telegram.Send(to, what, bot.appendMainMenu(chatId, to, options)...)
 	if err != nil {
 		log.Warnln(err.Error())
@@ -67,6 +68,7 @@ func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...in
 	}
 	rate.CheckLimit(sig)
 	_, chatId := to.MessageSig()
+	log.Tracef("[tryEditMessage] sig: %s, chatId: %d", sig, chatId)
 	msg, err = bot.Telegram.Edit(to, what, bot.appendMainMenu(chatId, to, options)...)
 	if err != nil {
 		log.Warnln(err.Error())

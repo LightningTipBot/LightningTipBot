@@ -1,7 +1,7 @@
 package telegram
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,6 +14,7 @@ var editStack cmap.ConcurrentMap
 
 type edit struct {
 	to       tb.Editable
+	key      string
 	what     interface{}
 	options  []interface{}
 	lastEdit time.Time
@@ -59,25 +60,29 @@ func (bot TipBot) startEditWorker() {
 					}
 				}
 			}
-			time.Sleep(time.Millisecond * 500)
+			time.Sleep(time.Millisecond * 1000)
 		}
 	}()
 
 }
 
 // tryEditStack will add the editable to the edit stack, if what (message) changed.
-func (bot TipBot) tryEditStack(to tb.Editable, what interface{}, options ...interface{}) {
-	msgSig, chat := to.MessageSig()
-	var sig = fmt.Sprintf("%s-%d", msgSig, chat)
-	if e, ok := editStack.Get(sig); ok {
+func (bot TipBot) tryEditStack(to tb.Editable, key string, what interface{}, options ...interface{}) {
+	sig, chat := to.MessageSig()
+	if chat != 0 {
+		sig = strconv.FormatInt(chat, 10)
+	}
+	log.Debugf("[tryEditStack] sig=%s, key=%s, what=%+v, options=%+v", sig, key, what, options)
+	// var sig = fmt.Sprintf("%s-%d", msgSig, chat)
+	if e, ok := editStack.Get(key); ok {
 		editFromStack := e.(edit)
 		if editFromStack.what == what.(string) {
 			log.Tracef("[tryEditStack] Message already in edit stack. Skipping")
 			return
 		}
 	}
-	e := edit{options: options, what: what, to: to}
+	e := edit{options: options, key: key, what: what, to: to}
 
-	editStack.Set(sig, e)
-	log.Tracef("[tryEditStack] Added message %s to edit stack. len(editStack)=%d", sig, len(editStack.Keys()))
+	editStack.Set(key, e)
+	log.Tracef("[tryEditStack] Added message %s to edit stack. len(editStack)=%d", key, len(editStack.Keys()))
 }
