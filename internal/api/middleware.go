@@ -9,6 +9,7 @@ import (
 func LoggingMiddleware(prefix string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Tracef("[%s]\n%s", prefix, dump(r))
+		r.BasicAuth()
 		next.ServeHTTP(w, r)
 	}
 }
