@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"strings"
 )
 
 func (s Service) UnbanUser(w http.ResponseWriter, r *http.Request) {
@@ -19,6 +20,8 @@ func (s Service) UnbanUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user.Banned = false
+	adminSlice := strings.Split(user.Wallet.Adminkey, "_")
+	user.Wallet.Adminkey = adminSlice[len(adminSlice)-1]
 	s.db.Save(user)
 }
 
@@ -33,6 +36,7 @@ func (s Service) BanUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user.Banned = true
+	user.Wallet.Adminkey = fmt.Sprintf("%s_%s", "banned", user.Wallet.Adminkey)
 	s.db.Save(user)
 }
 
