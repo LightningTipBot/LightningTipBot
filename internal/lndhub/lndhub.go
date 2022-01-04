@@ -28,7 +28,7 @@ func (w LndHub) Handle(writer http.ResponseWriter, request *http.Request) {
 	if !ok {
 		return
 	}
-	log.Tracef("[LNDHUB] %s, %s", username, password)
+	log.Debugf("[LNDHUB] %s, %s", username, password)
 	if strings.Contains(password, "_") || strings.HasPrefix(password, "banned_") {
 		log.Warnf("[LNDHUB] Banned user. Not forwarding request")
 		return
@@ -36,7 +36,7 @@ func (w LndHub) Handle(writer http.ResponseWriter, request *http.Request) {
 	user := &lnbits.User{}
 	tx := w.database.Where("wallet_adminkey = ? COLLATE NOCASE", password).First(user)
 	if tx.Error != nil {
-		log.Errorf("[LNDHUB] wallet admin key not found: %v", tx.Error)
+		log.Warnf("[LNDHUB] wallet admin key (%s) not found: %v", password, tx.Error)
 		return
 	}
 	api.Proxy(writer, request, internal.Configuration.Lnbits.Url)
