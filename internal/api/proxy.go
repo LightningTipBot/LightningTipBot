@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/LightningTipBot/LightningTipBot/internal"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func Proxy(wr http.ResponseWriter, req *http.Request) {
+func Proxy(wr http.ResponseWriter, req *http.Request, rawUrl string) error {
 
 	client := &http.Client{Timeout: time.Second * 10}
 
@@ -17,11 +17,11 @@ func Proxy(wr http.ResponseWriter, req *http.Request) {
 	//http://golang.org/src/pkg/net/http/client.go
 	req.RequestURI = ""
 
-	u, err := url.Parse(internal.Configuration.Lnbits.Url)
+	u, err := url.Parse(rawUrl)
 	if err != nil {
 		http.Error(wr, "Server Error", http.StatusInternalServerError)
 		log.Println("ServeHTTP:", err)
-		return
+		return err
 	}
 	req.URL.Host = u.Host
 	req.URL.Scheme = u.Scheme
@@ -30,19 +30,19 @@ func Proxy(wr http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		http.Error(wr, "Server Error", http.StatusInternalServerError)
 		log.Println("ServeHTTP:", err)
-		return
+		return err
 	}
 	defer resp.Body.Close()
-
 	log.Println(req.RemoteAddr, " ", resp.Status)
 	if resp.StatusCode > 300 {
-		return
+		return fmt.Errorf("invalid response")
 	}
 	delHopHeaders(resp.Header)
 
 	copyHeader(wr.Header(), resp.Header)
 	wr.WriteHeader(resp.StatusCode)
-	io.Copy(wr, resp.Body)
+	_, err = io.Copy(wr, resp.Body)
+	return err
 }
 
 // Hop-by-hop headers. These are removed when sent to the backend.
