@@ -33,12 +33,11 @@ func Proxy(wr http.ResponseWriter, req *http.Request, rawUrl string) error {
 		return err
 	}
 	defer resp.Body.Close()
-	log.Println(req.RemoteAddr, " ", resp.Status)
+	log.Tracef("[Proxy] Proxy request status: %s", resp.Status)
 	if resp.StatusCode > 300 {
 		return fmt.Errorf("invalid response")
 	}
 	delHopHeaders(resp.Header)
-
 	copyHeader(wr.Header(), resp.Header)
 	wr.WriteHeader(resp.StatusCode)
 	_, err = io.Copy(wr, resp.Body)
