@@ -3,9 +3,10 @@ package mutex
 import (
 	"context"
 	"fmt"
-	"github.com/gorilla/mux"
 	"net/http"
 	"sync"
+
+	"github.com/gorilla/mux"
 
 	cmap "github.com/orcaman/concurrent-map"
 	log "github.com/sirupsen/logrus"
@@ -18,14 +19,14 @@ func init() {
 }
 
 func ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(fmt.Sprintf("Current number of locks: %d\nLocks: %+v\nUse /mutex/unlock endpoint to unlock all users", len(mutexMap.Keys()), mutexMap.Keys())))
+	w.Write([]byte(fmt.Sprintf("Current number of locks: %d\nLocks: %+v\nUse /mutex/unlock/{id} endpoint to mutex", len(mutexMap.Keys()), mutexMap.Keys())))
 }
 
 func UnlockHTTP(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	if m, ok := mutexMap.Get(vars["id"]); ok {
 		m.(*sync.Mutex).Unlock()
-		w.Write([]byte(fmt.Sprintf("Unlocked %s mutexe.\nCurrent number of locks: %d\nLocks: %+v",
+		w.Write([]byte(fmt.Sprintf("Unlocked mutex %s.\nCurrent number of locks: %d\nLocks: %+v",
 			vars["id"], len(mutexMap.Keys()), mutexMap.Keys())))
 		return
 	}
@@ -108,6 +109,6 @@ func Unlock(s string) {
 		log.Tracef("[Mutex] Unlocked %s", s)
 	} else {
 		// this should never happen. Mutex should have been in the mutexMap.
-		log.Errorf("[Mutex] ⚠⚠⚠️ Unlock %s not in mutexMap. Skip.", s)
+		log.Errorf("[Mutex] ⚠️⚠️⚠️ Unlock %s not in mutexMap. Skip.", s)
 	}
 }
