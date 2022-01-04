@@ -5,9 +5,9 @@ import (
 	"net/http"
 )
 
-func LoggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
+func LoggingMiddleware(prefix string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		log.Tracef("[%s] %s %s", prefix, r.Method, r.URL.String())
 		next.ServeHTTP(w, r)
-		log.Tracef("[API] %s %s", r.Method, r.URL.String())
 	}
 }

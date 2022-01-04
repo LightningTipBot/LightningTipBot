@@ -41,7 +41,7 @@ func (w *Server) ListenAndServe() {
 	go w.httpServer.ListenAndServe()
 }
 func (w *Server) AppendRoute(path string, handler func(http.ResponseWriter, *http.Request), methods ...string) {
-	r := w.router.HandleFunc(path, LoggingMiddleware(handler))
+	r := w.router.HandleFunc(path, LoggingMiddleware("API", handler))
 	if len(methods) > 0 {
 		r.Methods(methods...)
 	}
