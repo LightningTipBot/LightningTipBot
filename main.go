@@ -49,8 +49,8 @@ func startApiServer(bot *telegram.TipBot) {
 
 	// append lndhub handler functions
 	hub := lndhub.New()
-	s.AppendRoute(`/lndhub/ext/{.*}`, hub.Handle, http.MethodGet)
-	s.AppendRoute(`/lndhub/ext`, hub.Handle, http.MethodGet)
+	s.AppendRoute(`/lndhub/ext/{.*}`, hub.Handle)
+	s.AppendRoute(`/lndhub/ext`, hub.Handle)
 
 	// start internal admin server
 	router := mux.NewRouter()

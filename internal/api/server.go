@@ -41,7 +41,10 @@ func (w *Server) ListenAndServe() {
 	go w.httpServer.ListenAndServe()
 }
 func (w *Server) AppendRoute(path string, handler func(http.ResponseWriter, *http.Request), methods ...string) {
-	w.router.HandleFunc(path, handler).Methods(methods...)
+	r := w.router.HandleFunc(path, handler)
+	if len(methods) > 0 {
+		r.Methods(methods...)
+	}
 }
 
 func NotFoundHandler(writer http.ResponseWriter, err error) {
