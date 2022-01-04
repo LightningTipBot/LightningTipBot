@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/LightningTipBot/LightningTipBot/internal/api"
+	"github.com/LightningTipBot/LightningTipBot/internal/lndhub"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"github.com/gorilla/mux"
@@ -40,9 +41,16 @@ func startApiServer(bot *telegram.TipBot) {
 	webhook.NewServer(bot)
 	// start external api server
 	s := api.NewServer()
+
+	// append lnurl handler functions
 	lnUrl := lnurl.New(bot)
 	s.AppendRoute("/.well-known/lnurlp/{username}", lnUrl.Handle, http.MethodGet)
 	s.AppendRoute("/@{username}", lnUrl.Handle, http.MethodGet)
+
+	// append lndhub handler functions
+	hub := lndhub.New()
+	s.AppendRoute(`/lndhub/ext/{.*}`, hub.Handle, http.MethodGet)
+	s.AppendRoute(`/lndhub/ext`, hub.Handle, http.MethodGet)
 
 	// start internal admin server
 	router := mux.NewRouter()
