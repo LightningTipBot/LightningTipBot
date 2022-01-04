@@ -20,9 +20,9 @@ const (
 	StatusOk    = "OK"
 )
 
-func NewServer() *Server {
+func NewServer(address string) *Server {
 	srv := &http.Server{
-		Addr: internal.Configuration.Bot.LNURLServerUrl.Host,
+		Addr: address,
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
@@ -39,6 +39,9 @@ func NewServer() *Server {
 
 func (w *Server) ListenAndServe() {
 	go w.httpServer.ListenAndServe()
+}
+func (w *Server) PathPrefix(path string, handler http.Handler) {
+	w.router.PathPrefix(path).Handler(handler)
 }
 func (w *Server) AppendRoute(path string, handler func(http.ResponseWriter, *http.Request), methods ...string) {
 	r := w.router.HandleFunc(path, LoggingMiddleware("API", handler))
