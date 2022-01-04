@@ -46,4 +46,5 @@ func (s Service) getUserByTelegramId(r *http.Request) (*lnbits.User, error) {
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
+	return user, nil
 }
