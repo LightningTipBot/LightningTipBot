@@ -48,7 +48,7 @@ func startApiServer(bot *telegram.TipBot) {
 	s.AppendRoute("/@{username}", lnUrl.Handle, http.MethodGet)
 
 	// append lndhub handler functions
-	hub := lndhub.New()
+	hub := lndhub.New(bot)
 	s.AppendRoute(`/lndhub/ext/{.*}`, hub.Handle)
 	s.AppendRoute(`/lndhub/ext`, hub.Handle)
 
