@@ -31,7 +31,8 @@ func (bot *TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
 	bot.trySendMessage(m.Sender, Translate(ctx, "walletConnectMessage"))
 
 	// do not respond to banned users
-	if strings.HasPrefix(fromUser.Wallet.Adminkey, "banned") || strings.HasPrefix(fromUser.Wallet.Adminkey, "_") {
+	if strings.HasPrefix(fromUser.Wallet.Adminkey, "banned") || strings.Contains(fromUser.Wallet.Adminkey, "_") {
+		log.Warnln("[lndhubHandler] user is banned. not responding.")
 		return
 	}
 
