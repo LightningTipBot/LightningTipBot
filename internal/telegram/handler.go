@@ -21,7 +21,7 @@ func (bot TipBot) registerTelegramHandlers() {
 	telegramHandlerRegistration.Do(func() {
 		// Set up handlers
 		for _, h := range bot.getHandler() {
-			log.Debugln("registering", h.Endpoints)
+			log.Traceln("registering", h.Endpoints)
 			bot.register(h)
 		}
 

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
@@ -31,7 +30,7 @@ func (bot *TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
 	bot.trySendMessage(m.Sender, Translate(ctx, "walletConnectMessage"))
 
 	// do not respond to banned users
-	if strings.HasPrefix(fromUser.Wallet.Adminkey, "banned") || strings.Contains(fromUser.Wallet.Adminkey, "_") {
+	if bot.UserIsBanned(fromUser) {
 		log.Warnln("[lndhubHandler] user is banned. not responding.")
 		return
 	}

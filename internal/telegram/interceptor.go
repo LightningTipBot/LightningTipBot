@@ -92,6 +92,10 @@ func (bot TipBot) requireUserInterceptor(ctx context.Context, i interface{}) (co
 	u := getTelegramUserFromInterface(i)
 	if u != nil {
 		user, err = GetUser(u, bot)
+		// do not respond to banned users
+		if bot.UserIsBanned(user) {
+			return nil, invalidTypeError
+		}
 		if user != nil {
 			return context.WithValue(ctx, "user", user), err
 		}
