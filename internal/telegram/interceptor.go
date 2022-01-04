@@ -94,7 +94,8 @@ func (bot TipBot) requireUserInterceptor(ctx context.Context, i interface{}) (co
 		user, err = GetUser(u, bot)
 		// do not respond to banned users
 		if bot.UserIsBanned(user) {
-			return nil, invalidTypeError
+			ctx = context.WithValue(ctx, "banned", true)
+			return context.WithValue(ctx, "user", user), invalidTypeError
 		}
 		if user != nil {
 			return context.WithValue(ctx, "user", user), err
@@ -105,6 +106,10 @@ func (bot TipBot) requireUserInterceptor(ctx context.Context, i interface{}) (co
 
 func (bot TipBot) loadUserInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	ctx, _ = bot.requireUserInterceptor(ctx, i)
+	// if user is banned, also loadUserInterceptor will return an error
+	if ctx.Value("banned").(bool) {
+		return nil, invalidTypeError
+	}
 	return ctx, nil
 }
 

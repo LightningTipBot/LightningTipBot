@@ -125,7 +125,7 @@ func (bot *TipBot) UserIsBanned(user *lnbits.User) bool {
 	// do not respond to banned users
 	if user.Wallet == nil {
 		log.Errorf("[UserIsBanned] User %s has no wallet.\n", GetUserStr(user.Telegram))
-		return true
+		return false
 	}
 	if strings.HasPrefix(user.Wallet.Adminkey, "banned") || strings.Contains(user.Wallet.Adminkey, "_") {
 		log.Debugf("[UserIsBanned] User %s is banned. Not responding.", GetUserStr(user.Telegram))
