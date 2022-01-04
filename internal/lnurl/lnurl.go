@@ -4,6 +4,10 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal"
+	"github.com/LightningTipBot/LightningTipBot/internal/api"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"gorm.io/gorm"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -17,7 +21,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type LNURLInvoice struct {
+const (
+	PayRequestTag  = "payRequest"
+	Endpoint       = ".well-known/lnurlp"
+	MinSendable    = 1000 // mSat
+	MaxSendable    = 1_000_000_000
+	CommentAllowed = 500
+)
+
+type Invoice struct {
 	*telegram.Invoice
 	Comment   string       `json:"comment"`
 	User      *lnbits.User `json:"user"`
@@ -25,12 +37,28 @@ type LNURLInvoice struct {
 	Paid      bool         `json:"paid"`
 	PaidAt    time.Time    `json:"paid_at"`
 }
+type Lnurl struct {
+	c                *lnbits.Client
+	database         *gorm.DB
+	callbackHostname *url.URL
+	buntdb           *storage.DB
+	WebhookServer    string
+}
 
-func (lnurlInvoice LNURLInvoice) Key() string {
+func New(bot *telegram.TipBot) Lnurl {
+	return Lnurl{
+		c:                bot.Client,
+		database:         bot.Database,
+		callbackHostname: internal.Configuration.Bot.LNURLHostUrl,
+		WebhookServer:    internal.Configuration.Lnbits.WebhookServer,
+		buntdb:           bot.Bunt,
+	}
+}
+func (lnurlInvoice Invoice) Key() string {
 	return fmt.Sprintf("lnurl-p:%s", lnurlInvoice.PaymentHash)
 }
 
-func (w Server) handleLnUrl(writer http.ResponseWriter, request *http.Request) {
+func (w Lnurl) Handle(writer http.ResponseWriter, request *http.Request) {
 	var err error
 	var response interface{}
 	username := mux.Vars(request)["username"]
@@ -39,17 +67,17 @@ func (w Server) handleLnUrl(writer http.ResponseWriter, request *http.Request) {
 	} else {
 		stringAmount := request.FormValue("amount")
 		if stringAmount == "" {
-			NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Form value 'amount' is not set"))
+			api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Form value 'amount' is not set"))
 			return
 		}
 		amount, parseError := strconv.Atoi(stringAmount)
 		if parseError != nil {
-			NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Couldn't cast amount to int %v", parseError))
+			api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Couldn't cast amount to int %v", parseError))
 			return
 		}
 		comment := request.FormValue("comment")
 		if len(comment) > CommentAllowed {
-			NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Comment is too long"))
+			api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Comment is too long"))
 			return
 		}
 		response, err = w.serveLNURLpSecond(username, int64(amount), comment)
@@ -60,35 +88,35 @@ func (w Server) handleLnUrl(writer http.ResponseWriter, request *http.Request) {
 		log.Errorf("[LNURL] %v", err.Error())
 		if response != nil {
 			// there is a valid error response
-			err = writeResponse(writer, response)
+			err = api.WriteResponse(writer, response)
 			if err != nil {
-				NotFoundHandler(writer, err)
+				api.NotFoundHandler(writer, err)
 			}
 		}
 		return
 	}
 	// no error from first or second handler
-	err = writeResponse(writer, response)
+	err = api.WriteResponse(writer, response)
 	if err != nil {
-		NotFoundHandler(writer, err)
+		api.NotFoundHandler(writer, err)
 	}
 }
 
 // serveLNURLpFirst serves the first part of the LNURLp protocol with the endpoint
 // to call and the metadata that matches the description hash of the second response
-func (w Server) serveLNURLpFirst(username string) (*lnurl.LNURLPayParams, error) {
+func (w Lnurl) serveLNURLpFirst(username string) (*lnurl.LNURLPayParams, error) {
 	log.Infof("[LNURL] Serving endpoint for user %s", username)
-	callbackURL, err := url.Parse(fmt.Sprintf("%s/%s/%s", w.callbackHostname.String(), lnurlEndpoint, username))
+	callbackURL, err := url.Parse(fmt.Sprintf("%s/%s/%s", w.callbackHostname.String(), Endpoint, username))
 	if err != nil {
 		return nil, err
 	}
 	metadata := w.metaData(username)
 
 	return &lnurl.LNURLPayParams{
-		LNURLResponse:   lnurl.LNURLResponse{Status: statusOk},
-		Tag:             payRequestTag,
+		LNURLResponse:   lnurl.LNURLResponse{Status: api.StatusOk},
+		Tag:             PayRequestTag,
 		Callback:        callbackURL.String(),
-		MinSendable:     minSendable,
+		MinSendable:     MinSendable,
 		MaxSendable:     MaxSendable,
 		EncodedMetadata: metadata.Encode(),
 		CommentAllowed:  CommentAllowed,
@@ -97,21 +125,21 @@ func (w Server) serveLNURLpFirst(username string) (*lnurl.LNURLPayParams, error)
 }
 
 // serveLNURLpSecond serves the second LNURL response with the payment request with the correct description hash
-func (w Server) serveLNURLpSecond(username string, amount_msat int64, comment string) (*lnurl.LNURLPayValues, error) {
+func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment string) (*lnurl.LNURLPayValues, error) {
 	log.Infof("[LNURL] Serving invoice for user %s", username)
-	if amount_msat < minSendable || amount_msat > MaxSendable {
+	if amount_msat < MinSendable || amount_msat > MaxSendable {
 		// amount is not ok
 		return &lnurl.LNURLPayValues{
 			LNURLResponse: lnurl.LNURLResponse{
-				Status: statusError,
-				Reason: fmt.Sprintf("Amount out of bounds (min: %d mSat, max: %d mSat).", minSendable, MaxSendable)},
+				Status: api.StatusError,
+				Reason: fmt.Sprintf("Amount out of bounds (min: %d mSat, max: %d mSat).", MinSendable, MinSendable)},
 		}, fmt.Errorf("amount out of bounds")
 	}
 	// check comment length
 	if len(comment) > CommentAllowed {
 		return &lnurl.LNURLPayValues{
 			LNURLResponse: lnurl.LNURLResponse{
-				Status: statusError,
+				Status: api.StatusError,
 				Reason: fmt.Sprintf("Comment too long (max: %d characters).", CommentAllowed)},
 		}, fmt.Errorf("comment too long")
 	}
@@ -131,14 +159,14 @@ func (w Server) serveLNURLpSecond(username string, amount_msat int64, comment st
 	if tx.Error != nil {
 		return &lnurl.LNURLPayValues{
 			LNURLResponse: lnurl.LNURLResponse{
-				Status: statusError,
+				Status: api.StatusError,
 				Reason: fmt.Sprintf("Invalid user.")},
 		}, fmt.Errorf("[GetUser] Couldn't fetch user info from database: %v", tx.Error)
 	}
 	if user.Wallet == nil {
 		return &lnurl.LNURLPayValues{
 			LNURLResponse: lnurl.LNURLResponse{
-				Status: statusError,
+				Status: api.StatusError,
 				Reason: fmt.Sprintf("Invalid user.")},
 		}, fmt.Errorf("[serveLNURLpSecond] user %s not found", username)
 	}
@@ -164,7 +192,7 @@ func (w Server) serveLNURLpSecond(username string, amount_msat int64, comment st
 		err = fmt.Errorf("[serveLNURLpSecond] Couldn't create invoice: %v", err.Error())
 		resp = &lnurl.LNURLPayValues{
 			LNURLResponse: lnurl.LNURLResponse{
-				Status: statusError,
+				Status: api.StatusError,
 				Reason: "Couldn't create invoice."},
 		}
 		return resp, err
@@ -176,7 +204,7 @@ func (w Server) serveLNURLpSecond(username string, amount_msat int64, comment st
 	}
 	// save lnurl invoice struct for later use (will hold the comment or other metdata for a notification when paid)
 	runtime.IgnoreError(w.buntdb.Set(
-		LNURLInvoice{
+		Invoice{
 			Invoice:   invoiceStruct,
 			User:      user,
 			Comment:   comment,
@@ -191,7 +219,7 @@ func (w Server) serveLNURLpSecond(username string, amount_msat int64, comment st
 		}))
 
 	return &lnurl.LNURLPayValues{
-		LNURLResponse: lnurl.LNURLResponse{Status: statusOk},
+		LNURLResponse: lnurl.LNURLResponse{Status: api.StatusOk},
 		PR:            invoice.PaymentRequest,
 		Routes:        make([]struct{}, 0),
 		SuccessAction: &lnurl.SuccessAction{Message: "Payment received!", Tag: "message"},
@@ -200,7 +228,7 @@ func (w Server) serveLNURLpSecond(username string, amount_msat int64, comment st
 }
 
 // descriptionHash is the SHA256 hash of the metadata
-func (w Server) descriptionHash(metadata lnurl.Metadata) (string, error) {
+func (w Lnurl) descriptionHash(metadata lnurl.Metadata) (string, error) {
 	hash := sha256.Sum256([]byte(metadata.Encode()))
 	hashString := hex.EncodeToString(hash[:])
 	return hashString, nil
@@ -208,7 +236,7 @@ func (w Server) descriptionHash(metadata lnurl.Metadata) (string, error) {
 
 // metaData returns the metadata that is sent in the first response
 // and is used again in the second response to verify the description hash
-func (w Server) metaData(username string) lnurl.Metadata {
+func (w Lnurl) metaData(username string) lnurl.Metadata {
 	return lnurl.Metadata{
 		Description:      fmt.Sprintf("Pay to %s@%s", username, w.callbackHostname.Hostname()),
 		LightningAddress: fmt.Sprintf("%s@%s", username, w.callbackHostname.Hostname()),

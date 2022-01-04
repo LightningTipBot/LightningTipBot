@@ -1,16 +1,16 @@
 package main
 
 import (
-	"net/http"
-	"runtime/debug"
-
+	"github.com/LightningTipBot/LightningTipBot/internal/api"
+	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"github.com/gorilla/mux"
+	"net/http"
+	"runtime/debug"
 
 	_ "net/http/pprof"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits/webhook"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
 	"github.com/LightningTipBot/LightningTipBot/internal/price"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	log "github.com/sirupsen/logrus"
@@ -28,17 +28,28 @@ func setLogger() {
 func main() {
 	// set logger
 	setLogger()
+
+	defer withRecovery()
+	price.NewPriceWatcher().Start()
+	bot := telegram.NewBot()
+	startApiServer(&bot)
+	bot.Start()
+}
+func startApiServer(bot *telegram.TipBot) {
+	// start internal webhook server
+	webhook.NewServer(bot)
+	// start external api server
+	s := api.NewServer()
+	lnUrl := lnurl.New(bot)
+	s.AppendRoute("/.well-known/lnurlp/{username}", lnUrl.Handle, http.MethodGet)
+	s.AppendRoute("/@{username}", lnUrl.Handle, http.MethodGet)
+
+	// start internal admin server
 	router := mux.NewRouter()
 	router.PathPrefix("/debug/pprof/").Handler(http.DefaultServeMux)
 	router.Handle("/mutex", http.HandlerFunc(mutex.ServeHTTP))
 	router.Handle("/mutex/unlock/{id}", http.HandlerFunc(mutex.UnlockHTTP))
 	go http.ListenAndServe("0.0.0.0:6060", router)
-	defer withRecovery()
-	bot := telegram.NewBot()
-	webhook.NewServer(&bot)
-	lnurl.NewServer(&bot)
-	price.NewPriceWatcher().Start()
-	bot.Start()
 }
 
 func withRecovery() {
