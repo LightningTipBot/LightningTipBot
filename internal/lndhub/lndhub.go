@@ -4,19 +4,22 @@ import (
 	"encoding/base64"
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/api"
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 	"net/http"
 	"strings"
 )
 
 type LndHub struct {
+	database *gorm.DB
 }
 
-func New() LndHub {
-	return LndHub{}
+func New(bot *telegram.TipBot) LndHub {
+	return LndHub{database: bot.Database}
 }
 func (w LndHub) Handle(writer http.ResponseWriter, request *http.Request) {
-	api.Proxy(writer, request, internal.Configuration.Lnbits.Url)
 	auth := request.Header.Get("Authorization")
 	if auth == "" {
 		return
@@ -26,6 +29,18 @@ func (w LndHub) Handle(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	log.Tracef("[LNDHUB] %s, %s", username, password)
+	if strings.Contains(password, "_") || strings.HasPrefix(password, "banned_") {
+		log.Warnf("[LNDHUB] Banned user. Not forwarding request")
+		return
+	}
+	user := &lnbits.User{}
+	tx := w.database.Where("wallet_adminkey = ? COLLATE NOCASE", password).First(user)
+	if tx.Error != nil {
+		log.Errorf("[LNDHUB] wallet admin key not found: %v", tx.Error)
+		return
+	}
+	api.Proxy(writer, request, internal.Configuration.Lnbits.Url)
+
 }
 
 // parseBasicAuth parses an HTTP Basic Authentication string.
