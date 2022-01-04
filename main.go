@@ -1,11 +1,12 @@
 package main
 
 import (
+	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/api"
+	"github.com/LightningTipBot/LightningTipBot/internal/api/admin"
 	"github.com/LightningTipBot/LightningTipBot/internal/lndhub"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
-	"github.com/gorilla/mux"
 	"net/http"
 	"runtime/debug"
 
@@ -40,7 +41,7 @@ func startApiServer(bot *telegram.TipBot) {
 	// start internal webhook server
 	webhook.NewServer(bot)
 	// start external api server
-	s := api.NewServer()
+	s := api.NewServer(internal.Configuration.Bot.LNURLServerUrl.Host)
 
 	// append lnurl handler functions
 	lnUrl := lnurl.New(bot)
@@ -53,11 +54,14 @@ func startApiServer(bot *telegram.TipBot) {
 	s.AppendRoute(`/lndhub/ext`, hub.Handle)
 
 	// start internal admin server
-	router := mux.NewRouter()
-	router.PathPrefix("/debug/pprof/").Handler(http.DefaultServeMux)
-	router.Handle("/mutex", http.HandlerFunc(mutex.ServeHTTP))
-	router.Handle("/mutex/unlock/{id}", http.HandlerFunc(mutex.UnlockHTTP))
-	go http.ListenAndServe("0.0.0.0:6060", router)
+	adminService := admin.New(bot)
+	internalAdminServer := api.NewServer("0.0.0.0:6060")
+	internalAdminServer.AppendRoute("/mutex", mutex.ServeHTTP)
+	internalAdminServer.AppendRoute("/mutex/unlock/{id}", mutex.UnlockHTTP)
+	internalAdminServer.AppendRoute("/admin/ban", adminService.BanUser)
+	internalAdminServer.AppendRoute("/admin/unban", adminService.UnbanUser)
+	internalAdminServer.PathPrefix("/debug/pprof/", http.DefaultServeMux)
+
 }
 
 func withRecovery() {

@@ -24,7 +24,8 @@ type User struct {
 	StateData   string       `json:"stateData"`
 	CreatedAt   time.Time    `json:"created"`
 	UpdatedAt   time.Time    `json:"updated"`
-	AnonID      string       `jsin:"anonid"`
+	AnonID      string       `json:"anon_id"`
+	Banned      bool         `json:"banned"`
 }
 
 const (
