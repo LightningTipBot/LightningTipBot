@@ -4,14 +4,16 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/api"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	"gorm.io/gorm"
-	"net/http"
-	"net/url"
-	"strconv"
-	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
@@ -149,8 +151,11 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 	// check if "username" is actually the user ID
 	tx := w.database
 	if _, err := strconv.ParseInt(username, 10, 64); err == nil {
-		// asume it's a user ID
+		// asume it's anon_id
 		tx = w.database.Where("anon_id = ?", username).First(user)
+	} else if strings.HasPrefix(username, "0x") {
+		// asume it's anon_id_sha256
+		tx = w.database.Where("anon_id_sha256 = ?", username).First(user)
 	} else {
 		// assume it's a string @username
 		tx = w.database.Where("telegram_username = ? COLLATE NOCASE", username).First(user)

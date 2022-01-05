@@ -39,16 +39,30 @@ func createBunt(file string) *storage.DB {
 
 func ColumnMigrationTasks(db *gorm.DB) error {
 	var err error
+	// anon_id migration (2021-11-01)
 	if !db.Migrator().HasColumn(&lnbits.User{}, "anon_id") {
 		// first we need to auto migrate the user. This will create anon_id column
 		err = db.AutoMigrate(&lnbits.User{})
 		if err != nil {
 			panic(err)
 		}
-		log.Info("Running ano_id database migrations ...")
+		log.Info("Running anon_id database migrations ...")
 		// run the migration on anon_id
-		err = database.MigrateAnonIdHash(db)
+		err = database.MigrateAnonIdInt32Hash(db)
 	}
+
+	// sha256_anon_id migration (2022-01-01)
+	if !db.Migrator().HasColumn(&lnbits.User{}, "sha256_anon_id") {
+		// first we need to auto migrate the user. This will create anon_id column
+		err = db.AutoMigrate(&lnbits.User{})
+		if err != nil {
+			panic(err)
+		}
+		log.Info("Running sha256_anon_id database migrations ...")
+		// run the migration on anon_id
+		err = database.MigrateAnonIdSha265Hash(db)
+	}
+
 	// todo -- add more database field migrations here in the future
 	return err
 }

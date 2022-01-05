@@ -15,16 +15,17 @@ type Client struct {
 }
 
 type User struct {
-	ID          string       `json:"id"`
-	Name        string       `json:"name" gorm:"primaryKey"`
-	Initialized bool         `json:"initialized"`
-	Telegram    *tb.User     `gorm:"embedded;embeddedPrefix:telegram_"`
-	Wallet      *Wallet      `gorm:"embedded;embeddedPrefix:wallet_"`
-	StateKey    UserStateKey `json:"stateKey"`
-	StateData   string       `json:"stateData"`
-	CreatedAt   time.Time    `json:"created"`
-	UpdatedAt   time.Time    `json:"updated"`
-	AnonID      string       `jsin:"anonid"`
+	ID           string       `json:"id"`
+	Name         string       `json:"name" gorm:"primaryKey"`
+	Initialized  bool         `json:"initialized"`
+	Telegram     *tb.User     `gorm:"embedded;embeddedPrefix:telegram_"`
+	Wallet       *Wallet      `gorm:"embedded;embeddedPrefix:wallet_"`
+	StateKey     UserStateKey `json:"stateKey"`
+	StateData    string       `json:"stateData"`
+	CreatedAt    time.Time    `json:"created"`
+	UpdatedAt    time.Time    `json:"updated"`
+	AnonID       string       `json:"anon_id"`
+	AnonIDSha256 string       `json:"anon_id_sha256"`
 }
 
 const (
