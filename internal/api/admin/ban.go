@@ -13,25 +13,30 @@ func (s Service) UnbanUser(w http.ResponseWriter, r *http.Request) {
 	user, err := s.getUserByTelegramId(r)
 	if err != nil {
 		log.Errorf("[ADMIN] could not ban user: %v", err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if !user.Banned {
 		log.Infof("[ADMIN] user already banned")
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	user.Banned = false
 	adminSlice := strings.Split(user.Wallet.Adminkey, "_")
 	user.Wallet.Adminkey = adminSlice[len(adminSlice)-1]
 	s.db.Save(user)
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s Service) BanUser(w http.ResponseWriter, r *http.Request) {
 	user, err := s.getUserByTelegramId(r)
 	if err != nil {
 		log.Errorf("[ADMIN] could not ban user: %v", err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if user.Banned {
+		w.WriteHeader(http.StatusBadRequest)
 		log.Infof("[ADMIN] user already banned")
 		return
 	}
@@ -41,6 +46,7 @@ func (s Service) BanUser(w http.ResponseWriter, r *http.Request) {
 	}
 	user.Wallet.Adminkey = fmt.Sprintf("%s_%s", "banned", user.Wallet.Adminkey)
 	s.db.Save(user)
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s Service) getUserByTelegramId(r *http.Request) (*lnbits.User, error) {
