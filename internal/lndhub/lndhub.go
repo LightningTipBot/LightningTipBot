@@ -2,14 +2,15 @@ package lndhub
 
 import (
 	"encoding/base64"
+	"net/http"
+	"strings"
+
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/api"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"net/http"
-	"strings"
 )
 
 type LndHub struct {
@@ -21,23 +22,23 @@ func New(bot *telegram.TipBot) LndHub {
 }
 func (w LndHub) Handle(writer http.ResponseWriter, request *http.Request) {
 	auth := request.Header.Get("Authorization")
-	if auth == "" {
-		return
-	}
-	username, password, ok := parseBearerAuth(auth)
-	if !ok {
-		return
-	}
-	log.Debugf("[LNDHUB] %s, %s", username, password)
-	if strings.Contains(password, "_") || strings.HasPrefix(password, "banned_") {
-		log.Warnf("[LNDHUB] Banned user. Not forwarding request")
-		return
-	}
-	user := &lnbits.User{}
-	tx := w.database.Where("wallet_adminkey = ? COLLATE NOCASE", password).First(user)
-	if tx.Error != nil {
-		log.Warnf("[LNDHUB] wallet admin key (%s) not found: %v", password, tx.Error)
-		return
+	if auth != "" {
+
+		username, password, ok := parseBearerAuth(auth)
+		if !ok {
+			return
+		}
+		log.Debugf("[LNDHUB] %s, %s", username, password)
+		if strings.Contains(password, "_") || strings.HasPrefix(password, "banned_") {
+			log.Warnf("[LNDHUB] Banned user. Not forwarding request")
+			return
+		}
+		user := &lnbits.User{}
+		tx := w.database.Where("wallet_adminkey = ? COLLATE NOCASE", password).First(user)
+		if tx.Error != nil {
+			log.Warnf("[LNDHUB] wallet admin key (%s) not found: %v", password, tx.Error)
+			return
+		}
 	}
 	api.Proxy(writer, request, internal.Configuration.Lnbits.Url)
 
