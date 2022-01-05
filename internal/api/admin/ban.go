@@ -25,6 +25,7 @@ func (s Service) UnbanUser(w http.ResponseWriter, r *http.Request) {
 	adminSlice := strings.Split(user.Wallet.Adminkey, "_")
 	user.Wallet.Adminkey = adminSlice[len(adminSlice)-1]
 	s.db.Save(user)
+	log.Infof("[ADMIN] Unbanned user (%s)", user.ID)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -46,6 +47,7 @@ func (s Service) BanUser(w http.ResponseWriter, r *http.Request) {
 	}
 	user.Wallet.Adminkey = fmt.Sprintf("%s_%s", "banned", user.Wallet.Adminkey)
 	s.db.Save(user)
+	log.Infof("[ADMIN] Banned user (%s)", user.ID)
 	w.WriteHeader(http.StatusOK)
 }
 
