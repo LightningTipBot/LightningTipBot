@@ -58,8 +58,8 @@ func startApiServer(bot *telegram.TipBot) {
 	internalAdminServer := api.NewServer("0.0.0.0:6060")
 	internalAdminServer.AppendRoute("/mutex", mutex.ServeHTTP)
 	internalAdminServer.AppendRoute("/mutex/unlock/{id}", mutex.UnlockHTTP)
-	internalAdminServer.AppendRoute("/admin/ban", adminService.BanUser)
-	internalAdminServer.AppendRoute("/admin/unban", adminService.UnbanUser)
+	internalAdminServer.AppendRoute("/admin/ban/{id}", adminService.BanUser)
+	internalAdminServer.AppendRoute("/admin/unban/{id}", adminService.UnbanUser)
 	internalAdminServer.PathPrefix("/debug/pprof/", http.DefaultServeMux)
 
 }

@@ -36,6 +36,9 @@ func (s Service) BanUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user.Banned = true
+	if reason := r.URL.Query().Get("reason"); reason != "" {
+		user.Wallet.Adminkey = fmt.Sprintf("%s_%s", r.URL.Query().Get("reason"), user.Wallet.Adminkey)
+	}
 	user.Wallet.Adminkey = fmt.Sprintf("%s_%s", "banned", user.Wallet.Adminkey)
 	s.db.Save(user)
 }
