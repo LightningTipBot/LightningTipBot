@@ -262,7 +262,7 @@ inlineQueryFaucetDescription = """Befehl: @%s faucet <gesamt> <pro_user>"""
 inlineResultFaucetTitle = """🚰 Erzeuge einen %d sat Zapfhahn."""
 inlineResultFaucetDescription = """👉 Klicke hier um den Zapfhahn in diesen Chat zu senden."""
 
-inlineFaucetMessage = """Drücke ✅ um %d sat aus diesem Zapfhahn zu zapfen.
+inlineFaucetMessage = """Drücke ✅ um %d sat aus %s's Zapfhahn zu zapfen.
 
 🚰 Verbleibend: %d/%d sat (%d/%d gezapft)
 %s"""

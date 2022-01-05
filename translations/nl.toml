@@ -262,7 +262,7 @@ inlineQueryFaucetDescription  = """Gebruik: @%s faucet <capacity> <per_user>"""
 inlineResultFaucetTitle       = """🚰 Maak een %d sat kraan."""
 inlineResultFaucetDescription = """👉 Klik hier om een kraan in deze chat te maken.."""
 
-inlineFaucetMessage                     = """Druk op ✅ om %d sat te verzamelen van deze kraan.
+inlineFaucetMessage                     = """Druk op ✅ om %d sat te verzamelen van deze kraan van %s.
 
 🚰 Remaining: %d/%d sat (given to %d/%d users)
 %s"""

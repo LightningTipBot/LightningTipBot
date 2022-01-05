@@ -262,7 +262,7 @@ inlineQueryFaucetDescription  = """Penggunaan: @%s faucet <kapasitas> <per_pengg
 inlineResultFaucetTitle       = """🚰 Buat sebuah keran %d sat."""
 inlineResultFaucetDescription = """👉 Pencet disini untuk membuat sebuah keran di percakapan ini."""
 
-inlineFaucetMessage                     = """Tekan ✅ untuk mengambil %d sat dari keran ini.
+inlineFaucetMessage                     = """Tekan ✅ untuk mengambil %d sat dari keran dari %s.
 
 🚰 Tersisa: %d/%d sat (diberikan kepada %d/%d pengguna)
 %s"""

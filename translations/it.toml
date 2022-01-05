@@ -254,7 +254,7 @@ inlineQueryFaucetDescription  = """Sintassi: @%s faucet <totale> <per_utente>"""
 inlineResultFaucetTitle       = """🚰 Crea una distribuzione per un totale di %d sat."""
 inlineResultFaucetDescription = """👉 Clicca qui per creare una distribuzione di fondi in questa chat."""
 
-inlineFaucetMessage                     = """Premi ✅ per riscuotere %d sat da questa distribuzione.
+inlineFaucetMessage                     = """Premi ✅ per riscuotere %d sat da questa distribuzione da %s.
 
 🚰 Rimanente: %d/%d sat (distribuiti a %d/%d utenti)
 %s"""

@@ -254,7 +254,7 @@ inlineQueryFaucetDescription  = """Usage: @%s faucet <capacité> <par_utilisateu
 inlineResultFaucetTitle       = """🚰 Création d'un %d sat faucet."""
 inlineResultFaucetDescription = """👉 Appuyez ici pour créer un faucet dans ce chat."""
 
-inlineFaucetMessage                     = """Appuyez sur ✅ pour collecter %d sat de ce faucet.
+inlineFaucetMessage                     = """Appuyez sur ✅ pour collecter %d sat de ce faucet de %s.
 
 🚰 Restant: %d/%d sat (envoyé à %d/%d utilisateurs)
 %s"""

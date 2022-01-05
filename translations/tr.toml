@@ -254,7 +254,7 @@ inlineQueryFaucetDescription = """Komut: @%s faucet <toplam> <kullanıcı_başı
 inlineResultFaucetTitle = """🚰 Bir %d sat Fıçı oluştur."""
 inlineResultFaucetDescription = """👉 Fıçı’yı bu sohbete göndermek için tıkla."""
 
-inlineFaucetMessage = """✅ butonuna basarak Fıçıdan %d sat çek.
+inlineFaucetMessage = """✅ butonuna basarak %s'in Fıçıdan %d sat çek.
 
 🚰 Kalan: %d/%d sat (%d/%d çekildi)
 %s"""

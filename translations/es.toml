@@ -262,7 +262,7 @@ inlineQueryFaucetDescription  = """Uso: @%s faucet <capacidad> <por_usuario>"""
 inlineResultFaucetTitle       = """🚰 Crear un grifo %d sat."""
 inlineResultFaucetDescription = """👉 Haz clic aquí para crear un grifo en este chat."""
 
-inlineFaucetMessage                     = """Pulsa ✅ para cobrar %d sat de este grifo.
+inlineFaucetMessage                     = """Pulsa ✅ para cobrar %d sat de este grifo de %s.
 
 🚰 Restante: %d/%d sat (dado a %d/%d usuarios)
 %s"""

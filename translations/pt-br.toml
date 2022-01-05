@@ -262,7 +262,7 @@ inlineQueryFaucetDescription  = """Uso: @%s faucet <capacidade> <por_usuário>""
 inlineResultFaucetTitle       = """🚰 Criar uma torneira %d sat."""
 inlineResultFaucetDescription = """👉 Aperte aqui para criar uma torneira neste chat."""
 
-inlineFaucetMessage                     = """Aperte ✅ para coletar %d sat desta torneira.
+inlineFaucetMessage                     = """Aperte ✅ para coletar %d sat desta torneira de %s.
 
 🚰 Restante: %d/%d sat (para %d/%d usuários)
 %s"""
