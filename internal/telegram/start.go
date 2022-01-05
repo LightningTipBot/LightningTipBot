@@ -100,7 +100,7 @@ func (bot TipBot) createWallet(user *lnbits.User) error {
 	}
 	user.Wallet = &wallet[0]
 	user.AnonID = fmt.Sprint(str.Int32Hash(user.ID))
-	user.AnonIDSha256 = str.AnonIdSha256(&u)
+	user.AnonIDSha256 = str.AnonIdSha256(user)
 	user.Initialized = false
 	user.CreatedAt = time.Now()
 	err = UpdateUserRecord(user, bot)
