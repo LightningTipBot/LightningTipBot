@@ -22,8 +22,9 @@ func New(bot *telegram.TipBot) LndHub {
 }
 func (w LndHub) Handle(writer http.ResponseWriter, request *http.Request) {
 	auth := request.Header.Get("Authorization")
-	if auth != "" {
 
+	// check if the user is banned
+	if auth != "" {
 		username, password, ok := parseBearerAuth(auth)
 		if !ok {
 			return
@@ -40,8 +41,8 @@ func (w LndHub) Handle(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 	}
+	// if not, proxy the request
 	api.Proxy(writer, request, internal.Configuration.Lnbits.Url)
-
 }
 
 // parseBasicAuth parses an HTTP Basic Authentication string.
