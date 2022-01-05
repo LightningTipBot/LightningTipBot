@@ -1,7 +1,6 @@
 package database
 
 import (
-	"crypto/sha256"
 	"fmt"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -31,9 +30,7 @@ func MigrateAnonIdSha265Hash(db *gorm.DB) error {
 	_ = db.Find(&users)
 	for _, u := range users {
 		pw := u.Wallet.ID
-		h := sha256.Sum256([]byte(u.Wallet.ID))
-		hash := fmt.Sprintf("%x", h)
-		anon_id := fmt.Sprintf("0x%s", hash[:16]) // starts with 0x because that can't be a valid telegram username
+		anon_id := str.AnonIdSha256(&u)
 		log.Infof("[MigrateAnonIdSha265Hash] %s -> %s", pw, anon_id)
 		u.AnonIDSha256 = anon_id
 		tx := db.Save(u)
