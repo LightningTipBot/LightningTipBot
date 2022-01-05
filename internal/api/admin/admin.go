@@ -2,15 +2,14 @@ package admin
 
 import (
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
-	"gorm.io/gorm"
 )
 
 type Service struct {
-	db *gorm.DB
+	bot *telegram.TipBot
 }
 
 func New(b *telegram.TipBot) Service {
 	return Service{
-		db: b.Database,
+		bot: b,
 	}
 }

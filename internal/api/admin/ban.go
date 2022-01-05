@@ -3,6 +3,7 @@ package admin
 import (
 	"fmt"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -24,7 +25,11 @@ func (s Service) UnbanUser(w http.ResponseWriter, r *http.Request) {
 	user.Banned = false
 	adminSlice := strings.Split(user.Wallet.Adminkey, "_")
 	user.Wallet.Adminkey = adminSlice[len(adminSlice)-1]
-	s.db.Save(user)
+	err = telegram.UpdateUserRecord(user, *s.bot)
+	if err != nil {
+		log.Errorf("[ADMIN] could not update user: %v", err)
+		return
+	}
 	log.Infof("[ADMIN] Unbanned user (%s)", user.ID)
 	w.WriteHeader(http.StatusOK)
 }
@@ -46,7 +51,12 @@ func (s Service) BanUser(w http.ResponseWriter, r *http.Request) {
 		user.Wallet.Adminkey = fmt.Sprintf("%s_%s", reason, user.Wallet.Adminkey)
 	}
 	user.Wallet.Adminkey = fmt.Sprintf("%s_%s", "banned", user.Wallet.Adminkey)
-	s.db.Save(user)
+	err = telegram.UpdateUserRecord(user, *s.bot)
+	if err != nil {
+		log.Errorf("[ADMIN] could not update user: %v", err)
+		return
+	}
+
 	log.Infof("[ADMIN] Banned user (%s)", user.ID)
 	w.WriteHeader(http.StatusOK)
 }
@@ -57,7 +67,7 @@ func (s Service) getUserByTelegramId(r *http.Request) (*lnbits.User, error) {
 	if v["id"] == "" {
 		return nil, fmt.Errorf("invalid id")
 	}
-	tx := s.db.Where("telegram_id = ? COLLATE NOCASE", v["id"]).First(user)
+	tx := s.bot.Database.Where("telegram_id = ? COLLATE NOCASE", v["id"]).First(user)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
