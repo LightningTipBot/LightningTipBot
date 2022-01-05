@@ -51,14 +51,14 @@ func ColumnMigrationTasks(db *gorm.DB) error {
 		err = database.MigrateAnonIdInt32Hash(db)
 	}
 
-	// sha256_anon_id migration (2022-01-01)
-	if !db.Migrator().HasColumn(&lnbits.User{}, "sha256_anon_id") {
+	// anon_id_sha256 migration (2022-01-01)
+	if !db.Migrator().HasColumn(&lnbits.User{}, "anon_id_sha256") {
 		// first we need to auto migrate the user. This will create anon_id column
 		err = db.AutoMigrate(&lnbits.User{})
 		if err != nil {
 			panic(err)
 		}
-		log.Info("Running sha256_anon_id database migrations ...")
+		log.Info("Running anon_id_sha256 database migrations ...")
 		// run the migration on anon_id
 		err = database.MigrateAnonIdSha265Hash(db)
 	}
