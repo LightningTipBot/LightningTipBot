@@ -37,6 +37,7 @@ func (bot TipBot) startEditWorker() {
 				if e, ok := editStack.Get(k); ok {
 					editFromStack := e.(edit)
 					if !editFromStack.edited {
+						log.Printf("[EDIT] (%s) %v", k, editFromStack)
 						_, err := bot.tryEditMessage(editFromStack.to, editFromStack.what, editFromStack.options...)
 						if err != nil && strings.Contains(err.Error(), retryAfterError) {
 							// ignore any other error than retry after
@@ -52,7 +53,7 @@ func (bot TipBot) startEditWorker() {
 							editStack.Set(k, editFromStack)
 						}
 					} else {
-						if editFromStack.lastEdit.Before(time.Now().Add(-(time.Duration(5) * time.Second))) {
+						if editFromStack.lastEdit.Before(time.Now().Add(-(time.Duration(5) * time.Minute))) {
 							log.Debugf("[startEditWorker] removing message edit from stack %+v. len(editStack)=%d", editFromStack, len(editStack.Keys()))
 							editStack.Remove(k)
 						}
@@ -66,9 +67,9 @@ func (bot TipBot) startEditWorker() {
 }
 
 // tryEditStack will add the editable to the edit stack, if what (message) changed.
-func (bot TipBot) tryEditStack(to tb.Editable, what interface{}, options ...interface{}) {
+func (bot TipBot) tryEditStack(to tb.Editable, key string, what interface{}, options ...interface{}) {
 	sig, _ := to.MessageSig()
-	log.Debugf("[tryEditStack] sig=%s, what=%+v, options=%+v", sig, what, options)
+	log.Debugf("[tryEditStack] sig=%s, key=%s, what=%+v, options=%+v", sig, key, what, options)
 	// var sig = fmt.Sprintf("%s-%d", msgSig, chat)
 	if e, ok := editStack.Get(sig); ok {
 		editFromStack := e.(edit)
@@ -77,8 +78,8 @@ func (bot TipBot) tryEditStack(to tb.Editable, what interface{}, options ...inte
 			return
 		}
 	}
-	e := edit{options: options, key: sig, what: what, to: to}
+	e := edit{options: options, key: key, what: what, to: to}
 
-	editStack.Set(sig, e)
-	log.Debugf("[tryEditStack] Added message to edit stack. len(editStack)=%d", len(editStack.Keys()))
+	editStack.Set(key, e)
+	log.Debugf("[tryEditStack] Added message %s to edit stack. len(editStack)=%d", key, len(editStack.Keys()))
 }
