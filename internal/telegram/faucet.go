@@ -337,7 +337,6 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 		// update the message if the faucet still has some sats left after this tx
 		if inlineFaucet.RemainingAmount >= inlineFaucet.PerUserAmount {
-			log.Debugf("[faucet] Updating message %s for faucet %s", c.Message.ID, inlineFaucet.ID)
 			bot.tryEditStack(c.Message, inlineFaucet.ID, inlineFaucet.Message, bot.makeFaucetKeyboard(ctx, inlineFaucet.ID))
 		}
 

@@ -60,15 +60,15 @@ func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...i
 }
 
 func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...interface{}) (msg *tb.Message, err error) {
-	// do not attempt edit if the message did not change
-
+	// get a sig for the rate limiter
 	sig, chat := to.MessageSig()
 	if chat != 0 {
 		sig = strconv.FormatInt(chat, 10)
 	}
 	rate.CheckLimit(sig)
+
 	_, chatId := to.MessageSig()
-	log.Tracef("[tryEditMessage] sig: %s, chatId: %d", sig, chatId)
+	log.Debugf("[tryEditMessage] sig: %s, chatId: %d", sig, chatId)
 	msg, err = bot.Telegram.Edit(to, what, bot.appendMainMenu(chatId, to, options)...)
 	if err != nil {
 		log.Warnln(err.Error())
