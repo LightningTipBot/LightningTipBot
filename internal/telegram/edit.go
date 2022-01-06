@@ -70,7 +70,7 @@ func (bot TipBot) tryEditStack(to tb.Editable, key string, what interface{}, opt
 	sig, _ := to.MessageSig()
 	log.Debugf("[tryEditStack] sig=%s, key=%s, what=%+v, options=%+v", sig, key, what, options)
 	// var sig = fmt.Sprintf("%s-%d", msgSig, chat)
-	if e, ok := editStack.Get(sig); ok {
+	if e, ok := editStack.Get(key); ok {
 		editFromStack := e.(edit)
 		if editFromStack.what == what.(string) {
 			log.Debugf("[tryEditStack] Message already in edit stack. Skipping")
