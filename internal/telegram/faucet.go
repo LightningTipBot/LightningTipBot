@@ -86,7 +86,7 @@ func (bot TipBot) createFaucet(ctx context.Context, text string, sender *tb.User
 	if len(memo) > 0 {
 		inlineMessage = inlineMessage + fmt.Sprintf(Translate(ctx, "inlineFaucetAppendMemo"), memo)
 	}
-	id := fmt.Sprintf("inl-faucet-%d-%d-%s", sender.ID, amount, RandStringRunes(5))
+	id := fmt.Sprintf("faucet:%s:%d", RandStringRunes(10), amount)
 
 	return &InlineFaucet{
 		Base:            storage.New(storage.ID(id)),
@@ -248,6 +248,8 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		log.Errorf("[acceptInlineFaucetHandler] c.Data: %s, Error: %s", c.Data, err.Error())
 		return
 	}
+	log.Debugf("[acceptInlineFaucetHandler] Callback c.Data: %d tx.ID: %s", c.Data, tx.ID)
+
 	inlineFaucet := fn.(*InlineFaucet)
 	from := inlineFaucet.From
 	// log faucet link if possible
@@ -335,6 +337,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 		// update the message if the faucet still has some sats left after this tx
 		if inlineFaucet.RemainingAmount >= inlineFaucet.PerUserAmount {
+			log.Debugf("[faucet] Updating message %s for faucet %s", c.Message.ID, inlineFaucet.ID)
 			bot.tryEditStack(c.Message, inlineFaucet.ID, inlineFaucet.Message, bot.makeFaucetKeyboard(ctx, inlineFaucet.ID))
 		}
 
