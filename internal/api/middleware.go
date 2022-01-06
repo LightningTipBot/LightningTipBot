@@ -1,13 +1,15 @@
 package api
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"net/http/httputil"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func LoggingMiddleware(prefix string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		log.Debugf("[%s] %s %s", prefix, r.Method, r.URL.Path)
 		log.Tracef("[%s]\n%s", prefix, dump(r))
 		r.BasicAuth()
 		next.ServeHTTP(w, r)
