@@ -37,7 +37,6 @@ func (bot TipBot) startEditWorker() {
 				if e, ok := editStack.Get(k); ok {
 					editFromStack := e.(edit)
 					if !editFromStack.edited {
-						log.Printf("[EDIT] (%s) %v", k, editFromStack)
 						_, err := bot.tryEditMessage(editFromStack.to, editFromStack.what, editFromStack.options...)
 						if err != nil && strings.Contains(err.Error(), retryAfterError) {
 							// ignore any other error than retry after
