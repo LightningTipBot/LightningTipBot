@@ -7,7 +7,7 @@ import (
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
-type QueryFuncHandler func(ctx context.Context, message *tb.Query)
+type QueryFuncHandler func(ctx context.Context, message *tb.Query) (context.Context, error)
 
 type handlerQueryInterceptor struct {
 	handler QueryFuncHandler
@@ -63,7 +63,11 @@ func HandlerWithQuery(handler QueryFuncHandler, option ...QueryInterceptOption) 
 			return
 		}
 		defer interceptQuery(ctx, query, hm.onDefer)
-		hm.handler(ctx, query)
+		ctx, err = hm.handler(ctx, query)
+		if err != nil {
+			log.Traceln(err)
+			return
+		}
 		_, err = interceptQuery(ctx, query, hm.after)
 		if err != nil {
 			log.Traceln(err)
