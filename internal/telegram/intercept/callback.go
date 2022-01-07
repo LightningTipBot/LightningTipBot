@@ -6,7 +6,7 @@ import (
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
-type CallbackFuncHandler func(ctx context.Context, message *tb.Callback)
+type CallbackFuncHandler func(ctx context.Context, message *tb.Callback) (context.Context, error)
 type Func func(ctx context.Context, message interface{}) (context.Context, error)
 
 type handlerCallbackInterceptor struct {
@@ -63,7 +63,11 @@ func HandlerWithCallback(handler CallbackFuncHandler, option ...CallbackIntercep
 			return
 		}
 		defer interceptCallback(ctx, c, hm.onDefer)
-		hm.handler(ctx, c)
+		ctx, err = hm.handler(ctx, c)
+		if err != nil {
+			log.Traceln(err)
+			return
+		}
 		_, err = interceptCallback(ctx, c, hm.after)
 		if err != nil {
 			log.Traceln(err)

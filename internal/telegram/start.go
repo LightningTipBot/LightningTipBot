@@ -17,9 +17,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func (bot TipBot) startHandler(ctx context.Context, m *tb.Message) {
+func (bot TipBot) startHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	if !m.Private() {
-		return
+		return ctx, fmt.Errorf("no private chat")
 	}
 	// ATTENTION: DO NOT CALL ANY HANDLER BEFORE THE WALLET IS CREATED
 	// WILL RESULT IN AN ENDLESS LOOP OTHERWISE
@@ -30,7 +30,7 @@ func (bot TipBot) startHandler(ctx context.Context, m *tb.Message) {
 	if err != nil {
 		log.Errorln(fmt.Sprintf("[startHandler] Error with initWallet: %s", err.Error()))
 		bot.tryEditMessage(walletCreationMsg, Translate(ctx, "startWalletErrorMessage"))
-		return
+		return ctx, err
 	}
 	bot.tryDeleteMessage(walletCreationMsg)
 	ctx = context.WithValue(ctx, "user", user)
@@ -42,7 +42,7 @@ func (bot TipBot) startHandler(ctx context.Context, m *tb.Message) {
 	if len(m.Sender.Username) == 0 {
 		bot.trySendMessage(m.Sender, Translate(ctx, "startNoUsernameMessage"), tb.NoPreview)
 	}
-	return
+	return ctx, nil
 }
 
 func (bot TipBot) initWallet(tguser *tb.User) (*lnbits.User, error) {

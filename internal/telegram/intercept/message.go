@@ -7,10 +7,7 @@ import (
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
-type MessageInterface interface {
-	a() func(ctx context.Context, message *tb.Message)
-}
-type MessageFuncHandler func(ctx context.Context, message *tb.Message)
+type MessageFuncHandler func(ctx context.Context, message *tb.Message) (context.Context, error)
 
 type handlerMessageInterceptor struct {
 	handler MessageFuncHandler
@@ -66,7 +63,11 @@ func HandlerWithMessage(handler MessageFuncHandler, option ...MessageInterceptOp
 			return
 		}
 		defer interceptMessage(ctx, message, hm.onDefer)
-		hm.handler(ctx, message)
+		ctx, err = hm.handler(ctx, message)
+		if err != nil {
+			log.Traceln(err)
+			return
+		}
 		_, err = interceptMessage(ctx, message, hm.after)
 		if err != nil {
 			log.Traceln(err)

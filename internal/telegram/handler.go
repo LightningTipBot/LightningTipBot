@@ -47,21 +47,21 @@ func (bot TipBot) registerHandlerWithInterceptor(h Handler) {
 	switch h.Interceptor.Type {
 	case MessageInterceptor:
 		for _, endpoint := range h.Endpoints {
-			bot.handle(endpoint, intercept.HandlerWithMessage(h.Handler.(func(ctx context.Context, query *tb.Message)),
+			bot.handle(endpoint, intercept.HandlerWithMessage(h.Handler.(func(ctx context.Context, query *tb.Message) (context.Context, error)),
 				intercept.WithBeforeMessage(h.Interceptor.Before...),
 				intercept.WithAfterMessage(h.Interceptor.After...),
 				intercept.WithDeferMessage(h.Interceptor.OnDefer...)))
 		}
 	case QueryInterceptor:
 		for _, endpoint := range h.Endpoints {
-			bot.handle(endpoint, intercept.HandlerWithQuery(h.Handler.(func(ctx context.Context, query *tb.Query)),
+			bot.handle(endpoint, intercept.HandlerWithQuery(h.Handler.(func(ctx context.Context, query *tb.Query) (context.Context, error)),
 				intercept.WithBeforeQuery(h.Interceptor.Before...),
 				intercept.WithAfterQuery(h.Interceptor.After...),
 				intercept.WithDeferQuery(h.Interceptor.OnDefer...)))
 		}
 	case CallbackInterceptor:
 		for _, endpoint := range h.Endpoints {
-			bot.handle(endpoint, intercept.HandlerWithCallback(h.Handler.(func(ctx context.Context, callback *tb.Callback)),
+			bot.handle(endpoint, intercept.HandlerWithCallback(h.Handler.(func(ctx context.Context, callback *tb.Callback) (context.Context, error)),
 				intercept.WithBeforeCallback(h.Interceptor.Before...),
 				intercept.WithAfterCallback(append(h.Interceptor.After, bot.answerCallbackInterceptor)...),
 				intercept.WithDeferCallback(h.Interceptor.OnDefer...)))

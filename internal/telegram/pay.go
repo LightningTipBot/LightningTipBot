@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
@@ -46,17 +47,17 @@ type PayData struct {
 }
 
 // payHandler invoked on "/pay lnbc..." command
-func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
+func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return
+		return ctx, errors.Create(errors.NoWalletError)
 	}
 	if len(strings.Split(m.Text, " ")) < 2 {
 		NewMessage(m, WithDuration(0, bot))
 		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(ctx, ""))
-		return
+		return ctx, errors.Create(errors.InvalidSyntaxError)
 	}
 	userStr := GetUserStr(m.Sender)
 	paymentRequest, err := getArgumentFromCommand(m.Text, 1)
@@ -65,7 +66,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(ctx, Translate(ctx, "invalidInvoiceHelpMessage")))
 		errmsg := fmt.Sprintf("[/pay] Error: Could not getArgumentFromCommand: %s", err.Error())
 		log.Errorln(errmsg)
-		return
+		return ctx, errors.New(errors.InvalidSyntaxError, err)
 	}
 	paymentRequest = strings.ToLower(paymentRequest)
 	// get rid of the URI prefix
@@ -77,7 +78,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(ctx, Translate(ctx, "invalidInvoiceHelpMessage")))
 		errmsg := fmt.Sprintf("[/pay] Error: Could not decode invoice: %s", err.Error())
 		log.Errorln(errmsg)
-		return
+		return ctx, errors.New(errors.InvalidSyntaxError, err)
 	}
 	amount := int64(bolt11.MSatoshi / 1000)
 
@@ -85,7 +86,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 		bot.trySendMessage(m.Sender, Translate(ctx, "invoiceNoAmountMessage"))
 		errmsg := fmt.Sprint("[/pay] Error: invoice without amount")
 		log.Warnln(errmsg)
-		return
+		return ctx, errors.Create(errors.InvalidAmountError)
 	}
 
 	// check user balance first
@@ -95,13 +96,13 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 		errmsg := fmt.Sprintf("[/pay] Error: Could not get user balance: %s", err.Error())
 		log.Errorln(errmsg)
 		bot.trySendMessage(m.Sender, Translate(ctx, "errorTryLaterMessage"))
-		return
+		return ctx, errors.New(errors.GetBalanceError, err)
 	}
 
 	if amount > balance {
 		NewMessage(m, WithDuration(0, bot))
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "insufficientFundsMessage"), balance, amount))
-		return
+		return ctx, errors.Create(errors.InvalidSyntaxError)
 	}
 	// send warning that the invoice might fail due to missing fee reserve
 	if float64(amount) > float64(balance)*0.99 {
@@ -144,6 +145,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) {
 	runtime.IgnoreError(payData.Set(payData, bot.Bunt))
 
 	SetUserState(user, bot, lnbits.UserStateConfirmPayment, paymentRequest)
+	return ctx, nil
 }
 
 // confirmPayHandler when user clicked pay on payment confirmation

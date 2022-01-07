@@ -1,6 +1,9 @@
 package errors
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 type TipBotErrorType int
 
@@ -11,8 +14,22 @@ const (
 	InvalidAmountPerUserError
 	GetBalanceError
 	BalanceToLowError
+	NoWalletError
+	NoReplyMessageError
+	InvalidSyntaxError
 )
 
+var errMap = map[TipBotErrorType]TipBotError{InvalidSyntaxError: InvalidSyntax}
+var (
+	UserNoWallet   = TipBotError{Err: fmt.Errorf("user has no wallet")}
+	NoReplyMessage = TipBotError{Err: fmt.Errorf("no reply message")}
+	InvalidSyntax  = TipBotError{Err: fmt.Errorf("invalid syntax")}
+	InvalidAmount  = TipBotError{Err: fmt.Errorf("invalid amount")}
+)
+
+func Create(code TipBotErrorType) TipBotError {
+	return errMap[code]
+}
 func New(code TipBotErrorType, err error) TipBotError {
 	return TipBotError{Err: err, Message: err.Error(), Code: code}
 }
