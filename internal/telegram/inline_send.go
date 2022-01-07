@@ -38,6 +38,7 @@ type InlineSend struct {
 }
 
 func (bot TipBot) makeSendKeyboard(ctx context.Context, id string) *tb.ReplyMarkup {
+	inlineSendMenu := &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	acceptInlineSendButton := inlineSendMenu.Data(Translate(ctx, "receiveButtonMessage"), "confirm_send_inline")
 	cancelInlineSendButton := inlineSendMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_send_inline")
 	acceptInlineSendButton.Data = id

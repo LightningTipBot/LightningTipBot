@@ -82,7 +82,7 @@ func (bot TipBot) createTipjar(ctx context.Context, text string, sender *tb.User
 	if len(memo) > 0 {
 		inlineMessage = inlineMessage + fmt.Sprintf(Translate(ctx, "inlineTipjarAppendMemo"), memo)
 	}
-	id := fmt.Sprintf("inl-tipjar-%d-%d-%s", sender.ID, amount, RandStringRunes(5))
+	id := fmt.Sprintf("tipjar:%s:%d", RandStringRunes(10), amount)
 
 	return &InlineTipjar{
 		Base:          storage.New(storage.ID(id)),
@@ -161,7 +161,7 @@ func (bot TipBot) makeQueryTipjar(ctx context.Context, q *tb.Query, query bool) 
 }
 
 func (bot TipBot) makeTipjarKeyboard(ctx context.Context, inlineTipjar *InlineTipjar) *tb.ReplyMarkup {
-	// inlineTipjarMenu := &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	inlineTipjarMenu := &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	// slice of buttons
 	buttons := make([]tb.Btn, 0)
 	cancelInlineTipjarButton := inlineTipjarMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_tipjar_inline", inlineTipjar.ID)
@@ -307,9 +307,6 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 		if len(memo) > 0 {
 			inlineTipjar.Message = inlineTipjar.Message + fmt.Sprintf(i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarAppendMemo"), memo)
 		}
-		// if inlineTipjar.UserNeedsWallet {
-		// 	inlineTipjar.Message += "\n\n" + fmt.Sprintf(i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarCreateWalletMessage"), GetUserStrMd(bot.Telegram.Me))
-		// }
 		// update message
 		log.Infoln(inlineTipjar.Message)
 		bot.tryEditMessage(c.Message, inlineTipjar.Message, bot.makeTipjarKeyboard(ctx, inlineTipjar))
@@ -322,9 +319,6 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 			inlineTipjar.Amount,
 			inlineTipjar.NGiven,
 		)
-		// if inlineTipjar.UserNeedsWallet {
-		// 	inlineTipjar.Message += "\n\n" + fmt.Sprintf(i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarCreateWalletMessage"), GetUserStrMd(bot.Telegram.Me))
-		// }
 		bot.tryEditMessage(c.Message, inlineTipjar.Message)
 		inlineTipjar.Active = false
 	}

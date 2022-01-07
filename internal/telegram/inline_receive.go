@@ -40,6 +40,7 @@ type InlineReceive struct {
 }
 
 func (bot TipBot) makeReceiveKeyboard(ctx context.Context, id string) *tb.ReplyMarkup {
+	inlineReceiveMenu := &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	acceptInlineReceiveButton := inlineReceiveMenu.Data(Translate(ctx, "payReceiveButtonMessage"), "confirm_receive_inline")
 	cancelInlineReceiveButton := inlineReceiveMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_receive_inline")
 	acceptInlineReceiveButton.Data = id
