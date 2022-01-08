@@ -6,7 +6,7 @@ import (
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
-type StateCallbackMessage map[lnbits.UserStateKey]func(ctx context.Context, m *tb.Message)
+type StateCallbackMessage map[lnbits.UserStateKey]func(ctx context.Context, m *tb.Message) (context.Context, error)
 
 var stateCallbackMessage StateCallbackMessage
 

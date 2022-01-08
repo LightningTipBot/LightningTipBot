@@ -3,8 +3,8 @@ package telegram
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"strconv"
 	"strings"
 
@@ -20,7 +20,7 @@ import (
 
 func getArgumentFromCommand(input string, which int) (output string, err error) {
 	if len(strings.Split(input, " ")) < which+1 {
-		return "", errors.New("message doesn't contain enough arguments")
+		return "", fmt.Errorf("message doesn't contain enough arguments")
 	}
 	output = strings.Split(input, " ")[which]
 	return output, nil
@@ -30,7 +30,7 @@ func decodeAmountFromCommand(input string) (amount int64, err error) {
 	if len(strings.Split(input, " ")) < 2 {
 		errmsg := "message doesn't contain any amount"
 		// log.Errorln(errmsg)
-		return 0, errors.New(errmsg)
+		return 0, fmt.Errorf(errmsg)
 	}
 	amount, err = getAmount(strings.Split(input, " ")[1])
 	return amount, err
@@ -61,7 +61,7 @@ func getAmount(input string) (amount int64, err error) {
 				return 0, err
 			}
 			if !(price.Price[currency] > 0) {
-				return 0, errors.New("price is zero")
+				return 0, fmt.Errorf("price is zero")
 			}
 			amount = int64(fmount / price.Price[currency] * float64(100_000_000))
 			return amount, nil
@@ -74,7 +74,7 @@ func getAmount(input string) (amount int64, err error) {
 		return 0, err
 	}
 	if amount <= 0 {
-		return 0, errors.New("amount must be greater than 0")
+		return 0, fmt.Errorf("amount must be greater than 0")
 	}
 	return amount, err
 }
@@ -119,15 +119,15 @@ func (bot *TipBot) askForAmount(ctx context.Context, id string, eventType string
 // enterAmountHandler is invoked in anyTextHandler when the user needs to enter an amount
 // the amount is then stored as an entry in the user's stateKey in the user database
 // any other handler that relies on this, needs to load the resulting amount from the database
-func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
+func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return // errors.New("user has no wallet"), 0
+		return ctx, errors.Create(errors.NoWalletError)
 	}
 
 	if !(user.StateKey == lnbits.UserEnterAmount) {
 		ResetUserState(user, bot)
-		return // errors.New("user state does not match"), 0
+		return ctx, fmt.Errorf("invalid statekey")
 	}
 
 	var EnterAmountStateData EnterAmountStateData
@@ -135,7 +135,7 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 	if err != nil {
 		log.Errorf("[enterAmountHandler] %s", err.Error())
 		ResetUserState(user, bot)
-		return
+		return ctx, err
 	}
 
 	amount, err := getAmount(m.Text)
@@ -143,7 +143,7 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 		log.Warnf("[enterAmountHandler] %s", err.Error())
 		bot.trySendMessage(m.Sender, Translate(ctx, "lnurlInvalidAmountMessage"))
 		ResetUserState(user, bot)
-		return //err, 0
+		return ctx, err
 	}
 	// amount not in allowed range from LNURL
 	if EnterAmountStateData.AmountMin > 0 && EnterAmountStateData.AmountMax >= EnterAmountStateData.AmountMin && // this line checks whether min_max is set at all
@@ -152,7 +152,7 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 		log.Warnf("[enterAmountHandler] %s", err.Error())
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), EnterAmountStateData.AmountMin/1000, EnterAmountStateData.AmountMax/1000))
 		ResetUserState(user, bot)
-		return
+		return ctx, errors.Create(errors.InvalidSyntaxError)
 	}
 
 	// find out which type the object in bunt has waiting for an amount
@@ -164,7 +164,7 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 		defer mutex.UnlockWithContext(ctx, tx.ID)
 		sn, err := tx.Get(tx, bot.Bunt)
 		if err != nil {
-			return
+			return ctx, err
 		}
 		LnurlPayState := sn.(*LnurlPayState)
 		LnurlPayState.Amount = amount * 1000 // mSat
@@ -175,18 +175,17 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 		StateDataJson, err := json.Marshal(EnterAmountStateData)
 		if err != nil {
 			log.Errorln(err)
-			return
+			return ctx, err
 		}
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(StateDataJson))
 		bot.lnurlPayHandlerSend(ctx, m)
-		return
 	case "LnurlWithdrawState":
 		tx := &LnurlWithdrawState{Base: storage.New(storage.ID(EnterAmountStateData.ID))}
 		mutex.LockWithContext(ctx, tx.ID)
 		defer mutex.UnlockWithContext(ctx, tx.ID)
 		sn, err := tx.Get(tx, bot.Bunt)
 		if err != nil {
-			return
+			return ctx, err
 		}
 		LnurlWithdrawState := sn.(*LnurlWithdrawState)
 		LnurlWithdrawState.Amount = amount * 1000 // mSat
@@ -197,35 +196,32 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) {
 		StateDataJson, err := json.Marshal(EnterAmountStateData)
 		if err != nil {
 			log.Errorln(err)
-			return
+			return ctx, err
 		}
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(StateDataJson))
 		bot.lnurlWithdrawHandlerWithdraw(ctx, m)
-		return
 	case "CreateInvoiceState":
 		m.Text = fmt.Sprintf("/invoice %d", amount)
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
 		bot.invoiceHandler(ctx, m)
-		return
 	case "CreateDonationState":
 		m.Text = fmt.Sprintf("/donate %d", amount)
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
 		bot.donationHandler(ctx, m)
-		return
 	case "CreateSendState":
 		splits := strings.SplitAfterN(EnterAmountStateData.OiringalCommand, " ", 2)
 		if len(splits) > 1 {
 			m.Text = fmt.Sprintf("/send %d %s", amount, splits[1])
 			SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
-			bot.sendHandler(ctx, m)
-			return
+			return bot.sendHandler(ctx, m)
 		}
-		return
+		return ctx, errors.Create(errors.InvalidSyntaxError)
 	default:
 		ResetUserState(user, bot)
-		return
+		return ctx, errors.Create(errors.InvalidSyntaxError)
 	}
 	// // reset database entry
 	// ResetUserState(user, bot)
 	// return
+	return ctx, nil
 }

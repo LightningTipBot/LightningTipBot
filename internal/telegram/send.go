@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
@@ -53,11 +54,11 @@ type SendData struct {
 }
 
 // sendHandler invoked on "/send 123 @user" command
-func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
+func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	bot.anyTextHandler(ctx, m)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return
+		return ctx, errors.Create(errors.NoWalletError)
 	}
 
 	// reset state immediately
@@ -67,8 +68,8 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 
 	// If the send is a reply, then trigger /tip handler
 	if m.IsReply() && m.Chat.Type != tb.ChatPrivate {
-		bot.tipHandler(ctx, m)
-		return
+		return bot.tipHandler(ctx, m)
+
 	}
 
 	// if ok, errstr := bot.SendCheckSyntax(ctx, m); !ok {
@@ -95,24 +96,24 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 			err = bot.sendToLightningAddress(ctx, m, arg, amount)
 			if err != nil {
 				log.Errorln(err.Error())
-				return
+				return ctx, err
 			}
-			return
+			return ctx, err
 		}
 	}
 
 	// is a user given?
 	arg, err = getArgumentFromCommand(m.Text, 1)
 	if err != nil && m.Chat.Type == tb.ChatPrivate {
-		bot.askForUser(ctx, "", "CreateSendState", m.Text)
-		return
+		_, err = bot.askForUser(ctx, "", "CreateSendState", m.Text)
+		return ctx, err
 	}
 
 	// is an amount given?
 	amount, err = decodeAmountFromCommand(m.Text)
 	if (err != nil || amount < 1) && m.Chat.Type == tb.ChatPrivate {
-		bot.askForAmount(ctx, "", "CreateSendState", 0, 0, m.Text)
-		return
+		_, err = bot.askForAmount(ctx, "", "CreateSendState", 0, 0, m.Text)
+		return ctx, err
 	}
 
 	// ASSUME INTERNAL SEND TO TELEGRAM USER
@@ -122,7 +123,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 		// immediately delete if the amount is bullshit
 		NewMessage(m, WithDuration(0, bot))
 		bot.trySendMessage(m.Sender, helpSendUsage(ctx, Translate(ctx, "sendValidAmountMessage")))
-		return
+		return ctx, err
 	}
 
 	// SEND COMMAND IS VALID
@@ -140,7 +141,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 		toUserStrWithoutAt, err = getArgumentFromCommand(m.Text, 2)
 		if err != nil {
 			log.Errorln(err.Error())
-			return
+			return ctx, err
 		}
 		toUserStrWithoutAt = strings.TrimPrefix(toUserStrWithoutAt, "@")
 		toUserStrMention = "@" + toUserStrWithoutAt
@@ -148,7 +149,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 
 	err = bot.parseCmdDonHandler(ctx, m)
 	if err == nil {
-		return
+		return ctx, errors.Create(errors.InvalidSyntaxError)
 	}
 
 	toUserDb, err := GetUserByTelegramUsername(toUserStrWithoutAt, *bot)
@@ -159,12 +160,12 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 			toUserStrMention = toUserStrMention[:100]
 		}
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "sendUserHasNoWalletMessage"), str.MarkdownEscape(toUserStrMention)))
-		return
+		return ctx, err
 	}
 
 	if user.ID == toUserDb.ID {
 		bot.trySendMessage(m.Sender, Translate(ctx, "sendYourselfMessage"))
-		return
+		return ctx, errors.Create(errors.SelfPaymentError)
 	}
 
 	// entire text of the inline object
@@ -192,7 +193,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 		NewMessage(m, WithDuration(0, bot))
 		log.Printf("[/send] Error: %s\n", err.Error())
 		bot.trySendMessage(m.Sender, fmt.Sprint(Translate(ctx, "errorTryLaterMessage")))
-		return
+		return ctx, err
 	}
 	// save the send data to the Database
 	// log.Debug(sendData)
@@ -212,16 +213,17 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	} else {
 		bot.tryReplyMessage(m, confirmText, sendConfirmationMenu)
 	}
+	return ctx, nil
 }
 
 // keyboardSendHandler will be called when the user presses the Send button on the keyboard
 // it will pop up a new keyboard with the last interacted contacts to send funds to
 // then, the flow is handled as if the user entered /send (then ask for contacts from keyboard or entry,
 // then ask for an amount).
-func (bot *TipBot) keyboardSendHandler(ctx context.Context, m *tb.Message) {
+func (bot *TipBot) keyboardSendHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return // errors.New("user has no wallet"), 0
+		return ctx, errors.Create(errors.NoWalletError)
 	}
 	enterUserStateData := &EnterUserStateData{
 		ID:              "id",
@@ -232,7 +234,7 @@ func (bot *TipBot) keyboardSendHandler(ctx context.Context, m *tb.Message) {
 	stateDataJson, err := json.Marshal(enterUserStateData)
 	if err != nil {
 		log.Errorln(err)
-		return
+		return ctx, err
 	}
 	SetUserState(user, bot, lnbits.UserEnterUser, string(stateDataJson))
 	sendToButtons = bot.makeContactsButtons(ctx)
@@ -241,8 +243,7 @@ func (bot *TipBot) keyboardSendHandler(ctx context.Context, m *tb.Message) {
 	// immediatelly go to the send handler
 	if len(sendToButtons) == 1 {
 		m.Text = "/send"
-		bot.sendHandler(ctx, m)
-		return
+		return bot.sendHandler(ctx, m)
 	}
 
 	// Attention! We need to ues the original Telegram.Send command here!
@@ -252,27 +253,28 @@ func (bot *TipBot) keyboardSendHandler(ctx context.Context, m *tb.Message) {
 	if err != nil {
 		log.Errorln(err.Error())
 	}
+	return ctx, nil
 }
 
 // sendHandler invoked when user clicked send on payment confirmation
-func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
+func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
 	tx := &SendData{Base: storage.New(storage.ID(c.Data))}
 	mutex.LockWithContext(ctx, tx.ID)
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err.Error())
-		return
+		return ctx, err
 	}
 	sendData := sn.(*SendData)
 	// onnly the correct user can press
 	if sendData.From.Telegram.ID != c.Sender.ID {
-		return
+		return ctx, errors.Create(errors.UnknownError)
 	}
 	if !sendData.Active {
 		log.Errorf("[acceptSendHandler] send not active anymore")
 		// bot.tryDeleteMessage(c.Message)
-		return
+		return ctx, errors.Create(errors.NotActiveError)
 	}
 	defer sendData.Set(sendData, bot.Bunt)
 
@@ -295,7 +297,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 	if err != nil {
 		log.Errorln(err.Error())
 		bot.tryDeleteMessage(c.Message)
-		return
+		return ctx, err
 	}
 	toUserStrMd := GetUserStrMd(to.Telegram)
 	fromUserStrMd := GetUserStrMd(from.Telegram)
@@ -312,7 +314,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 		errmsg := fmt.Sprintf("[/send] Error: Transaction failed. %s", err.Error())
 		log.Errorln(errmsg)
 		bot.tryEditMessage(c.Message, i18n.Translate(sendData.LanguageCode, "sendErrorMessage"), &tb.ReplyMarkup{})
-		return
+		return ctx, errors.Create(errors.UnknownError)
 	}
 	sendData.Inactivate(sendData, bot.Bunt)
 
@@ -337,11 +339,11 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
 		bot.trySendMessage(to.Telegram, fmt.Sprintf("✉️ %s", str.MarkdownEscape(sendMemo)))
 	}
 
-	return
+	return ctx, nil
 }
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation
-func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
+func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
 	// reset state immediately
 	user := LoadUser(ctx)
 	ResetUserState(user, bot)
@@ -351,16 +353,17 @@ func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err.Error())
-		return
+		return ctx, err
 	}
 
 	sendData := sn.(*SendData)
 	// onnly the correct user can press
 	if sendData.From.Telegram.ID != c.Sender.ID {
-		return
+		return ctx, errors.Create(errors.UnknownError)
 	}
 	// delete and send instead of edit for the keyboard to pop up after sending
 	bot.tryDeleteMessage(c.Message)
 	bot.trySendMessage(c.Message.Chat, i18n.Translate(sendData.LanguageCode, "sendCancelledMessage"))
 	sendData.Inactivate(sendData, bot.Bunt)
+	return ctx, nil
 }

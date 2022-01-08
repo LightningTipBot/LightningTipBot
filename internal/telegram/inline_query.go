@@ -18,7 +18,7 @@ import (
 
 const queryImage = "https://avatars.githubusercontent.com/u/88730856?v=4"
 
-func (bot TipBot) inlineQueryInstructions(ctx context.Context, q *tb.Query) {
+func (bot TipBot) inlineQueryInstructions(ctx context.Context, q *tb.Query) (context.Context, error) {
 	instructions := []struct {
 		url         string
 		title       string
@@ -70,6 +70,7 @@ func (bot TipBot) inlineQueryInstructions(ctx context.Context, q *tb.Query) {
 	if err != nil {
 		log.Errorln(err)
 	}
+	return ctx, err
 }
 
 func (bot TipBot) inlineQueryReplyWithError(q *tb.Query, message string, help string) {
@@ -133,10 +134,9 @@ func (bot TipBot) commandTranslationMap(ctx context.Context, command string) con
 	return ctx
 }
 
-func (bot TipBot) anyQueryHandler(ctx context.Context, q *tb.Query) {
+func (bot TipBot) anyQueryHandler(ctx context.Context, q *tb.Query) (context.Context, error) {
 	if q.Text == "" {
-		bot.inlineQueryInstructions(ctx, q)
-		return
+		return bot.inlineQueryInstructions(ctx, q)
 	}
 
 	// create the inline send result
@@ -144,7 +144,7 @@ func (bot TipBot) anyQueryHandler(ctx context.Context, q *tb.Query) {
 		q.Text = strings.TrimPrefix(q.Text, "/")
 	}
 	if strings.HasPrefix(q.Text, "send") || strings.HasPrefix(q.Text, "pay") {
-		bot.handleInlineSendQuery(ctx, q)
+		return bot.handleInlineSendQuery(ctx, q)
 	}
 
 	if strings.HasPrefix(q.Text, "faucet") || strings.HasPrefix(q.Text, "zapfhahn") || strings.HasPrefix(q.Text, "kraan") || strings.HasPrefix(q.Text, "grifo") {
@@ -152,17 +152,18 @@ func (bot TipBot) anyQueryHandler(ctx context.Context, q *tb.Query) {
 			c := strings.Split(q.Text, " ")[0]
 			ctx = bot.commandTranslationMap(ctx, c)
 		}
-		bot.handleInlineFaucetQuery(ctx, q)
+		return bot.handleInlineFaucetQuery(ctx, q)
 	}
 	if strings.HasPrefix(q.Text, "tipjar") || strings.HasPrefix(q.Text, "spendendose") {
 		if len(strings.Split(q.Text, " ")) > 1 {
 			c := strings.Split(q.Text, " ")[0]
 			ctx = bot.commandTranslationMap(ctx, c)
 		}
-		bot.handleInlineTipjarQuery(ctx, q)
+		return bot.handleInlineTipjarQuery(ctx, q)
 	}
 
 	if strings.HasPrefix(q.Text, "receive") || strings.HasPrefix(q.Text, "get") || strings.HasPrefix(q.Text, "payme") || strings.HasPrefix(q.Text, "request") {
-		bot.handleInlineReceiveQuery(ctx, q)
+		return bot.handleInlineReceiveQuery(ctx, q)
 	}
+	return ctx, nil
 }

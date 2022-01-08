@@ -13,10 +13,10 @@ import (
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
-func (bot *TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
+func (bot *TipBot) lndhubHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	if internal.Configuration.Lnbits.LnbitsPublicUrl == "" {
 		bot.trySendMessage(m.Sender, Translate(ctx, "couldNotLinkMessage"))
-		return
+		return ctx, fmt.Errorf("invalid configuration")
 	}
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)
@@ -32,7 +32,7 @@ func (bot *TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
 	// do not respond to banned users
 	if bot.UserIsBanned(fromUser) {
 		log.Warnln("[lndhubHandler] user is banned. not responding.")
-		return
+		return ctx, fmt.Errorf("user is banned")
 	}
 
 	lndhubUrl := fmt.Sprintf("lndhub://admin:%s@%slndhub/ext/", fromUser.Wallet.Adminkey, internal.Configuration.Lnbits.LnbitsPublicUrl)
@@ -42,7 +42,7 @@ func (bot *TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Failed to create QR code for invoice: %s", err.Error())
 		log.Errorln(errmsg)
-		return
+		return ctx, err
 	}
 
 	// send the link to the user
@@ -55,5 +55,5 @@ func (bot *TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
 	}()
 	// auto delete the message
 	// NewMessage(linkmsg, WithDuration(time.Second*time.Duration(internal.Configuration.Telegram.MessageDisposeDuration), bot))
-
+	return ctx, nil
 }

@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -32,19 +33,19 @@ func helpDonateUsage(ctx context.Context, errormsg string) string {
 	}
 }
 
-func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
+func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return
+		return ctx, errors.Create(errors.NoWalletError)
 	}
 	// if no amount is in the command, ask for it
 	amount, err := decodeAmountFromCommand(m.Text)
 	if (err != nil || amount < 1) && m.Chat.Type == tb.ChatPrivate {
 		// // no amount was entered, set user state and ask for amount
-		bot.askForAmount(ctx, "", "CreateDonationState", 0, 0, m.Text)
-		return
+		_, err = bot.askForAmount(ctx, "", "CreateDonationState", 0, 0, m.Text)
+		return ctx, err
 	}
 
 	// command is valid
@@ -54,13 +55,13 @@ func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 	if err != nil {
 		log.Errorln(err)
 		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
-		return
+		return ctx, err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Errorln(err)
 		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
-		return
+		return ctx, err
 	}
 
 	// send donation invoice
@@ -72,13 +73,14 @@ func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 		errmsg := fmt.Sprintf("[/donate] Donation failed for user %s: %s", userStr, err)
 		log.Errorln(errmsg)
 		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
-		return
+		return ctx, err
 	}
 	// hotfix because the edit doesn't work!
 	// todo: fix edit
 	// bot.tryEditMessage(msg, Translate(ctx, "donationSuccess"))
 	bot.tryDeleteMessage(msg)
 	bot.trySendMessage(m.Chat, Translate(ctx, "donationSuccess"))
+	return ctx, nil
 }
 
 func init() {
