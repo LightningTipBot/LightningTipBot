@@ -15,7 +15,6 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
@@ -174,29 +173,29 @@ func (bot TipBot) makeTipjarKeyboard(ctx context.Context, inlineTipjar *InlineTi
 	return inlineTipjarMenu
 }
 
-func (bot TipBot) tipjarHandler(ctx context.Context, m *tb.Message) {
+func (bot TipBot) tipjarHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	bot.anyTextHandler(ctx, m)
 	if m.Private() {
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "inlineTipjarHelpText"), Translate(ctx, "inlineTipjarHelpTipjarInGroup")))
-		return
+		return ctx, errors.Create(errors.NoPrivateChatError)
 	}
 	ctx = bot.mapTipjarLanguage(ctx, m.Text)
 	inlineTipjar, err := bot.makeTipjar(ctx, m, false)
 	if err != nil {
 		log.Errorf("[tipjar] %s", err.Error())
-		return
+		return ctx, err
 	}
 	toUserStr := GetUserStr(m.Sender)
 	bot.trySendMessage(m.Chat, inlineTipjar.Message, bot.makeTipjarKeyboard(ctx, inlineTipjar))
 	log.Infof("[tipjar] %s created tipjar %s: %d sat (%d per user)", toUserStr, inlineTipjar.ID, inlineTipjar.Amount, inlineTipjar.PerUserAmount)
-	runtime.IgnoreError(inlineTipjar.Set(inlineTipjar, bot.Bunt))
+	return ctx, inlineTipjar.Set(inlineTipjar, bot.Bunt)
 }
 
-func (bot TipBot) handleInlineTipjarQuery(ctx context.Context, q *tb.Query) {
+func (bot TipBot) handleInlineTipjarQuery(ctx context.Context, q *tb.Query) (context.Context, error) {
 	inlineTipjar, err := bot.makeQueryTipjar(ctx, q, false)
 	if err != nil {
 		// log.Errorf("[tipjar] %s", err.Error())
-		return
+		return ctx, err
 	}
 	urls := []string{
 		queryImage,
@@ -227,13 +226,15 @@ func (bot TipBot) handleInlineTipjarQuery(ctx context.Context, q *tb.Query) {
 	})
 	if err != nil {
 		log.Errorln(err)
+		return ctx, err
 	}
+	return ctx, nil
 }
 
-func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback) {
+func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
 	from := LoadUser(ctx)
 	if from.Wallet == nil {
-		return
+		return ctx, errors.Create(errors.NoWalletError)
 	}
 	tx := &InlineTipjar{Base: storage.New(storage.ID(c.Data))}
 	mutex.LockWithContext(ctx, tx.ID)
@@ -241,25 +242,25 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		// log.Errorf("[tipjar] %s", err.Error())
-		return
+		return ctx, err
 	}
 	inlineTipjar := fn.(*InlineTipjar)
 	to := inlineTipjar.To
 	if !inlineTipjar.Active {
 		log.Errorf(fmt.Sprintf("[tipjar] tipjar %s inactive.", inlineTipjar.ID))
-		return
+		return ctx, errors.Create(errors.NotActiveError)
 	}
 
 	if from.Telegram.ID == to.Telegram.ID {
 		bot.trySendMessage(from.Telegram, Translate(ctx, "sendYourselfMessage"))
-		return
+		return ctx, errors.Create(errors.SelfPaymentError)
 	}
 	// // check if to user has already given to the tipjar
 	for _, a := range inlineTipjar.From {
 		if a.Telegram.ID == from.Telegram.ID {
 			// to user is already in To slice, has taken from facuet
 			// log.Infof("[tipjar] %s already gave to tipjar %s", GetUserStr(to.Telegram), inlineTipjar.ID)
-			return
+			return ctx, errors.Create(errors.UnknownError)
 		}
 	}
 	if inlineTipjar.GivenAmount < inlineTipjar.Amount {
@@ -278,7 +279,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 			bot.trySendMessage(from.Telegram, Translate(ctx, "sendErrorMessage"))
 			errMsg := fmt.Sprintf("[tipjar] Transaction failed: %s", err.Error())
 			log.Errorln(errMsg)
-			return
+			return ctx, errors.New(errors.UnknownError, err)
 		}
 
 		log.Infof("[💸 tipjar] Tipjar %s from %s to %s (%d sat).", inlineTipjar.ID, fromUserStr, toUserStr, inlineTipjar.PerUserAmount)
@@ -322,24 +323,25 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 		bot.tryEditMessage(c.Message, inlineTipjar.Message)
 		inlineTipjar.Active = false
 	}
+	return ctx, nil
 
 }
 
-func (bot *TipBot) cancelInlineTipjarHandler(ctx context.Context, c *tb.Callback) {
+func (bot *TipBot) cancelInlineTipjarHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
 	tx := &InlineTipjar{Base: storage.New(storage.ID(c.Data))}
 	mutex.LockWithContext(ctx, tx.ID)
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[cancelInlineTipjarHandler] %s", err.Error())
-		return
+		return ctx, err
 	}
 	inlineTipjar := fn.(*InlineTipjar)
-	if c.Sender.ID == inlineTipjar.To.Telegram.ID {
-		bot.tryEditMessage(c.Message, i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarCancelledMessage"), &tb.ReplyMarkup{})
-		// set the inlineTipjar inactive
-		inlineTipjar.Active = false
-		runtime.IgnoreError(inlineTipjar.Set(inlineTipjar, bot.Bunt))
+	if c.Sender.ID != inlineTipjar.To.Telegram.ID {
+		return ctx, errors.Create(errors.UnknownError)
 	}
-	return
+	bot.tryEditMessage(c.Message, i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarCancelledMessage"), &tb.ReplyMarkup{})
+	// set the inlineTipjar inactive
+	inlineTipjar.Active = false
+	return ctx, inlineTipjar.Set(inlineTipjar, bot.Bunt)
 }

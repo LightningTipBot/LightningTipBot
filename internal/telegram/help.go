@@ -37,7 +37,7 @@ func (bot TipBot) helpHandler(ctx context.Context, m *tb.Message) (context.Conte
 	return ctx, nil
 }
 
-func (bot TipBot) basicsHandler(ctx context.Context, m *tb.Message) {
+func (bot TipBot) basicsHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)
 	if !m.Private() {
@@ -45,7 +45,7 @@ func (bot TipBot) basicsHandler(ctx context.Context, m *tb.Message) {
 		bot.tryDeleteMessage(m)
 	}
 	bot.trySendMessage(m.Sender, Translate(ctx, "basicsMessage"), tb.NoPreview)
-	return
+	return ctx, nil
 }
 
 func (bot TipBot) makeAdvancedHelpMessage(ctx context.Context, m *tb.Message) string {
@@ -74,7 +74,7 @@ func (bot TipBot) makeAdvancedHelpMessage(ctx context.Context, m *tb.Message) st
 	)
 }
 
-func (bot TipBot) advancedHelpHandler(ctx context.Context, m *tb.Message) {
+func (bot TipBot) advancedHelpHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)
 	if !m.Private() {
@@ -82,5 +82,5 @@ func (bot TipBot) advancedHelpHandler(ctx context.Context, m *tb.Message) {
 		bot.tryDeleteMessage(m)
 	}
 	bot.trySendMessage(m.Sender, bot.makeAdvancedHelpMessage(ctx, m), tb.NoPreview)
-	return
+	return ctx, nil
 }

@@ -3,8 +3,8 @@ package telegram
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -36,24 +36,23 @@ func (bot TipBot) cancelLnUrlHandler(c *tb.Callback) {
 }
 
 // lnurlHandler is invoked on /lnurl command
-func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
+func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	// commands:
 	// /lnurl
 	// /lnurl <LNURL>
 	// or /lnurl <amount> <LNURL>
 	if m.Chat.Type != tb.ChatPrivate {
-		return
+		return ctx, errors.Create(errors.NoPrivateChatError)
 	}
 	log.Infof("[lnurlHandler] %s", m.Text)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return
+		return ctx, errors.Create(errors.NoWalletError)
 	}
 
 	// if only /lnurl is entered, show the lnurl of the user
 	if m.Text == "/lnurl" {
-		bot.lnurlReceiveHandler(ctx, m)
-		return
+		return bot.lnurlReceiveHandler(ctx, m)
 	}
 	statusMsg := bot.trySendMessage(m.Sender, Translate(ctx, "lnurlResolvingUrlMessage"))
 
@@ -69,7 +68,7 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 	} else {
 		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), "Could not parse command."))
 		log.Warnln("[/lnurl] Could not parse command.")
-		return
+		return ctx, errors.Create(errors.InvalidSyntaxError)
 	}
 
 	// get rid of the URI prefix
@@ -79,7 +78,7 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 	if err != nil {
 		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), err.Error()))
 		log.Warnf("[HandleLNURL] Error: %s", err.Error())
-		return
+		return ctx, err
 	}
 	switch params.(type) {
 	case lnurl.LNURLPayParams:
@@ -87,7 +86,7 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 		log.Infof("[LNURL-p] %s", payParams.LNURLPayParams.Callback)
 		bot.tryDeleteMessage(statusMsg)
 		bot.lnurlPayHandler(ctx, m, *payParams)
-		return
+
 	case lnurl.LNURLWithdrawResponse:
 		withdrawParams := LnurlWithdrawState{LNURLWithdrawResponse: params.(lnurl.LNURLWithdrawResponse)}
 		log.Infof("[LNURL-w] %s", withdrawParams.LNURLWithdrawResponse.Callback)
@@ -95,13 +94,14 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 		bot.lnurlWithdrawHandler(ctx, m, withdrawParams)
 	default:
 		if err == nil {
-			err = errors.New("Invalid LNURL type.")
+			err = fmt.Errorf("invalid LNURL type")
 		}
 		log.Warnln(err)
 		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), err.Error()))
 		// bot.trySendMessage(m.Sender, err.Error())
-		return
+		return ctx, err
 	}
+	return ctx, nil
 }
 
 func (bot *TipBot) UserGetLightningAddress(user *lnbits.User) (string, error) {
@@ -130,25 +130,27 @@ func UserGetLNURL(user *lnbits.User) (string, error) {
 }
 
 // lnurlReceiveHandler outputs the LNURL of the user
-func (bot TipBot) lnurlReceiveHandler(ctx context.Context, m *tb.Message) {
+func (bot TipBot) lnurlReceiveHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	fromUser := LoadUser(ctx)
 	lnurlEncode, err := UserGetLNURL(fromUser)
 	if err != nil {
 		errmsg := fmt.Sprintf("[userLnurlHandler] Failed to get LNURL: %s", err.Error())
 		log.Errorln(errmsg)
 		bot.trySendMessage(m.Sender, Translate(ctx, "lnurlNoUsernameMessage"))
+		return ctx, err
 	}
 	// create qr code
 	qr, err := qrcode.Encode(lnurlEncode, qrcode.Medium, 256)
 	if err != nil {
 		errmsg := fmt.Sprintf("[userLnurlHandler] Failed to create QR code for LNURL: %s", err.Error())
 		log.Errorln(errmsg)
-		return
+		return ctx, err
 	}
 
 	bot.trySendMessage(m.Sender, Translate(ctx, "lnurlReceiveInfoText"))
 	// send the lnurl data to user
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lnurlEncode)})
+	return ctx, nil
 }
 
 // fiatjaf/go-lnurl 1.8.4 with proxy
@@ -181,7 +183,7 @@ func (bot TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error
 		lnurl_str, ok := lnurl.FindLNURLInText(rawlnurl)
 		if !ok {
 			return "", nil,
-				errors.New("invalid bech32-encoded lnurl: " + rawlnurl)
+				fmt.Errorf("invalid bech32-encoded lnurl: " + rawlnurl)
 		}
 		rawurl, err = lnurl.LNURLDecode(lnurl_str)
 		if err != nil {
@@ -221,7 +223,7 @@ func (bot TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error
 		return rawurl, nil, err
 	}
 	if resp.StatusCode >= 300 {
-		return rawurl, nil, errors.New("HTTP error: " + resp.Status)
+		return rawurl, nil, fmt.Errorf("HTTP error: " + resp.Status)
 	}
 
 	b, err := ioutil.ReadAll(resp.Body)
@@ -249,6 +251,6 @@ func (bot TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error
 	// 	value, err := lnurl.HandleChannel(b)
 	// 	return rawurl, value, err
 	default:
-		return rawurl, nil, errors.New("Unkown LNURL response.")
+		return rawurl, nil, fmt.Errorf("Unkown LNURL response.")
 	}
 }
