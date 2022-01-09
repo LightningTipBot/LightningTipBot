@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"strings"
 	"time"
 
@@ -43,13 +44,13 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) (context.Conte
 		bot.tryDeleteMessage(m)
 		bot.trySendMessage(m.Sender, helpTipUsage(ctx, Translate(ctx, "tipDidYouReplyMessage")))
 		bot.trySendMessage(m.Sender, Translate(ctx, "tipInviteGroupMessage"))
-		return ctx, fmt.Errorf("no reply message")
+		return ctx, errors.Create(errors.NoReplyMessageError)
 	}
 
 	if ok, err := TipCheckSyntax(ctx, m); !ok {
 		bot.trySendMessage(m.Sender, helpTipUsage(ctx, err))
 		NewMessage(m, WithDuration(0, bot))
-		return ctx, fmt.Errorf("invalid syntax")
+		return ctx, errors.Create(errors.InvalidSyntaxError)
 	}
 
 	// get tip amount
