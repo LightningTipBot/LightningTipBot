@@ -61,7 +61,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) (context.Conte
 		NewMessage(m, WithDuration(0, bot))
 		bot.trySendMessage(m.Sender, helpTipUsage(ctx, Translate(ctx, "tipValidAmountMessage")))
 		log.Warnln(errmsg)
-		return ctx, fmt.Errorf("invalid amount")
+		return ctx, errors.Create(errors.InvalidAmountError)
 	}
 
 	err = bot.parseCmdDonHandler(ctx, m)
