@@ -24,7 +24,7 @@ func (bot *TipBot) balanceHandler(ctx context.Context, m *tb.Message) (context.C
 	// first check whether the user is initialized
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.NoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 
 	if !user.Initialized {

@@ -234,7 +234,7 @@ func (bot TipBot) handleInlineTipjarQuery(ctx context.Context, q *tb.Query) (con
 func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
 	from := LoadUser(ctx)
 	if from.Wallet == nil {
-		return ctx, errors.Create(errors.NoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 	tx := &InlineTipjar{Base: storage.New(storage.ID(c.Data))}
 	mutex.LockWithContext(ctx, tx.ID)

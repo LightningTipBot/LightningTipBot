@@ -220,7 +220,7 @@ func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) (
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		bot.tryDeleteMessage(c.Message)
-		return ctx, errors.Create(errors.NoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 
 	// reset state immediately

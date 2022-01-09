@@ -58,7 +58,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) (context.Cont
 	bot.anyTextHandler(ctx, m)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.NoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 
 	// reset state immediately
@@ -223,7 +223,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) (context.Cont
 func (bot *TipBot) keyboardSendHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.NoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 	enterUserStateData := &EnterUserStateData{
 		ID:              "id",

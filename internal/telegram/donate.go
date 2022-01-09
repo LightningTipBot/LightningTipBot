@@ -38,7 +38,7 @@ func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) (context.C
 	bot.anyTextHandler(ctx, m)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.NoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 	// if no amount is in the command, ask for it
 	amount, err := decodeAmountFromCommand(m.Text)
