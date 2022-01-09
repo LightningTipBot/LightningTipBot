@@ -55,6 +55,10 @@ func LockWithContext(ctx context.Context, s string) {
 		log.Error("[Mutex] LockWithContext: uid is empty!")
 		return
 	}
+	if len(s) == 0 {
+		log.Error("[Mutex] LockWithContext: s is empty!")
+		return
+	}
 	// sync mutex to sync checkSoftLock with the increment of nLocks
 	// same user can't lock the same object multiple times
 	Lock(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
@@ -62,7 +66,7 @@ func LockWithContext(ctx context.Context, s string) {
 	if nLocks == 0 {
 		Lock(s)
 	} else {
-		log.Tracef("[Mutex] Skip lock (nLocks: %d)", nLocks)
+		log.Debugf("[Mutex] Skip lock (nLocks: %d)", nLocks)
 	}
 	nLocks++
 	mutexMap.Set(fmt.Sprintf("nLocks:%s", uid), nLocks)
@@ -79,6 +83,10 @@ func UnlockWithContext(ctx context.Context, s string) {
 		log.Error("[Mutex] UnlockWithContext: uid is empty!")
 		return
 	}
+	if len(s) == 0 {
+		log.Error("[Mutex] UnlockWithContext: s is empty!")
+		return
+	}
 	Lock(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
 	var nLocks = checkSoftLock(uid)
 	nLocks--
@@ -87,7 +95,7 @@ func UnlockWithContext(ctx context.Context, s string) {
 		Unlock(s)
 		mutexMap.Remove(fmt.Sprintf("nLocks:%s", uid))
 	} else {
-		log.Tracef("[Mutex] Skip unlock (nLocks: %d)", nLocks)
+		log.Debugf("[Mutex] Skip unlock (nLocks: %d)", nLocks)
 	}
 	Unlock(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
 	//mutexMap.Remove(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
