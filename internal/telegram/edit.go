@@ -68,7 +68,7 @@ func (bot TipBot) startEditWorker() {
 // tryEditStack will add the editable to the edit stack, if what (message) changed.
 func (bot TipBot) tryEditStack(to tb.Editable, key string, what interface{}, options ...interface{}) {
 	sig, chat := to.MessageSig()
-	log.Debugf("[tryEditStack] sig=%s, chat=%d, key=%s, what=%+v, options=%+v", sig, chat, key, what, options)
+	log.Tracef("[tryEditStack] sig=%s, chat=%d, key=%s, what=%+v, options=%+v", sig, chat, key, what, options)
 	// var sig = fmt.Sprintf("%s-%d", msgSig, chat)
 	if e, ok := editStack.Get(key); ok {
 		editFromStack := e.(edit)

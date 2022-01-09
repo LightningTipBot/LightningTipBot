@@ -70,7 +70,7 @@ func (bot TipBot) shopItemSettingsMenu(ctx context.Context, shop *Shop, item *Sh
 	shopItemPriceButton = shopKeyboard.Data("💯 Set price", "shop_itemprice", item.ID)
 	shopItemDeleteButton = shopKeyboard.Data("🚫 Delete item", "shop_itemdelete", item.ID)
 	shopItemTitleButton = shopKeyboard.Data("⌨️ Set title", "shop_itemtitle", item.ID)
-	shopItemAddFileButton = shopKeyboard.Data("💾 Add file", "shop_itemaddfile", item.ID)
+	shopItemAddFileButton = shopKeyboard.Data("💾 Add files ...", "shop_itemaddfile", item.ID)
 	shopItemSettingsBackButton = shopKeyboard.Data("⬅️ Back", "shop_itemsettingsback", item.ID)
 	user := LoadUser(ctx)
 	buttons := []tb.Row{}
@@ -162,15 +162,14 @@ func (bot *TipBot) getUserShopview(ctx context.Context, user *lnbits.User) (shop
 }
 func (bot *TipBot) shopViewDeleteAllStatusMsgs(ctx context.Context, user *lnbits.User) (shopView ShopView, err error) {
 	mutex.Lock(fmt.Sprintf("shopview-delete-%d", user.Telegram.ID))
+	defer mutex.Unlock(fmt.Sprintf("shopview-delete-%d", user.Telegram.ID))
 	shopView, err = bot.getUserShopview(ctx, user)
 	if err != nil {
 		return
 	}
-
 	deleteStatusMessages(shopView.StatusMessages, bot)
 	shopView.StatusMessages = make([]*tb.Message, 0)
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
-	mutex.Unlock(fmt.Sprintf("shopview-delete-%d", user.Telegram.ID))
 	return
 }
 
@@ -189,6 +188,7 @@ func (bot *TipBot) sendStatusMessage(ctx context.Context, to tb.Recipient, what 
 
 	// write into cache
 	mutex.Lock(id)
+	defer mutex.Unlock(id)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
 		return nil
@@ -196,7 +196,6 @@ func (bot *TipBot) sendStatusMessage(ctx context.Context, to tb.Recipient, what 
 	statusMsg := bot.trySendMessage(to, what, options...)
 	shopView.StatusMessages = append(shopView.StatusMessages, statusMsg)
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
-	mutex.Unlock(id)
 	return statusMsg
 }
 
@@ -272,7 +271,7 @@ func (bot *TipBot) addUserShop(ctx context.Context, user *lnbits.User) (*Shop, e
 	return shop, nil
 }
 
-// getShop returns the Shop for the given ID
+// getShop returns the Shop of a given ID
 func (bot *TipBot) getShop(ctx context.Context, shopId string) (*Shop, error) {
 	tx := &Shop{Base: storage.New(storage.ID(shopId))}
 	mutex.LockWithContext(ctx, tx.ID)

@@ -618,13 +618,13 @@ func (bot *TipBot) shopItemAddItemHandler(ctx context.Context, c *tb.Callback) {
 	}
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
-		log.Errorf("[addItemFileHandler] %s", err.Error())
+		log.Errorf("[shopItemAddItemHandler] %s", err.Error())
 		return
 	}
 
 	shop, err := bot.getShop(ctx, shopView.ShopID)
 	if err != nil {
-		log.Errorf("[shopNewItemHandler] %s", err.Error())
+		log.Errorf("[shopItemAddItemHandler] %s", err.Error())
 		return
 	}
 
@@ -651,10 +651,9 @@ func (bot *TipBot) addItemFileHandler(ctx context.Context, m *tb.Message) {
 		log.Errorf("[addItemFileHandler] %s", err.Error())
 		return
 	}
-
 	shop, err := bot.getShop(ctx, shopView.ShopID)
 	if err != nil {
-		log.Errorf("[shopNewItemHandler] %s", err.Error())
+		log.Errorf("[addItemFileHandler] %s", err.Error())
 		return
 	}
 
@@ -739,12 +738,12 @@ func (bot *TipBot) shopGetItemFilesHandler(ctx context.Context, c *tb.Callback) 
 	}
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
-		log.Errorf("[addItemFileHandler] %s", err.Error())
+		log.Errorf("[shopGetItemFilesHandler] %s", err.Error())
 		return
 	}
 	shop, err := bot.getShop(ctx, shopView.ShopID)
 	if err != nil {
-		log.Errorf("[shopNewItemHandler] %s", err.Error())
+		log.Errorf("[shopGetItemFilesHandler] %s", err.Error())
 		return
 	}
 	itemID := c.Data
@@ -1010,12 +1009,14 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 	var shopsMsg *tb.Message
 	if err == nil && !strings.HasPrefix(strings.Split(m.Text, " ")[0], "/shop") {
 		// the user is returning to a shops view from a back button callback
-		if shopView.Message.Photo == nil {
+		if shopView.Message != nil && shopView.Message.Photo == nil {
 			shopsMsg, _ = bot.tryEditMessage(shopView.Message, ShopsText, bot.shopsMainMenu(ctx, shops))
 		}
 		if shopsMsg == nil {
 			// if editing has failed, we will send a new message
-			bot.tryDeleteMessage(shopView.Message)
+			if shopView.Message != nil {
+				bot.tryDeleteMessage(shopView.Message)
+			}
 			shopsMsg = bot.trySendMessage(m.Chat, ShopsText, bot.shopsMainMenu(ctx, shops))
 
 		}
