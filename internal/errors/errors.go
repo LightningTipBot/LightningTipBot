@@ -15,6 +15,7 @@ const (
 	NoPhotoError
 	NoFileFoundError
 	NotActiveError
+	InvalidTypeError
 )
 const (
 	NoShopError TipBotErrorType = 3000 + iota
@@ -51,6 +52,7 @@ var errMap = map[TipBotErrorType]TipBotError{
 	NoFileFoundError:          NoFileFound,
 	UnknownError:              Unknown,
 	NotActiveError:            NotActive,
+	InvalidTypeError:          InvalidType,
 }
 
 var (
@@ -70,6 +72,7 @@ var (
 	NoFileFound          = TipBotError{Err: fmt.Errorf("no file found")}
 	Unknown              = TipBotError{Err: fmt.Errorf("unknown error")}
 	NotActive            = TipBotError{Err: fmt.Errorf("element not active")}
+	InvalidType          = TipBotError{Err: fmt.Errorf("invalid type")}
 )
 
 func Create(code TipBotErrorType) TipBotError {
