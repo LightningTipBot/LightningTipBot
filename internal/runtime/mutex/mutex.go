@@ -53,11 +53,9 @@ func LockWithContext(ctx context.Context, s string) {
 	uid := ctx.Value("uid").(string)
 	if len(uid) == 0 {
 		log.Error("[Mutex] LockWithContext: uid is empty!")
-		return
 	}
 	if len(s) == 0 {
 		log.Error("[Mutex] LockWithContext: s is empty!")
-		return
 	}
 	// sync mutex to sync checkSoftLock with the increment of nLocks
 	// same user can't lock the same object multiple times
