@@ -575,7 +575,7 @@ func (bot *TipBot) addShopItem(ctx context.Context, shopId string) (*Shop, ShopI
 func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) (context.Context, error) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.NoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 
 	// read item from user.StateData
@@ -625,7 +625,7 @@ func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) (context
 func (bot *TipBot) shopItemAddItemHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.NoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
@@ -656,7 +656,7 @@ func (bot *TipBot) shopItemAddItemHandler(ctx context.Context, c *tb.Callback) (
 func (bot *TipBot) addItemFileHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.NoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
@@ -748,7 +748,7 @@ func (bot *TipBot) addItemFileHandler(ctx context.Context, m *tb.Message) (conte
 func (bot *TipBot) shopGetItemFilesHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.NoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
@@ -786,7 +786,7 @@ func (bot *TipBot) shopGetItemFilesHandler(ctx context.Context, c *tb.Callback) 
 func (bot *TipBot) shopConfirmBuyHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.NoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {

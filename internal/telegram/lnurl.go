@@ -47,7 +47,7 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) (context.Con
 	log.Infof("[lnurlHandler] %s", m.Text)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.NoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 
 	// if only /lnurl is entered, show the lnurl of the user

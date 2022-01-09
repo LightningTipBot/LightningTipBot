@@ -87,7 +87,7 @@ func (bot *TipBot) askForUser(ctx context.Context, id string, eventType string, 
 func (bot *TipBot) enterUserHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.NoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 
 	if !(user.StateKey == lnbits.UserEnterUser) {

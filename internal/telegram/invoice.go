@@ -73,7 +73,7 @@ func (bot *TipBot) invoiceHandler(ctx context.Context, m *tb.Message) (context.C
 	bot.anyTextHandler(ctx, m)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.NoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 	userStr := GetUserStr(user.Telegram)
 	if m.Chat.Type != tb.ChatPrivate {

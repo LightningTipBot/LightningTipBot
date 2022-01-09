@@ -52,7 +52,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) (context.Conte
 	bot.anyTextHandler(ctx, m)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.NoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 	if len(strings.Split(m.Text, " ")) < 2 {
 		NewMessage(m, WithDuration(0, bot))
@@ -179,7 +179,7 @@ func (bot *TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) (conte
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		bot.tryDeleteMessage(c.Message)
-		return ctx, errors.Create(errors.NoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 
 	invoiceString := payData.Invoice
