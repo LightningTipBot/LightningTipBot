@@ -489,18 +489,8 @@ func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) {
 		Page:      0,
 		ShopOwner: shopOwner,
 	}
-	// bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
-	shopView.Message = bot.displayShopItem(ctx, m, shop)
-	// shopMessage := &tb.Message{Chat: m.Chat}
-	// if len(shop.ItemIds) > 0 {
-	// 	// item := shop.Items[shop.ItemIds[shopView.Page]]
-	// 	// shopMessage = bot.trySendMessage(m.Chat, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
-	// 	shopMessage = bot.displayShopItem(ctx, m, shop)
-	// } else {
-	// 	shopMessage = bot.trySendMessage(m.Chat, "No items in shop.", bot.shopMenu(ctx, shop, &ShopItem{}))
-	// }
-	// shopView.Message = shopMessage
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
+	shopView.Message = bot.displayShopItem(ctx, m, shop)
 	return
 }
 
