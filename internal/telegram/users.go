@@ -96,6 +96,10 @@ func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int64, err error) {
 }
 
 func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) (*lnbits.User, error) {
+	// failsafe: do not create wallet for existing user
+	if _, exists := bot.UserExists(tbUser); exists {
+		return nil, fmt.Errorf("user already exists")
+	}
 	user := &lnbits.User{Telegram: tbUser}
 	userStr := GetUserStr(tbUser)
 	log.Printf("[CreateWalletForTelegramUser] Creating wallet for user %s ... ", userStr)
@@ -105,6 +109,7 @@ func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) (*lnbits.User, e
 		log.Errorln(errmsg)
 		return user, err
 	}
+	// todo: remove this. we're doing this already in bot.createWallet().
 	err = UpdateUserRecord(user, *bot)
 	if err != nil {
 		return nil, err
