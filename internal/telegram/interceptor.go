@@ -3,9 +3,10 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"reflect"
 	"strconv"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/once"
@@ -50,6 +51,7 @@ func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context
 	user := getTelegramUserFromInterface(i)
 	if user != nil {
 		mutex.Unlock(strconv.FormatInt(user.ID, 10))
+		return ctx, nil
 	}
 	return ctx, errors.Create(errors.InvalidTypeError)
 }

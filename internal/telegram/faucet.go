@@ -265,7 +265,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 	if from.Telegram.ID == to.Telegram.ID {
 		log.Debugf("[faucet] %s is the owner faucet %s", GetUserStr(to.Telegram), inlineFaucet.ID)
-		bot.trySendMessage(from.Telegram, Translate(ctx, "sendYourselfMessage"))
+		ctx = context.WithValue(ctx, "callback_response", Translate(ctx, "sendYourselfMessage"))
 		return ctx, errors.Create(errors.SelfPaymentError)
 	}
 	// check if to user has already taken from the faucet
@@ -273,6 +273,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		if a.Telegram.ID == to.Telegram.ID {
 			// to user is already in To slice, has taken from facuet
 			log.Debugf("[faucet] %s:%d already took from faucet %s", GetUserStr(to.Telegram), to.Telegram.ID, inlineFaucet.ID)
+			ctx = context.WithValue(ctx, "callback_response", Translate(ctx, "inlineFaucetAlreadyTookMessage"))
 			return ctx, errors.Create(errors.UnknownError)
 		}
 	}
@@ -309,6 +310,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 			// bot.trySendMessage(from.Telegram, Translate(ctx, "sendErrorMessage"))
 			errMsg := fmt.Sprintf("[faucet] Transaction failed: %s", err.Error())
 			log.Warnln(errMsg)
+			ctx = context.WithValue(ctx, "callback_response", Translate(ctx, "errorTryLaterMessage"))
 			// if faucet fails, cancel it:
 			// c.Sender.ID = inlineFaucet.From.Telegram.ID // overwrite the sender of the callback to be the faucet owner
 			// log.Debugf("[faucet] Canceling faucet %s...", inlineFaucet.ID)
@@ -321,7 +323,9 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		inlineFaucet.To = append(inlineFaucet.To, to)
 		inlineFaucet.RemainingAmount = inlineFaucet.RemainingAmount - inlineFaucet.PerUserAmount
 		go func() {
-			bot.trySendMessage(to.Telegram, fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "inlineFaucetReceivedMessage"), fromUserStrMd, inlineFaucet.PerUserAmount))
+			to_message := fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "inlineFaucetReceivedMessage"), fromUserStrMd, inlineFaucet.PerUserAmount)
+			ctx = context.WithValue(ctx, "callback_response", to_message)
+			bot.trySendMessage(to.Telegram, to_message)
 			bot.trySendMessage(from.Telegram, fmt.Sprintf(i18n.Translate(from.Telegram.LanguageCode, "inlineFaucetSentMessage"), inlineFaucet.PerUserAmount, toUserStrMd))
 		}()
 		// build faucet message
@@ -362,7 +366,9 @@ func (bot *TipBot) cancelInlineFaucet(ctx context.Context, c *tb.Callback, ignor
 
 	inlineFaucet := fn.(*InlineFaucet)
 	if ignoreID || c.Sender.ID == inlineFaucet.From.Telegram.ID {
-		bot.tryEditStack(c.Message, inlineFaucet.ID, i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetCancelledMessage"), &tb.ReplyMarkup{})
+		faucet_cancelled_message := i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetCancelledMessage")
+		bot.tryEditStack(c.Message, inlineFaucet.ID, faucet_cancelled_message, &tb.ReplyMarkup{})
+		ctx = context.WithValue(ctx, "callback_response", faucet_cancelled_message)
 		// set the inlineFaucet inactive
 		inlineFaucet.Active = false
 		inlineFaucet.Canceled = true

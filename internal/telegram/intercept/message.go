@@ -62,8 +62,8 @@ func HandlerWithMessage(handler MessageFuncHandler, option ...MessageInterceptOp
 			log.Traceln(err)
 			return
 		}
-		defer interceptMessage(ctx, message, hm.onDefer)
 		ctx, err = hm.handler(ctx, message)
+		defer interceptMessage(ctx, message, hm.onDefer)
 		if err != nil {
 			log.Traceln(err)
 			return

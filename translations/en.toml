@@ -280,6 +280,7 @@ inlineFaucetInvalidAmountMessage        = """🚫 Invalid amount."""
 inlineFaucetSentMessage                 = """🚰 %d sat sent to %s."""
 inlineFaucetReceivedMessage             = """🚰 %s sent you %d sat."""
 inlineFaucetHelpFaucetInGroup           = """Create a faucet in a group with the bot inside or use 👉 inline command (/advanced for more)."""
+inlineFaucetAlreadyTookMessage          = """🚫 You already took from this faucet."""
 inlineFaucetHelpText                    = """📖 Oops, that didn't work. %s
 
 *Usage:* `/faucet <capacity> <per_user>`

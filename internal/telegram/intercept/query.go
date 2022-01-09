@@ -62,8 +62,8 @@ func HandlerWithQuery(handler QueryFuncHandler, option ...QueryInterceptOption) 
 			log.Traceln(err)
 			return
 		}
-		defer interceptQuery(ctx, query, hm.onDefer)
 		ctx, err = hm.handler(ctx, query)
+		defer interceptQuery(ctx, query, hm.onDefer)
 		if err != nil {
 			log.Traceln(err)
 			return

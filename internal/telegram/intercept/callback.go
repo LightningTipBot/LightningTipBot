@@ -2,6 +2,7 @@ package intercept
 
 import (
 	"context"
+
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
@@ -62,8 +63,8 @@ func HandlerWithCallback(handler CallbackFuncHandler, option ...CallbackIntercep
 			log.Traceln(err)
 			return
 		}
-		defer interceptCallback(ctx, c, hm.onDefer)
 		ctx, err = hm.handler(ctx, c)
+		defer interceptCallback(ctx, c, hm.onDefer)
 		if err != nil {
 			log.Traceln(err)
 			return

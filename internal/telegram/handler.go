@@ -63,8 +63,8 @@ func (bot TipBot) registerHandlerWithInterceptor(h Handler) {
 		for _, endpoint := range h.Endpoints {
 			bot.handle(endpoint, intercept.HandlerWithCallback(h.Handler.(func(ctx context.Context, callback *tb.Callback) (context.Context, error)),
 				intercept.WithBeforeCallback(h.Interceptor.Before...),
-				intercept.WithAfterCallback(append(h.Interceptor.After, bot.answerCallbackInterceptor)...),
-				intercept.WithDeferCallback(h.Interceptor.OnDefer...)))
+				intercept.WithAfterCallback(h.Interceptor.After...),
+				intercept.WithDeferCallback(append(h.Interceptor.OnDefer, bot.answerCallbackInterceptor)...)))
 		}
 	}
 }

@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"strings"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -825,7 +826,8 @@ func (bot *TipBot) shopConfirmBuyHandler(ctx context.Context, c *tb.Callback) (c
 		// bot.trySendMessage(c.Sender, sendErrorMessage)
 		errmsg := fmt.Sprintf("[shop] Error: Transaction failed. %s", err.Error())
 		log.Errorln(errmsg)
-		bot.trySendMessage(user.Telegram, i18n.Translate(user.Telegram.LanguageCode, "sendErrorMessage"), &tb.ReplyMarkup{})
+		ctx = context.WithValue(ctx, "callback_response", i18n.Translate(user.Telegram.LanguageCode, "sendErrorMessage"))
+		// bot.trySendMessage(user.Telegram, i18n.Translate(user.Telegram.LanguageCode, "sendErrorMessage"), &tb.ReplyMarkup{})
 		return ctx, errors.New(errors.UnknownError, err)
 	}
 	// bot.trySendMessage(user.Telegram, fmt.Sprintf("🛍 %d sat sent to %s.", amount, toUserStrMd), &tb.ReplyMarkup{})
@@ -833,6 +835,7 @@ func (bot *TipBot) shopConfirmBuyHandler(ctx context.Context, c *tb.Callback) (c
 	if len(item.Title) > 0 {
 		shopItemTitle = fmt.Sprintf("%s", item.Title)
 	}
+	ctx = context.WithValue(ctx, "callback_response", "🛍 Purchase successful.")
 	bot.trySendMessage(to.Telegram, fmt.Sprintf("🛍 Someone bought `%s` from your shop `%s` for `%d sat`.", str.MarkdownEscape(shopItemTitle), str.MarkdownEscape(shop.Title), amount))
 	bot.trySendMessage(from.Telegram, fmt.Sprintf("🛍 You bought `%s` from %s's shop `%s` for `%d sat`.", str.MarkdownEscape(shopItemTitle), toUserStrMd, str.MarkdownEscape(shop.Title), amount))
 	log.Infof("[🛍 shop] %s bought `%s` from %s's shop `%s` for `%d sat`.", str.MarkdownEscape(shopItemTitle), toUserStrMd, str.MarkdownEscape(shop.Title), amount)
@@ -1252,6 +1255,7 @@ func (bot *TipBot) shopSelect(ctx context.Context, c *tb.Callback) (context.Cont
 	// }
 	shopView.Message = shopMessage
 	log.Infof("[🛍 shop] %s erntering shop %s.", GetUserStr(user.Telegram), shop.ID)
+	ctx = context.WithValue(ctx, "callback_response", fmt.Sprintf("🛍 You are browsing %s", shop.Title))
 	return ctx, bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 }
 
