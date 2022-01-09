@@ -30,7 +30,20 @@ const (
 	NotActiveError
 )
 
-var errMap = map[TipBotErrorType]TipBotError{InvalidSyntaxError: InvalidSyntax}
+var errMap = map[TipBotErrorType]TipBotError{
+	InvalidSyntaxError:  InvalidSyntax,
+	NoPrivateChatError:  NoPrivateChat,
+	ShopNoOwnerError:    ShopNoOwner,
+	MaxReachedError:     MaxReached,
+	NotShopOwnerError:   NotShopOwner,
+	NoShopError:         NoShop,
+	SelfPaymentError:    SelfPayment,
+	NoPhotoError:        NoPhoto,
+	ItemIdMismatchError: ItemIdMismatch,
+	NoFileFoundError:    NoFileFound,
+	UnknownError:        Unknown,
+	NotActiveError:      NotActive,
+}
 var (
 	UserNoWallet   = TipBotError{Err: fmt.Errorf("user has no wallet")}
 	NoReplyMessage = TipBotError{Err: fmt.Errorf("no reply message")}
