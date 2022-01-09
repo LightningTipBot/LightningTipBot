@@ -2,8 +2,9 @@ package telegram
 
 import (
 	"context"
-	"errors"
+	stderrors "errors"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"strconv"
 	"time"
 
@@ -19,7 +20,7 @@ import (
 
 func (bot TipBot) startHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	if !m.Private() {
-		return ctx, fmt.Errorf("no private chat")
+		return ctx, errors.Create(errors.NoPrivateChatError)
 	}
 	// ATTENTION: DO NOT CALL ANY HANDLER BEFORE THE WALLET IS CREATED
 	// WILL RESULT IN AN ENDLESS LOOP OTHERWISE
@@ -47,7 +48,7 @@ func (bot TipBot) startHandler(ctx context.Context, m *tb.Message) (context.Cont
 
 func (bot TipBot) initWallet(tguser *tb.User) (*lnbits.User, error) {
 	user, err := GetUser(tguser, bot)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if stderrors.Is(err, gorm.ErrRecordNotFound) {
 		user = &lnbits.User{Telegram: tguser}
 		err = bot.createWallet(user)
 		if err != nil {
