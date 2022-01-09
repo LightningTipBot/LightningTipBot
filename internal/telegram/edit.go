@@ -46,14 +46,14 @@ func (bot TipBot) startEditWorker() {
 							if err != nil {
 								log.Errorf("[startEditWorker] Ignoring edit error: %s. len(editStack)=%d", err.Error(), len(editStack.Keys()))
 							}
-							log.Debugf("[startEditWorker] message from stack edited %+v. len(editStack)=%d", editFromStack, len(editStack.Keys()))
+							log.Tracef("[startEditWorker] message from stack edited %+v. len(editStack)=%d", editFromStack, len(editStack.Keys()))
 							editFromStack.lastEdit = time.Now()
 							editFromStack.edited = true
 							editStack.Set(k, editFromStack)
 						}
 					} else {
 						if editFromStack.lastEdit.Before(time.Now().Add(-(time.Duration(5) * time.Second))) {
-							log.Debugf("[startEditWorker] removing message edit from stack %+v. len(editStack)=%d", editFromStack, len(editStack.Keys()))
+							log.Tracef("[startEditWorker] removing message edit from stack %+v. len(editStack)=%d", editFromStack, len(editStack.Keys()))
 							editStack.Remove(k)
 						}
 					}
@@ -73,12 +73,12 @@ func (bot TipBot) tryEditStack(to tb.Editable, key string, what interface{}, opt
 	if e, ok := editStack.Get(key); ok {
 		editFromStack := e.(edit)
 		if editFromStack.what == what.(string) {
-			log.Debugf("[tryEditStack] Message already in edit stack. Skipping")
+			log.Tracef("[tryEditStack] Message already in edit stack. Skipping")
 			return
 		}
 	}
 	e := edit{options: options, key: key, what: what, to: to}
 
 	editStack.Set(key, e)
-	log.Debugf("[tryEditStack] Added message %s to edit stack. len(editStack)=%d", key, len(editStack.Keys()))
+	log.Tracef("[tryEditStack] Added message %s to edit stack. len(editStack)=%d", key, len(editStack.Keys()))
 }

@@ -594,7 +594,7 @@ func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) {
 	runtime.IgnoreError(shop.Set(shop, bot.ShopBunt))
 
 	bot.tryDeleteMessage(m)
-	bot.sendStatusMessageAndDelete(ctx, m.Sender, fmt.Sprintf("✅ Image added."))
+	bot.sendStatusMessageAndDelete(ctx, m.Sender, fmt.Sprintf("✅ Image added. You can now add files to this item. Don't forget to set a title and a price."))
 	ResetUserState(user, bot)
 	// go func() {
 	// 	time.Sleep(time.Duration(5) * time.Second)
