@@ -203,7 +203,7 @@ func (bot *TipBot) confirmWithdrawHandler(ctx context.Context, c *tb.Callback) (
 		lnurlWithdrawState = fn.(*LnurlWithdrawState)
 	default:
 		log.Errorf("[confirmWithdrawHandler] invalid type")
-		return ctx, fmt.Errorf("invalid type")
+		return ctx, errors.Create(errors.InvalidTypeError)
 	}
 	// onnly the correct user can press
 	if lnurlWithdrawState.From.Telegram.ID != c.Sender.ID {

@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"reflect"
 	"strconv"
 
@@ -26,8 +27,6 @@ const (
 	QueryInterceptor
 )
 
-var invalidTypeError = fmt.Errorf("invalid type")
-
 type Interceptor struct {
 	Type    InterceptorType
 	Before  []intercept.Func
@@ -43,7 +42,7 @@ func (bot TipBot) singletonCallbackInterceptor(ctx context.Context, i interface{
 		c := i.(*tb.Callback)
 		return ctx, once.Once(c.Data, strconv.FormatInt(c.Sender.ID, 10))
 	}
-	return ctx, invalidTypeError
+	return ctx, errors.Create(errors.InvalidTypeError)
 }
 
 // unlockInterceptor invoked as onDefer interceptor
@@ -52,7 +51,7 @@ func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context
 	if user != nil {
 		mutex.Unlock(strconv.FormatInt(user.ID, 10))
 	}
-	return ctx, invalidTypeError
+	return ctx, errors.Create(errors.InvalidTypeError)
 }
 func (bot TipBot) idInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	return context.WithValue(ctx, "uid", RandStringRunes(64)), nil
@@ -72,7 +71,7 @@ func (bot TipBot) answerCallbackInterceptor(ctx context.Context, i interface{}) 
 		err = bot.Telegram.Respond(c, res...)
 		return ctx, err
 	}
-	return ctx, invalidTypeError
+	return ctx, errors.Create(errors.InvalidTypeError)
 }
 
 // lockInterceptor invoked as first before interceptor
@@ -82,7 +81,7 @@ func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.C
 		mutex.Lock(strconv.FormatInt(user.ID, 10))
 		return ctx, nil
 	}
-	return nil, invalidTypeError
+	return nil, errors.Create(errors.InvalidTypeError)
 }
 
 // requireUserInterceptor will return an error if user is not found
@@ -96,20 +95,20 @@ func (bot TipBot) requireUserInterceptor(ctx context.Context, i interface{}) (co
 		// do not respond to banned users
 		if bot.UserIsBanned(user) {
 			ctx = context.WithValue(ctx, "banned", true)
-			return context.WithValue(ctx, "user", user), invalidTypeError
+			return context.WithValue(ctx, "user", user), errors.Create(errors.InvalidTypeError)
 		}
 		if user != nil {
 			return context.WithValue(ctx, "user", user), err
 		}
 	}
-	return nil, invalidTypeError
+	return nil, errors.Create(errors.InvalidTypeError)
 }
 
 func (bot TipBot) loadUserInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	ctx, _ = bot.requireUserInterceptor(ctx, i)
 	// if user is banned, also loadUserInterceptor will return an error
 	if ctx.Value("banned") != nil && ctx.Value("banned").(bool) {
-		return nil, invalidTypeError
+		return nil, errors.Create(errors.InvalidTypeError)
 	}
 	return ctx, nil
 }
@@ -143,7 +142,7 @@ func (bot TipBot) loadReplyToInterceptor(ctx context.Context, i interface{}) (co
 		}
 		return ctx, nil
 	}
-	return ctx, invalidTypeError
+	return ctx, errors.Create(errors.InvalidTypeError)
 }
 
 func (bot TipBot) localizerInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
@@ -190,7 +189,7 @@ func (bot TipBot) requirePrivateChatInterceptor(ctx context.Context, i interface
 		}
 		return ctx, nil
 	}
-	return nil, invalidTypeError
+	return nil, errors.Create(errors.InvalidTypeError)
 }
 
 const photoTag = "<Photo>"
@@ -214,7 +213,7 @@ func (bot TipBot) logMessageInterceptor(ctx context.Context, i interface{}) (con
 		log.Infof("[Callback %s:%d] Data: %s", GetUserStr(m.Sender), m.Sender.ID, m.Data)
 		return ctx, nil
 	}
-	return nil, invalidTypeError
+	return nil, errors.Create(errors.InvalidTypeError)
 }
 
 // LoadUser from context
