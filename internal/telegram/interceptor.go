@@ -58,6 +58,7 @@ func (bot TipBot) idInterceptor(ctx context.Context, i interface{}) (context.Con
 	return context.WithValue(ctx, "uid", RandStringRunes(64)), nil
 }
 
+// answerCallbackInterceptor will answer the callback with the given text in the context
 func (bot TipBot) answerCallbackInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	switch i.(type) {
 	case *tb.Callback:

@@ -528,7 +528,7 @@ func (bot *TipBot) shopNewItemHandler(ctx context.Context, c *tb.Callback) {
 		return
 	}
 	SetUserState(user, bot, lnbits.UserStateShopItemSendPhoto, string(paramsJson))
-	bot.sendStatusMessage(ctx, c.Sender, fmt.Sprintf("🌄 Send me an image."))
+	bot.sendStatusMessage(ctx, c.Sender, fmt.Sprintf("🌄 Send me a cover image."))
 }
 
 // addShopItem is a helper function for creating a shop item in the database
@@ -983,7 +983,7 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) {
 	// shows "your shop" or "@other's shop"
 	shopOwnerText := "your"
 	if shopOwner.Telegram.ID != user.Telegram.ID {
-		shopOwnerText = fmt.Sprintf("%s's", GetUserStrMd(shopOwner.Telegram))
+		shopOwnerText = fmt.Sprintf("%s's", GetUserStr(shopOwner.Telegram))
 	}
 	ShopsText = fmt.Sprintf(ShopsTextWelcome, shopOwnerText)
 	if len(shops.Description) > 0 {
