@@ -498,8 +498,19 @@ func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) (context.Cont
 		Page:      0,
 		ShopOwner: shopOwner,
 	}
+	// bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 	shopView.Message = bot.displayShopItem(ctx, m, shop)
-	return ctx, bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
+	// shopMessage := &tb.Message{Chat: m.Chat}
+	// if len(shop.ItemIds) > 0 {
+	// 	// item := shop.Items[shop.ItemIds[shopView.Page]]
+	// 	// shopMessage = bot.trySendMessage(m.Chat, item.TbPhoto, bot.shopMenu(ctx, shop, &item))
+	// 	shopMessage = bot.displayShopItem(ctx, m, shop)
+	// } else {
+	// 	shopMessage = bot.trySendMessage(m.Chat, "No items in shop.", bot.shopMenu(ctx, shop, &ShopItem{}))
+	// }
+	// shopView.Message = shopMessage
+	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
+	return ctx, nil
 }
 
 // shopNewItemHandler is invoked when the user presses the new item button
@@ -526,7 +537,7 @@ func (bot *TipBot) shopNewItemHandler(ctx context.Context, c *tb.Callback) (cont
 		return ctx, err
 	}
 	SetUserState(user, bot, lnbits.UserStateShopItemSendPhoto, string(paramsJson))
-	bot.sendStatusMessage(ctx, c.Sender, fmt.Sprintf("🌄 Send me a cover image."))
+	bot.sendStatusMessage(ctx, c.Sender, fmt.Sprintf("🌄 Send me an image."))
 	return ctx, nil
 }
 
@@ -593,7 +604,7 @@ func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) (context
 	runtime.IgnoreError(shop.Set(shop, bot.ShopBunt))
 
 	bot.tryDeleteMessage(m)
-	bot.sendStatusMessageAndDelete(ctx, m.Sender, fmt.Sprintf("✅ Image added. You can now add files to this item. Don't forget to set a title and a price."))
+	bot.sendStatusMessageAndDelete(ctx, m.Sender, fmt.Sprintf("✅ Image added."))
 	ResetUserState(user, bot)
 	// go func() {
 	// 	time.Sleep(time.Duration(5) * time.Second)
@@ -618,13 +629,13 @@ func (bot *TipBot) shopItemAddItemHandler(ctx context.Context, c *tb.Callback) (
 	}
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
-		log.Errorf("[shopItemAddItemHandler] %s", err.Error())
+		log.Errorf("[addItemFileHandler] %s", err.Error())
 		return ctx, err
 	}
 
 	shop, err := bot.getShop(ctx, shopView.ShopID)
 	if err != nil {
-		log.Errorf("[shopItemAddItemHandler] %s", err.Error())
+		log.Errorf("[shopNewItemHandler] %s", err.Error())
 		return ctx, err
 	}
 
@@ -652,9 +663,10 @@ func (bot *TipBot) addItemFileHandler(ctx context.Context, m *tb.Message) (conte
 		log.Errorf("[addItemFileHandler] %s", err.Error())
 		return ctx, err
 	}
+
 	shop, err := bot.getShop(ctx, shopView.ShopID)
 	if err != nil {
-		log.Errorf("[addItemFileHandler] %s", err.Error())
+		log.Errorf("[shopNewItemHandler] %s", err.Error())
 		return ctx, err
 	}
 
@@ -740,12 +752,12 @@ func (bot *TipBot) shopGetItemFilesHandler(ctx context.Context, c *tb.Callback) 
 	}
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
-		log.Errorf("[shopGetItemFilesHandler] %s", err.Error())
+		log.Errorf("[addItemFileHandler] %s", err.Error())
 		return ctx, err
 	}
 	shop, err := bot.getShop(ctx, shopView.ShopID)
 	if err != nil {
-		log.Errorf("[shopGetItemFilesHandler] %s", err.Error())
+		log.Errorf("[shopNewItemHandler] %s", err.Error())
 		return ctx, err
 	}
 	itemID := c.Data
@@ -985,7 +997,7 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) (context.Con
 	// shows "your shop" or "@other's shop"
 	shopOwnerText := "your"
 	if shopOwner.Telegram.ID != user.Telegram.ID {
-		shopOwnerText = fmt.Sprintf("%s's", GetUserStr(shopOwner.Telegram))
+		shopOwnerText = fmt.Sprintf("%s's", GetUserStrMd(shopOwner.Telegram))
 	}
 	ShopsText = fmt.Sprintf(ShopsTextWelcome, shopOwnerText)
 	if len(shops.Description) > 0 {
@@ -1012,14 +1024,12 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) (context.Con
 	var shopsMsg *tb.Message
 	if err == nil && !strings.HasPrefix(strings.Split(m.Text, " ")[0], "/shop") {
 		// the user is returning to a shops view from a back button callback
-		if shopView.Message != nil && shopView.Message.Photo == nil {
+		if shopView.Message.Photo == nil {
 			shopsMsg, _ = bot.tryEditMessage(shopView.Message, ShopsText, bot.shopsMainMenu(ctx, shops))
 		}
 		if shopsMsg == nil {
 			// if editing has failed, we will send a new message
-			if shopView.Message != nil {
-				bot.tryDeleteMessage(shopView.Message)
-			}
+			bot.tryDeleteMessage(shopView.Message)
 			shopsMsg = bot.trySendMessage(m.Chat, ShopsText, bot.shopsMainMenu(ctx, shops))
 
 		}
