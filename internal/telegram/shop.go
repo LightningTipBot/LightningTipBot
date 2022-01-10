@@ -838,7 +838,7 @@ func (bot *TipBot) shopConfirmBuyHandler(ctx context.Context, c *tb.Callback) (c
 	ctx = context.WithValue(ctx, "callback_response", "🛍 Purchase successful.")
 	bot.trySendMessage(to.Telegram, fmt.Sprintf("🛍 Someone bought `%s` from your shop `%s` for `%d sat`.", str.MarkdownEscape(shopItemTitle), str.MarkdownEscape(shop.Title), amount))
 	bot.trySendMessage(from.Telegram, fmt.Sprintf("🛍 You bought `%s` from %s's shop `%s` for `%d sat`.", str.MarkdownEscape(shopItemTitle), toUserStrMd, str.MarkdownEscape(shop.Title), amount))
-	log.Infof("[🛍 shop] %s bought `%s` from %s's shop `%s` for `%d sat`.", str.MarkdownEscape(shopItemTitle), toUserStrMd, str.MarkdownEscape(shop.Title), amount)
+	log.Infof("[🛍 shop] %s bought from %s shop: %s item: %s  for %d sat.", toUserStr, GetUserStr(to.Telegram), shop.Title, shopItemTitle, amount)
 	bot.shopSendItemFilesToUser(ctx, user, itemID)
 	return ctx, nil
 }

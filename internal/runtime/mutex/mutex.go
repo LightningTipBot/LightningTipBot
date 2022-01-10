@@ -64,7 +64,7 @@ func LockWithContext(ctx context.Context, s string) {
 	if nLocks == 0 {
 		Lock(s)
 	} else {
-		log.Debugf("[Mutex] Skip lock (nLocks: %d)", nLocks)
+		log.Tracef("[Mutex] Skip lock (nLocks: %d)", nLocks)
 	}
 	nLocks++
 	mutexMap.Set(fmt.Sprintf("nLocks:%s", uid), nLocks)
@@ -93,7 +93,7 @@ func UnlockWithContext(ctx context.Context, s string) {
 		Unlock(s)
 		mutexMap.Remove(fmt.Sprintf("nLocks:%s", uid))
 	} else {
-		log.Debugf("[Mutex] Skip unlock (nLocks: %d)", nLocks)
+		log.Tracef("[Mutex] Skip unlock (nLocks: %d)", nLocks)
 	}
 	Unlock(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
 	//mutexMap.Remove(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
@@ -112,7 +112,7 @@ func Lock(s string) {
 		m.Lock()
 		mutexMap.Set(s, m)
 	}
-	log.Debugf("[Mutex] Locked %s", s)
+	log.Tracef("[Mutex] Locked %s", s)
 }
 
 // Unlock unlocks a mutex in the mutexMap.
@@ -120,7 +120,7 @@ func Unlock(s string) {
 	if m, ok := mutexMap.Get(s); ok {
 		mutexMap.Remove(s)
 		m.(*sync.Mutex).Unlock()
-		log.Debugf("[Mutex] Unlocked %s", s)
+		log.Tracef("[Mutex] Unlocked %s", s)
 	} else {
 		// this should never happen. Mutex should have been in the mutexMap.
 		log.Errorf("[Mutex] ⚠️⚠️⚠️ Unlock %s not in mutexMap. Skip.", s)
