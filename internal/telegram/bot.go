@@ -2,7 +2,11 @@ package telegram
 
 import (
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	limiter "github.com/LightningTipBot/LightningTipBot/internal/rate"
@@ -81,6 +85,23 @@ func (bot TipBot) initBotWallet() error {
 	return nil
 }
 
+func (bot *TipBot) GracefulShutdown() {
+	t := time.NewTicker(time.Second * 30)
+	log.Infof("trying graceful shutdown for 30 seconds")
+	for {
+		select {
+		case <-t.C:
+			log.Infof("graceful shutdown limit reached. forcing shutdown")
+			return
+		default:
+			if mutex.IsEmpty() {
+				log.Infof("graceful shutdown")
+				return
+			}
+		}
+	}
+}
+
 // Start will initialize the Telegram bot and lnbits.
 func (bot *TipBot) Start() {
 	log.Infof("[Telegram] Authorized on account @%s", bot.Telegram.Me.Username)
@@ -93,5 +114,9 @@ func (bot *TipBot) Start() {
 	bot.registerTelegramHandlers()
 	initInvoiceEventCallbacks(bot)
 	initializeStateCallbackMessage(bot)
-	bot.Telegram.Start()
+	go bot.Telegram.Start()
+	exit := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
+	signal.Notify(exit, os.Interrupt, syscall.SIGTERM, syscall.SIGSTOP)
+	<-exit
+	bot.GracefulShutdown()
 }

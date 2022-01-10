@@ -19,6 +19,9 @@ func init() {
 	mutexMap = cmap.New()
 	mutexMapSync = sync.Mutex{}
 }
+func IsEmpty() bool {
+	return mutexMap.Count() == 0
+}
 
 func ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fmt.Sprintf("Current number of locks: %d\nLocks: %+v\nUse /mutex/unlock/{id} endpoint to mutex", len(mutexMap.Keys()), mutexMap.Keys())))
