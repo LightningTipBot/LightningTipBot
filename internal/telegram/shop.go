@@ -114,6 +114,7 @@ var (
 
 // shopItemPriceHandler is invoked when the user presses the item settings button to set a price
 func (bot *TipBot) shopItemPriceHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopItemPriceHandler] %s", c.Data)
 	user := LoadUser(ctx)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
@@ -137,6 +138,7 @@ func (bot *TipBot) shopItemPriceHandler(ctx context.Context, c *tb.Callback) (co
 
 // enterShopItemPriceHandler is invoked when the user enters a price amount
 func (bot *TipBot) enterShopItemPriceHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+	log.Debugf("[enterShopItemPriceHandler] %s", m.Text)
 	user := LoadUser(ctx)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
@@ -189,6 +191,7 @@ func (bot *TipBot) enterShopItemPriceHandler(ctx context.Context, m *tb.Message)
 
 // shopItemPriceHandler is invoked when the user presses the item settings button to set a item title
 func (bot *TipBot) shopItemTitleHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopItemTitleHandler] %s", c.Data)
 	user := LoadUser(ctx)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
@@ -212,6 +215,7 @@ func (bot *TipBot) shopItemTitleHandler(ctx context.Context, c *tb.Callback) (co
 
 // enterShopItemTitleHandler is invoked when the user enters a title of the item
 func (bot *TipBot) enterShopItemTitleHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+	log.Debugf("[enterShopItemTitleHandler] %s", m.Text)
 	user := LoadUser(ctx)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
@@ -260,6 +264,7 @@ func (bot *TipBot) enterShopItemTitleHandler(ctx context.Context, m *tb.Message)
 
 // shopItemSettingsHandler is invoked when the user presses the item settings button
 func (bot *TipBot) shopItemSettingsHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopItemSettingsHandler] %s", c.Data)
 	user := LoadUser(ctx)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
@@ -281,6 +286,7 @@ func (bot *TipBot) shopItemSettingsHandler(ctx context.Context, c *tb.Callback) 
 
 // shopItemPriceHandler is invoked when the user presses the item settings button to set a item title
 func (bot *TipBot) shopItemDeleteHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopItemDeleteHandler] %s", c.Data)
 	user := LoadUser(ctx)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
@@ -329,6 +335,7 @@ func (bot *TipBot) shopItemDeleteHandler(ctx context.Context, c *tb.Callback) (c
 
 // displayShopItemHandler is invoked when the user presses the back button in the item settings
 func (bot *TipBot) displayShopItemHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[displayShopItemHandler] c.Data: %s", c.Data)
 	user := LoadUser(ctx)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
@@ -350,6 +357,7 @@ func (bot *TipBot) displayShopItemHandler(ctx context.Context, c *tb.Callback) (
 
 // shopNextItemHandler is invoked when the user presses the next item button
 func (bot *TipBot) shopNextItemButtonHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopNextItemButtonHandler] c.Data: %s", c.Data)
 	user := LoadUser(ctx)
 	// shopView, err := bot.Cache.Get(fmt.Sprintf("shopview-%d", user.Telegram.ID))
 	shopView, err := bot.getUserShopview(ctx, user)
@@ -371,6 +379,7 @@ func (bot *TipBot) shopNextItemButtonHandler(ctx context.Context, c *tb.Callback
 
 // shopPrevItemButtonHandler is invoked when the user presses the previous item button
 func (bot *TipBot) shopPrevItemButtonHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopPrevItemButtonHandler] %s", c.Data)
 	user := LoadUser(ctx)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
@@ -412,6 +421,7 @@ func (bot *TipBot) getItemTitle(ctx context.Context, item *ShopItem) string {
 // requires that the shopview page is already set accordingly
 // m is the message that will be edited
 func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Shop) *tb.Message {
+	log.Debugf("[displayShopItem] shop: %+v", shop)
 	user := LoadUser(ctx)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
@@ -422,7 +432,7 @@ func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Sho
 	if shopView.Page >= len(shop.Items) {
 		shopView.Page = len(shop.Items) - 1
 	}
-
+	log.Debugf("[displayShopItem] shop: %s page: %d", shop.ID, shopView.Page)
 	if len(shop.Items) == 0 {
 		no_items_message := "There are no items in this shop yet."
 		if len(shopView.Message.Text) > 0 {
@@ -472,6 +482,7 @@ func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Sho
 
 // shopHandler is invoked when the user enters /shop
 func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+	log.Debugf("[shopHandler] %s", m.Text)
 	if !m.Private() {
 		return ctx, errors.Create(errors.NoPrivateChatError)
 	}
@@ -516,6 +527,7 @@ func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) (context.Cont
 
 // shopNewItemHandler is invoked when the user presses the new item button
 func (bot *TipBot) shopNewItemHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopNewItemHandler] %s", c.Data)
 	user := LoadUser(ctx)
 	shop, err := bot.getShop(ctx, c.Data)
 	if err != nil {
@@ -544,6 +556,7 @@ func (bot *TipBot) shopNewItemHandler(ctx context.Context, c *tb.Callback) (cont
 
 // addShopItem is a helper function for creating a shop item in the database
 func (bot *TipBot) addShopItem(ctx context.Context, shopId string) (*Shop, ShopItem, error) {
+	log.Debugf("[addShopItem] shopId: %s", shopId)
 	shop, err := bot.getShop(ctx, shopId)
 	if err != nil {
 		log.Errorf("[addShopItem] %s", err.Error())
@@ -574,6 +587,7 @@ func (bot *TipBot) addShopItem(ctx context.Context, shopId string) (*Shop, ShopI
 
 // addShopItemPhoto is invoked when the users sends a photo as a new item
 func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) (context.Context, error) {
+	log.Debugf("[addShopItemPhoto] <Photo>")
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return ctx, errors.Create(errors.UserNoWalletError)
@@ -624,6 +638,7 @@ func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) (context
 // ------------------- item files ----------
 // shopItemAddItemHandler is invoked when the user presses the new item button
 func (bot *TipBot) shopItemAddItemHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopItemAddItemHandler] %s", c.Data)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return ctx, errors.Create(errors.UserNoWalletError)
@@ -655,6 +670,7 @@ func (bot *TipBot) shopItemAddItemHandler(ctx context.Context, c *tb.Callback) (
 
 // addItemFileHandler is invoked when the users sends a new file for the item
 func (bot *TipBot) addItemFileHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+	log.Debugf("[addItemFileHandler] <File>")
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return ctx, errors.Create(errors.UserNoWalletError)
@@ -747,6 +763,7 @@ func (bot *TipBot) addItemFileHandler(ctx context.Context, m *tb.Message) (conte
 }
 
 func (bot *TipBot) shopGetItemFilesHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopGetItemFilesHandler] %s", c.Data)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return ctx, errors.Create(errors.UserNoWalletError)
@@ -785,6 +802,7 @@ func (bot *TipBot) shopGetItemFilesHandler(ctx context.Context, c *tb.Callback) 
 
 // shopConfirmBuyHandler is invoked when the user has confirmed to pay for an item
 func (bot *TipBot) shopConfirmBuyHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopConfirmBuyHandler] %s", c.Data)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return ctx, errors.Create(errors.UserNoWalletError)
@@ -845,6 +863,7 @@ func (bot *TipBot) shopConfirmBuyHandler(ctx context.Context, c *tb.Callback) (c
 
 // shopSendItemFilesToUser is a handler function to send itemID's files to the user
 func (bot *TipBot) shopSendItemFilesToUser(ctx context.Context, toUser *lnbits.User, itemID string) {
+	log.Debugf("[shopSendItemFilesToUser] %s -> %s", GetUserStr(toUser.Telegram), itemID)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return // errors.New("user has no wallet"), 0
@@ -919,6 +938,7 @@ func (bot *TipBot) shopsHandlerCallback(ctx context.Context, c *tb.Callback) (co
 
 // shopsHandler is invoked when the user enters /shops
 func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+	log.Debugf("[shopsHandler] %s", GetUserStr(m.Sender))
 	if !m.Private() {
 		return ctx, errors.Create(errors.NoPrivateChatError)
 	}
@@ -1059,6 +1079,7 @@ func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) (context.Con
 
 // shopsDeleteShopBrowser is invoked when the user clicks on "delete shops" and makes a list of all shops
 func (bot *TipBot) shopsDeleteShopBrowser(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopsDeleteShopBrowser] %s", c.Data)
 	user := LoadUser(ctx)
 	shops, err := bot.getUserShops(ctx, user)
 	if err != nil {
@@ -1081,6 +1102,7 @@ func (bot *TipBot) shopsDeleteShopBrowser(ctx context.Context, c *tb.Callback) (
 }
 
 func (bot *TipBot) shopsAskDeleteAllShopsHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopsAskDeleteAllShopsHandler] %s", c.Data)
 	shopResetShopButton := shopKeyboard.Data("⚠️ Delete all shops", "shops_reset", c.Data)
 	buttons := []tb.Row{
 		shopKeyboard.Row(shopResetShopButton),
@@ -1095,6 +1117,7 @@ func (bot *TipBot) shopsAskDeleteAllShopsHandler(ctx context.Context, c *tb.Call
 
 // shopsLinkShopBrowser is invoked when the user clicks on "shop links" and makes a list of all shops
 func (bot *TipBot) shopsLinkShopBrowser(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopsLinkShopBrowser] %s", c.Data)
 	user := LoadUser(ctx)
 	shops, err := bot.getUserShops(ctx, user)
 	if err != nil {
@@ -1116,6 +1139,7 @@ func (bot *TipBot) shopsLinkShopBrowser(ctx context.Context, c *tb.Callback) (co
 
 // shopSelectLink is invoked when the user has chosen a shop to get the link of
 func (bot *TipBot) shopSelectLink(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopSelectLink] %s", c.Data)
 	shop, _ := bot.getShop(ctx, c.Data)
 	if shop.Owner.Telegram.ID != c.Sender.ID {
 		return ctx, errors.Create(errors.UnknownError)
@@ -1126,6 +1150,7 @@ func (bot *TipBot) shopSelectLink(ctx context.Context, c *tb.Callback) (context.
 
 // shopsLinkShopBrowser is invoked when the user clicks on "shop links" and makes a list of all shops
 func (bot *TipBot) shopsRenameShopBrowser(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopsRenameShopBrowser] %s", c.Data)
 	user := LoadUser(ctx)
 	shops, err := bot.getUserShops(ctx, user)
 	if err != nil {
@@ -1147,6 +1172,7 @@ func (bot *TipBot) shopsRenameShopBrowser(ctx context.Context, c *tb.Callback) (
 
 // shopSelectLink is invoked when the user has chosen a shop to get the link of
 func (bot *TipBot) shopSelectRename(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopSelectRename] %s", c.Data)
 	user := LoadUser(ctx)
 	shop, _ := bot.getShop(ctx, c.Data)
 	if shop.Owner.Telegram.ID != c.Sender.ID {
@@ -1160,6 +1186,7 @@ func (bot *TipBot) shopSelectRename(ctx context.Context, c *tb.Callback) (contex
 
 // shopsDescriptionHandler is invoked when the user clicks on "description" to set a shop description
 func (bot *TipBot) shopsDescriptionHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopsDescriptionHandler] %s", c.Data)
 	user := LoadUser(ctx)
 	shops, err := bot.getUserShops(ctx, user)
 	if err != nil {
@@ -1173,6 +1200,7 @@ func (bot *TipBot) shopsDescriptionHandler(ctx context.Context, c *tb.Callback) 
 
 // enterShopsDescriptionHandler is invoked when the user enters the shop title
 func (bot *TipBot) enterShopsDescriptionHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+	log.Debugf("[enterShopsDescriptionHandler] %s", m.Text)
 	user := LoadUser(ctx)
 	shops, err := bot.getUserShops(ctx, user)
 	if err != nil {
@@ -1211,6 +1239,7 @@ func (bot *TipBot) enterShopsDescriptionHandler(ctx context.Context, m *tb.Messa
 
 // shopsResetHandler is invoked when the user clicks button to reset shops completely
 func (bot *TipBot) shopsResetHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopsResetHandler] %s", c.Data)
 	user := LoadUser(ctx)
 	shops, err := bot.getUserShops(ctx, user)
 	if err != nil {
@@ -1231,6 +1260,7 @@ func (bot *TipBot) shopsResetHandler(ctx context.Context, c *tb.Callback) (conte
 
 // shopSelect is invoked when the user has selected a shop to browse
 func (bot *TipBot) shopSelect(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopSelect] %s", c.Data)
 	shop, _ := bot.getShop(ctx, c.Data)
 	user := LoadUser(ctx)
 	shopView, err := bot.getUserShopview(ctx, user)
@@ -1261,6 +1291,7 @@ func (bot *TipBot) shopSelect(ctx context.Context, c *tb.Callback) (context.Cont
 
 // shopSelectDelete is invoked when the user has chosen a shop to delete
 func (bot *TipBot) shopSelectDelete(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopSelectDelete] %s", c.Data)
 	shop, _ := bot.getShop(ctx, c.Data)
 	user := LoadUser(ctx)
 	shops, err := bot.getUserShops(ctx, user)
@@ -1290,6 +1321,7 @@ func (bot *TipBot) shopSelectDelete(ctx context.Context, c *tb.Callback) (contex
 
 // shopsBrowser makes a button list of all shops the user can browse
 func (bot *TipBot) shopsBrowser(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopsBrowser] %s", c.Data)
 	user := LoadUser(ctx)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
@@ -1318,6 +1350,7 @@ func (bot *TipBot) shopsBrowser(ctx context.Context, c *tb.Callback) (context.Co
 
 // shopItemSettingsHandler is invoked when the user presses the shop settings button
 func (bot *TipBot) shopSettingsHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopSettingsHandler] %s", c.Data)
 	user := LoadUser(ctx)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
@@ -1337,6 +1370,7 @@ func (bot *TipBot) shopSettingsHandler(ctx context.Context, c *tb.Callback) (con
 
 // shopNewShopHandler is invoked when the user presses the new shop button
 func (bot *TipBot) shopNewShopHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+	log.Debugf("[shopNewShopHandler] %s", c.Data)
 	user := LoadUser(ctx)
 	shops, err := bot.getUserShops(ctx, user)
 	if err != nil {
@@ -1356,6 +1390,7 @@ func (bot *TipBot) shopNewShopHandler(ctx context.Context, c *tb.Callback) (cont
 
 // enterShopTitleHandler is invoked when the user enters the shop title
 func (bot *TipBot) enterShopTitleHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+	log.Debugf("[enterShopTitleHandler] %s", m.Text)
 	user := LoadUser(ctx)
 	// read item from user.StateData
 	shop, err := bot.getShop(ctx, user.StateData)
