@@ -26,6 +26,7 @@ type ShopView struct {
 	Page           int
 	Message        *tb.Message
 	StatusMessages []*tb.Message
+	Chat           *tb.Chat
 }
 
 type ShopItem struct {
@@ -435,7 +436,7 @@ func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Sho
 		shopView.Page = 0
 	}
 
-	log.Debugf("[displayShopItem] shop: %s page: %d", shop.ID, shopView.Page)
+	log.Debugf("[displayShopItem] shop: %s page: %d items: %d", shop.ID, shopView.Page, len(shop.Items))
 	if len(shop.Items) == 0 {
 		no_items_message := "There are no items in this shop yet."
 		if shopView.Message != nil && len(shopView.Message.Text) > 0 {
@@ -444,7 +445,7 @@ func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Sho
 			if shopView.Message != nil {
 				bot.tryDeleteMessage(shopView.Message)
 			}
-			shopView.Message = bot.trySendMessage(shopView.Message.Chat, no_items_message, bot.shopMenu(ctx, shop, &ShopItem{}))
+			shopView.Message = bot.trySendMessage(shopView.Chat, no_items_message, bot.shopMenu(ctx, shop, &ShopItem{}))
 		}
 		shopView.Page = 0
 		return shopView.Message
@@ -514,6 +515,7 @@ func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) (context.Cont
 		ShopID:    shop.ID,
 		Page:      0,
 		ShopOwner: shopOwner,
+		Chat:      m.Chat,
 	}
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 	shopView.Message = bot.displayShopItem(ctx, m, shop)
