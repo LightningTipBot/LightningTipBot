@@ -438,10 +438,12 @@ func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Sho
 	log.Debugf("[displayShopItem] shop: %s page: %d", shop.ID, shopView.Page)
 	if len(shop.Items) == 0 {
 		no_items_message := "There are no items in this shop yet."
-		if len(shopView.Message.Text) > 0 {
+		if shopView.Message != nil && len(shopView.Message.Text) > 0 {
 			shopView.Message, _ = bot.tryEditMessage(shopView.Message, no_items_message, bot.shopMenu(ctx, shop, &ShopItem{}))
 		} else {
-			bot.tryDeleteMessage(shopView.Message)
+			if shopView.Message != nil {
+				bot.tryDeleteMessage(shopView.Message)
+			}
 			shopView.Message = bot.trySendMessage(shopView.Message.Chat, no_items_message, bot.shopMenu(ctx, shop, &ShopItem{}))
 		}
 		shopView.Page = 0
