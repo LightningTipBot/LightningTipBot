@@ -106,7 +106,6 @@ func UnlockWithContext(ctx context.Context, s string) {
 // If the mutex was not in the mutexMap before, a new mutext is created and locked and written into the mutexMap.
 func Lock(s string) {
 	log.Tracef("[Mutex] Attempt Lock %s", s)
-	mutexMapSync.Lock()
 	if m, ok := mutexMap.Get(s); ok {
 		m.(*sync.Mutex).Lock()
 		mutexMap.Set(s, m)
@@ -115,7 +114,6 @@ func Lock(s string) {
 		m.Lock()
 		mutexMap.Set(s, m)
 	}
-	mutexMapSync.Unlock()
 	log.Tracef("[Mutex] Locked %s", s)
 }
 
