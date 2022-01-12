@@ -429,9 +429,12 @@ func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Sho
 		return nil
 	}
 	// failsafe: if the page is out of bounds, reset it
-	if shopView.Page >= len(shop.Items) {
+	if len(shop.Items) > 0 && shopView.Page >= len(shop.Items) {
 		shopView.Page = len(shop.Items) - 1
+	} else if len(shop.Items) == 0 {
+		shopView.Page = 0
 	}
+
 	log.Debugf("[displayShopItem] shop: %s page: %d", shop.ID, shopView.Page)
 	if len(shop.Items) == 0 {
 		no_items_message := "There are no items in this shop yet."
