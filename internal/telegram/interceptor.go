@@ -46,6 +46,16 @@ func (bot TipBot) singletonCallbackInterceptor(ctx context.Context, i interface{
 	return ctx, errors.Create(errors.InvalidTypeError)
 }
 
+// lockInterceptor invoked as first before interceptor
+func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
+	user := getTelegramUserFromInterface(i)
+	if user != nil {
+		mutex.Lock(strconv.FormatInt(user.ID, 10))
+		return ctx, nil
+	}
+	return nil, errors.Create(errors.InvalidTypeError)
+}
+
 // unlockInterceptor invoked as onDefer interceptor
 func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	user := getTelegramUserFromInterface(i)
@@ -74,16 +84,6 @@ func (bot TipBot) answerCallbackInterceptor(ctx context.Context, i interface{}) 
 		return ctx, err
 	}
 	return ctx, errors.Create(errors.InvalidTypeError)
-}
-
-// lockInterceptor invoked as first before interceptor
-func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
-	user := getTelegramUserFromInterface(i)
-	if user != nil {
-		mutex.Lock(strconv.FormatInt(user.ID, 10))
-		return ctx, nil
-	}
-	return nil, errors.Create(errors.InvalidTypeError)
 }
 
 // requireUserInterceptor will return an error if user is not found
