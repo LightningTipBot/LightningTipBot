@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -93,7 +94,7 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) (context.Cont
 	if err == nil {
 		if lightning.IsLightningAddress(arg) {
 			// lightning address, send to that address
-			err = bot.sendToLightningAddress(ctx, m, arg, amount)
+			ctx, err = bot.sendToLightningAddress(ctx, m, arg, amount)
 			if err != nil {
 				log.Errorln(err.Error())
 				return ctx, err

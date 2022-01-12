@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"io/ioutil"
 	"net/url"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -118,10 +119,10 @@ func (bot *TipBot) lnurlWithdrawHandler(ctx context.Context, m *tb.Message, with
 }
 
 // lnurlWithdrawHandlerWithdraw is invoked when the user has delivered an amount and is ready to pay
-func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Message) {
+func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Message) (context.Context, error) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 	statusMsg := bot.trySendMessage(m.Sender, Translate(ctx, "lnurlPreparingWithdraw"))
 
@@ -129,7 +130,7 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 	if user.StateKey != lnbits.UserHasEnteredAmount {
 		log.Errorln("[lnurlWithdrawHandlerWithdraw] state keys don't match")
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
-		return
+		return ctx, fmt.Errorf("wrong state key")
 	}
 
 	// read the enter amount state from user.StateData
@@ -138,7 +139,7 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
-		return
+		return ctx, err
 	}
 
 	// use the enter amount state of the user to load the LNURL payment state
@@ -149,7 +150,7 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
-		return
+		return ctx, err
 	}
 	var lnurlWithdrawState *LnurlWithdrawState
 	switch fn.(type) {
@@ -158,7 +159,7 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 	default:
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] invalid type")
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
-		return
+		return ctx, fmt.Errorf("invalid type")
 	}
 
 	confirmText := fmt.Sprintf(Translate(ctx, "confirmLnurlWithdrawMessage"), lnurlWithdrawState.Amount/1000)
@@ -184,6 +185,7 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 	// // add response to persistent struct
 	// lnurlWithdrawState.LNURResponse = response2
 	runtime.IgnoreError(lnurlWithdrawState.Set(lnurlWithdrawState, bot.Bunt))
+	return ctx, nil
 }
 
 // confirmPayHandler when user clicked pay on payment confirmation

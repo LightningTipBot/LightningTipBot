@@ -4,9 +4,10 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"strconv"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 
@@ -54,6 +55,8 @@ func (bot TipBot) initWallet(tguser *tb.User) (*lnbits.User, error) {
 		if err != nil {
 			return user, err
 		}
+		// set user initialized
+		user, err := GetUser(tguser, bot)
 		user.Initialized = true
 		err = UpdateUserRecord(user, bot)
 		if err != nil {

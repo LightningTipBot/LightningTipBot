@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"strconv"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -178,7 +179,7 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) (conte
 			return ctx, err
 		}
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(StateDataJson))
-		bot.lnurlPayHandlerSend(ctx, m)
+		return bot.lnurlPayHandlerSend(ctx, m)
 	case "LnurlWithdrawState":
 		tx := &LnurlWithdrawState{Base: storage.New(storage.ID(EnterAmountStateData.ID))}
 		mutex.LockWithContext(ctx, tx.ID)
@@ -199,7 +200,7 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) (conte
 			return ctx, err
 		}
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(StateDataJson))
-		bot.lnurlWithdrawHandlerWithdraw(ctx, m)
+		return bot.lnurlWithdrawHandlerWithdraw(ctx, m)
 	case "CreateInvoiceState":
 		m.Text = fmt.Sprintf("/invoice %d", amount)
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
@@ -220,8 +221,4 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) (conte
 		ResetUserState(user, bot)
 		return ctx, errors.Create(errors.InvalidSyntaxError)
 	}
-	// // reset database entry
-	// ResetUserState(user, bot)
-	// return
-	return ctx, nil
 }
