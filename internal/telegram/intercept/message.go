@@ -58,11 +58,11 @@ func HandlerWithMessage(handler MessageFuncHandler, option ...MessageInterceptOp
 	return func(message *tb.Message) {
 		ctx := context.Background()
 		ctx, err := interceptMessage(ctx, message, hm.before)
-		defer interceptMessage(ctx, message, hm.onDefer)
 		if err != nil {
 			log.Traceln(err)
 			return
 		}
+		defer interceptMessage(ctx, message, hm.onDefer)
 		ctx, err = hm.handler(ctx, message)
 		if err != nil {
 			log.Traceln(err)

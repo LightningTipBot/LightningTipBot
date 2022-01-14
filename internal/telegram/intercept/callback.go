@@ -59,11 +59,11 @@ func HandlerWithCallback(handler CallbackFuncHandler, option ...CallbackIntercep
 	return func(c *tb.Callback) {
 		ctx := context.Background()
 		ctx, err := interceptCallback(ctx, c, hm.before)
-		defer interceptCallback(ctx, c, hm.onDefer)
 		if err != nil {
 			log.Traceln(err)
 			return
 		}
+		defer interceptCallback(ctx, c, hm.onDefer)
 		ctx, err = hm.handler(ctx, c)
 		if err != nil {
 			log.Traceln(err)
