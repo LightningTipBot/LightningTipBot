@@ -391,6 +391,23 @@ func (bot *TipBot) finishFaucet(ctx context.Context, c *tb.Callback, inlineFauce
 	inlineFaucet.Active = false
 	log.Debugf("[faucet] Faucet finished %s", inlineFaucet.ID)
 	once.Remove(inlineFaucet.ID)
+
+	// send update to faucet creator
+	if inlineFaucet.From.Telegram.ID != 0 {
+		bot.trySendMessage(inlineFaucet.From.Telegram, listFaucetTakers(inlineFaucet))
+	}
+
+}
+
+func listFaucetTakers(inlineFaucet *InlineFaucet) string {
+	var to_str string
+	to_str = fmt.Sprintf("🚰 *Faucet summary*\n\nMemo: %s\nCapacity: %d sat\nTakers: %d\nRemaining: %d sat\n\n*Takers:*\n\n", inlineFaucet.Memo, inlineFaucet.Amount, inlineFaucet.NTaken, inlineFaucet.RemainingAmount)
+	to_str += "```\n"
+	for _, to := range inlineFaucet.To {
+		to_str += fmt.Sprintf("%s\n", GetUserStrMd(to.Telegram))
+	}
+	to_str += "```"
+	return to_str
 }
 
 func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
