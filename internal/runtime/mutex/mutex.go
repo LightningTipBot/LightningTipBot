@@ -108,11 +108,17 @@ func Lock(s string) {
 	log.Tracef("[Mutex] Attempt Lock %s", s)
 	if m, ok := mutexMap.Get(s); ok {
 		m.(*sync.Mutex).Lock()
+		// write into mutex map
+		mutexMapSync.Lock()
 		mutexMap.Set(s, m)
+		mutexMapSync.Unlock()
 	} else {
 		m := &sync.Mutex{}
 		m.Lock()
+		// write into mutex map
+		mutexMapSync.Lock()
 		mutexMap.Set(s, m)
+		mutexMapSync.Unlock()
 	}
 	log.Tracef("[Mutex] Locked %s", s)
 }
