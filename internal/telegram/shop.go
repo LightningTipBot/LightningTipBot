@@ -422,8 +422,8 @@ func (bot *TipBot) getItemTitle(ctx context.Context, item *ShopItem) string {
 // requires that the shopview page is already set accordingly
 // m is the message that will be edited
 func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Shop) *tb.Message {
-	log.Debugf("[displayShopItem] shop: %+v", shop)
 	user := LoadUser(ctx)
+	log.Debugf("[displayShopItem] User: %d shop: %s", GetUserStr(user.Telegram), shop.ID)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
 		log.Errorf("[displayShopItem] %s", err.Error())
