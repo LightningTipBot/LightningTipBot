@@ -3,8 +3,9 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -130,7 +131,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) (context.Conte
 			payButton,
 			cancelButton),
 	)
-	payMessage := bot.trySendMessage(m.Chat, confirmText, paymentConfirmationMenu)
+	payMessage := bot.trySendMessageEditable(m.Chat, confirmText, paymentConfirmationMenu)
 	payData := &PayData{
 		Base:            storage.New(storage.ID(id)),
 		From:            user,
@@ -226,7 +227,7 @@ func (bot *TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) (conte
 
 	if c.Message.Private() {
 		// if the command was invoked in private chat
-		// the edit below was cool, but we need to get rid of the replymarkup inline keyboard thingy for the main menu button update to work (for the new balance)
+		// the edit below was cool, but we need to pop up the keyboard again
 		// bot.tryEditMessage(c.Message, i18n.Translate(payData.LanguageCode, "invoicePaidMessage"), &tb.ReplyMarkup{})
 		bot.tryDeleteMessage(c.Message)
 		bot.trySendMessage(c.Sender, i18n.Translate(payData.LanguageCode, "invoicePaidMessage"))

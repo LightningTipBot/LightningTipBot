@@ -27,7 +27,7 @@ func (bot TipBot) startHandler(ctx context.Context, m *tb.Message) (context.Cont
 	// WILL RESULT IN AN ENDLESS LOOP OTHERWISE
 	// bot.helpHandler(m)
 	log.Printf("[⭐️ /start] New user: %s (%d)\n", GetUserStr(m.Sender), m.Sender.ID)
-	walletCreationMsg := bot.trySendMessage(m.Sender, Translate(ctx, "startSettingWalletMessage"))
+	walletCreationMsg := bot.trySendMessageEditable(m.Sender, Translate(ctx, "startSettingWalletMessage"))
 	user, err := bot.initWallet(m.Sender)
 	if err != nil {
 		log.Errorln(fmt.Sprintf("[startHandler] Error with initWallet: %s", err.Error()))

@@ -124,7 +124,7 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 	if user.Wallet == nil {
 		return ctx, errors.Create(errors.UserNoWalletError)
 	}
-	statusMsg := bot.trySendMessage(m.Sender, Translate(ctx, "lnurlPreparingWithdraw"))
+	statusMsg := bot.trySendMessageEditable(m.Sender, Translate(ctx, "lnurlPreparingWithdraw"))
 
 	// assert that user has entered an amount
 	if user.StateKey != lnbits.UserHasEnteredAmount {

@@ -50,6 +50,15 @@ func (bot TipBot) trySendMessage(to tb.Recipient, what interface{}, options ...i
 	return
 }
 
+func (bot TipBot) trySendMessageEditable(to tb.Recipient, what interface{}, options ...interface{}) (msg *tb.Message) {
+	rate.CheckLimit(to)
+	msg, err := bot.Telegram.Send(to, what, options...)
+	if err != nil {
+		log.Warnln(err.Error())
+	}
+	return
+}
+
 func (bot TipBot) tryReplyMessage(to *tb.Message, what interface{}, options ...interface{}) (msg *tb.Message) {
 	rate.CheckLimit(to)
 	msg, err := bot.Telegram.Reply(to, what, bot.appendMainMenu(to.Chat.ID, to, options)...)
@@ -69,7 +78,7 @@ func (bot TipBot) tryEditMessage(to tb.Editable, what interface{}, options ...in
 
 	_, chatId := to.MessageSig()
 	log.Tracef("[tryEditMessage] sig: %s, chatId: %d", sig, chatId)
-	msg, err = bot.Telegram.Edit(to, what, bot.appendMainMenu(chatId, to, options)...)
+	msg, err = bot.Telegram.Edit(to, what, options...)
 	if err != nil {
 		log.Warnln(err.Error())
 	}

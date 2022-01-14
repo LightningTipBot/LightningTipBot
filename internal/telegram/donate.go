@@ -3,11 +3,12 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 
@@ -49,7 +50,7 @@ func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) (context.C
 	}
 
 	// command is valid
-	msg := bot.trySendMessage(m.Chat, Translate(ctx, "donationProgressMessage"))
+	msg := bot.trySendMessageEditable(m.Chat, Translate(ctx, "donationProgressMessage"))
 	// get invoice
 	resp, err := http.Get(fmt.Sprintf(donationEndpoint, amount, GetUserStr(user.Telegram), GetUserStr(bot.Telegram.Me)))
 	if err != nil {
