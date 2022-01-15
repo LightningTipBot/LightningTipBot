@@ -252,12 +252,13 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 	inlineFaucet := fn.(*InlineFaucet)
 	from := inlineFaucet.From
-	// log faucet link if possible
+	// failsafe for queued users
 	if !inlineFaucet.Active {
-		log.Debugf(fmt.Sprintf("[faucet] faucet %s inactive. Remaining: %d sat", inlineFaucet.ID, inlineFaucet.RemainingAmount))
+		// log.Debugf(fmt.Sprintf("[faucet] faucet %s inactive. Remaining: %d sat", inlineFaucet.ID, inlineFaucet.RemainingAmount))
 		bot.finishFaucet(ctx, c, inlineFaucet)
 		return ctx, errors.Create(errors.NotActiveError)
 	}
+	// log faucet link if possible
 	if c.Message != nil && c.Message.Chat != nil {
 		log.Infof("[faucet] Link: https://t.me/c/%s/%d", strconv.FormatInt(c.Message.Chat.ID, 10)[4:], c.Message.ID)
 	}
@@ -388,15 +389,14 @@ func (bot *TipBot) finishFaucet(ctx context.Context, c *tb.Callback, inlineFauce
 		inlineFaucet.Message += "\n\n" + fmt.Sprintf(i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetCreateWalletMessage"), GetUserStrMd(bot.Telegram.Me))
 	}
 	bot.tryEditStack(c.Message, inlineFaucet.ID, inlineFaucet.Message, &tb.ReplyMarkup{})
-	inlineFaucet.Active = false
+
 	log.Debugf("[faucet] Faucet finished %s", inlineFaucet.ID)
 	once.Remove(inlineFaucet.ID)
-
 	// send update to faucet creator
-	if inlineFaucet.From.Telegram.ID != 0 {
+	if inlineFaucet.Active && inlineFaucet.From.Telegram.ID != 0 {
 		bot.trySendMessage(inlineFaucet.From.Telegram, listFaucetTakers(inlineFaucet))
 	}
-
+	inlineFaucet.Active = false
 }
 
 func listFaucetTakers(inlineFaucet *InlineFaucet) string {
