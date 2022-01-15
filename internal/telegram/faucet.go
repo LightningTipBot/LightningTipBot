@@ -404,7 +404,7 @@ func listFaucetTakers(inlineFaucet *InlineFaucet) string {
 	to_str = fmt.Sprintf("🚰 *Faucet summary*\n\nMemo: %s\nCapacity: %d sat\nTakers: %d\nRemaining: %d sat\n\n*Takers:*\n\n", inlineFaucet.Memo, inlineFaucet.Amount, inlineFaucet.NTaken, inlineFaucet.RemainingAmount)
 	to_str += "```\n"
 	for _, to := range inlineFaucet.To {
-		to_str += fmt.Sprintf("%s\n", GetUserStrMd(to.Telegram))
+		to_str += fmt.Sprintf("%s\n", GetUserStr(to.Telegram))
 	}
 	to_str += "```"
 	return to_str
