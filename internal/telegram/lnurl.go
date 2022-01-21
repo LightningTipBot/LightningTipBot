@@ -3,7 +3,9 @@ package telegram
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/imroc/req"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -83,6 +85,20 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) (context.Con
 		return ctx, err
 	}
 	switch params.(type) {
+	case lnurl.LNURLAuthParams:
+		p := params.(lnurl.LNURLAuthParams)
+		key, sig, err := user.SignKeyAuth(p.Host, p.K1)
+		if err != nil {
+			return ctx, err
+		}
+
+		var sentsigres lnurl.LNURLResponse
+		res, err := req.New().Get(p.CallbackURL.String(), url.Values{"sig": {sig}, "key": {key}})
+		if err != nil {
+			return ctx, err
+		}
+		json.Unmarshal(res.Bytes(), &sentsigres)
+		fmt.Println(sentsigres)
 	case lnurl.LNURLPayParams:
 		payParams := &LnurlPayState{LNURLPayParams: params.(lnurl.LNURLPayParams)}
 		log.Infof("[LNURL-p] %s", payParams.LNURLPayParams.Callback)

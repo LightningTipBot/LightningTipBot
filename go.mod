@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/BurntSushi/toml v0.3.1
+	github.com/btcsuite/btcd v0.20.1-beta.0.20200515232429-9f0179fd2c46 // indirect
 	github.com/eko/gocache v1.2.0
 	github.com/fiatjaf/go-lnurl v1.8.4
 	github.com/fiatjaf/ln-decodepay v1.1.0

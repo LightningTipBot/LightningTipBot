@@ -1,6 +1,11 @@
 package lnbits
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal"
+	"github.com/btcsuite/btcd/btcec"
 	"time"
 
 	"github.com/imroc/req"
@@ -15,18 +20,18 @@ type Client struct {
 }
 
 type User struct {
-	ID          string       `json:"id"`
-	Name        string       `json:"name" gorm:"primaryKey"`
-	Initialized bool         `json:"initialized"`
-	Telegram    *tb.User     `gorm:"embedded;embeddedPrefix:telegram_"`
-	Wallet      *Wallet      `gorm:"embedded;embeddedPrefix:wallet_"`
-	StateKey    UserStateKey `json:"stateKey"`
-	StateData   string       `json:"stateData"`
-	CreatedAt   time.Time    `json:"created"`
-	UpdatedAt   time.Time    `json:"updated"`
-	AnonID      string       `json:"anon_id"`
+	ID           string       `json:"id"`
+	Name         string       `json:"name" gorm:"primaryKey"`
+	Initialized  bool         `json:"initialized"`
+	Telegram     *tb.User     `gorm:"embedded;embeddedPrefix:telegram_"`
+	Wallet       *Wallet      `gorm:"embedded;embeddedPrefix:wallet_"`
+	StateKey     UserStateKey `json:"stateKey"`
+	StateData    string       `json:"stateData"`
+	CreatedAt    time.Time    `json:"created"`
+	UpdatedAt    time.Time    `json:"updated"`
+	AnonID       string       `json:"anon_id"`
 	AnonIDSha256 string       `json:"anon_id_sha256"`
-	Banned      bool         `json:"banned"`
+	Banned       bool         `json:"banned"`
 }
 
 const (
@@ -102,4 +107,31 @@ type Wallet struct {
 type BitInvoice struct {
 	PaymentHash    string `json:"payment_hash"`
 	PaymentRequest string `json:"payment_request"`
+}
+
+func (u User) LinkingKey(domain string) (*btcec.PrivateKey, *btcec.PublicKey) {
+	seedhash := sha256.Sum256([]byte(
+		fmt.Sprintf("lnurlkeyseed:%s:%s:%s",
+			domain, u.ID, internal.Configuration.Telegram.ApiKey)))
+	return btcec.PrivKeyFromBytes(btcec.S256(), seedhash[:])
+}
+
+func (u User) SignKeyAuth(domain string, k1hex string) (key string, sig string, err error) {
+	// lnurl-auth: create a key based on the user id and sign with it
+	sk, pk := u.LinkingKey(domain)
+
+	k1, err := hex.DecodeString(k1hex)
+	if err != nil {
+		return "", "", fmt.Errorf("invalid k1 hex '%s': %w", k1hex, err)
+	}
+
+	signature, err := sk.Sign(k1)
+	if err != nil {
+		return "", "", fmt.Errorf("error signing k1: %w", err)
+	}
+
+	sig = hex.EncodeToString(signature.Serialize())
+	key = hex.EncodeToString(pk.SerializeCompressed())
+
+	return key, sig, nil
 }
