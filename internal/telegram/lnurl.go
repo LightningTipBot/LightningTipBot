@@ -97,8 +97,16 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) (context.Con
 		if err != nil {
 			return ctx, err
 		}
-		json.Unmarshal(res.Bytes(), &sentsigres)
-		fmt.Println(sentsigres)
+		err = json.Unmarshal(res.Bytes(), &sentsigres)
+		if err != nil {
+			return ctx, err
+		}
+		if sentsigres.Status == "ERROR" {
+			bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), sentsigres.Reason))
+			return ctx, err
+		}
+		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "lnurlSuccessfulLogin"), p.CallbackURL.Host))
+
 	case lnurl.LNURLPayParams:
 		payParams := &LnurlPayState{LNURLPayParams: params.(lnurl.LNURLPayParams)}
 		log.Infof("[LNURL-p] %s", payParams.LNURLPayParams.Callback)

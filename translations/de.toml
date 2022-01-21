@@ -237,6 +237,10 @@ lnurlHelpText = """📖 Ups, das hat nicht geklappt. %s
 *Befehl:* `/lnurl [betrag] <lnurl>`
 *Beispiel:* `/lnurl LNURL1DP68GUR...`"""
 
+# LNURL LOGIN
+lnurlSuccessfulLogin             = """✅ Login erfolgreich.\n\n Domain: %s"""
+
+
 # LNURL WITHDRAW
 
 confirmLnurlWithdrawMessage     = """Möchtest du diese Abhebung tätigen?\n\n💸 Betrag: %d sat"""

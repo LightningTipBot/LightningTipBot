@@ -237,6 +237,8 @@ lnurlHelpText                  = """📖 Oops, eso no funcionó. %s
 *Uso:* `/lnurl [monto] <lnurl>`
 *Ejemplo:* `/lnurl LNURL1DP68GUR...`"""
 
+# LNURL LOGIN
+lnurlSuccessfulLogin             = """✅ Inicio de sesión exitoso.\n\n dominio: %s"""
 # LNURL WITHDRAW
 
 confirmLnurlWithdrawMessage     = """¿Desea realizar este retiro?\n\n💸 Monto: %d sat"""
