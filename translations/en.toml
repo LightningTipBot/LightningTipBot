@@ -82,7 +82,7 @@ _This bot charges no fees but costs Satoshis to operate. If you like the bot, pl
 */help* 📖 Read this help."""
 
 infoHelpMessage = """ℹ️ *Info*"""
-infoYourLightningAddress = """Your Lightning Address is `%s`"""
+infoYourLightningAddress = """Your Lightning address is `%s`"""
 
 basicsMessage = """🧡 *Bitcoin*
 _Bitcoin is the currency of the internet. It is permissionless and decentralized and has no masters and no controling authority. Bitcoin is sound money that is faster, more secure, and more inclusive than the legacy financial system._
@@ -195,10 +195,10 @@ invoiceHelpText           = """📖 Oops, that didn't work. %s
 paymentCancelledMessage     = """🚫 Payment cancelled."""
 invoicePaidMessage          = """⚡️ Payment sent."""
 invoicePublicPaidMessage    = """⚡️ Payment sent by %s."""
-invalidInvoiceHelpMessage    = """Did you enter a valid Lightning invoice? Try /send if you want to send to a Telegram user or Lightning address."""
+invalidInvoiceHelpMessage    = """Did you enter a valid Lightning invoice? Try /send if you want to send to a Telegram user or to a Lightning address."""
 invoiceNoAmountMessage       = """🚫 Can't pay invoices without an amount."""
 insufficientFundsMessage     = """🚫 Insufficient funds. You have %d sat but you need at least %d sat."""
-feeReserveMessage            = """⚠️ Sending your entire balance might fail because of network fees. If it fails, try sending a bit less."""
+feeReserveMessage            = """⚠️ Sending your entire balance might fail because of network fees. Reserve at least 1% for fees."""
 invoicePaymentFailedMessage  = """🚫 Payment failed: %s"""
 invoiceUndefinedErrorMessage = """Could not pay invoice."""
 confirmPayInvoiceMessage     = """Do you want to send this payment?\n\n💸 Amount: %d sat"""

@@ -239,7 +239,10 @@ lnurlHelpText                  = """📖 Oops, eso no funcionó. %s
 
 # LNURL LOGIN
 
-lnurlSuccessfulLogin             = """✅ Inicio de sesión exitoso."""
+confirmLnurlAuthMessager        = """¿Desea iniciar sesión en %s?"""
+lnurlSuccessfulLogin            = """✅ Inicio de sesión exitoso."""
+loginButtonMessage              = """✅ Inicio de sesión"""
+loginCancelledMessage           = """🚫 Inicio de sesión cancelado."""
 
 # LNURL WITHDRAW
 

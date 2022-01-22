@@ -78,7 +78,7 @@ _Este bot não cobra nenhuma comissão, mas custa Satoshis para funcionar. Se vo
 */help* 📖 Ler esta ajuda."""
 
 infoHelpMessage = """ℹ️ *Info*"""
-infoYourLightningAddress = """Seu Lightning Address _(Endereço Lightning)_ é `%s`."""
+infoYourLightningAddress = """Seu Lightning address _(endereço lightning)_ é `%s`."""
 
 basicsMessage = """🧡 *Bitcoin*
 _Bitcoin é a moeda da Internet. É uma moeda sem permissão, descentralizada, sem proprietários e sem autoridade de controle. Bitcoin é dinheiro sólido, mais rápido, mais seguro e mais inclusivo do que o sistema financeiro fiat._
@@ -236,6 +236,13 @@ lnurlHelpText                  = """📖 Opa, isso não funcionou. %s
 
 *Uso:* `/lnurl [quantidade] <lnurl>`
 *Exemplo:* `/lnurl LNURL1DP68GUR...`"""
+
+# LNURL LOGIN
+
+confirmLnurlAuthMessager        = """Você quer fazer login em %s?"""
+lnurlSuccessfulLogin            = """✅ Login com sucesso."""
+loginButtonMessage              = """✅ Login"""
+loginCancelledMessage           = """🚫 Login cancelado."""
 
 # LNURL WITHDRAW
 
