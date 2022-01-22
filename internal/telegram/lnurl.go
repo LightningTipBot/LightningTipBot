@@ -3,9 +3,7 @@ package telegram
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"github.com/imroc/req"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -86,26 +84,10 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) (context.Con
 	}
 	switch params.(type) {
 	case lnurl.LNURLAuthParams:
-		p := params.(lnurl.LNURLAuthParams)
-		key, sig, err := user.SignKeyAuth(p.Host, p.K1)
-		if err != nil {
-			return ctx, err
-		}
-
-		var sentsigres lnurl.LNURLResponse
-		res, err := req.New().Get(p.CallbackURL.String(), url.Values{"sig": {sig}, "key": {key}})
-		if err != nil {
-			return ctx, err
-		}
-		err = json.Unmarshal(res.Bytes(), &sentsigres)
-		if err != nil {
-			return ctx, err
-		}
-		if sentsigres.Status == "ERROR" {
-			bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), sentsigres.Reason))
-			return ctx, err
-		}
-		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "lnurlSuccessfulLogin"), p.CallbackURL.Host))
+		authParams := &LnurlAuthState{LNURLAuthParams: params.(lnurl.LNURLAuthParams)}
+		log.Infof("[LNURL-auth] %s", authParams.LNURLAuthParams.Callback)
+		bot.tryDeleteMessage(statusMsg)
+		bot.lnurlAuthHandler(ctx, m, *authParams)
 
 	case lnurl.LNURLPayParams:
 		payParams := &LnurlPayState{LNURLPayParams: params.(lnurl.LNURLPayParams)}
