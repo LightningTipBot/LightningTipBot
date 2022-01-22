@@ -43,6 +43,7 @@ type LnurlWithdrawState struct {
 	Message               string                      `json:"message"`
 }
 
+// editSingleButton edits a message to display a single button (for something like a progress indicator)
 func (bot *TipBot) editSingleButton(ctx context.Context, m *tb.Message, message string, button string) {
 	bot.tryEditMessage(
 		m,
@@ -169,10 +170,8 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx context.Context, m *tb.Messa
 	lnurlWithdrawState.Message = confirmText
 
 	// create inline buttons
-	withdrawButton := paymentConfirmationMenu.Data(Translate(ctx, "withdrawButtonMessage"), "confirm_withdraw")
-	btnCancelWithdraw := paymentConfirmationMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_withdraw")
-	withdrawButton.Data = lnurlWithdrawState.ID
-	btnCancelWithdraw.Data = lnurlWithdrawState.ID
+	withdrawButton := paymentConfirmationMenu.Data(Translate(ctx, "withdrawButtonMessage"), "confirm_withdraw", lnurlWithdrawState.ID)
+	btnCancelWithdraw := paymentConfirmationMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_withdraw", lnurlWithdrawState.ID)
 
 	withdrawConfirmationMenu.Inline(
 		withdrawConfirmationMenu.Row(
