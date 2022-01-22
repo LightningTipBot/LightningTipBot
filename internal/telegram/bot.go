@@ -2,12 +2,13 @@ package telegram
 
 import (
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 
 	limiter "github.com/LightningTipBot/LightningTipBot/internal/rate"
 
@@ -85,20 +86,26 @@ func (bot TipBot) initBotWallet() error {
 	return nil
 }
 
+// GracefulShutdown will gracefully shutdown the bot
+// It will wait for all mutex locks to unlock before shutdown.
 func (bot *TipBot) GracefulShutdown() {
-	t := time.NewTicker(time.Second * 30)
-	log.Infof("trying graceful shutdown for 30 seconds")
+	t := time.NewTicker(time.Second * 10)
+	log.Infof("[shutdown] Graceful shutdown (timeout=10s).")
 	for {
 		select {
 		case <-t.C:
-			log.Infof("graceful shutdown limit reached. forcing shutdown")
+			// timer expired
+			log.Infof("[shutdown] Graceful shutdown timeout reached. Forcing shutdown.")
 			return
 		default:
+			// check if all mutex locks are unlocked
 			if mutex.IsEmpty() {
-				log.Infof("graceful shutdown")
+				log.Infof("[shutdown] Graceful shutdown successful.")
 				return
 			}
 		}
+		time.Sleep(time.Second)
+		log.Tracef("[shutdown] Trying graceful shutdown...")
 	}
 }
 
@@ -110,13 +117,28 @@ func (bot *TipBot) Start() {
 	if err != nil {
 		log.Errorf("Could not initialize bot wallet: %s", err.Error())
 	}
-	bot.startEditWorker()
+
+	// register telegram handlers
 	bot.registerTelegramHandlers()
+
+	// edit worker collects messages to edit and
+	// periodically edits them
+	bot.startEditWorker()
+
+	// register callbacks for invoices
 	initInvoiceEventCallbacks(bot)
+
+	// register callbacks for user state changes
 	initializeStateCallbackMessage(bot)
+
+	// start the telegram bot
 	go bot.Telegram.Start()
+
+	// gracefully shutdown
 	exit := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
+	// we need to catch SIGTERM and SIGSTOP
 	signal.Notify(exit, os.Interrupt, syscall.SIGTERM, syscall.SIGSTOP)
 	<-exit
+	// gracefully shutdown
 	bot.GracefulShutdown()
 }
