@@ -316,6 +316,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 			// c.Sender.ID = inlineFaucet.From.Telegram.ID // overwrite the sender of the callback to be the faucet owner
 			// log.Debugf("[faucet] Canceling faucet %s...", inlineFaucet.ID)
 			// bot.cancelInlineFaucet(ctx, c, true) // cancel without ID check
+			bot.finishFaucet(ctx, c, inlineFaucet)
 			return ctx, errors.New(errors.UnknownError, err)
 		}
 
