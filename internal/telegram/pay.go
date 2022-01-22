@@ -121,10 +121,8 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) (context.Conte
 	id := fmt.Sprintf("pay-%d-%d-%s", m.Sender.ID, amount, RandStringRunes(5))
 
 	// // // create inline buttons
-	payButton := paymentConfirmationMenu.Data(Translate(ctx, "payButtonMessage"), "confirm_pay")
-	cancelButton := paymentConfirmationMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_pay")
-	payButton.Data = id
-	cancelButton.Data = id
+	payButton := paymentConfirmationMenu.Data(Translate(ctx, "payButtonMessage"), "confirm_pay", id)
+	cancelButton := paymentConfirmationMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_pay", id)
 
 	paymentConfirmationMenu.Inline(
 		paymentConfirmationMenu.Row(
