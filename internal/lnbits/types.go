@@ -4,9 +4,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal"
-	"github.com/btcsuite/btcd/btcec"
 	"time"
+
+	"github.com/btcsuite/btcd/btcec"
 
 	"github.com/imroc/req"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
@@ -109,10 +109,11 @@ type BitInvoice struct {
 	PaymentRequest string `json:"payment_request"`
 }
 
+// from fiatjaf/lnurl-go
 func (u User) LinkingKey(domain string) (*btcec.PrivateKey, *btcec.PublicKey) {
 	seedhash := sha256.Sum256([]byte(
-		fmt.Sprintf("lnurlkeyseed:%s:%s:%s",
-			domain, u.ID, internal.Configuration.Telegram.ApiKey)))
+		fmt.Sprintf("lnurlkeyseed:%s:%s",
+			domain, u.ID)))
 	return btcec.PrivKeyFromBytes(btcec.S256(), seedhash[:])
 }
 
