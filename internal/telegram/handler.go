@@ -566,7 +566,7 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
-					// bot.singletonCallbackInterceptor,
+					bot.singletonCallbackInterceptor,
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
 					bot.lockInterceptor,
