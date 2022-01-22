@@ -242,8 +242,11 @@ lnurlHelpText                  = """📖 Oops, that didn't work. %s
 *Example:* `/lnurl LNURL1DP68GUR...`"""
 
 # LNURL LOGIN
-lnurlSuccessfulLogin             = """✅ login successful.\n\n Domain: %s"""
 
+confirmLnurlAuthMessager        = """Do you want to login to %s?"""
+lnurlSuccessfulLogin            = """✅ Login successful."""
+loginButtonMessage              = """✅ Login"""
+loginCancelledMessage           = """🚫 Login cancelled."""
 
 # LNURL WITHDRAW
 
