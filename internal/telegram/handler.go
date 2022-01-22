@@ -566,7 +566,7 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{
-					bot.singletonCallbackInterceptor,
+					// bot.singletonCallbackInterceptor,
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
 					bot.lockInterceptor,
@@ -639,6 +639,36 @@ func (bot TipBot) getHandler() []Handler {
 		{
 			Endpoints: []interface{}{&btnCancelWithdraw},
 			Handler:   bot.cancelWithdrawHandler,
+			Interceptor: &Interceptor{
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{&btnAuth},
+			Handler:   bot.confirmLnurlAuthHandler,
+			Interceptor: &Interceptor{
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{&btnCancelAuth},
+			Handler:   bot.cancelLnurlAuthHandler,
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{

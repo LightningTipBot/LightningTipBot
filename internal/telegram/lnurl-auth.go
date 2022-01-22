@@ -20,7 +20,12 @@ import (
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
-// LnurlPayState saves the state of the user for an LNURL payment
+var (
+	authConfirmationMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	btnCancelAuth        = paymentConfirmationMenu.Data("🚫 Cancel", "cancel_login")
+	btnAuth              = paymentConfirmationMenu.Data("✅ Login", "confirm_login")
+)
+
 type LnurlAuthState struct {
 	*storage.Base
 	From            *lnbits.User          `json:"from"`
@@ -46,22 +51,27 @@ func (bot *TipBot) lnurlAuthHandler(ctx context.Context, m *tb.Message, authPara
 		LanguageCode:    ctx.Value("publicLanguageCode").(string),
 	}
 	// // // create inline buttons
-	payButton := paymentConfirmationMenu.Data(Translate(ctx, "payButtonMessage"), "confirm_pay", id)
-	cancelButton := paymentConfirmationMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_pay", id)
+	btnAuth = paymentConfirmationMenu.Data(Translate(ctx, "loginButtonMessage"), "confirm_login", id)
+	btnCancelAuth = paymentConfirmationMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_login", id)
 
 	paymentConfirmationMenu.Inline(
 		paymentConfirmationMenu.Row(
-			payButton,
-			cancelButton),
+			btnAuth,
+			btnCancelAuth),
 	)
-	lnurlAuthState.Message = bot.trySendMessageEditable(m.Chat, "do you want to login?", paymentConfirmationMenu)
+	lnurlAuthState.Message = bot.trySendMessageEditable(m.Chat,
+		fmt.Sprintf(Translate(ctx, "confirmLnurlAuthMessager"),
+			lnurlAuthState.LNURLAuthParams.CallbackURL.Host,
+		),
+		paymentConfirmationMenu,
+	)
 
 	// save to bunt
 	runtime.IgnoreError(lnurlAuthState.Set(lnurlAuthState, bot.Bunt))
 	return ctx, nil
 }
 
-func (bot *TipBot) acceptLnurlAuthHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+func (bot *TipBot) confirmLnurlAuthHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
 	tx := &LnurlAuthState{Base: storage.New(storage.ID(c.Data))}
 	mutex.LockWithContext(ctx, tx.ID)
 	defer mutex.UnlockWithContext(ctx, tx.ID)
@@ -82,7 +92,10 @@ func (bot *TipBot) acceptLnurlAuthHandler(ctx context.Context, c *tb.Callback) (
 		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 
-	statusMsg := bot.trySendMessageEditable(c.Sender, Translate(ctx, "lnurlResolvingUrlMessage"))
+	// statusMsg := bot.trySendMessageEditable(c.Sender,
+	// 	Translate(ctx, "lnurlResolvingUrlMessage"),
+	// )
+	bot.editSingleButton(ctx, c.Message, lnurlAuthState.Message.Text, Translate(ctx, "lnurlResolvingUrlMessage"))
 
 	// from fiatjaf/go-lnurl
 	p := lnurlAuthState.LNURLAuthParams
@@ -107,10 +120,10 @@ func (bot *TipBot) acceptLnurlAuthHandler(ctx context.Context, c *tb.Callback) (
 		return ctx, err
 	}
 	if sentsigres.Status == "ERROR" {
-		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), sentsigres.Reason))
+		bot.tryEditMessage(c.Message, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), sentsigres.Reason))
 		return ctx, err
 	}
-	bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "lnurlSuccessfulLogin"), p.CallbackURL.Host))
+	bot.editSingleButton(ctx, c.Message, lnurlAuthState.Message.Text, Translate(ctx, "lnurlSuccessfulLogin"))
 	return ctx, lnurlAuthState.Inactivate(lnurlAuthState, bot.Bunt)
 }
 
@@ -132,8 +145,7 @@ func (bot *TipBot) cancelLnurlAuthHandler(ctx context.Context, c *tb.Callback) (
 		return ctx, errors.Create(errors.UnknownError)
 	}
 	// delete and send instead of edit for the keyboard to pop up after sending
-	bot.tryDeleteMessage(c.Message)
-	bot.trySendMessage(c.Message.Chat, i18n.Translate(lnurlAuthState.LanguageCode, "paymentCancelledMessage"))
+	bot.tryEditMessage(c.Message, i18n.Translate(lnurlAuthState.LanguageCode, "loginCancelledMessage"), &tb.ReplyMarkup{})
 	// bot.tryEditMessage(c.Message, i18n.Translate(payData.LanguageCode, "paymentCancelledMessage"), &tb.ReplyMarkup{})
 	return ctx, lnurlAuthState.Inactivate(lnurlAuthState, bot.Bunt)
 }
