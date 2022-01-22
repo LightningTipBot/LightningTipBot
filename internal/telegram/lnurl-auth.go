@@ -92,7 +92,13 @@ func (bot *TipBot) acceptLnurlAuthHandler(ctx context.Context, c *tb.Callback) (
 	}
 
 	var sentsigres lnurl.LNURLResponse
-	res, err := req.New().Get(p.CallbackURL.String(), url.Values{"sig": {sig}, "key": {key}})
+	client, err := bot.GetHttpClient()
+	if err != nil {
+		return ctx, err
+	}
+	r := req.New()
+	r.SetClient(client)
+	res, err := r.Get(p.CallbackURL.String(), url.Values{"sig": {sig}, "key": {key}})
 	if err != nil {
 		return ctx, err
 	}
