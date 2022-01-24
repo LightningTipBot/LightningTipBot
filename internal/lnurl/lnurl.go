@@ -113,7 +113,8 @@ func (w Lnurl) serveLNURLpFirst(username string) (*lnurl.LNURLPayParams, error) 
 		return nil, err
 	}
 	metadata := w.metaData(username)
-
+	// add the bot image to metadata
+	addImageMetaData(&metadata, telegram.BotProfilePicture...)
 	return &lnurl.LNURLPayParams{
 		LNURLResponse:   lnurl.LNURLResponse{Status: api.StatusOk},
 		Tag:             PayRequestTag,
@@ -246,4 +247,9 @@ func (w Lnurl) metaData(username string) lnurl.Metadata {
 		Description:      fmt.Sprintf("Pay to %s@%s", username, w.callbackHostname.Hostname()),
 		LightningAddress: fmt.Sprintf("%s@%s", username, w.callbackHostname.Hostname()),
 	}
+}
+
+// addImageMetaData will add image bytes to metadata, if
+func addImageMetaData(metadata *lnurl.Metadata, image ...byte) {
+	metadata.Image.Bytes = image
 }
