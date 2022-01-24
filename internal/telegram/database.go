@@ -200,7 +200,7 @@ func debugStack() {
 }
 func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
 	user.UpdatedAt = time.Now()
-	if user.AnonIDSha256 == "" {
+	if user.AnonIDSha256 == "" || user.AnonID == "" {
 		debugStack()
 	}
 	tx := bot.Database.Save(user)
