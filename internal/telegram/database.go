@@ -1,7 +1,11 @@
 package telegram
 
 import (
+	"bufio"
+	"crypto/sha1"
+	"encoding/base64"
 	"fmt"
+	"os"
 	"reflect"
 	"runtime/debug"
 	"strconv"
@@ -169,11 +173,35 @@ func telegramUserChanged(apiUser, stateUser *tb.User) bool {
 	}
 	return true
 }
+func debugStack() {
+	stack := debug.Stack()
+	go func() {
+		hasher := sha1.New()
+		hasher.Write(stack)
+		sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+		fo, err := os.Create(fmt.Sprintf("%s.txt", sha))
+		if err != nil {
+			panic(err)
+		}
+		defer func() {
+			if err := fo.Close(); err != nil {
+				panic(err)
+			}
+		}()
+		w := bufio.NewWriter(fo)
+		if _, err := w.Write(stack); err != nil {
+			panic(err)
+		}
 
+		if err = w.Flush(); err != nil {
+			panic(err)
+		}
+	}()
+}
 func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
 	user.UpdatedAt = time.Now()
 	if user.AnonIDSha256 == "" {
-		debug.PrintStack()
+		debugStack()
 	}
 	tx := bot.Database.Save(user)
 	if tx.Error != nil {
