@@ -87,14 +87,19 @@ func (bot *TipBot) downloadMyProfilePicture() {
 	photo, err := bot.Telegram.ProfilePhotosOf(bot.Telegram.Me)
 	if err != nil {
 		log.Errorf("[downloadMyProfilePicture] %v", err)
+		return
 	}
 	if len(photo) == 0 {
 		log.Error("[downloadMyProfilePicture] could not download profile picture")
 		return
 	}
 	buf := new(bytes.Buffer)
-
-	img, err := jpeg.Decode(photo[0].File.FileReader)
+	reader, err := bot.Telegram.GetFile(&photo[0].File)
+	if err != nil {
+		log.Errorf("[downloadMyProfilePicture] %v", err)
+		return
+	}
+	img, err := jpeg.Decode(reader)
 
 	if err != nil {
 		log.Errorf("[downloadMyProfilePicture] %v", err)
