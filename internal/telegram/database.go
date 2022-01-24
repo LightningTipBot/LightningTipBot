@@ -3,6 +3,7 @@ package telegram
 import (
 	"fmt"
 	"reflect"
+	"runtime/debug"
 	"strconv"
 	"time"
 
@@ -171,6 +172,9 @@ func telegramUserChanged(apiUser, stateUser *tb.User) bool {
 
 func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
 	user.UpdatedAt = time.Now()
+	if user.AnonIDSha256 == "" {
+		debug.PrintStack()
+	}
 	tx := bot.Database.Save(user)
 	if tx.Error != nil {
 		errmsg := fmt.Sprintf("[UpdateUserRecord] Error: Couldn't update %s's info in Database.", GetUserStr(user.Telegram))
