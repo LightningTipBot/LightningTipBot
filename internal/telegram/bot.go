@@ -121,6 +121,7 @@ func (bot *TipBot) Start() {
 	// register telegram handlers
 	bot.registerTelegramHandlers()
 
+	bot.downloadMyProfilePicture()
 	// edit worker collects messages to edit and
 	// periodically edits them
 	bot.startEditWorker()
