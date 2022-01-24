@@ -95,6 +95,7 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) (context.Con
 		payParams := &LnurlPayState{LNURLPayParams: params.(lnurl.LNURLPayParams)}
 		log.Infof("[LNURL-p] %s", payParams.LNURLPayParams.Callback)
 		bot.tryDeleteMessage(statusMsg)
+		bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(payParams.LNURLPayParams.Metadata.Image.Bytes)}})
 		bot.lnurlPayHandler(ctx, m, *payParams)
 
 	case lnurl.LNURLWithdrawResponse:

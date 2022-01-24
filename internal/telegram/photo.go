@@ -3,6 +3,7 @@ package telegram
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"image"
@@ -83,8 +84,8 @@ func (bot *TipBot) photoHandler(ctx context.Context, m *tb.Message) (context.Con
 
 var BotProfilePicture []byte
 
-func (bot *TipBot) downloadProfilePicture(user *tb.User) []byte {
-	photo, err := bot.Telegram.ProfilePhotosOf(user)
+func DownloadProfilePicture(telegram *tb.Bot, user *tb.User) []byte {
+	photo, err := ProfilePhotosOf(telegram, user)
 	if err != nil {
 		log.Errorf("[downloadMyProfilePicture] %v", err)
 		return nil
@@ -94,7 +95,7 @@ func (bot *TipBot) downloadProfilePicture(user *tb.User) []byte {
 		return nil
 	}
 	buf := new(bytes.Buffer)
-	reader, err := bot.Telegram.GetFile(&photo[0].File)
+	reader, err := telegram.GetFile(&photo[0].File)
 	if err != nil {
 		log.Errorf("[downloadMyProfilePicture] %v", err)
 		return nil
@@ -110,5 +111,30 @@ func (bot *TipBot) downloadProfilePicture(user *tb.User) []byte {
 }
 
 func (bot *TipBot) downloadMyProfilePicture() {
-	BotProfilePicture = bot.downloadProfilePicture(bot.Telegram.Me)
+	BotProfilePicture = DownloadProfilePicture(bot.Telegram, bot.Telegram.Me)
+}
+
+// ProfilePhotosOf returns list of profile pictures for a user.
+func ProfilePhotosOf(bot *tb.Bot, user *tb.User) ([]tb.Photo, error) {
+	params := map[string]interface {
+	}{
+		"user_id": user.Recipient(),
+		"limit":   1,
+	}
+
+	data, err := bot.Raw("getUserProfilePhotos", params)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp struct {
+		Result struct {
+			Count  int        `json:"total_count"`
+			Photos []tb.Photo `json:"photos"`
+		}
+	}
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return nil, err
+	}
+	return resp.Result.Photos, nil
 }
