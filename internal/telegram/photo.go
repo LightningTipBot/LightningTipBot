@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
@@ -78,4 +79,27 @@ func (bot *TipBot) photoHandler(ctx context.Context, m *tb.Message) (context.Con
 		return bot.lnurlHandler(ctx, m)
 	}
 	return ctx, nil
+}
+
+var BotProfilePicture []byte
+
+func (bot *TipBot) downloadMyProfilePicture() {
+	photo, err := bot.Telegram.ProfilePhotosOf(bot.Telegram.Me)
+	if err != nil {
+		log.Errorf("[downloadMyProfilePicture] %v", err)
+	}
+	if len(photo) == 0 {
+		log.Error("[downloadMyProfilePicture] could not download profile picture")
+		return
+	}
+	buf := new(bytes.Buffer)
+
+	img, err := jpeg.Decode(photo[0].File.FileReader)
+
+	if err != nil {
+		log.Errorf("[downloadMyProfilePicture] %v", err)
+		return
+	}
+	err = jpeg.Encode(buf, img, nil)
+	BotProfilePicture = buf.Bytes()
 }
