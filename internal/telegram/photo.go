@@ -83,28 +83,32 @@ func (bot *TipBot) photoHandler(ctx context.Context, m *tb.Message) (context.Con
 
 var BotProfilePicture []byte
 
-func (bot *TipBot) downloadMyProfilePicture() {
-	photo, err := bot.Telegram.ProfilePhotosOf(bot.Telegram.Me)
+func (bot *TipBot) downloadProfilePicture(user *tb.User) []byte {
+	photo, err := bot.Telegram.ProfilePhotosOf(user)
 	if err != nil {
 		log.Errorf("[downloadMyProfilePicture] %v", err)
-		return
+		return nil
 	}
 	if len(photo) == 0 {
 		log.Error("[downloadMyProfilePicture] could not download profile picture")
-		return
+		return nil
 	}
 	buf := new(bytes.Buffer)
 	reader, err := bot.Telegram.GetFile(&photo[0].File)
 	if err != nil {
 		log.Errorf("[downloadMyProfilePicture] %v", err)
-		return
+		return nil
 	}
 	img, err := jpeg.Decode(reader)
 
 	if err != nil {
 		log.Errorf("[downloadMyProfilePicture] %v", err)
-		return
+		return nil
 	}
 	err = jpeg.Encode(buf, img, nil)
-	BotProfilePicture = buf.Bytes()
+	return buf.Bytes()
+}
+
+func (bot *TipBot) downloadMyProfilePicture() {
+	BotProfilePicture = bot.downloadProfilePicture(bot.Telegram.Me)
 }
