@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"os"
 	"reflect"
 	"runtime/debug"
@@ -200,8 +201,15 @@ func debugStack() {
 }
 func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
 	user.UpdatedAt = time.Now()
-	if user.AnonIDSha256 == "" || user.AnonID == "" {
+	// TODO -- Remove this after empty anon id bug is identified
+	if user.AnonIDSha256 == "" {
 		debugStack()
+		user.AnonIDSha256 = str.AnonIdSha256(user)
+	}
+	// TODO -- Remove this after empty anon id bug is identified
+	if user.AnonID == "" {
+		debugStack()
+		user.AnonID = fmt.Sprint(str.Int32Hash(user.ID))
 	}
 	tx := bot.Database.Save(user)
 	if tx.Error != nil {
