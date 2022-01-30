@@ -2,12 +2,13 @@ package admin
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"strings"
 )
 
 func (s Service) UnbanUser(w http.ResponseWriter, r *http.Request) {
@@ -17,8 +18,8 @@ func (s Service) UnbanUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if !user.Banned {
-		log.Infof("[ADMIN] user already banned")
+	if !user.Banned || !strings.HasPrefix(user.Wallet.Adminkey, "banned_") {
+		log.Infof("[ADMIN] user is not banned. Aborting.")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -43,7 +44,7 @@ func (s Service) BanUser(w http.ResponseWriter, r *http.Request) {
 	}
 	if user.Banned {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Infof("[ADMIN] user already banned")
+		log.Infof("[ADMIN] user is already banned. Aborting.")
 		return
 	}
 	user.Banned = true
