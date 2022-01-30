@@ -18,7 +18,7 @@ func (s Service) UnbanUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if !user.Banned || !strings.HasPrefix(user.Wallet.Adminkey, "banned_") {
+	if !user.Banned && !strings.HasPrefix(user.Wallet.Adminkey, "banned_") {
 		log.Infof("[ADMIN] user is not banned. Aborting.")
 		w.WriteHeader(http.StatusBadRequest)
 		return
