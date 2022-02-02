@@ -79,6 +79,9 @@ func (bot TipBot) answerCallbackInterceptor(ctx context.Context, i interface{}) 
 		if ctxcr != nil {
 			res = append(res, &tb.CallbackResponse{CallbackID: c.ID, Text: ctxcr.(string)})
 		}
+		if len(res) == 0 {
+			res = append(res, &tb.CallbackResponse{CallbackID: c.ID, Text: ""})
+		}
 		var err error
 		err = bot.Telegram.Respond(c, res...)
 		return ctx, err
