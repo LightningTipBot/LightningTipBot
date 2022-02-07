@@ -120,7 +120,7 @@ func (bot TipBot) getHandler() []Handler {
 			},
 		},
 		{
-			Endpoints: []interface{}{"/tip"},
+			Endpoints: []interface{}{"/tip", "/t", "/honk"},
 			Handler:   bot.tipHandler,
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
