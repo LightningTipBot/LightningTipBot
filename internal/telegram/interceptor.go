@@ -79,6 +79,7 @@ func (bot TipBot) answerCallbackInterceptor(ctx context.Context, i interface{}) 
 		if ctxcr != nil {
 			res = append(res, &tb.CallbackResponse{CallbackID: c.ID, Text: ctxcr.(string)})
 		}
+		// if the context wasn't set, still respond with an empty callback response
 		if len(res) == 0 {
 			res = append(res, &tb.CallbackResponse{CallbackID: c.ID, Text: ""})
 		}
