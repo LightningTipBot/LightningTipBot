@@ -266,6 +266,22 @@ func (bot TipBot) getHandler() []Handler {
 			},
 		},
 		{
+			Endpoints: []interface{}{"/volcano"},
+			Handler:   bot.volcanoHandler,
+			Interceptor: &Interceptor{
+				Type: MessageInterceptor,
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
 			Endpoints: []interface{}{"/tipjar", "/spendendose"},
 			Handler:   bot.tipjarHandler,
 			Interceptor: &Interceptor{
@@ -548,6 +564,37 @@ func (bot TipBot) getHandler() []Handler {
 		{
 			Endpoints: []interface{}{&btnCancelInlineReceive},
 			Handler:   bot.cancelInlineReceiveHandler,
+			Interceptor: &Interceptor{
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{&btnAcceptInlineVolcano},
+			Handler:   bot.acceptInlineVolcanoHandler,
+			Interceptor: &Interceptor{
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					//bot.singletonCallbackInterceptor,
+					bot.localizerInterceptor,
+					bot.loadUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{&btnCancelInlineVolcano},
+			Handler:   bot.cancelInlineVolcanoHandler,
 			Interceptor: &Interceptor{
 				Type: CallbackInterceptor,
 				Before: []intercept.Func{

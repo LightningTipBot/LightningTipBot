@@ -2,6 +2,7 @@ package runtime
 
 import (
 	cmap "github.com/orcaman/concurrent-map"
+	"sync"
 	"time"
 )
 
@@ -20,6 +21,8 @@ type ResettableFunctionTicker struct {
 	duration  time.Duration
 	Started   bool
 	name      string
+	Quit      chan struct{}
+	Wg        sync.WaitGroup
 }
 type ResettableFunctionTickerOption func(*ResettableFunctionTicker)
 
@@ -28,11 +31,11 @@ func WithDuration(d time.Duration) ResettableFunctionTickerOption {
 		a.duration = d
 	}
 }
+
 func RemoveTicker(name string) {
 	tickerMap.Remove(name)
 }
 func GetTicker(name string, option ...ResettableFunctionTickerOption) *ResettableFunctionTicker {
-
 	if t, ok := tickerMap.Get(name); ok {
 		return t.(*ResettableFunctionTicker)
 	} else {
@@ -44,6 +47,8 @@ func GetTicker(name string, option ...ResettableFunctionTickerOption) *Resettabl
 func NewResettableFunctionTicker(name string, option ...ResettableFunctionTickerOption) *ResettableFunctionTicker {
 	t := &ResettableFunctionTicker{
 		ResetChan: make(chan struct{}, 1),
+		Quit:      make(chan struct{}, 1),
+		Wg:        sync.WaitGroup{},
 		name:      name,
 	}
 
@@ -57,12 +62,20 @@ func NewResettableFunctionTicker(name string, option ...ResettableFunctionTicker
 	return t
 }
 
+func (t *ResettableFunctionTicker) DoWait(f func()) {
+	t.Do(f)
+	t.Wg.Wait()
+}
 func (t *ResettableFunctionTicker) Do(f func()) {
 	t.Started = true
 	tickerMap.Set(t.name, t)
+	t.Wg.Add(1)
 	go func() {
+		defer t.Wg.Done()
 		for {
 			select {
+			case <-t.Quit:
+				return
 			case <-t.Ticker.C:
 				// ticker delivered signal. do function f
 				f()
