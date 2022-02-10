@@ -4,13 +4,14 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/eko/gocache/store"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/eko/gocache/store"
+	tb "gopkg.in/lightningtipbot/telebot.v2"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/api"
@@ -116,10 +117,11 @@ func (w Lnurl) getMetaData(username string) lnurl.Metadata {
 	}
 	metadata := w.metaData(username)
 	user, tx := findUser(w.database, username)
+
 	if tx.Error == nil && user.Telegram != nil {
-		addImageMetaData(w.telegram, &metadata, username, user.Telegram)
+		addImageToMetaData(w.telegram, &metadata, username, user.Telegram)
 	}
-	runtime.IgnoreError(w.cache.Set(key, metadata, &store.Options{Expiration: 5 * time.Minute}))
+	runtime.IgnoreError(w.cache.Set(key, metadata, &store.Options{Expiration: 15 * time.Minute}))
 	return metadata
 }
 
@@ -251,14 +253,19 @@ func (w Lnurl) metaData(username string) lnurl.Metadata {
 	}
 }
 
-// addImageMetaData will add image bytes to metadata, if
-func addImageMetaData(tb *tb.Bot, metadata *lnurl.Metadata, username string, user *tb.User) {
+// addImageMetaData add images an image to the LNURL metadata
+func addImageToMetaData(tb *tb.Bot, metadata *lnurl.Metadata, username string, user *tb.User) {
 	metadata.Image.Ext = "jpeg"
 	if strings.HasPrefix("0x", username) {
 		metadata.Image.Bytes = telegram.BotProfilePicture
 		return
 	}
-	metadata.Image.Bytes = telegram.DownloadProfilePicture(tb, user)
+	picture, err := telegram.DownloadProfilePicture(tb, user)
+	if err != nil {
+		log.Errorf("[LNURL] Couldn't download profile picture: %v", err)
+		return
+	}
+	metadata.Image.Bytes = picture
 }
 
 func findUser(database *gorm.DB, username string) (*lnbits.User, *gorm.DB) {

@@ -5,10 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"image"
 	"image/jpeg"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
 	"github.com/makiuchi-d/gozxing"
@@ -84,34 +85,40 @@ func (bot *TipBot) photoHandler(ctx context.Context, m *tb.Message) (context.Con
 
 var BotProfilePicture []byte
 
-func DownloadProfilePicture(telegram *tb.Bot, user *tb.User) []byte {
+func DownloadProfilePicture(telegram *tb.Bot, user *tb.User) ([]byte, error) {
 	photo, err := ProfilePhotosOf(telegram, user)
 	if err != nil {
-		log.Errorf("[downloadMyProfilePicture] %v", err)
-		return nil
+		log.Errorf("[DownloadProfilePicture] %v", err)
+		return nil, err
 	}
 	if len(photo) == 0 {
-		log.Error("[downloadMyProfilePicture] could not download profile picture")
-		return nil
+		log.Error("[DownloadProfilePicture] could not download profile picture")
+		return nil, err
 	}
 	buf := new(bytes.Buffer)
 	reader, err := telegram.GetFile(&photo[0].File)
 	if err != nil {
-		log.Errorf("[downloadMyProfilePicture] %v", err)
-		return nil
+		log.Errorf("[DownloadProfilePicture] %v", err)
+		return nil, err
 	}
 	img, err := jpeg.Decode(reader)
 
 	if err != nil {
-		log.Errorf("[downloadMyProfilePicture] %v", err)
-		return nil
+		log.Errorf("[DownloadProfilePicture] %v", err)
+		return nil, err
 	}
 	err = jpeg.Encode(buf, img, nil)
-	return buf.Bytes()
+	return buf.Bytes(), nil
 }
 
-func (bot *TipBot) downloadMyProfilePicture() {
-	BotProfilePicture = DownloadProfilePicture(bot.Telegram, bot.Telegram.Me)
+func (bot *TipBot) downloadMyProfilePicture() error {
+	picture, err := DownloadProfilePicture(bot.Telegram, bot.Telegram.Me)
+	if err != nil {
+		log.Errorf("[downloadMyProfilePicture] %v", err)
+		return err
+	}
+	BotProfilePicture = picture
+	return nil
 }
 
 // ProfilePhotosOf returns list of profile pictures for a user.
