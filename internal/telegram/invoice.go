@@ -176,6 +176,7 @@ type LNURLInvoice struct {
 	CreatedAt time.Time    `json:"created_at"`
 	Paid      bool         `json:"paid"`
 	PaidAt    time.Time    `json:"paid_at"`
+	From      string       `json:"from"`
 }
 
 func (lnurlInvoice LNURLInvoice) Key() string {
@@ -189,7 +190,13 @@ func (bot *TipBot) lnurlReceiveEvent(invoiceEvent *InvoiceEvent) {
 	log.Debugf("[lnurl-p] Received invoice for %s of %d sat.", GetUserStr(invoiceEvent.User.Telegram), tx.Amount)
 	if err == nil {
 		if len(tx.Comment) > 0 {
-			bot.trySendMessage(tx.User.Telegram, fmt.Sprintf(`✉️ %s`, str.MarkdownEscape(tx.Comment)))
+			if len(tx.From) == 0 {
+				bot.trySendMessage(tx.User.Telegram, fmt.Sprintf("✉️ %s", str.MarkdownEscape(tx.Comment)))
+			} else {
+				bot.trySendMessage(tx.User.Telegram, fmt.Sprintf("✉️ From `%s`: %s", tx.From, str.MarkdownEscape(tx.Comment)))
+			}
+		} else if len(tx.From) > 0 {
+			bot.trySendMessage(tx.User.Telegram, fmt.Sprintf("From %s", str.MarkdownEscape(tx.From)))
 		}
 	}
 }

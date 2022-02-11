@@ -3,6 +3,7 @@ package lnurl
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -41,6 +42,7 @@ type Invoice struct {
 	CreatedAt time.Time    `json:"created_at"`
 	Paid      bool         `json:"paid"`
 	PaidAt    time.Time    `json:"paid_at"`
+	From      string       `json:"from"`
 }
 type Lnurl struct {
 	telegram         *tb.Bot
@@ -89,7 +91,16 @@ func (w Lnurl) Handle(writer http.ResponseWriter, request *http.Request) {
 			api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Comment is too long"))
 			return
 		}
-		response, err = w.serveLNURLpSecond(username, int64(amount), comment)
+
+		// payer data
+		payerdata := request.FormValue("payerdata")
+		var payerData lnurl.PayerDataValues
+		err := json.Unmarshal([]byte(payerdata), &payerData)
+		if err != nil {
+			api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Couldn't parse payerdata %v", err))
+		}
+
+		response, err = w.serveLNURLpSecond(username, int64(amount), comment, payerData)
 	}
 	// check if error was returned from first or second handlers
 	if err != nil {
@@ -155,11 +166,16 @@ func (w Lnurl) serveLNURLpFirst(username string) (*lnurl.LNURLPayParams, error) 
 		MaxSendable:     MaxSendable,
 		EncodedMetadata: metadata.Encode(),
 		CommentAllowed:  CommentAllowed,
+		PayerData: &lnurl.PayerDataSpec{
+			FreeName:         &lnurl.PayerDataItemSpec{},
+			LightningAddress: &lnurl.PayerDataItemSpec{},
+			Email:            &lnurl.PayerDataItemSpec{},
+		},
 	}, nil
 }
 
 // serveLNURLpSecond serves the second LNURL response with the payment request with the correct description hash
-func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment string) (*lnurl.LNURLPayValues, error) {
+func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment string, payerData lnurl.PayerDataValues) (*lnurl.LNURLPayValues, error) {
 	log.Infof("[LNURL] Serving invoice for user %s", username)
 	if amount_msat < MinSendable || amount_msat > MaxSendable {
 		// amount is not ok
@@ -225,13 +241,14 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 		PaymentHash:    invoice.PaymentHash,
 		Amount:         amount_msat / 1000,
 	}
-	// save lnurl invoice struct for later use (will hold the comment or other metdata for a notification when paid)
+	// save lnurl invoice struct for later use (will hold the comment or other metadata for a notification when paid)
 	runtime.IgnoreError(w.buntdb.Set(
 		Invoice{
 			Invoice:   invoiceStruct,
 			User:      user,
 			Comment:   comment,
 			CreatedAt: time.Now(),
+			From:      extractSenderFromPayerdata(payerData),
 		}))
 	// save the invoice Event that will be loaded when the invoice is paid and trigger the comment display callback
 	runtime.IgnoreError(w.buntdb.Set(
@@ -324,4 +341,17 @@ func findUser(database *gorm.DB, username string) (*lnbits.User, *gorm.DB) {
 		tx = database.Where("telegram_username = ? COLLATE NOCASE", username).First(user)
 	}
 	return user, tx
+}
+
+func extractSenderFromPayerdata(payer lnurl.PayerDataValues) string {
+	if payer.LightningAddress != "" {
+		return payer.LightningAddress
+	}
+	if payer.Email != "" {
+		return payer.Email
+	}
+	if payer.FreeName != "" {
+		return payer.FreeName
+	}
+	return ""
 }
