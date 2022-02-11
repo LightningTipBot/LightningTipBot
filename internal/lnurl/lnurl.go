@@ -131,7 +131,7 @@ func (w Lnurl) getMetaDataCached(username string) lnurl.Metadata {
 	}
 
 	// save into cache
-	runtime.IgnoreError(w.cache.Set(key, metadata, &store.Options{Expiration: 12 * time.Hour}))
+	runtime.IgnoreError(w.cache.Set(key, metadata, &store.Options{Expiration: 30 * time.Minute}))
 	return metadata
 }
 
@@ -280,7 +280,7 @@ func (w Lnurl) metaData(username string) lnurl.Metadata {
 func addImageToMetaData(tb *tb.Bot, metadata *lnurl.Metadata, username string, user *tb.User) {
 	metadata.Image.Ext = "jpeg"
 
-	// if the username is anonymous, add the bot's avatar
+	// if the username is anonymous, add the bot's picture
 	if isAnonUsername(username) {
 		metadata.Image.Bytes = telegram.BotProfilePicture
 		return
@@ -289,7 +289,9 @@ func addImageToMetaData(tb *tb.Bot, metadata *lnurl.Metadata, username string, u
 	// if the user has a profile picture, add it
 	picture, err := telegram.DownloadProfilePicture(tb, user)
 	if err != nil {
-		log.Errorf("[LNURL] Couldn't download user %s's profile picture: %v", username, err)
+		log.Debugf("[LNURL] Couldn't download user %s's profile picture: %v", username, err)
+		// in case the user has no image, use bot's picture
+		metadata.Image.Bytes = telegram.BotProfilePicture
 		return
 	}
 	metadata.Image.Bytes = picture
