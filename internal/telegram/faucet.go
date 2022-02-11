@@ -81,7 +81,7 @@ func (bot TipBot) createFaucet(ctx context.Context, text string, sender *tb.User
 	// // check for memo in command
 	memo := GetMemoFromCommand(text, 3)
 
-	inlineMessage := fmt.Sprintf(Translate(ctx, "inlineFaucetMessage"), perUserAmount, GetUserStrMd(sender), amount, amount, 0, nTotal, MakeProgressbar(amount, amount))
+	inlineMessage := fmt.Sprintf(Translate(ctx, "inlineFaucetMessage"), perUserAmount, GetUserStr(sender), amount, amount, 0, nTotal, MakeProgressbar(amount, amount))
 	if len(memo) > 0 {
 		inlineMessage = inlineMessage + fmt.Sprintf(Translate(ctx, "inlineFaucetAppendMemo"), memo)
 	}
@@ -330,6 +330,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 			bot.trySendMessage(to.Telegram, to_message)
 			bot.trySendMessage(from.Telegram, fmt.Sprintf(i18n.Translate(from.Telegram.LanguageCode, "inlineFaucetSentMessage"), inlineFaucet.PerUserAmount, toUserStrMd))
 		}()
+
 		// build faucet message
 		inlineFaucet.Message = fmt.Sprintf(i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetMessage"), inlineFaucet.PerUserAmount, GetUserStr(inlineFaucet.From.Telegram), inlineFaucet.RemainingAmount, inlineFaucet.Amount, inlineFaucet.NTaken, inlineFaucet.NTotal, MakeProgressbar(inlineFaucet.RemainingAmount, inlineFaucet.Amount))
 		memo := inlineFaucet.Memo
