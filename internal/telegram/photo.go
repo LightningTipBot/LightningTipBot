@@ -110,7 +110,7 @@ func DownloadProfilePicture(telegram *tb.Bot, user *tb.User) ([]byte, error) {
 	}
 
 	// resize image
-	img = resize.Thumbnail(100, 100, img, resize.Lanczos3)
+	img = resize.Thumbnail(160, 160, img, resize.Lanczos3)
 
 	err = jpeg.Encode(buf, img, nil)
 	return buf.Bytes(), nil
