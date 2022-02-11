@@ -2,6 +2,7 @@ bot:
   http_proxy: ""
   lnurl_public_host_name: "mylnurl.com"
   lnurl_server: "https://mylnurl.com"
+  lnurl_image: True
 telegram:
   message_dispose_duration: 10
   api_key: "1234"

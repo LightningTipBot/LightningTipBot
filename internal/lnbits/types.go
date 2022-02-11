@@ -31,6 +31,7 @@ type User struct {
 	UpdatedAt    time.Time    `json:"updated"`
 	AnonID       string       `json:"anon_id"`
 	AnonIDSha256 string       `json:"anon_id_sha256"`
+	UUID         string       `json:"uuid"`
 	Banned       bool         `json:"banned"`
 }
 

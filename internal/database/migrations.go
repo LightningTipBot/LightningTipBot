@@ -42,3 +42,21 @@ func MigrateAnonIdSha265Hash(db *gorm.DB) error {
 	}
 	return nil
 }
+
+func MigrateUUIDSha265Hash(db *gorm.DB) error {
+	users := []lnbits.User{}
+	_ = db.Find(&users)
+	for _, u := range users {
+		pw := u.Wallet.ID
+		uuid := str.UUIDSha256(&u)
+		log.Infof("[MigrateUUIDSha265Hash] %s -> %s", pw, uuid)
+		u.UUID = uuid
+		tx := db.Save(u)
+		if tx.Error != nil {
+			errmsg := fmt.Sprintf("[MigrateUUIDSha265Hash] Error: Couldn't migrate user %s (%s)", u.Telegram.Username, pw)
+			log.Errorln(errmsg)
+			return tx.Error
+		}
+	}
+	return nil
+}

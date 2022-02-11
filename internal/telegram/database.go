@@ -70,6 +70,18 @@ func ColumnMigrationTasks(db *gorm.DB) error {
 		err = database.MigrateAnonIdSha265Hash(db)
 	}
 
+	// uuid migration (2022-02-11)
+	if !db.Migrator().HasColumn(&lnbits.User{}, "uuid") {
+		// first we need to auto migrate the user. This will create uuid column
+		err = db.AutoMigrate(&lnbits.User{})
+		if err != nil {
+			panic(err)
+		}
+		log.Info("Running UUID database migrations ...")
+		// run the migration on uuid
+		err = database.MigrateUUIDSha265Hash(db)
+	}
+
 	// todo -- add more database field migrations here in the future
 	return err
 }
