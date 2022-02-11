@@ -100,11 +100,10 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) (context.Con
 		if len(payParams.LNURLPayParams.Metadata.Image.Bytes) > 0 {
 			bot.trySendMessage(m.Sender, &tb.Photo{
 				File:    tb.File{FileReader: bytes.NewReader(payParams.LNURLPayParams.Metadata.Image.Bytes)},
-				Caption: fmt.Sprintf("`%s`", payParams.LNURLPayParams.Metadata.Description)})
-		}
-		// display the metadata text from the first LNURL-p response
-		// if there was no photo in the last step
-		if len(payParams.LNURLPayParams.Metadata.Image.Bytes) == 0 && len(payParams.LNURLPayParams.Metadata.Description) > 0 {
+				Caption: fmt.Sprintf("%s", payParams.LNURLPayParams.Metadata.Description)})
+		} else if len(payParams.LNURLPayParams.Metadata.Description) > 0 {
+			// display the metadata text from the first LNURL-p response
+			// if there was no photo in the last step
 			bot.trySendMessage(m.Sender, fmt.Sprintf("`%s`", payParams.LNURLPayParams.Metadata.Description))
 		}
 		// ask whether to make payment
