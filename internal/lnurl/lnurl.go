@@ -218,12 +218,18 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 	// the same description_hash needs to be built in the second request
 	metadata := w.getMetaDataCached(username)
 
-	payerDataString, err := json.Marshal(payerData)
-	if err != nil {
-		return nil, err
+	var payerDataByte []byte
+	var err error
+	if payerData.Email != "" || payerData.LightningAddress != "" || payerData.FreeName != "" {
+		payerDataByte, err = json.Marshal(payerData)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		payerDataByte = []byte("")
 	}
 
-	descriptionHash, err := w.descriptionHash(metadata, string(payerDataString))
+	descriptionHash, err := w.descriptionHash(metadata, string(payerDataByte))
 	if err != nil {
 		return nil, err
 	}

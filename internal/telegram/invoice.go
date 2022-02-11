@@ -196,7 +196,7 @@ func (bot *TipBot) lnurlReceiveEvent(invoiceEvent *InvoiceEvent) {
 				bot.trySendMessage(tx.User.Telegram, fmt.Sprintf("✉️ From `%s`: %s", tx.From, str.MarkdownEscape(tx.Comment)))
 			}
 		} else if len(tx.From) > 0 {
-			bot.trySendMessage(tx.User.Telegram, fmt.Sprintf("From %s", str.MarkdownEscape(tx.From)))
+			bot.trySendMessage(tx.User.Telegram, fmt.Sprintf("From `%s`", str.MarkdownEscape(tx.From)))
 		}
 	}
 }
