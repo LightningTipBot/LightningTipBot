@@ -97,7 +97,9 @@ func (w Lnurl) Handle(writer http.ResponseWriter, request *http.Request) {
 		var payerData lnurl.PayerDataValues
 		err := json.Unmarshal([]byte(payerdata), &payerData)
 		if err != nil {
-			api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Couldn't parse payerdata %v", err))
+			// api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Couldn't parse payerdata: %v", err))
+			fmt.Errorf("[handleLnUrl] Couldn't parse payerdata: %v", err)
+			fmt.Errorf("[handleLnUrl] payerdata: %v", payerdata)
 		}
 
 		response, err = w.serveLNURLpSecond(username, int64(amount), comment, payerData)
@@ -216,10 +218,16 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 	// the same description_hash needs to be built in the second request
 	metadata := w.getMetaDataCached(username)
 
-	descriptionHash, err := w.descriptionHash(metadata)
+	payerDataString, err := json.Marshal(payerData)
 	if err != nil {
 		return nil, err
 	}
+
+	descriptionHash, err := w.descriptionHash(metadata, string(payerDataString))
+	if err != nil {
+		return nil, err
+	}
+
 	invoice, err := user.Wallet.Invoice(
 		lnbits.InvoiceParams{
 			Amount:          amount_msat / 1000,
@@ -268,9 +276,16 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 }
 
 // descriptionHash is the SHA256 hash of the metadata
-func (w Lnurl) descriptionHash(metadata lnurl.Metadata) (string, error) {
-	hash := sha256.Sum256([]byte(metadata.Encode()))
-	hashString := hex.EncodeToString(hash[:])
+func (w Lnurl) descriptionHash(metadata lnurl.Metadata, payerData string) (string, error) {
+	var hashString string
+	var hash [32]byte
+	if len(payerData) == 0 {
+		hash = sha256.Sum256([]byte(metadata.Encode()))
+		hashString = hex.EncodeToString(hash[:])
+	} else {
+		hash = sha256.Sum256([]byte(metadata.Encode() + payerData))
+		hashString = hex.EncodeToString(hash[:])
+	}
 	return hashString, nil
 }
 
