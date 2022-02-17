@@ -248,6 +248,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 	to := inlineTipjar.To
 	if !inlineTipjar.Active {
 		log.Errorf(fmt.Sprintf("[tipjar] tipjar %s inactive.", inlineTipjar.ID))
+		bot.tryEditMessage(c.Message, i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarCancelledMessage"), &tb.ReplyMarkup{})
 		return ctx, errors.Create(errors.NotActiveError)
 	}
 
@@ -263,6 +264,9 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 			return ctx, errors.Create(errors.UnknownError)
 		}
 	}
+
+	defer inlineTipjar.Set(inlineTipjar, bot.Bunt)
+
 	if inlineTipjar.GivenAmount < inlineTipjar.Amount {
 		toUserStrMd := GetUserStrMd(to.Telegram)
 		fromUserStrMd := GetUserStrMd(from.Telegram)
@@ -321,6 +325,10 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx context.Context, c *tb.Callback
 			inlineTipjar.NGiven,
 		)
 		bot.tryEditMessage(c.Message, inlineTipjar.Message)
+		// send update to tipjar creator
+		if inlineTipjar.Active && inlineTipjar.To.Telegram.ID != 0 {
+			bot.trySendMessage(inlineTipjar.To.Telegram, listTipjarGivers(inlineTipjar))
+		}
 		inlineTipjar.Active = false
 	}
 	return ctx, nil
@@ -341,7 +349,24 @@ func (bot *TipBot) cancelInlineTipjarHandler(ctx context.Context, c *tb.Callback
 		return ctx, errors.Create(errors.UnknownError)
 	}
 	bot.tryEditMessage(c.Message, i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarCancelledMessage"), &tb.ReplyMarkup{})
+
+	// send update to tipjar creator
+	if inlineTipjar.Active && inlineTipjar.To.Telegram.ID != 0 {
+		bot.trySendMessage(inlineTipjar.To.Telegram, listTipjarGivers(inlineTipjar))
+	}
+
 	// set the inlineTipjar inactive
 	inlineTipjar.Active = false
 	return ctx, inlineTipjar.Set(inlineTipjar, bot.Bunt)
+}
+
+func listTipjarGivers(inlineTipjar *InlineTipjar) string {
+	var from_str string
+	from_str = fmt.Sprintf("🍯 *Tipjar summary*\n\nMemo: %s\nCapacity: %d sat\nGivers: %d\nCollected: %d sat\n\n*Givers:*\n\n", inlineTipjar.Memo, inlineTipjar.Amount, inlineTipjar.NGiven, inlineTipjar.GivenAmount)
+	from_str += "```\n"
+	for _, from := range inlineTipjar.From {
+		from_str += fmt.Sprintf("%s\n", GetUserStr(from.Telegram))
+	}
+	from_str += "```"
+	return from_str
 }

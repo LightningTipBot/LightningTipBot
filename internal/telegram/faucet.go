@@ -262,7 +262,6 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	if c.Message != nil && c.Message.Chat != nil {
 		log.Infof("[faucet] Link: https://t.me/c/%s/%d", strconv.FormatInt(c.Message.Chat.ID, 10)[4:], c.Message.ID)
 	}
-	// release faucet no matter what
 
 	if from.Telegram.ID == to.Telegram.ID {
 		log.Debugf("[faucet] %s is the owner faucet %s", GetUserStr(to.Telegram), inlineFaucet.ID)
