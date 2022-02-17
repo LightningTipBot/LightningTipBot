@@ -41,6 +41,8 @@ func (bot TipBot) groupHandler(ctx context.Context, m *tb.Message) (context.Cont
 
 	var resp ChatInviteLink
 
+	bot.trySendMessage(m.Chat, fmt.Sprintf("Data: `%s`", data))
+
 	if err := json.Unmarshal(data, &resp); err != nil {
 		return nil, err
 	}
