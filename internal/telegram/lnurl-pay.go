@@ -86,7 +86,10 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 	runtime.IgnoreError(lnurlPayState.Set(lnurlPayState, bot.Bunt))
 
 	// now we actualy check whether the amount was in the command and if not, ask for it
-	if amount_err != nil || amount < 1 {
+	if lnurlPayState.LNURLPayParams.MinSendable == lnurlPayState.LNURLPayParams.MaxSendable {
+		amount = lnurlPayState.LNURLPayParams.MaxSendable / 1000
+		lnurlPayState.Amount = amount * 1000 // save as mSat
+	} else if amount_err != nil || amount < 1 {
 		// // no amount was entered, set user state and ask for amount
 		bot.askForAmount(ctx, id, "LnurlPayState", lnurlPayState.LNURLPayParams.MinSendable, lnurlPayState.LNURLPayParams.MaxSendable, m.Text)
 		return
