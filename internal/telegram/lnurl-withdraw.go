@@ -58,19 +58,17 @@ func (bot *TipBot) editSingleButton(ctx context.Context, m *tb.Message, message 
 
 // lnurlWithdrawHandler is invoked when the first lnurl response was a lnurl-withdraw response
 // at this point, the user hans't necessarily entered an amount yet
-func (bot *TipBot) lnurlWithdrawHandler(ctx context.Context, m *tb.Message, withdrawParams LnurlWithdrawState) {
+func (bot *TipBot) lnurlWithdrawHandler(ctx context.Context, m *tb.Message, withdrawParams *LnurlWithdrawState) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return
 	}
 	// object that holds all information about the send payment
 	id := fmt.Sprintf("lnurlw-%d-%s", m.Sender.ID, RandStringRunes(5))
-	LnurlWithdrawState := LnurlWithdrawState{
-		Base:                  storage.New(storage.ID(id)),
-		From:                  user,
-		LNURLWithdrawResponse: withdrawParams.LNURLWithdrawResponse,
-		LanguageCode:          ctx.Value("publicLanguageCode").(string),
-	}
+
+	withdrawParams.Base = storage.New(storage.ID(id))
+	withdrawParams.From = user
+	withdrawParams.LanguageCode = ctx.Value("publicLanguageCode").(string)
 
 	// first we check whether an amount is present in the command
 	amount, amount_err := decodeAmountFromCommand(m.Text)
@@ -78,36 +76,36 @@ func (bot *TipBot) lnurlWithdrawHandler(ctx context.Context, m *tb.Message, with
 	// amount is already present in the command, i.e., /lnurl <amount> <LNURL>
 	// amount not in allowed range from LNURL
 	if amount_err == nil &&
-		(int64(amount) > (LnurlWithdrawState.LNURLWithdrawResponse.MaxWithdrawable/1000) || int64(amount) < (LnurlWithdrawState.LNURLWithdrawResponse.MinWithdrawable/1000)) &&
-		(LnurlWithdrawState.LNURLWithdrawResponse.MaxWithdrawable != 0 && LnurlWithdrawState.LNURLWithdrawResponse.MinWithdrawable != 0) { // only if max and min are set
+		(int64(amount) > (withdrawParams.LNURLWithdrawResponse.MaxWithdrawable/1000) || int64(amount) < (withdrawParams.LNURLWithdrawResponse.MinWithdrawable/1000)) &&
+		(withdrawParams.LNURLWithdrawResponse.MaxWithdrawable != 0 && withdrawParams.LNURLWithdrawResponse.MinWithdrawable != 0) { // only if max and min are set
 		err := fmt.Errorf("amount not in range")
 		log.Warnf("[lnurlWithdrawHandler] Error: %s", err.Error())
-		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), LnurlWithdrawState.LNURLWithdrawResponse.MinWithdrawable/1000, LnurlWithdrawState.LNURLWithdrawResponse.MaxWithdrawable/1000))
+		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), withdrawParams.LNURLWithdrawResponse.MinWithdrawable/1000, withdrawParams.LNURLWithdrawResponse.MaxWithdrawable/1000))
 		ResetUserState(user, bot)
 		return
 	}
 
 	// if no amount is entered, and if only one amount is possible, we use it
-	if amount_err != nil && LnurlWithdrawState.LNURLWithdrawResponse.MaxWithdrawable == LnurlWithdrawState.LNURLWithdrawResponse.MinWithdrawable {
-		amount = int64(LnurlWithdrawState.LNURLWithdrawResponse.MaxWithdrawable / 1000)
+	if amount_err != nil && withdrawParams.LNURLWithdrawResponse.MaxWithdrawable == withdrawParams.LNURLWithdrawResponse.MinWithdrawable {
+		amount = int64(withdrawParams.LNURLWithdrawResponse.MaxWithdrawable / 1000)
 		amount_err = nil
 	}
 
 	// set also amount in the state of the user
-	LnurlWithdrawState.Amount = amount * 1000 // save as mSat
+	withdrawParams.Amount = amount * 1000 // save as mSat
 
 	// add result to persistent struct
-	runtime.IgnoreError(LnurlWithdrawState.Set(LnurlWithdrawState, bot.Bunt))
+	runtime.IgnoreError(withdrawParams.Set(withdrawParams, bot.Bunt))
 
 	// now we actualy check whether the amount was in the command and if not, ask for it
 	if amount_err != nil || amount < 1 {
 		// // no amount was entered, set user state and ask for amount
-		bot.askForAmount(ctx, id, "LnurlWithdrawState", LnurlWithdrawState.LNURLWithdrawResponse.MinWithdrawable, LnurlWithdrawState.LNURLWithdrawResponse.MaxWithdrawable, m.Text)
+		bot.askForAmount(ctx, id, "LnurlWithdrawState", withdrawParams.LNURLWithdrawResponse.MinWithdrawable, withdrawParams.LNURLWithdrawResponse.MaxWithdrawable, m.Text)
 		return
 	}
 
 	// We need to save the pay state in the user state so we can load the payment in the next handler
-	paramsJson, err := json.Marshal(LnurlWithdrawState)
+	paramsJson, err := json.Marshal(withdrawParams)
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandler] Error: %s", err.Error())
 		// bot.trySendMessage(m.Sender, err.Error())
