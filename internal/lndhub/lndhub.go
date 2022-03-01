@@ -18,7 +18,7 @@ type LndHub struct {
 }
 
 func New(bot *telegram.TipBot) LndHub {
-	return LndHub{database: bot.Database}
+	return LndHub{database: bot.DB.Users}
 }
 func (w LndHub) Handle(writer http.ResponseWriter, request *http.Request) {
 	auth := request.Header.Get("Authorization")

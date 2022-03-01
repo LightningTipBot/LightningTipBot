@@ -30,6 +30,7 @@ func initInvoiceEventCallbacks(bot *TipBot) {
 		InvoiceCallbackGeneric:         bot.notifyInvoiceReceivedEvent,
 		InvoiceCallbackInlineReceive:   bot.inlineReceiveEvent,
 		InvoiceCallbackLNURLPayReceive: bot.lnurlReceiveEvent,
+		InvoiceCallbackSatdressProxy:   bot.satdressProxyRelayPaymentHandler,
 	}
 }
 
@@ -39,6 +40,7 @@ const (
 	InvoiceCallbackGeneric = iota + 1
 	InvoiceCallbackInlineReceive
 	InvoiceCallbackLNURLPayReceive
+	InvoiceCallbackSatdressProxy
 )
 
 type Invoice struct {

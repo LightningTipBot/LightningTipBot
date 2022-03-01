@@ -56,8 +56,10 @@ func (bot TipBot) initWallet(tguser *tb.User) (*lnbits.User, error) {
 			return user, err
 		}
 		// set user initialized
-		user, err := GetUser(tguser, bot)
+		user, err = GetUser(tguser, bot)
 		user.Initialized = true
+		// TODO -- remove this
+		// user.Settings = &lnbits.Settings{ID: user.Wallet.User, NodeType: "dawgnode"}
 		err = UpdateUserRecord(user, bot)
 		if err != nil {
 			log.Errorln(fmt.Sprintf("[initWallet] error updating user: %s", err.Error()))

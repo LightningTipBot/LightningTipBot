@@ -24,6 +24,7 @@ import (
 )
 
 type TipBot struct {
+	DB       *Databases
 	Database *gorm.DB
 	Bunt     *storage.DB
 	ShopBunt *storage.DB
@@ -47,12 +48,11 @@ func NewBot() TipBot {
 	gocacheClient := gocache.New(5*time.Minute, 10*time.Minute)
 	gocacheStore := store.NewGoCache(gocacheClient, nil)
 	// create sqlite databases
-	db, txLogger := AutoMigration()
+	dbs := AutoMigration()
 	limiter.Start()
 	return TipBot{
-		Database: db,
+		DB:       dbs,
 		Client:   lnbits.NewClient(internal.Configuration.Lnbits.AdminKey, internal.Configuration.Lnbits.Url),
-		logger:   txLogger,
 		Bunt:     createBunt(internal.Configuration.Database.BuntDbPath),
 		ShopBunt: createBunt(internal.Configuration.Database.ShopBuntDbPath),
 		Telegram: newTelegramBot(),

@@ -28,6 +28,11 @@ import (
 	"gorm.io/gorm"
 )
 
+type Databases struct {
+	Users        *gorm.DB
+	Transactions *gorm.DB
+}
+
 const (
 	MessageOrderedByReplyToFrom = "message.reply_to_message.from.id"
 	TipTooltipKeyPattern        = "tip-tool-tip:*"
@@ -86,7 +91,7 @@ func ColumnMigrationTasks(db *gorm.DB) error {
 	return err
 }
 
-func AutoMigration() (db *gorm.DB, txLogger *gorm.DB) {
+func AutoMigration() *Databases {
 	orm, err := gorm.Open(sqlite.Open(internal.Configuration.Database.DbPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
 	if err != nil {
 		panic("Initialize orm failed.")
@@ -100,7 +105,7 @@ func AutoMigration() (db *gorm.DB, txLogger *gorm.DB) {
 		panic(err)
 	}
 
-	txLogger, err = gorm.Open(sqlite.Open(internal.Configuration.Database.TransactionsPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
+	txLogger, err := gorm.Open(sqlite.Open(internal.Configuration.Database.TransactionsPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
 	if err != nil {
 		panic("Initialize orm failed.")
 	}
@@ -108,7 +113,11 @@ func AutoMigration() (db *gorm.DB, txLogger *gorm.DB) {
 	if err != nil {
 		panic(err)
 	}
-	return orm, txLogger
+
+	return &Databases{
+		Users:        orm,
+		Transactions: txLogger,
+	}
 }
 
 func GetUserByTelegramUsername(toUserStrWithoutAt string, bot TipBot) (*lnbits.User, error) {
@@ -117,7 +126,7 @@ func GetUserByTelegramUsername(toUserStrWithoutAt string, bot TipBot) (*lnbits.U
 	if len(toUserStrWithoutAt) > 100 {
 		return nil, fmt.Errorf("[GetUserByTelegramUsername] Telegram username is too long: %s..", toUserStrWithoutAt[:100])
 	}
-	tx := bot.Database.Where("telegram_username = ? COLLATE NOCASE", toUserStrWithoutAt).First(toUserDb)
+	tx := bot.DB.Users.Where("telegram_username = ? COLLATE NOCASE", toUserStrWithoutAt).First(toUserDb)
 	if tx.Error != nil || toUserDb.Wallet == nil {
 		err := tx.Error
 		if toUserDb.Wallet == nil {
@@ -144,7 +153,7 @@ func getCachedUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 // without updating the user in storage.
 func GetLnbitsUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 	user := &lnbits.User{Name: strconv.FormatInt(u.ID, 10)}
-	tx := bot.Database.First(user)
+	tx := bot.DB.Users.First(user)
 	if tx.Error != nil {
 		errmsg := fmt.Sprintf("[GetUser] Couldn't fetch %s from Database: %s", GetUserStr(u), tx.Error.Error())
 		log.Warnln(errmsg)
@@ -154,8 +163,22 @@ func GetLnbitsUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 	// todo -- unblock this !
 	return user, nil
 }
+func GetLnbitsUserWithSettings(u *tb.User, bot TipBot) (*lnbits.User, error) {
+	user := &lnbits.User{Name: strconv.FormatInt(u.ID, 10)}
+	tx := bot.DB.Users.Preload("Settings").First(user)
+	if tx.Error != nil {
+		errmsg := fmt.Sprintf("[GetLnbitsUserWithSettings] Couldn't fetch %s from Database: %s", GetUserStr(u), tx.Error.Error())
+		log.Warnln(errmsg)
+		user.Telegram = u
+		return user, tx.Error
+	}
+	if user.Settings == nil {
+		user.Settings = &lnbits.Settings{ID: user.ID}
+	}
+	return user, nil
+}
 
-// GetUser from Telegram user. Update the user if user information changed.
+// GetUser from Telegram user. Update the user if user information changed.``
 func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 	var user *lnbits.User
 	var err error
@@ -236,7 +259,7 @@ func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
 		log.Errorf("[UpdateUserRecord] UUID empty! Setting to: %s", user.UUID)
 	}
 
-	tx := bot.Database.Save(user)
+	tx := bot.DB.Users.Save(user)
 	if tx.Error != nil {
 		errmsg := fmt.Sprintf("[UpdateUserRecord] Error: Couldn't update %s's info in Database.", GetUserStr(user.Telegram))
 		log.Errorln(errmsg)

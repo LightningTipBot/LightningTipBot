@@ -118,7 +118,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) (context.Conte
 	log.Infof("[/pay] Invoice entered. User: %s, amount: %d sat.", userStr, amount)
 
 	// object that holds all information about the send payment
-	id := fmt.Sprintf("pay-%d-%d-%s", m.Sender.ID, amount, RandStringRunes(5))
+	id := fmt.Sprintf("pay:%d:%d:%s", m.Sender.ID, amount, RandStringRunes(8))
 
 	// // // create inline buttons
 	payButton := paymentConfirmationMenu.Data(Translate(ctx, "payButtonMessage"), "confirm_pay", id)

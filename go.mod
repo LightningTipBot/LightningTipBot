@@ -20,7 +20,8 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/tidwall/buntdb v1.2.7
-	github.com/tidwall/gjson v1.10.2
+	github.com/tidwall/gjson v1.12.1
+	github.com/tidwall/sjson v1.2.4 // indirect
 	golang.org/x/text v0.3.5
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	gopkg.in/lightningtipbot/telebot.v2 v2.4.2-0.20211217193303-c005cce171ac

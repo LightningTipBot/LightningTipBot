@@ -57,7 +57,7 @@ type Lnurl struct {
 func New(bot *telegram.TipBot) Lnurl {
 	return Lnurl{
 		c:                bot.Client,
-		database:         bot.Database,
+		database:         bot.DB.Users,
 		callbackHostname: internal.Configuration.Bot.LNURLHostUrl,
 		WebhookServer:    internal.Configuration.Lnbits.WebhookServer,
 		buntdb:           bot.Bunt,

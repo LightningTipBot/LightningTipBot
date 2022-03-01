@@ -76,7 +76,7 @@ func (t *Transaction) Send() (success bool, err error) {
 	}
 
 	// save transaction to db
-	tx := t.Bot.logger.Save(t)
+	tx := t.Bot.DB.Transactions.Save(t)
 	if tx.Error != nil {
 		errMsg := fmt.Sprintf("Error: Could not log transaction: %s", err.Error())
 		log.Errorln(errMsg)

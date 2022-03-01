@@ -1,14 +1,15 @@
 package main
 
 import (
+	"net/http"
+	"runtime/debug"
+
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/api"
 	"github.com/LightningTipBot/LightningTipBot/internal/api/admin"
 	"github.com/LightningTipBot/LightningTipBot/internal/lndhub"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
-	"net/http"
-	"runtime/debug"
 
 	_ "net/http/pprof"
 

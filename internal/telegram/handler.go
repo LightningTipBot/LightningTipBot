@@ -169,6 +169,23 @@ func (bot TipBot) getHandler() []Handler {
 			},
 		},
 		{
+			Endpoints: []interface{}{"/node"},
+			Handler:   bot.nodeHandler,
+			Interceptor: &Interceptor{
+				Type: MessageInterceptor,
+				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
 			Endpoints: []interface{}{"/shops"},
 			Handler:   bot.shopsHandler,
 			Interceptor: &Interceptor{

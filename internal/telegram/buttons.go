@@ -32,8 +32,8 @@ var (
 
 func init() {
 	mainMenu.Reply(
-		mainMenu.Row(btnBalanceMainMenu, btnHelpMainMenu),
-		mainMenu.Row(btnInvoiceMainMenu, btnSendMainMenu),
+		mainMenu.Row(btnBalanceMainMenu),
+		mainMenu.Row(btnInvoiceMainMenu, btnSendMainMenu, btnHelpMainMenu),
 	)
 }
 
@@ -71,15 +71,16 @@ func (bot *TipBot) mainMenuBalanceButtonUpdate(to int64) {
 	}
 	if user.Wallet != nil {
 		amount, err := bot.GetUserBalanceCached(user)
-		if err == nil {
-			log.Tracef("[appendMainMenu] user %s balance %d sat", GetUserStr(user.Telegram), amount)
-			MainMenuCommandBalance := fmt.Sprintf("%s %d sat", MainMenuCommandBalance, amount)
-			btnBalanceMainMenu = mainMenu.Text(MainMenuCommandBalance)
-			mainMenu.Reply(
-				mainMenu.Row(btnBalanceMainMenu),
-				mainMenu.Row(btnInvoiceMainMenu, btnSendMainMenu, btnHelpMainMenu),
-			)
+		if err != nil {
+			amount = 0
 		}
+		log.Tracef("[appendMainMenu] user %s balance %d sat", GetUserStr(user.Telegram), amount)
+		MainMenuCommandBalance := fmt.Sprintf("%s %d sat", MainMenuCommandBalance, amount)
+		btnBalanceMainMenu = mainMenu.Text(MainMenuCommandBalance)
+		mainMenu.Reply(
+			mainMenu.Row(btnBalanceMainMenu),
+			mainMenu.Row(btnInvoiceMainMenu, btnSendMainMenu, btnHelpMainMenu),
+		)
 	}
 }
 
@@ -92,7 +93,7 @@ func (bot *TipBot) makeContactsButtons(ctx context.Context) []tb.Btn {
 	user := LoadUser(ctx)
 	// get 5 most recent transactions by from_id with distint to_user
 	// where to_user starts with an @ and is not the user itself
-	bot.logger.Where("from_id = ? AND to_user LIKE ? AND to_user <> ?", user.Telegram.ID, "@%", GetUserStr(user.Telegram)).Distinct("to_user").Order("id desc").Limit(5).Find(&records)
+	bot.DB.Transactions.Where("from_id = ? AND to_user LIKE ? AND to_user <> ?", user.Telegram.ID, "@%", GetUserStr(user.Telegram)).Distinct("to_user").Order("id desc").Limit(5).Find(&records)
 	log.Debugf("[makeContactsButtons] found %d records", len(records))
 
 	// get all contacts and add them to the buttons

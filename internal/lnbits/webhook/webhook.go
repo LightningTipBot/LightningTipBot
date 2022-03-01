@@ -54,7 +54,7 @@ func NewServer(bot *telegram.TipBot) *Server {
 	}
 	apiServer := &Server{
 		c:          bot.Client,
-		database:   bot.Database,
+		database:   bot.DB.Users,
 		bot:        bot.Telegram,
 		httpServer: srv,
 		buntdb:     bot.Bunt,

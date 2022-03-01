@@ -68,7 +68,7 @@ func (s Service) getUserByTelegramId(r *http.Request) (*lnbits.User, error) {
 	if v["id"] == "" {
 		return nil, fmt.Errorf("invalid id")
 	}
-	tx := s.bot.Database.Where("telegram_id = ? COLLATE NOCASE", v["id"]).First(user)
+	tx := s.bot.DB.Users.Where("telegram_id = ? COLLATE NOCASE", v["id"]).First(user)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
