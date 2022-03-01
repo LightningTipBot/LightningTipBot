@@ -34,6 +34,7 @@ type DatabaseConfiguration struct {
 	ShopBuntDbPath   string `yaml:"shop_buntdb_path"`
 	BuntDbPath       string `yaml:"buntdb_path"`
 	TransactionsPath string `yaml:"transactions_path"`
+	GroupsDbPath     string `yaml:"groupsdb_path"`
 }
 
 type LnbitsConfiguration struct {

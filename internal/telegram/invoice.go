@@ -30,6 +30,7 @@ func initInvoiceEventCallbacks(bot *TipBot) {
 		InvoiceCallbackGeneric:         bot.notifyInvoiceReceivedEvent,
 		InvoiceCallbackInlineReceive:   bot.inlineReceiveEvent,
 		InvoiceCallbackLNURLPayReceive: bot.lnurlReceiveEvent,
+		InvoiceCallbackGroupTicket:     bot.groupGetInviteLinkHandler,
 	}
 }
 
@@ -39,6 +40,7 @@ const (
 	InvoiceCallbackGeneric = iota + 1
 	InvoiceCallbackInlineReceive
 	InvoiceCallbackLNURLPayReceive
+	InvoiceCallbackGroupTicket
 )
 
 type Invoice struct {
@@ -49,12 +51,14 @@ type Invoice struct {
 }
 type InvoiceEvent struct {
 	*Invoice
-	User           *lnbits.User `json:"user"`
-	Message        *tb.Message  `json:"message"`
-	InvoiceMessage *tb.Message  `json:"invoice_message"`
-	LanguageCode   string       `json:"languagecode"`
-	Callback       int          `json:"func"`
-	CallbackData   string       `json:"callbackdata"`
+	User           *lnbits.User `json:"user"`                      // the user that is being paid
+	Message        *tb.Message  `json:"message,omitempty"`         // the message that the invoice replies to
+	InvoiceMessage *tb.Message  `json:"invoice_message,omitempty"` // the message that displays the invoice
+	LanguageCode   string       `json:"languagecode"`              // language code of the user
+	Callback       int          `json:"func"`                      // which function to call if the invoice is paid
+	CallbackData   string       `json:"callbackdata"`              // add some data for the callback
+	Chat           *tb.Chat     `json:"chat,omitempty"`            // if invoice is supposed to be sent to a particular chat
+	Payer          *lnbits.User `json:"payer,omitempty"`           // if a particular user is supposed to pay this
 }
 
 func (invoiceEvent InvoiceEvent) Key() string {

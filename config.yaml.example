@@ -17,3 +17,4 @@ database:
   buntdb_path: "data/bunt.db"
   transactions_path: "data/transactions.db"
   shop_buntdb_path: "data/shop.db"
+  groupsdb_path: "data/groups.db"

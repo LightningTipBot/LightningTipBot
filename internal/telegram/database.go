@@ -86,7 +86,7 @@ func ColumnMigrationTasks(db *gorm.DB) error {
 	return err
 }
 
-func AutoMigration() (db *gorm.DB, txLogger *gorm.DB) {
+func AutoMigration() (db *gorm.DB, txLogger *gorm.DB, groupsDb *gorm.DB) {
 	orm, err := gorm.Open(sqlite.Open(internal.Configuration.Database.DbPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
 	if err != nil {
 		panic("Initialize orm failed.")
@@ -108,7 +108,16 @@ func AutoMigration() (db *gorm.DB, txLogger *gorm.DB) {
 	if err != nil {
 		panic(err)
 	}
-	return orm, txLogger
+
+	groupsDb, err = gorm.Open(sqlite.Open(internal.Configuration.Database.GroupsDbPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
+	if err != nil {
+		panic("Initialize orm failed.")
+	}
+	err = groupsDb.AutoMigrate(&Group{})
+	if err != nil {
+		panic(err)
+	}
+	return orm, txLogger, groupsDb
 }
 
 func GetUserByTelegramUsername(toUserStrWithoutAt string, bot TipBot) (*lnbits.User, error) {
