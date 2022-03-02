@@ -30,6 +30,23 @@ type Group struct {
 	Ticket *Ticket `gorm:"embedded;embeddedPrefix:ticket_"`
 }
 
+type TicketInvoiceEvent struct {
+	*Invoice
+	Group          *Group       `gorm:"embedded;embeddedPrefix:group_"`
+	User           *lnbits.User `json:"user"`                      // the user that is being paid
+	Message        *tb.Message  `json:"message,omitempty"`         // the message that the invoice replies to
+	InvoiceMessage *tb.Message  `json:"invoice_message,omitempty"` // the message that displays the invoice
+	LanguageCode   string       `json:"languagecode"`              // language code of the user
+	Callback       int          `json:"func"`                      // which function to call if the invoice is paid
+	CallbackData   string       `json:"callbackdata"`              // add some data for the callback
+	Chat           *tb.Chat     `json:"chat,omitempty"`            // if invoice is supposed to be sent to a particular chat
+	Payer          *lnbits.User `json:"payer,omitempty"`           // if a particular user is supposed to pay this
+}
+
+func (invoiceEvent TicketInvoiceEvent) Key() string {
+	return fmt.Sprintf("invoice:%s", invoiceEvent.PaymentHash)
+}
+
 var (
 	groupAddGroupHelpMessage = "Usage: `/group add <group_name> [<amount>]`\nExample: `/group add TheBestBitcoinGroup 1000`"
 	grouJoinGroupHelpMessage = "Usage: `/group join <group_name>`\nExample: `/group join TheBestBitcoinGroup`"
@@ -78,7 +95,7 @@ func (bot TipBot) groupRequestInvoiceLinkHandler(ctx context.Context, m *tb.Mess
 	}
 
 	memo := fmt.Sprintf(groupInvoiceMemo, groupname)
-	invoice, err := bot.createInvoiceGroupTicket(ctx, group.Ticket.Creator, group.Ticket.Price, memo, InvoiceCallbackGroupTicket, "", user, group.ID)
+	invoice, err := bot.createInvoiceGroupTicket(ctx, user, group, memo, InvoiceCallbackGroupTicket, "")
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
 		bot.trySendMessage(user.Telegram, Translate(ctx, "errorTryLaterMessage"))
@@ -100,7 +117,10 @@ func (bot TipBot) groupRequestInvoiceLinkHandler(ctx context.Context, m *tb.Mess
 }
 
 // groupGetInviteLinkHandler is called when the invoice is paid and sends a one-time group invite link to the payer
-func (bot TipBot) groupGetInviteLinkHandler(invoiceEvent *InvoiceEvent) {
+func (bot TipBot) groupGetInviteLinkHandler(invoiceEvent *TicketInvoiceEvent) {
+	// take a cut
+	amount_bot := int64(invoiceEvent.Group.Ticket.Price * int64(invoiceEvent.Group.Ticket.Cut) / 100)
+
 	type CreateChatInviteLink struct {
 		ChatID             int64  `json:"chat_id"`
 		Name               string `json:"name"`
@@ -211,30 +231,31 @@ func (bot TipBot) addGroupHandler(ctx context.Context, m *tb.Message) (context.C
 	return ctx, nil
 }
 
-func (bot *TipBot) createInvoiceGroupTicket(ctx context.Context, user *lnbits.User, amount int64, memo string, callback int, callbackData string, payer *lnbits.User, chatID int64) (InvoiceEvent, error) {
-	invoice, err := user.Wallet.Invoice(
+func (bot *TipBot) createInvoiceGroupTicket(ctx context.Context, payer *lnbits.User, group *Group, memo string, callback int, callbackData string) (TicketInvoiceEvent, error) {
+	invoice, err := group.Ticket.Creator.Wallet.Invoice(
 		lnbits.InvoiceParams{
 			Out:     false,
-			Amount:  int64(amount),
+			Amount:  group.Ticket.Price,
 			Memo:    memo,
 			Webhook: internal.Configuration.Lnbits.WebhookServer},
 		bot.Client)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
 		log.Errorln(errmsg)
-		return InvoiceEvent{}, err
+		return TicketInvoiceEvent{}, err
 	}
-	invoiceEvent := InvoiceEvent{
+	invoiceEvent := TicketInvoiceEvent{
 		Invoice: &Invoice{PaymentHash: invoice.PaymentHash,
 			PaymentRequest: invoice.PaymentRequest,
-			Amount:         amount,
+			Amount:         group.Ticket.Price,
 			Memo:           memo},
-		User:         user,
+		User:         group.Ticket.Creator,
 		Callback:     callback,
 		CallbackData: callbackData,
 		LanguageCode: ctx.Value("publicLanguageCode").(string),
 		Payer:        payer,
-		Chat:         &tb.Chat{ID: chatID},
+		Chat:         &tb.Chat{ID: group.ID},
+		Group:        group,
 	}
 	// save invoice struct for later use
 	runtime.IgnoreError(bot.Bunt.Set(invoiceEvent))
