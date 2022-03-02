@@ -21,7 +21,7 @@ import (
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
-type InvoiceEventCallback map[int]func(*InvoiceEvent)
+type InvoiceEventCallback map[int]func(event Event)
 
 var InvoiceCallback InvoiceEventCallback
 
@@ -59,6 +59,14 @@ type InvoiceEvent struct {
 	CallbackData   string       `json:"callbackdata"`              // add some data for the callback
 	Chat           *tb.Chat     `json:"chat,omitempty"`            // if invoice is supposed to be sent to a particular chat
 	Payer          *lnbits.User `json:"payer,omitempty"`           // if a particular user is supposed to pay this
+}
+
+func (invoiceEvent InvoiceEvent) Type() string {
+	return "invoice"
+}
+
+type Event interface {
+	Type() string
 }
 
 func (invoiceEvent InvoiceEvent) Key() string {
@@ -162,7 +170,8 @@ func (bot *TipBot) createInvoiceWithEvent(ctx context.Context, user *lnbits.User
 	return invoiceEvent, nil
 }
 
-func (bot *TipBot) notifyInvoiceReceivedEvent(invoiceEvent *InvoiceEvent) {
+func (bot *TipBot) notifyInvoiceReceivedEvent(event Event) {
+	invoiceEvent := event.(*InvoiceEvent)
 	// do balance check for keyboard update
 	_, err := bot.GetUserBalance(invoiceEvent.User)
 	if err != nil {
@@ -187,7 +196,9 @@ func (lnurlInvoice LNURLInvoice) Key() string {
 	return fmt.Sprintf("lnurl-p:%s", lnurlInvoice.PaymentHash)
 }
 
-func (bot *TipBot) lnurlReceiveEvent(invoiceEvent *InvoiceEvent) {
+func (bot *TipBot) lnurlReceiveEvent(event Event) {
+	invoiceEvent := event.(*InvoiceEvent)
+
 	bot.notifyInvoiceReceivedEvent(invoiceEvent)
 	tx := &LNURLInvoice{Invoice: &Invoice{PaymentHash: invoiceEvent.PaymentHash}}
 	err := bot.Bunt.Get(tx)
