@@ -43,6 +43,18 @@ const (
 	InvoiceCallbackGroupTicket
 )
 
+const (
+	EventTypeInvoice       = "invoice"
+	EventTypeTicketInvoice = "ticket-invoice"
+)
+
+func AssertEventType(event Event, eventType string) error {
+	if event.Type() != eventType {
+		return fmt.Errorf("invalid event type")
+	}
+	return nil
+}
+
 type Invoice struct {
 	PaymentHash    string `json:"payment_hash"`
 	PaymentRequest string `json:"payment_request"`
@@ -62,7 +74,7 @@ type InvoiceEvent struct {
 }
 
 func (invoiceEvent InvoiceEvent) Type() string {
-	return "invoice"
+	return EventTypeInvoice
 }
 
 type Event interface {
@@ -171,6 +183,10 @@ func (bot *TipBot) createInvoiceWithEvent(ctx context.Context, user *lnbits.User
 }
 
 func (bot *TipBot) notifyInvoiceReceivedEvent(event Event) {
+	if err := AssertEventType(event, EventTypeInvoice); err != nil {
+		log.Errorln(err)
+		return
+	}
 	invoiceEvent := event.(*InvoiceEvent)
 	// do balance check for keyboard update
 	_, err := bot.GetUserBalance(invoiceEvent.User)
@@ -197,6 +213,10 @@ func (lnurlInvoice LNURLInvoice) Key() string {
 }
 
 func (bot *TipBot) lnurlReceiveEvent(event Event) {
+	if err := AssertEventType(event, EventTypeInvoice); err != nil {
+		log.Errorln(err)
+		return
+	}
 	invoiceEvent := event.(*InvoiceEvent)
 
 	bot.notifyInvoiceReceivedEvent(invoiceEvent)

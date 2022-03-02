@@ -44,7 +44,7 @@ type TicketInvoiceEvent struct {
 }
 
 func (invoiceEvent TicketInvoiceEvent) Type() string {
-	return "ticket"
+	return EventTypeTicketInvoice
 }
 func (invoiceEvent TicketInvoiceEvent) Key() string {
 	return fmt.Sprintf("invoice:%s", invoiceEvent.PaymentHash)
@@ -121,6 +121,10 @@ func (bot TipBot) groupRequestInvoiceLinkHandler(ctx context.Context, m *tb.Mess
 
 // groupGetInviteLinkHandler is called when the invoice is paid and sends a one-time group invite link to the payer
 func (bot TipBot) groupGetInviteLinkHandler(event Event) {
+	if err := AssertEventType(event, EventTypeTicketInvoice); err != nil {
+		log.Errorln(err)
+		return
+	}
 	invoiceEvent := event.(*TicketInvoiceEvent)
 	// take a cut
 	amount_bot := int64(invoiceEvent.Group.Ticket.Price * int64(invoiceEvent.Group.Ticket.Cut) / 100)
