@@ -300,10 +300,6 @@ func (bot *TipBot) inlineReceiveInvoice(ctx context.Context, c *tb.Callback, inl
 
 }
 func (bot *TipBot) inlineReceiveEvent(event Event) {
-	if err := AssertEventType(event, EventTypeInvoice); err != nil {
-		log.Errorln(err)
-		return
-	}
 	invoiceEvent := event.(*InvoiceEvent)
 	bot.tryDeleteMessage(invoiceEvent.InvoiceMessage)
 	bot.notifyInvoiceReceivedEvent(invoiceEvent)

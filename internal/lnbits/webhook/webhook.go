@@ -108,8 +108,12 @@ func (w *Server) receive(writer http.ResponseWriter, request *http.Request) {
 		log.Errorln(err)
 	} else {
 		// do something with the event
-		if c := telegram.InvoiceCallback[txInvoiceEvent.Callback]; c != nil {
-			c(txInvoiceEvent)
+		if c := telegram.InvoiceCallback[txInvoiceEvent.Callback]; c.Function != nil {
+			if err := telegram.AssertEventType(txInvoiceEvent, c.Type); err != nil {
+				log.Errorln(err)
+				return
+			}
+			c.Function(txInvoiceEvent)
 			return
 		}
 	}

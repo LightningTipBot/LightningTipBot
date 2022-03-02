@@ -43,7 +43,7 @@ type TicketInvoiceEvent struct {
 	Payer          *lnbits.User `json:"payer,omitempty"`           // if a particular user is supposed to pay this
 }
 
-func (invoiceEvent TicketInvoiceEvent) Type() string {
+func (invoiceEvent TicketInvoiceEvent) Type() EventType {
 	return EventTypeTicketInvoice
 }
 func (invoiceEvent TicketInvoiceEvent) Key() string {
@@ -121,10 +121,6 @@ func (bot TipBot) groupRequestInvoiceLinkHandler(ctx context.Context, m *tb.Mess
 
 // groupGetInviteLinkHandler is called when the invoice is paid and sends a one-time group invite link to the payer
 func (bot TipBot) groupGetInviteLinkHandler(event Event) {
-	if err := AssertEventType(event, EventTypeTicketInvoice); err != nil {
-		log.Errorln(err)
-		return
-	}
 	invoiceEvent := event.(*TicketInvoiceEvent)
 	// take a cut
 	amount_bot := int64(invoiceEvent.Group.Ticket.Price * int64(invoiceEvent.Group.Ticket.Cut) / 100)

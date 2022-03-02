@@ -21,16 +21,21 @@ import (
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
-type InvoiceEventCallback map[int]func(event Event)
+type InvoiceEventCallback map[int]EventHandler
+
+type EventHandler struct {
+	Function func(event Event)
+	Type     EventType
+}
 
 var InvoiceCallback InvoiceEventCallback
 
 func initInvoiceEventCallbacks(bot *TipBot) {
 	InvoiceCallback = InvoiceEventCallback{
-		InvoiceCallbackGeneric:         bot.notifyInvoiceReceivedEvent,
-		InvoiceCallbackInlineReceive:   bot.inlineReceiveEvent,
-		InvoiceCallbackLNURLPayReceive: bot.lnurlReceiveEvent,
-		InvoiceCallbackGroupTicket:     bot.groupGetInviteLinkHandler,
+		InvoiceCallbackGeneric:         EventHandler{Function: bot.notifyInvoiceReceivedEvent, Type: EventTypeInvoice},
+		InvoiceCallbackInlineReceive:   EventHandler{Function: bot.inlineReceiveEvent, Type: EventTypeInvoice},
+		InvoiceCallbackLNURLPayReceive: EventHandler{Function: bot.lnurlReceiveEvent, Type: EventTypeInvoice},
+		InvoiceCallbackGroupTicket:     EventHandler{Function: bot.groupGetInviteLinkHandler, Type: EventTypeTicketInvoice},
 	}
 }
 
@@ -44,11 +49,13 @@ const (
 )
 
 const (
-	EventTypeInvoice       = "invoice"
-	EventTypeTicketInvoice = "ticket-invoice"
+	EventTypeInvoice       EventType = "invoice"
+	EventTypeTicketInvoice EventType = "ticket-invoice"
 )
 
-func AssertEventType(event Event, eventType string) error {
+type EventType string
+
+func AssertEventType(event Event, eventType EventType) error {
 	if event.Type() != eventType {
 		return fmt.Errorf("invalid event type")
 	}
@@ -73,12 +80,12 @@ type InvoiceEvent struct {
 	Payer          *lnbits.User `json:"payer,omitempty"`           // if a particular user is supposed to pay this
 }
 
-func (invoiceEvent InvoiceEvent) Type() string {
+func (invoiceEvent InvoiceEvent) Type() EventType {
 	return EventTypeInvoice
 }
 
 type Event interface {
-	Type() string
+	Type() EventType
 }
 
 func (invoiceEvent InvoiceEvent) Key() string {
@@ -183,10 +190,6 @@ func (bot *TipBot) createInvoiceWithEvent(ctx context.Context, user *lnbits.User
 }
 
 func (bot *TipBot) notifyInvoiceReceivedEvent(event Event) {
-	if err := AssertEventType(event, EventTypeInvoice); err != nil {
-		log.Errorln(err)
-		return
-	}
 	invoiceEvent := event.(*InvoiceEvent)
 	// do balance check for keyboard update
 	_, err := bot.GetUserBalance(invoiceEvent.User)
@@ -213,10 +216,6 @@ func (lnurlInvoice LNURLInvoice) Key() string {
 }
 
 func (bot *TipBot) lnurlReceiveEvent(event Event) {
-	if err := AssertEventType(event, EventTypeInvoice); err != nil {
-		log.Errorln(err)
-		return
-	}
 	invoiceEvent := event.(*InvoiceEvent)
 
 	bot.notifyInvoiceReceivedEvent(invoiceEvent)
