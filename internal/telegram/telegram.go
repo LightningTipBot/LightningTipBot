@@ -152,3 +152,33 @@ func (bot *TipBot) isOwner(chat *tb.Chat, me *tb.User) bool {
 	}
 	return false
 }
+
+// isAdmin will check if user is admin in a group
+func (bot *TipBot) isAdmin(chat *tb.Chat, me *tb.User) bool {
+	members, err := bot.Telegram.AdminsOf(chat)
+	if err != nil {
+		log.Warnln(err.Error())
+		return false
+	}
+	for _, admin := range members {
+		if admin.User.ID == me.ID {
+			return true
+		}
+	}
+	return false
+}
+
+// isAdmin will check if user is admin in a group
+func (bot *TipBot) isAdminAndCanInviteUsers(chat *tb.Chat, me *tb.User) bool {
+	members, err := bot.Telegram.AdminsOf(chat)
+	if err != nil {
+		log.Warnln(err.Error())
+		return false
+	}
+	for _, admin := range members {
+		if admin.User.ID == me.ID {
+			return admin.CanInviteUsers
+		}
+	}
+	return false
+}

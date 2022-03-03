@@ -106,7 +106,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) (context.Conte
 		return ctx, errors.Create(errors.InvalidSyntaxError)
 	}
 	// send warning that the invoice might fail due to missing fee reserve
-	if float64(amount) > float64(balance)*0.99 {
+	if float64(amount) > float64(balance)*0.98 {
 		bot.trySendMessage(m.Sender, Translate(ctx, "feeReserveMessage"))
 	}
 
@@ -118,7 +118,7 @@ func (bot *TipBot) payHandler(ctx context.Context, m *tb.Message) (context.Conte
 	log.Infof("[/pay] Invoice entered. User: %s, amount: %d sat.", userStr, amount)
 
 	// object that holds all information about the send payment
-	id := fmt.Sprintf("pay-%d-%d-%s", m.Sender.ID, amount, RandStringRunes(5))
+	id := fmt.Sprintf("pay:%d-%d-%s", m.Sender.ID, amount, RandStringRunes(5))
 
 	// // // create inline buttons
 	payButton := paymentConfirmationMenu.Data(Translate(ctx, "payButtonMessage"), "confirm_pay", id)
