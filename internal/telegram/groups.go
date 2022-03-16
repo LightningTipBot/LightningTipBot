@@ -175,7 +175,7 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 
 	ticketEvent.InvoiceEvent = invoiceEvent
 	// save ticketevent for later
-	runtime.IgnoreError(ticketEvent.Set(ticketEvent, bot.Bunt))
+	defer runtime.IgnoreError(ticketEvent.Set(ticketEvent, bot.Bunt))
 
 	// // if the user has enough balance, we send him a payment button
 	balance, err := bot.GetUserBalance(user)
@@ -199,7 +199,7 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 		log.Errorln(errmsg)
 		return ctx, err
 	}
-	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoiceEvent.PaymentRequest)})
+	ticketEvent.Message = bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoiceEvent.PaymentRequest)})
 	bot.trySendMessage(m.Sender, fmt.Sprintf(groupPayInvoiceMessage, groupName))
 	return ctx, nil
 }
@@ -297,6 +297,11 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 	var resp ChatInviteLink
 	if err := json.Unmarshal(data, &resp); err != nil {
 		return
+	}
+
+	if ticketEvent.Message != nil {
+		bot.tryDeleteMessage(ticketEvent.Message)
+		bot.trySendMessage(ticketEvent.Payer.Telegram, i18n.Translate(ticketEvent.LanguageCode, "invoicePaidText"), tb.Silent)
 	}
 
 	bot.trySendMessage(ticketEvent.Payer.Telegram, fmt.Sprintf(groupClickToJoinMessage, resp.Result.InviteLink, ticketEvent.Group.Title))

@@ -189,6 +189,7 @@ invoiceHelpText           = """📖 Oops, that didn't work. %s
 
 *Usage:* `/invoice <amount> [<memo>]`
 *Example:* `/invoice 1000 Thank you!`"""
+invoicePaidText           = """✅ Invoice paid.""" 
 
 # PAY
 
