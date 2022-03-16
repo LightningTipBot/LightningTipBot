@@ -147,21 +147,21 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 		return ctx, err
 	}
 
-	ticketEvent.invoiceEvent = invoiceEvent.Invoice
+	ticketEvent.InvoiceEvent = &invoiceEvent
 	// save ticketevent for later
 	runtime.IgnoreError(ticketEvent.Set(ticketEvent, bot.Bunt))
 
 	// // if the user has enough balance, we send him a payment button
-	// balance, err := bot.GetUserBalance(user)
-	// if err != nil {
-	// 	errmsg := fmt.Sprintf("[/group] Error: Could not get user balance: %s", err.Error())
-	// 	log.Errorln(errmsg)
-	// 	bot.trySendMessage(m.Sender, Translate(ctx, "errorTryLaterMessage"))
-	// 	return ctx, errors.New(errors.GetBalanceError, err)
-	// }
-	// if balance >= group.Ticket.Price {
-	// 	return bot.groupSendPayButtonHandler(ctx, m, invoice)
-	// }
+	balance, err := bot.GetUserBalance(user)
+	if err != nil {
+		errmsg := fmt.Sprintf("[/group] Error: Could not get user balance: %s", err.Error())
+		log.Errorln(errmsg)
+		bot.trySendMessage(m.Sender, Translate(ctx, "errorTryLaterMessage"))
+		return ctx, errors.New(errors.GetBalanceError, err)
+	}
+	if balance >= group.Ticket.Price {
+		return bot.groupSendPayButtonHandler(ctx, m, ticketEvent)
+	}
 
 	// otherwise we send a payment request
 
