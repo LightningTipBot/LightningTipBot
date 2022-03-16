@@ -63,6 +63,7 @@ var (
 	groupNameExists           = "🚫 A group with this name already exists. Please choose a different name."
 	groupAddedMessage         = "🎟 Tickets for group `%s` added.\nAlias: `%s` Price: %d sat\n\nTo request a ticket for this group, start a private chat with %s and write `/group join %s`."
 	groupNotFoundMessage      = "🚫 Could not find a group with this name."
+	groupReceiveTicketInvoice = "🎟 You received *%d sat* (excl. %s sat commission) for a ticket for group `%s` paid by user %s."
 )
 
 func (bot TipBot) groupHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
@@ -232,8 +233,8 @@ func (bot *TipBot) groupConfirmPayButtonHandler(ctx context.Context, c *tb.Callb
 		return ctx, err
 	}
 
-	// // update the message and remove the button
-	// bot.tryEditMessage(c.Message, i18n.Translate(invoice.LanguageCode, "invoicePaidMessage"), &tb.ReplyMarkup{})
+	// update the message and remove the button
+	bot.tryEditMessage(c.Message, i18n.Translate(ticketEvent.LanguageCode, "invoicePaidMessage"), &tb.ReplyMarkup{})
 	return ctx, nil
 }
 
@@ -307,10 +308,12 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 		log.Errorf("[groupGetInviteLinkHandler] Could not get bot user from DB: %s", err.Error())
 		return
 	}
+	commission_sat := ticketEvent.Group.Ticket.Price * int64(ticketEvent.Group.Ticket.Cut) / 100
+	ticket_sat := ticketEvent.Group.Ticket.Price * (100 - int64(ticketEvent.Group.Ticket.Cut)) / 100
 	invoice, err := me.Wallet.Invoice(
 		lnbits.InvoiceParams{
 			Out:     false,
-			Amount:  ticketEvent.Group.Ticket.Price * int64(ticketEvent.Group.Ticket.Cut) / 100,
+			Amount:  commission_sat,
 			Memo:    "Ticket commission for group " + ticketEvent.Group.Title,
 			Webhook: internal.Configuration.Lnbits.WebhookServer},
 		bot.Client)
@@ -326,6 +329,8 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 		log.Errorln(errmsg)
 		return
 	}
+
+	bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(groupReceiveTicketInvoice, ticket_sat, commission_sat, ticketEvent.Group.Title, GetUserStr(ticketEvent.User.Telegram)))
 
 	return
 }
@@ -376,7 +381,7 @@ func (bot TipBot) addGroupHandler(ctx context.Context, m *tb.Message) (context.C
 
 	ticket := &Ticket{
 		Price:   amount,
-		Memo:    "Ticket",
+		Memo:    "Ticket for group " + groupname,
 		Creator: user,
 		Cut:     10,
 	}
@@ -397,7 +402,6 @@ func (bot TipBot) addGroupHandler(ctx context.Context, m *tb.Message) (context.C
 }
 
 func (bot *TipBot) createGroupTicketInvoice(ctx context.Context, payer *lnbits.User, group *Group, memo string, callback int, callbackData string) (InvoiceEvent, error) {
-	user := LoadUser(ctx)
 	invoice, err := group.Ticket.Creator.Wallet.Invoice(
 		lnbits.InvoiceParams{
 			Out:     false,
@@ -419,18 +423,13 @@ func (bot *TipBot) createGroupTicketInvoice(ctx context.Context, payer *lnbits.U
 			PaymentRequest: invoice.PaymentRequest,
 			Amount:         group.Ticket.Price,
 			Memo:           memo},
-		User:         user,
+		User:         group.Ticket.Creator,
 		Callback:     callback,
 		CallbackData: callbackData,
 		LanguageCode: ctx.Value("publicLanguageCode").(string),
 		Payer:        payer,
 		Chat:         &tb.Chat{ID: group.ID},
 	}
-	// save invoice struct for later use
-	// runtime.IgnoreError(bot.Bunt.Set(ticketEvent))
-
-	// id := fmt.Sprintf("ticket:%d-%s-%s", payer.Telegram.ID, group.Name, RandStringRunes(5))
-
 	// add result to persistent struct
 	runtime.IgnoreError(invoiceEvent.Set(invoiceEvent, bot.Bunt))
 	return invoiceEvent, nil
