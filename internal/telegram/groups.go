@@ -178,17 +178,17 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 	return ctx, nil
 }
 
-func (bot *TipBot) groupSendPayButtonHandler(ctx context.Context, m *tb.Message, invoice TicketEvent) (context.Context, error) {
+func (bot *TipBot) groupSendPayButtonHandler(ctx context.Context, m *tb.Message, ticket TicketEvent) (context.Context, error) {
 	// object that holds all information about the send payment
 	// // // create inline buttons
-	btnPayTicket := ticketPayConfirmationMenu.Data(Translate(ctx, "payButtonMessage"), "pay_ticket", invoice.Base.ID)
+	btnPayTicket := ticketPayConfirmationMenu.Data(Translate(ctx, "payButtonMessage"), "pay_ticket", ticket.Base.ID)
 	ticketPayConfirmationMenu.Inline(
 		ticketPayConfirmationMenu.Row(
 			btnPayTicket),
 	)
-	confirmText := fmt.Sprintf(Translate(ctx, "confirmPayInvoiceMessage"), invoice.Group.Ticket.Price)
-	if len(invoice.Group.Ticket.Memo) > 0 {
-		confirmText = confirmText + fmt.Sprintf(Translate(ctx, "confirmPayAppendMemo"), str.MarkdownEscape(invoice.Group.Ticket.Memo))
+	confirmText := fmt.Sprintf(Translate(ctx, "confirmPayInvoiceMessage"), ticket.Group.Ticket.Price)
+	if len(ticket.Group.Ticket.Memo) > 0 {
+		confirmText = confirmText + fmt.Sprintf(Translate(ctx, "confirmPayAppendMemo"), str.MarkdownEscape(ticket.Group.Ticket.Memo))
 	}
 	bot.trySendMessageEditable(m.Chat, confirmText, ticketPayConfirmationMenu)
 	return ctx, nil
@@ -226,14 +226,14 @@ func (bot *TipBot) groupConfirmPayButtonHandler(ctx context.Context, c *tb.Callb
 
 	log.Infof("[/pay] Attempting %s's invoice %s (%d sat)", GetUserStr(user.Telegram), ticketEvent.ID, ticketEvent.Group.Ticket.Price)
 	// // pay invoice
-	// _, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoice.Invoice.PaymentRequest}, bot.Client)
-	// if err != nil {
-	// 	errmsg := fmt.Sprintf("[/pay] Could not pay invoice of %s: %s", GetUserStr(user.Telegram), err)
-	// 	err = fmt.Errorf(i18n.Translate(invoice.LanguageCode, "invoiceUndefinedErrorMessage"))
-	// 	bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(invoice.LanguageCode, "invoicePaymentFailedMessage"), err.Error()), &tb.ReplyMarkup{})
-	// 	log.Errorln(errmsg)
-	// 	return ctx, err
-	// }
+	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: ticketEvent.Invoice.PaymentRequest}, bot.Client)
+	if err != nil {
+		errmsg := fmt.Sprintf("[/pay] Could not pay invoice of %s: %s", GetUserStr(user.Telegram), err)
+		err = fmt.Errorf(i18n.Translate(ticketEvent.LanguageCode, "invoiceUndefinedErrorMessage"))
+		bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "invoicePaymentFailedMessage"), err.Error()), &tb.ReplyMarkup{})
+		log.Errorln(errmsg)
+		return ctx, err
+	}
 
 	// // update the message and remove the button
 	// bot.tryEditMessage(c.Message, i18n.Translate(invoice.LanguageCode, "invoicePaidMessage"), &tb.ReplyMarkup{})
