@@ -37,6 +37,7 @@ type Group struct {
 
 type TicketEvent struct {
 	*storage.Base
+	*InvoiceEvent
 	Group          *Group       `gorm:"embedded;embeddedPrefix:group_"`
 	User           *lnbits.User `json:"user"`                      // the user that is being paid
 	Message        *tb.Message  `json:"message,omitempty"`         // the message that the invoice replies to
@@ -134,8 +135,6 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 		Chat:         &tb.Chat{ID: group.ID},
 		Group:        group,
 	}
-	// save ticketevent for later
-	runtime.IgnoreError(ticketEvent.Set(ticketEvent, bot.Bunt))
 
 	// create an invoice
 	memo := fmt.Sprintf(groupInvoiceMemo, groupname)
@@ -147,6 +146,10 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 		log.Errorln(errmsg)
 		return ctx, err
 	}
+
+	ticketEvent.invoiceEvent = invoiceEvent.Invoice
+	// save ticketevent for later
+	runtime.IgnoreError(ticketEvent.Set(ticketEvent, bot.Bunt))
 
 	// // if the user has enough balance, we send him a payment button
 	// balance, err := bot.GetUserBalance(user)
