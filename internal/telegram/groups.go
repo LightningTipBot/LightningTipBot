@@ -221,7 +221,7 @@ func (bot *TipBot) groupSendPayButtonHandler(ctx context.Context, m *tb.Message,
 }
 
 func (bot *TipBot) groupConfirmPayButtonHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
-	tx := TicketEvent{Base: storage.New(storage.ID(c.Data))}
+	tx := &TicketEvent{Base: storage.New(storage.ID(c.Data))}
 	mutex.LockWithContext(ctx, tx.ID)
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
@@ -230,7 +230,7 @@ func (bot *TipBot) groupConfirmPayButtonHandler(ctx context.Context, c *tb.Callb
 		log.Errorf("[groupConfirmPayButtonHandler] %s", err.Error())
 		return ctx, err
 	}
-	ticketEvent := sn.(TicketEvent)
+	ticketEvent := sn.(*TicketEvent)
 
 	// onnly the correct user can press
 	if ticketEvent.Payer.Telegram.ID != c.Sender.ID {
