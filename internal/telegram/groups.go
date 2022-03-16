@@ -63,7 +63,7 @@ var (
 	groupNameExists           = "🚫 A group with this name already exists. Please choose a different name."
 	groupAddedMessage         = "🎟 Tickets for group `%s` added.\nAlias: `%s` Price: %d sat\n\nTo request a ticket for this group, start a private chat with %s and write `/group join %s`."
 	groupNotFoundMessage      = "🚫 Could not find a group with this name."
-	groupReceiveTicketInvoice = "🎟 You received *%d sat* (excl. %s sat commission) for a ticket for group `%s` paid by user %s."
+	groupReceiveTicketInvoice = "🎟 You received *%d sat* (excl. %d sat commission) for a ticket for group `%s` paid by user %s."
 )
 
 func (bot TipBot) groupHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
@@ -330,7 +330,7 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 		return
 	}
 
-	bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(groupReceiveTicketInvoice, ticket_sat, commission_sat, ticketEvent.Group.Title, GetUserStr(ticketEvent.User.Telegram)))
+	bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(groupReceiveTicketInvoice, ticket_sat, commission_sat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
 
 	return
 }
