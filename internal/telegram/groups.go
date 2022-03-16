@@ -55,13 +55,13 @@ var (
 
 var (
 	groupAddGroupHelpMessage            = "📖 Oops, that didn't work. Please try again.\nUsage: `/group add <group_name> [<amount>]`\nExample: `/group add TheBestBitcoinGroup 1000`"
-	grouJoinGroupHelpMessage            = "📖 Oops, that didn't work. Please try again.\nUsage: `/group join <group_name>`\nExample: `/group join TheBestBitcoinGroup`"
+	grouJoinGroupHelpMessage            = "📖 Oops, that didn't work. Please try again.\nUsage: `/join <group_name>`\nExample: `/join TheBestBitcoinGroup`"
 	groupClickToJoinMessage             = "[Click here](%s) 👈 to join `%s`."
 	groupInvoiceMemo                    = "Ticket for group %s"
 	groupPayInvoiceMessage              = "🎟 To join the group %s, pay the invoice above."
 	groupBotIsNotAdminMessage           = "🚫 Oops, that didn't work. You must make me admin and grant me rights to invite users."
 	groupNameExists                     = "🚫 A group with this name already exists. Please choose a different name."
-	groupAddedMessage                   = "🎟 Tickets for group `%s` added.\nAlias: `%s` Price: %d sat\n\nTo request a ticket for this group, start a private chat with %s and write `/group join %s`."
+	groupAddedMessage                   = "🎟 Tickets for group `%s` added.\nAlias: `%s` Price: %d sat\n\nTo request a ticket for this group, start a private chat with %s and write `/join %s`."
 	groupNotFoundMessage                = "🚫 Could not find a group with this name."
 	groupReceiveTicketInvoiceCommission = "🎟 You received *%d sat* (excl. %d sat commission) for a ticket for group `%s` paid by user %s."
 	groupReceiveTicketInvoice           = "🎟 You received *%d sat* for a ticket for group `%s` paid by user %s."
@@ -94,11 +94,18 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 		return ctx, fmt.Errorf("not private chat")
 	}
 	splits := strings.Split(m.Text, " ")
-	if len(splits) != 3 || len(m.Text) > 100 {
+	// if the command was /group join
+	split_idx := 1
+	// we also have the simpler command /join that can be used
+	// also by users who don't have an account with the bot yet
+	if splits[0] == "/join" {
+		split_idx = 0
+	}
+	if len(splits) != split_idx+2 || len(m.Text) > 100 {
 		bot.trySendMessage(m.Chat, grouJoinGroupHelpMessage)
 		return ctx, nil
 	}
-	groupname := strings.ToLower(splits[2])
+	groupname := strings.ToLower(splits[split_idx+1])
 
 	group := &Group{}
 	tx := bot.GroupsDb.Where("name = ? COLLATE NOCASE", groupname).First(group)
