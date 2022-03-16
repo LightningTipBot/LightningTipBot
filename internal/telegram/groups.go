@@ -149,7 +149,7 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 		Chat:         &tb.Chat{ID: group.ID},
 		CallbackData: id,
 	}
-	ticketEvent := TicketEvent{
+	ticketEvent := &TicketEvent{
 		Base:         storage.New(storage.ID(id)),
 		InvoiceEvent: invoiceEvent,
 		Group:        group,
@@ -186,7 +186,7 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 		return ctx, errors.New(errors.GetBalanceError, err)
 	}
 	if balance >= group.Ticket.Price {
-		return bot.groupSendPayButtonHandler(ctx, m, ticketEvent)
+		return bot.groupSendPayButtonHandler(ctx, m, *ticketEvent)
 	}
 
 	// otherwise we send a payment request
