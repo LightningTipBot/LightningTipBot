@@ -107,38 +107,33 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 		return ctx, fmt.Errorf("group not found")
 	}
 
+	// create tickets
+	id := fmt.Sprintf("ticket:%d", group.ID)
+	invoiceEvent := &InvoiceEvent{
+		Base:         storage.New(storage.ID(id)),
+		User:         group.Ticket.Creator,
+		LanguageCode: ctx.Value("publicLanguageCode").(string),
+		Payer:        user,
+		Chat:         &tb.Chat{ID: group.ID},
+		CallbackData: id,
+	}
+	ticketEvent := TicketEvent{
+		Base:         storage.New(storage.ID(id)),
+		InvoiceEvent: invoiceEvent,
+		Group:        group,
+	}
 	// if no price is set, then we don't need to pay
 	if group.Ticket.Price == 0 {
-		ticketEvent := &TicketEvent{
-			InvoiceEvent: &InvoiceEvent{
-				Payer:        user,
-				LanguageCode: user.Telegram.LanguageCode,
-				Chat:         m.Chat,
-			},
-
-			Group: group,
-		}
-		bot.groupGetInviteLinkHandler(ticketEvent)
+		// save ticketevent for later
+		runtime.IgnoreError(ticketEvent.Set(ticketEvent, bot.Bunt))
+		bot.groupGetInviteLinkHandler(invoiceEvent)
 		return ctx, nil
-	}
-
-	// if a price is set ...
-	id := fmt.Sprintf("ticket:%d", group.ID)
-	ticketEvent := TicketEvent{
-		Base: storage.New(storage.ID(id)),
-		InvoiceEvent: &InvoiceEvent{
-			User:         group.Ticket.Creator,
-			LanguageCode: ctx.Value("publicLanguageCode").(string),
-			Payer:        user,
-			Chat:         &tb.Chat{ID: group.ID},
-		},
-		Group: group,
 	}
 
 	// create an invoice
 	memo := fmt.Sprintf(groupInvoiceMemo, groupname)
-
-	invoiceEvent, err := bot.createGroupTicketInvoice(ctx, user, group, memo, InvoiceCallbackGroupTicket, id)
+	var err error
+	invoiceEvent, err = bot.createGroupTicketInvoice(ctx, user, group, memo, InvoiceCallbackGroupTicket, id)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
 		bot.trySendMessage(user.Telegram, Translate(ctx, "errorTryLaterMessage"))
@@ -146,7 +141,7 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 		return ctx, err
 	}
 
-	ticketEvent.InvoiceEvent = &invoiceEvent
+	ticketEvent.InvoiceEvent = invoiceEvent
 	// save ticketevent for later
 	runtime.IgnoreError(ticketEvent.Set(ticketEvent, bot.Bunt))
 
@@ -309,7 +304,7 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 			return
 		}
 		commission_sat := ticketEvent.Group.Ticket.Price * int64(ticketEvent.Group.Ticket.Cut) / 100
-		ticket_sat = ticketEvent.Group.Ticket.Price * (100 - int64(ticketEvent.Group.Ticket.Cut)) / 100
+		ticket_sat = ticketEvent.Group.Ticket.Price - commission_sat
 		invoice, err := me.Wallet.Invoice(
 			lnbits.InvoiceParams{
 				Out:     false,
@@ -409,7 +404,7 @@ func (bot TipBot) addGroupHandler(ctx context.Context, m *tb.Message) (context.C
 	return ctx, nil
 }
 
-func (bot *TipBot) createGroupTicketInvoice(ctx context.Context, payer *lnbits.User, group *Group, memo string, callback int, callbackData string) (InvoiceEvent, error) {
+func (bot *TipBot) createGroupTicketInvoice(ctx context.Context, payer *lnbits.User, group *Group, memo string, callback int, callbackData string) (*InvoiceEvent, error) {
 	invoice, err := group.Ticket.Creator.Wallet.Invoice(
 		lnbits.InvoiceParams{
 			Out:     false,
@@ -420,12 +415,12 @@ func (bot *TipBot) createGroupTicketInvoice(ctx context.Context, payer *lnbits.U
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
 		log.Errorln(errmsg)
-		return InvoiceEvent{}, err
+		return &InvoiceEvent{}, err
 	}
 
 	// save the invoice event
 	id := fmt.Sprintf("invoice:%s", invoice.PaymentHash)
-	invoiceEvent := InvoiceEvent{
+	invoiceEvent := &InvoiceEvent{
 		Base: storage.New(storage.ID(id)),
 		Invoice: &Invoice{PaymentHash: invoice.PaymentHash,
 			PaymentRequest: invoice.PaymentRequest,
