@@ -402,6 +402,7 @@ func (bot TipBot) getHandler() []Handler {
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
+					bot.loadUserInterceptor,
 					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
