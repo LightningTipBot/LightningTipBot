@@ -81,7 +81,7 @@ var (
 var (
 	groupAddGroupHelpMessage            = "📖 Oops, that didn't work. Please try again.\nUsage: `/group add <group_name> [<amount>]`\nExample: `/group add TheBestBitcoinGroup 1000`"
 	grouJoinGroupHelpMessage            = "📖 Oops, that didn't work. Please try again.\nUsage: `/join <group_name>`\nExample: `/join TheBestBitcoinGroup`"
-	groupClickToJoinMessage             = "[Click here](%s) 👈 to join `%s`."
+	groupClickToJoinMessage             = "🎟 [Click here](%s) 👈 to join `%s`."
 	groupInvoiceMemo                    = "Ticket for group %s"
 	groupPayInvoiceMessage              = "🎟 To join the group %s, pay the invoice above."
 	groupBotIsNotAdminMessage           = "🚫 Oops, that didn't work. You must make me admin and grant me rights to invite users."
@@ -301,7 +301,13 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 
 	if ticketEvent.Message != nil {
 		bot.tryDeleteMessage(ticketEvent.Message)
-		bot.trySendMessage(ticketEvent.Payer.Telegram, i18n.Translate(ticketEvent.LanguageCode, "invoicePaidText"), tb.Silent)
+		// do balance check for keyboard update
+		_, err = bot.GetUserBalance(ticketEvent.Payer)
+		if err != nil {
+			errmsg := fmt.Sprintf("could not get balance of user %s", GetUserStr(ticketEvent.Payer.Telegram))
+			log.Errorln(errmsg)
+		}
+		bot.trySendMessage(ticketEvent.Payer.Telegram, i18n.Translate(ticketEvent.LanguageCode, "invoicePaidText"))
 	}
 
 	bot.trySendMessage(ticketEvent.Payer.Telegram, fmt.Sprintf(groupClickToJoinMessage, resp.Result.InviteLink, ticketEvent.Group.Title))
@@ -335,16 +341,15 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 			log.Errorln(errmsg)
 			return
 		}
+		// do balance check for keyboard update
+		_, err = bot.GetUserBalance(ticketEvent.User)
+		if err != nil {
+			errmsg := fmt.Sprintf("could not get balance of user %s", GetUserStr(ticketEvent.Payer.Telegram))
+			log.Errorln(errmsg)
+		}
 		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(groupReceiveTicketInvoiceCommission, ticketSat, commissionSat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
 	} else {
 		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(groupReceiveTicketInvoice, ticketSat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
-	}
-
-	// do balance check for keyboard update
-	_, err = bot.GetUserBalance(ticketEvent.Payer)
-	if err != nil {
-		errmsg := fmt.Sprintf("could not get balance of user %s", GetUserStr(ticketEvent.Payer.Telegram))
-		log.Errorln(errmsg)
 	}
 	return
 }
