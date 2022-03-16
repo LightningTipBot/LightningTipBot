@@ -175,7 +175,7 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 
 	ticketEvent.InvoiceEvent = invoiceEvent
 	// save ticketevent for later
-	defer runtime.IgnoreError(ticketEvent.Set(ticketEvent, bot.Bunt))
+	defer ticketEvent.Set(ticketEvent, bot.Bunt)
 
 	// // if the user has enough balance, we send him a payment button
 	balance, err := bot.GetUserBalance(user)
