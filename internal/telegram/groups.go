@@ -302,7 +302,9 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 	bot.trySendMessage(ticketEvent.Payer.Telegram, fmt.Sprintf(groupClickToJoinMessage, resp.Result.Invitelink, ticketEvent.Group.Title))
 
 	// take a commission
-
+	if ticketEvent.Group.Ticket.Price < 10 {
+		return
+	}
 	me, err := GetUser(bot.Telegram.Me, *bot)
 	if err != nil {
 		log.Errorf("[groupGetInviteLinkHandler] Could not get bot user from DB: %s", err.Error())
