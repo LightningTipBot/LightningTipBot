@@ -54,16 +54,17 @@ var (
 )
 
 var (
-	groupAddGroupHelpMessage  = "📖 Oops, that didn't work. Please try again.\nUsage: `/group add <group_name> [<amount>]`\nExample: `/group add TheBestBitcoinGroup 1000`"
-	grouJoinGroupHelpMessage  = "📖 Oops, that didn't work. Please try again.\nUsage: `/group join <group_name>`\nExample: `/group join TheBestBitcoinGroup`"
-	groupClickToJoinMessage   = "[Click here](%s) 👈 to join `%s`."
-	groupInvoiceMemo          = "Ticket for group %s"
-	groupPayInvoiceMessage    = "🎟 To join the group %s, pay the invoice above."
-	groupBotIsNotAdminMessage = "🚫 Oops, that didn't work. You must make me admin and grant me rights to invite users."
-	groupNameExists           = "🚫 A group with this name already exists. Please choose a different name."
-	groupAddedMessage         = "🎟 Tickets for group `%s` added.\nAlias: `%s` Price: %d sat\n\nTo request a ticket for this group, start a private chat with %s and write `/group join %s`."
-	groupNotFoundMessage      = "🚫 Could not find a group with this name."
-	groupReceiveTicketInvoice = "🎟 You received *%d sat* (excl. %d sat commission) for a ticket for group `%s` paid by user %s."
+	groupAddGroupHelpMessage            = "📖 Oops, that didn't work. Please try again.\nUsage: `/group add <group_name> [<amount>]`\nExample: `/group add TheBestBitcoinGroup 1000`"
+	grouJoinGroupHelpMessage            = "📖 Oops, that didn't work. Please try again.\nUsage: `/group join <group_name>`\nExample: `/group join TheBestBitcoinGroup`"
+	groupClickToJoinMessage             = "[Click here](%s) 👈 to join `%s`."
+	groupInvoiceMemo                    = "Ticket for group %s"
+	groupPayInvoiceMessage              = "🎟 To join the group %s, pay the invoice above."
+	groupBotIsNotAdminMessage           = "🚫 Oops, that didn't work. You must make me admin and grant me rights to invite users."
+	groupNameExists                     = "🚫 A group with this name already exists. Please choose a different name."
+	groupAddedMessage                   = "🎟 Tickets for group `%s` added.\nAlias: `%s` Price: %d sat\n\nTo request a ticket for this group, start a private chat with %s and write `/group join %s`."
+	groupNotFoundMessage                = "🚫 Could not find a group with this name."
+	groupReceiveTicketInvoiceCommission = "🎟 You received *%d sat* (excl. %d sat commission) for a ticket for group `%s` paid by user %s."
+	groupReceiveTicketInvoice           = "🎟 You received *%d sat* for a ticket for group `%s` paid by user %s."
 )
 
 func (bot TipBot) groupHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
@@ -300,37 +301,39 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 	bot.trySendMessage(ticketEvent.Payer.Telegram, fmt.Sprintf(groupClickToJoinMessage, resp.Result.Invitelink, ticketEvent.Group.Title))
 
 	// take a commission
-	if ticketEvent.Group.Ticket.Price < 10 {
-		return
-	}
-	me, err := GetUser(bot.Telegram.Me, *bot)
-	if err != nil {
-		log.Errorf("[groupGetInviteLinkHandler] Could not get bot user from DB: %s", err.Error())
-		return
-	}
-	commission_sat := ticketEvent.Group.Ticket.Price * int64(ticketEvent.Group.Ticket.Cut) / 100
-	ticket_sat := ticketEvent.Group.Ticket.Price * (100 - int64(ticketEvent.Group.Ticket.Cut)) / 100
-	invoice, err := me.Wallet.Invoice(
-		lnbits.InvoiceParams{
-			Out:     false,
-			Amount:  commission_sat,
-			Memo:    "Ticket commission for group " + ticketEvent.Group.Title,
-			Webhook: internal.Configuration.Lnbits.WebhookServer},
-		bot.Client)
-	if err != nil {
-		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
-		log.Errorln(errmsg)
-		return
-	}
-	_, err = ticketEvent.User.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoice.PaymentRequest}, bot.Client)
-	if err != nil {
-		errmsg := fmt.Sprintf("[groupGetInviteLinkHandler] Could not pay commission of %s: %s", GetUserStr(ticketEvent.User.Telegram), err)
-		err = fmt.Errorf(i18n.Translate(ticketEvent.LanguageCode, "invoiceUndefinedErrorMessage"))
-		log.Errorln(errmsg)
-		return
+	ticket_sat := ticketEvent.Group.Ticket.Price
+	if ticketEvent.Group.Ticket.Price > 10 {
+		me, err := GetUser(bot.Telegram.Me, *bot)
+		if err != nil {
+			log.Errorf("[groupGetInviteLinkHandler] Could not get bot user from DB: %s", err.Error())
+			return
+		}
+		commission_sat := ticketEvent.Group.Ticket.Price * int64(ticketEvent.Group.Ticket.Cut) / 100
+		ticket_sat = ticketEvent.Group.Ticket.Price * (100 - int64(ticketEvent.Group.Ticket.Cut)) / 100
+		invoice, err := me.Wallet.Invoice(
+			lnbits.InvoiceParams{
+				Out:     false,
+				Amount:  commission_sat,
+				Memo:    "Ticket commission for group " + ticketEvent.Group.Title,
+				Webhook: internal.Configuration.Lnbits.WebhookServer},
+			bot.Client)
+		if err != nil {
+			errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
+			log.Errorln(errmsg)
+			return
+		}
+		_, err = ticketEvent.User.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoice.PaymentRequest}, bot.Client)
+		if err != nil {
+			errmsg := fmt.Sprintf("[groupGetInviteLinkHandler] Could not pay commission of %s: %s", GetUserStr(ticketEvent.User.Telegram), err)
+			err = fmt.Errorf(i18n.Translate(ticketEvent.LanguageCode, "invoiceUndefinedErrorMessage"))
+			log.Errorln(errmsg)
+			return
+		}
+		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(groupReceiveTicketInvoiceCommission, ticket_sat, commission_sat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
+	} else {
+		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(groupReceiveTicketInvoice, ticket_sat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
 	}
 
-	bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(groupReceiveTicketInvoice, ticket_sat, commission_sat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
 	// do balance check for keyboard update
 	_, err = bot.GetUserBalance(ticketEvent.Payer)
 	if err != nil {
