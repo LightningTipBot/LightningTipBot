@@ -52,7 +52,7 @@ func (ticketEvent TicketEvent) Type() EventType {
 	return EventTypeTicketInvoice
 }
 func (ticketEvent TicketEvent) Key() string {
-	return fmt.Sprintf("ticket:%d", ticketEvent.Group.ID)
+	return ticketEvent.Base.ID
 }
 
 var (
