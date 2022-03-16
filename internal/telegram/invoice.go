@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 
@@ -35,7 +36,7 @@ func initInvoiceEventCallbacks(bot *TipBot) {
 		InvoiceCallbackGeneric:         EventHandler{Function: bot.notifyInvoiceReceivedEvent, Type: EventTypeInvoice},
 		InvoiceCallbackInlineReceive:   EventHandler{Function: bot.inlineReceiveEvent, Type: EventTypeInvoice},
 		InvoiceCallbackLNURLPayReceive: EventHandler{Function: bot.lnurlReceiveEvent, Type: EventTypeInvoice},
-		InvoiceCallbackGroupTicket:     EventHandler{Function: bot.groupGetInviteLinkHandler, Type: EventTypeTicketInvoice},
+		InvoiceCallbackGroupTicket:     EventHandler{Function: bot.groupGetInviteLinkHandler, Type: EventTypeInvoice},
 	}
 }
 
@@ -70,6 +71,7 @@ type Invoice struct {
 }
 type InvoiceEvent struct {
 	*Invoice
+	*storage.Base
 	User           *lnbits.User `json:"user"`                      // the user that is being paid
 	Message        *tb.Message  `json:"message,omitempty"`         // the message that the invoice replies to
 	InvoiceMessage *tb.Message  `json:"invoice_message,omitempty"` // the message that displays the invoice
