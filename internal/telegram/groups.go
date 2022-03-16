@@ -34,6 +34,31 @@ type Group struct {
 	// Chat   *tb.Chat `gorm:"embedded;embeddedPrefix:chat_"`
 	Ticket *Ticket `gorm:"embedded;embeddedPrefix:ticket_"`
 }
+type CreateChatInviteLink struct {
+	ChatID             int64  `json:"chat_id"`
+	Name               string `json:"name"`
+	ExpiryDate         int    `json:"expiry_date"`
+	MemberLimit        int    `json:"member_limit"`
+	CreatesJoinRequest bool   `json:"creates_join_request"`
+}
+type Creator struct {
+	ID        int64  `json:"id"`
+	Isbot     bool   `json:"is_bot"`
+	Firstname string `json:"first_name"`
+	Username  string `json:"username"`
+}
+type Result struct {
+	Invitelink         string  `json:"invite_link"`
+	Name               string  `json:"name"`
+	Creator            Creator `json:"creator"`
+	Createsjoinrequest bool    `json:"creates_join_request"`
+	Isprimary          bool    `json:"is_primary"`
+	Isrevoked          bool    `json:"is_revoked"`
+}
+type ChatInviteLink struct {
+	Ok     bool   `json:"ok"`
+	Result Result `json:"result"`
+}
 
 type TicketEvent struct {
 	*storage.Base
@@ -240,14 +265,6 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 	// take a cut
 	// amount_bot := int64(ticketEvent.Group.Ticket.Price * int64(ticketEvent.Group.Ticket.Cut) / 100)
 
-	type CreateChatInviteLink struct {
-		ChatID             int64  `json:"chat_id"`
-		Name               string `json:"name"`
-		ExpiryDate         int    `json:"expiry_date"`
-		MemberLimit        int    `json:"member_limit"`
-		CreatesJoinRequest bool   `json:"creates_join_request"`
-	}
-
 	log.Infof(invoiceEvent.CallbackData)
 	ticketEvent := &TicketEvent{Base: storage.New(storage.ID(invoiceEvent.CallbackData))}
 	err := bot.Bunt.Get(ticketEvent)
@@ -269,24 +286,6 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 	if err != nil {
 		return
 	}
-	type Creator struct {
-		ID        int64  `json:"id"`
-		Isbot     bool   `json:"is_bot"`
-		Firstname string `json:"first_name"`
-		Username  string `json:"username"`
-	}
-	type Result struct {
-		Invitelink         string  `json:"invite_link"`
-		Name               string  `json:"name"`
-		Creator            Creator `json:"creator"`
-		Createsjoinrequest bool    `json:"creates_join_request"`
-		Isprimary          bool    `json:"is_primary"`
-		Isrevoked          bool    `json:"is_revoked"`
-	}
-	type ChatInviteLink struct {
-		Ok     bool   `json:"ok"`
-		Result Result `json:"result"`
-	}
 
 	var resp ChatInviteLink
 	if err := json.Unmarshal(data, &resp); err != nil {
@@ -296,19 +295,19 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 	bot.trySendMessage(ticketEvent.Payer.Telegram, fmt.Sprintf(groupClickToJoinMessage, resp.Result.Invitelink, ticketEvent.Group.Title))
 
 	// take a commission
-	ticket_sat := ticketEvent.Group.Ticket.Price
+	ticketSat := ticketEvent.Group.Ticket.Price
 	if ticketEvent.Group.Ticket.Price > 10 {
 		me, err := GetUser(bot.Telegram.Me, *bot)
 		if err != nil {
 			log.Errorf("[groupGetInviteLinkHandler] Could not get bot user from DB: %s", err.Error())
 			return
 		}
-		commission_sat := ticketEvent.Group.Ticket.Price * int64(ticketEvent.Group.Ticket.Cut) / 100
-		ticket_sat = ticketEvent.Group.Ticket.Price - commission_sat
+		commissionSat := ticketEvent.Group.Ticket.Price * int64(ticketEvent.Group.Ticket.Cut) / 100
+		ticketSat = ticketEvent.Group.Ticket.Price - commissionSat
 		invoice, err := me.Wallet.Invoice(
 			lnbits.InvoiceParams{
 				Out:     false,
-				Amount:  commission_sat,
+				Amount:  commissionSat,
 				Memo:    "Ticket commission for group " + ticketEvent.Group.Title,
 				Webhook: internal.Configuration.Lnbits.WebhookServer},
 			bot.Client)
@@ -324,9 +323,9 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 			log.Errorln(errmsg)
 			return
 		}
-		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(groupReceiveTicketInvoiceCommission, ticket_sat, commission_sat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
+		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(groupReceiveTicketInvoiceCommission, ticketSat, commissionSat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
 	} else {
-		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(groupReceiveTicketInvoice, ticket_sat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
+		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(groupReceiveTicketInvoice, ticketSat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
 	}
 
 	// do balance check for keyboard update
@@ -348,7 +347,7 @@ func (bot TipBot) addGroupHandler(ctx context.Context, m *tb.Message) (context.C
 		bot.trySendMessage(m.Chat, groupAddGroupHelpMessage)
 		return ctx, nil
 	}
-	groupname := strings.ToLower(splits[2])
+	groupName := strings.ToLower(splits[2])
 
 	user := LoadUser(ctx)
 	// check if the user is the owner of the group
@@ -364,7 +363,7 @@ func (bot TipBot) addGroupHandler(ctx context.Context, m *tb.Message) (context.C
 	// check if the group with this name is already in db
 	// only if a group with this name is owned by this user, it can be overwritten
 	group := &Group{}
-	tx := bot.GroupsDb.Where("name = ? COLLATE NOCASE", groupname).First(group)
+	tx := bot.GroupsDb.Where("name = ? COLLATE NOCASE", groupName).First(group)
 	if tx.Error == nil {
 		// if it is already added, check if this user is the admin
 		if user.Telegram.ID != group.Owner.ID || group.ID != m.Chat.ID {
@@ -384,13 +383,13 @@ func (bot TipBot) addGroupHandler(ctx context.Context, m *tb.Message) (context.C
 
 	ticket := &Ticket{
 		Price:   amount,
-		Memo:    "Ticket for group " + groupname,
+		Memo:    "Ticket for group " + groupName,
 		Creator: user,
 		Cut:     10,
 	}
 
 	group = &Group{
-		Name:   groupname,
+		Name:   groupName,
 		Title:  m.Chat.Title,
 		ID:     m.Chat.ID,
 		Owner:  user.Telegram,
