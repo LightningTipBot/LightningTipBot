@@ -331,7 +331,12 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 	}
 
 	bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(groupReceiveTicketInvoice, ticket_sat, commission_sat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
-
+	// do balance check for keyboard update
+	_, err = bot.GetUserBalance(ticketEvent.Payer)
+	if err != nil {
+		errmsg := fmt.Sprintf("could not get balance of user %s", GetUserStr(ticketEvent.Payer.Telegram))
+		log.Errorln(errmsg)
+	}
 	return
 }
 
