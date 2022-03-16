@@ -43,17 +43,17 @@ type CreateChatInviteLink struct {
 }
 type Creator struct {
 	ID        int64  `json:"id"`
-	Isbot     bool   `json:"is_bot"`
+	IsBot     bool   `json:"is_bot"`
 	Firstname string `json:"first_name"`
 	Username  string `json:"username"`
 }
 type Result struct {
-	Invitelink         string  `json:"invite_link"`
+	InviteLink         string  `json:"invite_link"`
 	Name               string  `json:"name"`
 	Creator            Creator `json:"creator"`
-	Createsjoinrequest bool    `json:"creates_join_request"`
-	Isprimary          bool    `json:"is_primary"`
-	Isrevoked          bool    `json:"is_revoked"`
+	CreatesJoinRequest bool    `json:"creates_join_request"`
+	IsPrimary          bool    `json:"is_primary"`
+	IsRevoked          bool    `json:"is_revoked"`
 }
 type ChatInviteLink struct {
 	Ok     bool   `json:"ok"`
@@ -292,7 +292,7 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 		return
 	}
 
-	bot.trySendMessage(ticketEvent.Payer.Telegram, fmt.Sprintf(groupClickToJoinMessage, resp.Result.Invitelink, ticketEvent.Group.Title))
+	bot.trySendMessage(ticketEvent.Payer.Telegram, fmt.Sprintf(groupClickToJoinMessage, resp.Result.InviteLink, ticketEvent.Group.Title))
 
 	// take a commission
 	ticketSat := ticketEvent.Group.Ticket.Price
