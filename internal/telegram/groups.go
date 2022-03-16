@@ -120,20 +120,20 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 	}
 	splits := strings.Split(m.Text, " ")
 	// if the command was /group join
-	split_idx := 1
+	splitIdx := 1
 	// we also have the simpler command /join that can be used
 	// also by users who don't have an account with the bot yet
 	if splits[0] == "/join" {
-		split_idx = 0
+		splitIdx = 0
 	}
-	if len(splits) != split_idx+2 || len(m.Text) > 100 {
+	if len(splits) != splitIdx+2 || len(m.Text) > 100 {
 		bot.trySendMessage(m.Chat, grouJoinGroupHelpMessage)
 		return ctx, nil
 	}
-	groupname := strings.ToLower(splits[split_idx+1])
+	groupName := strings.ToLower(splits[splitIdx+1])
 
 	group := &Group{}
-	tx := bot.GroupsDb.Where("name = ? COLLATE NOCASE", groupname).First(group)
+	tx := bot.GroupsDb.Where("name = ? COLLATE NOCASE", groupName).First(group)
 	if tx.Error != nil {
 		bot.trySendMessage(m.Chat, groupNotFoundMessage)
 		return ctx, fmt.Errorf("group not found")
@@ -163,7 +163,7 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 	}
 
 	// create an invoice
-	memo := fmt.Sprintf(groupInvoiceMemo, groupname)
+	memo := fmt.Sprintf(groupInvoiceMemo, groupName)
 	var err error
 	invoiceEvent, err = bot.createGroupTicketInvoice(ctx, user, group, memo, InvoiceCallbackGroupTicket, id)
 	if err != nil {
@@ -200,7 +200,7 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 		return ctx, err
 	}
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoiceEvent.PaymentRequest)})
-	bot.trySendMessage(m.Sender, fmt.Sprintf(groupPayInvoiceMessage, groupname))
+	bot.trySendMessage(m.Sender, fmt.Sprintf(groupPayInvoiceMessage, groupName))
 	return ctx, nil
 }
 
