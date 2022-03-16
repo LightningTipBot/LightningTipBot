@@ -396,7 +396,7 @@ func (bot TipBot) getHandler() []Handler {
 		},
 		{
 			Endpoints: []interface{}{"/join"},
-			Handler:   bot.groupHandler,
+			Handler:   bot.groupRequestJoinHandler,
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
