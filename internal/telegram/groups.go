@@ -38,15 +38,7 @@ type Group struct {
 type TicketEvent struct {
 	*storage.Base
 	*InvoiceEvent
-	Group          *Group       `gorm:"embedded;embeddedPrefix:group_"`
-	User           *lnbits.User `json:"user"`                      // the user that is being paid
-	Message        *tb.Message  `json:"message,omitempty"`         // the message that the invoice replies to
-	InvoiceMessage *tb.Message  `json:"invoice_message,omitempty"` // the message that displays the invoice
-	LanguageCode   string       `json:"languagecode"`              // language code of the user
-	Callback       int          `json:"func"`                      // which function to call if the invoice is paid
-	CallbackData   string       `json:"callbackdata"`              // add some data for the callback
-	Chat           *tb.Chat     `json:"chat,omitempty"`            // if invoice is supposed to be sent to a particular chat
-	Payer          *lnbits.User `json:"payer,omitempty"`           // if a particular user is supposed to pay this
+	Group *Group `gorm:"embedded;embeddedPrefix:group_"`
 }
 
 func (ticketEvent TicketEvent) Type() EventType {
@@ -116,10 +108,13 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 	// if no price is set, then we don't need to pay
 	if group.Ticket.Price == 0 {
 		ticketEvent := &TicketEvent{
-			Payer:        user,
-			Group:        group,
-			LanguageCode: user.Telegram.LanguageCode,
-			Chat:         m.Chat,
+			InvoiceEvent: &InvoiceEvent{
+				Payer:        user,
+				LanguageCode: user.Telegram.LanguageCode,
+				Chat:         m.Chat,
+			},
+
+			Group: group,
 		}
 		bot.groupGetInviteLinkHandler(ticketEvent)
 		return ctx, nil
@@ -128,12 +123,14 @@ func (bot TipBot) groupRequestJoinHandler(ctx context.Context, m *tb.Message) (c
 	// if a price is set ...
 	id := fmt.Sprintf("ticket:%d", group.ID)
 	ticketEvent := TicketEvent{
-		Base:         storage.New(storage.ID(id)),
-		User:         group.Ticket.Creator,
-		LanguageCode: ctx.Value("publicLanguageCode").(string),
-		Payer:        user,
-		Chat:         &tb.Chat{ID: group.ID},
-		Group:        group,
+		Base: storage.New(storage.ID(id)),
+		InvoiceEvent: &InvoiceEvent{
+			User:         group.Ticket.Creator,
+			LanguageCode: ctx.Value("publicLanguageCode").(string),
+			Payer:        user,
+			Chat:         &tb.Chat{ID: group.ID},
+		},
+		Group: group,
 	}
 
 	// create an invoice
@@ -426,6 +423,8 @@ func (bot *TipBot) createGroupTicketInvoice(ctx context.Context, payer *lnbits.U
 		Callback:     callback,
 		CallbackData: callbackData,
 		LanguageCode: ctx.Value("publicLanguageCode").(string),
+		Payer:        payer,
+		Chat:         &tb.Chat{ID: group.ID},
 	}
 	// save invoice struct for later use
 	// runtime.IgnoreError(bot.Bunt.Set(ticketEvent))
