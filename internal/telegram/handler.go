@@ -395,6 +395,22 @@ func (bot TipBot) getHandler() []Handler {
 			},
 		},
 		{
+			Endpoints: []interface{}{"/join"},
+			Handler:   bot.groupHandler,
+			Interceptor: &Interceptor{
+				Type: MessageInterceptor,
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
 			Endpoints: []interface{}{&btnPayTicket},
 			Handler:   bot.groupConfirmPayButtonHandler,
 			Interceptor: &Interceptor{
