@@ -400,9 +400,10 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
-					bot.loadUserInterceptor,
+					bot.startUserInterceptor,
 					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{

@@ -110,6 +110,29 @@ func (bot TipBot) requireUserInterceptor(ctx context.Context, i interface{}) (co
 	return nil, errors.Create(errors.InvalidTypeError)
 }
 
+// startUserInterceptor will invoke /start if user not exists.
+func (bot TipBot) startUserInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
+	ctx, err := bot.loadUserInterceptor(ctx, i)
+	if err != nil {
+		// user banned
+		return ctx, err
+	}
+	// load user
+	u := ctx.Value("user")
+	// check user nil
+	if u != nil {
+		user := u.(*lnbits.User)
+		// check wallet nil or !initialized
+		if user.Wallet == nil || !user.Initialized {
+			ctx, err = bot.startHandler(ctx, i.(*tb.Message))
+			if err != nil {
+				return ctx, err
+			}
+			return ctx, nil
+		}
+	}
+	return ctx, nil
+}
 func (bot TipBot) loadUserInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	ctx, _ = bot.requireUserInterceptor(ctx, i)
 	// if user is banned, also loadUserInterceptor will return an error
