@@ -21,10 +21,13 @@ import (
 )
 
 type Ticket struct {
-	Price   int64        `json:"price"`
-	Memo    string       `json:"memo"`
-	Creator *lnbits.User `gorm:"embedded;embeddedPrefix:creator_"`
-	Cut     int          `json:"cut"` // Percent to cut from ticket price
+	Price        int64        `json:"price"`
+	Memo         string       `json:"memo"`
+	Creator      *lnbits.User `gorm:"embedded;embeddedPrefix:creator_"`
+	Cut          int64        `json:"cut"` // Percent to cut from ticket price
+	BaseFee      int64        `json:"base_fee"`
+	CutCheap     int64        `json:"cut_cheap"` // Percent to cut from ticket price
+	BaseFeeCheap int64        `json:"base_fee_cheap"`
 }
 type Group struct {
 	Name  string   `json:"name"`
@@ -314,13 +317,20 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 
 	// take a commission
 	ticketSat := ticketEvent.Group.Ticket.Price
-	if ticketEvent.Group.Ticket.Price > 10 {
+	if ticketEvent.Group.Ticket.Price > 20 {
 		me, err := GetUser(bot.Telegram.Me, *bot)
 		if err != nil {
 			log.Errorf("[groupGetInviteLinkHandler] Could not get bot user from DB: %s", err.Error())
 			return
 		}
-		commissionSat := ticketEvent.Group.Ticket.Price * int64(ticketEvent.Group.Ticket.Cut) / 100
+
+		// 2% cut + 100 sat base fee
+		commissionSat := ticketEvent.Group.Ticket.Price*ticketEvent.Group.Ticket.Cut/100 + ticketEvent.Group.Ticket.BaseFee
+		if ticketEvent.Group.Ticket.Price <= 1000 {
+			// if < 1000, then 10% cut + 10 sat base fee
+			commissionSat = ticketEvent.Group.Ticket.Price*ticketEvent.Group.Ticket.CutCheap/100 + ticketEvent.Group.Ticket.BaseFeeCheap
+		}
+
 		ticketSat = ticketEvent.Group.Ticket.Price - commissionSat
 		invoice, err := me.Wallet.Invoice(
 			lnbits.InvoiceParams{
@@ -399,10 +409,13 @@ func (bot TipBot) addGroupHandler(ctx context.Context, m *tb.Message) (context.C
 	}
 
 	ticket := &Ticket{
-		Price:   amount,
-		Memo:    "Ticket for group " + groupName,
-		Creator: user,
-		Cut:     2,
+		Price:        amount,
+		Memo:         "Ticket for group " + groupName,
+		Creator:      user,
+		Cut:          2,
+		BaseFee:      100,
+		CutCheap:     10,
+		BaseFeeCheap: 10,
 	}
 
 	group = &Group{
