@@ -402,7 +402,7 @@ func (bot TipBot) addGroupHandler(ctx context.Context, m *tb.Message) (context.C
 		Price:   amount,
 		Memo:    "Ticket for group " + groupName,
 		Creator: user,
-		Cut:     10,
+		Cut:     2,
 	}
 
 	group = &Group{
