@@ -94,7 +94,7 @@ func DownloadProfilePicture(telegram *tb.Bot, user *tb.User) ([]byte, error) {
 		return nil, err
 	}
 	if len(photo) == 0 {
-		log.Error("[DownloadProfilePicture] No profile picture found")
+		log.Debugln("[DownloadProfilePicture] No profile picture found")
 		return nil, err
 	}
 	buf := new(bytes.Buffer)

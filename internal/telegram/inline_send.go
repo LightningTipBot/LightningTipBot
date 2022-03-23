@@ -3,9 +3,10 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"strings"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -66,6 +67,7 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) (conte
 	}
 	fromUser := LoadUser(ctx)
 	fromUserStr := GetUserStr(&q.From)
+	fromUserStrMd := GetUserStrMd(&q.From)
 	balance, err := bot.GetUserBalanceCached(fromUser)
 	if err != nil {
 		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
@@ -109,7 +111,7 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) (conte
 	}
 	results := make(tb.Results, len(urls)) // []tb.Result
 	for i, url := range urls {
-		inlineMessage := fmt.Sprintf(Translate(ctx, "inlineSendMessage"), fromUserStr, amount)
+		inlineMessage := fmt.Sprintf(Translate(ctx, "inlineSendMessage"), fromUserStrMd, amount)
 
 		// modify message if payment is to specific user
 		if to_SpecificUser {
@@ -127,7 +129,7 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) (conte
 			// required for photos
 			ThumbURL: url,
 		}
-		id := fmt.Sprintf("inl-send-%d-%d-%s", q.From.ID, amount, RandStringRunes(5))
+		id := fmt.Sprintf("inl:send:%d:%d:%s", q.From.ID, amount, RandStringRunes(5))
 		result.ReplyMarkup = &tb.InlineKeyboardMarkup{InlineKeyboard: bot.makeSendKeyboard(ctx, id).InlineKeyboard}
 		results[i] = result
 		// needed to set a unique string ID for each result
@@ -177,6 +179,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 	fromUser := inlineSend.From
 	if !inlineSend.Active {
 		log.Errorf("[acceptInlineSendHandler] inline send not active anymore")
+		bot.tryEditMessage(c.Message, i18n.Translate(inlineSend.LanguageCode, "sendCancelledMessage"), &tb.ReplyMarkup{})
 		return ctx, errors.Create(errors.NotActiveError)
 	}
 
