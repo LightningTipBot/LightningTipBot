@@ -1,9 +1,11 @@
 package telegram
 
+/*
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strings"
 	"time"
 
@@ -16,7 +18,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"github.com/eko/gocache/store"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/telebot.v3"
 )
 
 type ShopView struct {
@@ -81,7 +83,7 @@ func (shop *Shop) getItem(itemId string) (item ShopItem, ok bool) {
 }
 
 var (
-	shopKeyboard              = &tb.ReplyMarkup{ResizeReplyKeyboard: false}
+	shopKeyboard              = &tb.ReplyMarkup{ResizeKeyboard: false}
 	browseShopButton          = shopKeyboard.Data("Browse shops", "shops_browse")
 	shopNewShopButton         = shopKeyboard.Data("New Shop", "shops_newshop")
 	shopDeleteShopButton      = shopKeyboard.Data("Delete Shops", "shops_deleteshop")
@@ -138,7 +140,7 @@ func (bot *TipBot) shopItemPriceHandler(ctx context.Context, c *tb.Callback) (co
 }
 
 // enterShopItemPriceHandler is invoked when the user enters a price amount
-func (bot *TipBot) enterShopItemPriceHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) enterShopItemPriceHandler(handler intercept.Handler) (intercept.Handler, error) {
 	log.Debugf("[enterShopItemPriceHandler] %s", m.Text)
 	user := LoadUser(ctx)
 	shopView, err := bot.getUserShopview(ctx, user)
@@ -215,7 +217,7 @@ func (bot *TipBot) shopItemTitleHandler(ctx context.Context, c *tb.Callback) (co
 }
 
 // enterShopItemTitleHandler is invoked when the user enters a title of the item
-func (bot *TipBot) enterShopItemTitleHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) enterShopItemTitleHandler(handler intercept.Handler) (intercept.Handler, error) {
 	log.Debugf("[enterShopItemTitleHandler] %s", m.Text)
 	user := LoadUser(ctx)
 	shopView, err := bot.getUserShopview(ctx, user)
@@ -487,7 +489,7 @@ func (bot *TipBot) displayShopItem(ctx context.Context, m *tb.Message, shop *Sho
 }
 
 // shopHandler is invoked when the user enters /shop
-func (bot *TipBot) shopHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) shopHandler(handler intercept.Handler) (intercept.Handler, error) {
 	log.Debugf("[shopHandler] %s", m.Text)
 	if !m.Private() {
 		return ctx, errors.Create(errors.NoPrivateChatError)
@@ -593,7 +595,7 @@ func (bot *TipBot) addShopItem(ctx context.Context, shopId string) (*Shop, ShopI
 }
 
 // addShopItemPhoto is invoked when the users sends a photo as a new item
-func (bot *TipBot) addShopItemPhoto(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) addShopItemPhoto(handler intercept.Handler) (intercept.Handler, error) {
 	log.Debugf("[addShopItemPhoto] <Photo>")
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
@@ -676,7 +678,7 @@ func (bot *TipBot) shopItemAddItemHandler(ctx context.Context, c *tb.Callback) (
 }
 
 // addItemFileHandler is invoked when the users sends a new file for the item
-func (bot *TipBot) addItemFileHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) addItemFileHandler(handler intercept.Handler) (intercept.Handler, error) {
 	log.Debugf("[addItemFileHandler] <File>")
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
@@ -944,7 +946,7 @@ func (bot *TipBot) shopsHandlerCallback(ctx context.Context, c *tb.Callback) (co
 }
 
 // shopsHandler is invoked when the user enters /shops
-func (bot *TipBot) shopsHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) shopsHandler(handler intercept.Handler) (intercept.Handler, error) {
 	log.Debugf("[shopsHandler] %s", GetUserStr(m.Sender))
 	if !m.Private() {
 		return ctx, errors.Create(errors.NoPrivateChatError)
@@ -1206,7 +1208,7 @@ func (bot *TipBot) shopsDescriptionHandler(ctx context.Context, c *tb.Callback) 
 }
 
 // enterShopsDescriptionHandler is invoked when the user enters the shop title
-func (bot *TipBot) enterShopsDescriptionHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) enterShopsDescriptionHandler(handler intercept.Handler) (intercept.Handler, error) {
 	log.Debugf("[enterShopsDescriptionHandler] %s", m.Text)
 	user := LoadUser(ctx)
 	shops, err := bot.getUserShops(ctx, user)
@@ -1396,7 +1398,7 @@ func (bot *TipBot) shopNewShopHandler(ctx context.Context, c *tb.Callback) (cont
 }
 
 // enterShopTitleHandler is invoked when the user enters the shop title
-func (bot *TipBot) enterShopTitleHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) enterShopTitleHandler(handler intercept.Handler) (intercept.Handler, error) {
 	log.Debugf("[enterShopTitleHandler] %s", m.Text)
 	user := LoadUser(ctx)
 	// read item from user.StateData
@@ -1434,3 +1436,4 @@ func (bot *TipBot) enterShopTitleHandler(ctx context.Context, m *tb.Message) (co
 	log.Infof("[🛍 shop] %s added new shop %s.", GetUserStr(user.Telegram), shop.ID)
 	return ctx, nil
 }
+*/

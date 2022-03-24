@@ -1,17 +1,18 @@
 package telegram
 
 import (
-	"context"
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	tb "gopkg.in/telebot.v3"
 )
 
-func (bot *TipBot) fileHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) fileHandler(handler intercept.Handler) (intercept.Handler, error) {
+	m := handler.Message()
 	if m.Chat.Type != tb.ChatPrivate {
-		return ctx, errors.Create(errors.NoPrivateChatError)
+		return handler, errors.Create(errors.NoPrivateChatError)
 	}
-	user := LoadUser(ctx)
+	user := LoadUser(handler.Ctx)
 	if c := stateCallbackMessage[user.StateKey]; c != nil {
 		// found handler for this state
 		// now looking for user state reset ticker
@@ -20,14 +21,14 @@ func (bot *TipBot) fileHandler(ctx context.Context, m *tb.Message) (context.Cont
 			ticker.Do(func() {
 				ResetUserState(user, bot)
 				// removing ticker asap done
-				bot.shopViewDeleteAllStatusMsgs(ctx, user)
+				//bot.shopViewDeleteAllStatusMsgs(handler.Ctx, user)
 				runtime.RemoveTicker(user.ID)
 			})
 		} else {
 			ticker.ResetChan <- struct{}{}
 		}
 
-		return c(ctx, m)
+		return c(handler)
 	}
-	return ctx, errors.Create(errors.NoFileFoundError)
+	return handler, errors.Create(errors.NoFileFoundError)
 }

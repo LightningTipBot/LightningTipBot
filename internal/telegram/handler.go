@@ -1,18 +1,17 @@
 package telegram
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/telebot.v3"
 )
 
-type Handler struct {
+type InterceptionWrapper struct {
 	Endpoints   []interface{}
-	Handler     interface{}
+	Handler     intercept.Func
 	Interceptor *Interceptor
 }
 
@@ -39,39 +38,21 @@ func getDefaultAfterInterceptor(bot TipBot) []intercept.Func {
 }
 
 // registerHandlerWithInterceptor will register a handler with all the predefined interceptors, based on the interceptor type
-func (bot TipBot) registerHandlerWithInterceptor(h Handler) {
+func (bot TipBot) registerHandlerWithInterceptor(h InterceptionWrapper) {
 	h.Interceptor.Before = append(getDefaultBeforeInterceptor(bot), h.Interceptor.Before...)
 	//h.Interceptor.After = append(h.Interceptor.After, getDefaultAfterInterceptor(bot)...)
 	//h.Interceptor.OnDefer = append(h.Interceptor.OnDefer, getDefaultDeferInterceptor(bot)...)
-
-	switch h.Interceptor.Type {
-	case MessageInterceptor:
-		for _, endpoint := range h.Endpoints {
-			bot.handle(endpoint, intercept.HandlerWithMessage(h.Handler.(func(ctx context.Context, query *tb.Message) (context.Context, error)),
-				intercept.WithBeforeMessage(h.Interceptor.Before...),
-				intercept.WithAfterMessage(h.Interceptor.After...),
-				intercept.WithDeferMessage(h.Interceptor.OnDefer...)))
-		}
-	case QueryInterceptor:
-		for _, endpoint := range h.Endpoints {
-			bot.handle(endpoint, intercept.HandlerWithQuery(h.Handler.(func(ctx context.Context, query *tb.Query) (context.Context, error)),
-				intercept.WithBeforeQuery(h.Interceptor.Before...),
-				intercept.WithAfterQuery(h.Interceptor.After...),
-				intercept.WithDeferQuery(h.Interceptor.OnDefer...)))
-		}
-	case CallbackInterceptor:
-		for _, endpoint := range h.Endpoints {
-			bot.handle(endpoint, intercept.HandlerWithCallback(h.Handler.(func(ctx context.Context, callback *tb.Callback) (context.Context, error)),
-				intercept.WithBeforeCallback(h.Interceptor.Before...),
-				intercept.WithAfterCallback(h.Interceptor.After...),
-				intercept.WithDeferCallback(append(h.Interceptor.OnDefer, bot.answerCallbackInterceptor)...)))
-		}
+	for _, endpoint := range h.Endpoints {
+		bot.handle(endpoint, intercept.WithHandler(h.Handler,
+			intercept.WithBefore(h.Interceptor.Before...),
+			intercept.WithAfter(h.Interceptor.After...),
+			intercept.WithDefer(h.Interceptor.OnDefer...)))
 	}
 }
 
 // handle accepts an endpoint and handler for Telegram handler registration.
 // function will automatically register string handlers as uppercase and first letter uppercase.
-func (bot TipBot) handle(endpoint interface{}, handler interface{}) {
+func (bot TipBot) handle(endpoint interface{}, handler tb.HandlerFunc) {
 	// register the endpoint
 	bot.Telegram.Handle(endpoint, handler)
 	switch endpoint.(type) {
@@ -90,24 +71,23 @@ func (bot TipBot) handle(endpoint interface{}, handler interface{}) {
 }
 
 // register registers a handler, so that Telegram can handle the endpoint correctly.
-func (bot TipBot) register(h Handler) {
+func (bot TipBot) register(h InterceptionWrapper) {
 	if h.Interceptor != nil {
 		bot.registerHandlerWithInterceptor(h)
 	} else {
 		for _, endpoint := range h.Endpoints {
-			bot.handle(endpoint, h.Handler)
+			bot.handle(endpoint, intercept.WithHandler(h.Handler))
 		}
 	}
 }
 
 // getHandler returns a list of all handlers, that need to be registered with Telegram
-func (bot TipBot) getHandler() []Handler {
-	return []Handler{
+func (bot TipBot) getHandler() []InterceptionWrapper {
+	return []InterceptionWrapper{
 		{
 			Endpoints: []interface{}{"/start"},
 			Handler:   bot.startHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -123,7 +103,6 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/tip", "/t", "/honk"},
 			Handler:   bot.tipHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -140,7 +119,6 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/pay"},
 			Handler:   bot.payHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -156,7 +134,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/invoice", &btnInvoiceMainMenu},
 			Handler:   bot.invoiceHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -168,11 +146,11 @@ func (bot TipBot) getHandler() []Handler {
 				},
 			},
 		},
-		{
+		/*{
 			Endpoints: []interface{}{"/shops"},
 			Handler:   bot.shopsHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
@@ -187,7 +165,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/shop"},
 			Handler:   bot.shopHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -198,12 +176,12 @@ func (bot TipBot) getHandler() []Handler {
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
 				}},
-		},
+		},*/
 		{
 			Endpoints: []interface{}{"/balance", &btnBalanceMainMenu},
 			Handler:   bot.balanceHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -219,7 +197,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/send", &btnSendMenuEnter},
 			Handler:   bot.sendHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -236,7 +214,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnSendMainMenu},
 			Handler:   bot.keyboardSendHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -253,7 +231,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/faucet", "/zapfhahn", "/kraan", "/grifo"},
 			Handler:   bot.faucetHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -269,7 +247,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/tipjar", "/spendendose"},
 			Handler:   bot.tipjarHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -285,7 +263,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/help", &btnHelpMainMenu},
 			Handler:   bot.helpHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -301,7 +279,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/basics"},
 			Handler:   bot.basicsHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -317,7 +295,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/donate"},
 			Handler:   bot.donationHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -333,7 +311,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/advanced"},
 			Handler:   bot.advancedHelpHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -349,7 +327,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/link"},
 			Handler:   bot.lndhubHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -365,7 +343,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/lnurl"},
 			Handler:   bot.lnurlHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -382,7 +360,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/group"},
 			Handler:   bot.groupHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -398,7 +376,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/join"},
 			Handler:   bot.groupRequestJoinHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.requirePrivateChatInterceptor,
 					bot.localizerInterceptor,
@@ -415,7 +393,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnPayTicket},
 			Handler:   bot.groupConfirmPayButtonHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
@@ -430,7 +408,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{tb.OnPhoto},
 			Handler:   bot.photoHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.requirePrivateChatInterceptor,
 					bot.localizerInterceptor,
@@ -447,7 +425,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{tb.OnDocument, tb.OnVideo, tb.OnAnimation, tb.OnVoice, tb.OnAudio, tb.OnSticker, tb.OnVideoNote},
 			Handler:   bot.fileHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.requirePrivateChatInterceptor,
 					bot.logMessageInterceptor,
@@ -457,7 +435,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{tb.OnText},
 			Handler:   bot.anyTextHandler,
 			Interceptor: &Interceptor{
-				Type: MessageInterceptor,
+
 				Before: []intercept.Func{
 					bot.requirePrivateChatInterceptor, // Respond to any text only in private chat
 					bot.localizerInterceptor,
@@ -474,7 +452,6 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{tb.OnQuery},
 			Handler:   bot.anyQueryHandler,
 			Interceptor: &Interceptor{
-				Type: QueryInterceptor,
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
@@ -486,14 +463,14 @@ func (bot TipBot) getHandler() []Handler {
 			},
 		},
 		{
-			Endpoints: []interface{}{tb.OnChosenInlineResult},
+			Endpoints: []interface{}{tb.OnInlineResult},
 			Handler:   bot.anyChosenInlineHandler,
 		},
 		{
 			Endpoints: []interface{}{&btnPay},
 			Handler:   bot.confirmPayHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
@@ -508,7 +485,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnCancelPay},
 			Handler:   bot.cancelPaymentHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
@@ -523,7 +500,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnSend},
 			Handler:   bot.confirmSendHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
@@ -538,7 +515,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnCancelSend},
 			Handler:   bot.cancelSendHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
@@ -553,7 +530,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnAcceptInlineSend},
 			Handler:   bot.acceptInlineSendHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -568,7 +545,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnCancelInlineSend},
 			Handler:   bot.cancelInlineSendHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
@@ -583,7 +560,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnAcceptInlineReceive},
 			Handler:   bot.acceptInlineReceiveHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -598,7 +575,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnCancelInlineReceive},
 			Handler:   bot.cancelInlineReceiveHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
@@ -613,7 +590,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnAcceptInlineFaucet},
 			Handler:   bot.acceptInlineFaucetHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.singletonCallbackInterceptor,
 					bot.localizerInterceptor,
@@ -629,7 +606,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnCancelInlineFaucet},
 			Handler:   bot.cancelInlineFaucetHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
@@ -644,7 +621,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnAcceptInlineTipjar},
 			Handler:   bot.acceptInlineTipjarHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
@@ -659,7 +636,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnCancelInlineTipjar},
 			Handler:   bot.cancelInlineTipjarHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
@@ -674,7 +651,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnWithdraw},
 			Handler:   bot.confirmWithdrawHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
@@ -689,7 +666,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnCancelWithdraw},
 			Handler:   bot.cancelWithdrawHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
@@ -704,7 +681,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnAuth},
 			Handler:   bot.confirmLnurlAuthHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
@@ -719,7 +696,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&btnCancelAuth},
 			Handler:   bot.cancelLnurlAuthHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.requireUserInterceptor,
@@ -730,11 +707,11 @@ func (bot TipBot) getHandler() []Handler {
 				},
 			},
 		},
-		{
+		/*{
 			Endpoints: []interface{}{&shopNewShopButton},
 			Handler:   bot.shopNewShopHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -748,7 +725,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopAddItemButton},
 			Handler:   bot.shopNewItemHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -762,7 +739,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopBuyitemButton},
 			Handler:   bot.shopGetItemFilesHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -776,7 +753,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopNextitemButton},
 			Handler:   bot.shopNextItemButtonHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -790,7 +767,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&browseShopButton},
 			Handler:   bot.shopsBrowser,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -804,7 +781,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopSelectButton},
 			Handler:   bot.shopSelect,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -819,7 +796,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopDeleteShopButton},
 			Handler:   bot.shopsDeleteShopBrowser,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -834,7 +811,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopDeleteSelectButton},
 			Handler:   bot.shopSelectDelete,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -849,7 +826,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopLinkShopButton},
 			Handler:   bot.shopsLinkShopBrowser,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -864,7 +841,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopLinkSelectButton},
 			Handler:   bot.shopSelectLink,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -879,7 +856,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopRenameShopButton},
 			Handler:   bot.shopsRenameShopBrowser,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -894,7 +871,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopRenameSelectButton},
 			Handler:   bot.shopSelectRename,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -909,7 +886,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopSettingsButton},
 			Handler:   bot.shopSettingsHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -924,7 +901,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopDescriptionShopButton},
 			Handler:   bot.shopsDescriptionHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -939,7 +916,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopResetShopButton},
 			Handler:   bot.shopsResetHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -953,7 +930,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopResetShopAskButton},
 			Handler:   bot.shopsAskDeleteAllShopsHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -967,7 +944,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopPrevitemButton},
 			Handler:   bot.shopPrevItemButtonHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -981,7 +958,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopShopsButton},
 			Handler:   bot.shopsHandlerCallback,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -996,7 +973,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopItemSettingsButton},
 			Handler:   bot.shopItemSettingsHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -1010,7 +987,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopItemSettingsBackButton},
 			Handler:   bot.displayShopItemHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -1024,7 +1001,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopItemDeleteButton},
 			Handler:   bot.shopItemDeleteHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -1038,7 +1015,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopItemPriceButton},
 			Handler:   bot.shopItemPriceHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -1052,7 +1029,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopItemTitleButton},
 			Handler:   bot.shopItemTitleHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -1066,7 +1043,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopItemAddFileButton},
 			Handler:   bot.shopItemAddItemHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -1080,7 +1057,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopItemBuyButton},
 			Handler:   bot.shopConfirmBuyHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -1094,7 +1071,7 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{&shopItemCancelBuyButton},
 			Handler:   bot.displayShopItemHandler,
 			Interceptor: &Interceptor{
-				Type: CallbackInterceptor,
+
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.loadUserInterceptor,
@@ -1103,6 +1080,6 @@ func (bot TipBot) getHandler() []Handler {
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
 				}},
-		},
+		},*/
 	}
 }

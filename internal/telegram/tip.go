@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strings"
 	"time"
 
@@ -12,7 +13,7 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/telebot.v3"
 )
 
 func helpTipUsage(ctx context.Context, errormsg string) string {
@@ -31,26 +32,27 @@ func TipCheckSyntax(ctx context.Context, m *tb.Message) (bool, string) {
 	return true, ""
 }
 
-func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) tipHandler(handler intercept.Handler) (intercept.Handler, error) {
+	m := handler.Message()
 	// check and print all commands
-	bot.anyTextHandler(ctx, m)
-	user := LoadUser(ctx)
+	bot.anyTextHandler(handler)
+	user := LoadUser(handler.Ctx)
 	if user.Wallet == nil {
-		return ctx, fmt.Errorf("user has no wallet")
+		return handler, fmt.Errorf("user has no wallet")
 	}
 
 	// only if message is a reply
 	if !m.IsReply() {
 		bot.tryDeleteMessage(m)
-		bot.trySendMessage(m.Sender, helpTipUsage(ctx, Translate(ctx, "tipDidYouReplyMessage")))
-		bot.trySendMessage(m.Sender, Translate(ctx, "tipInviteGroupMessage"))
-		return ctx, errors.Create(errors.NoReplyMessageError)
+		bot.trySendMessage(m.Sender, helpTipUsage(handler.Ctx, Translate(handler.Ctx, "tipDidYouReplyMessage")))
+		bot.trySendMessage(m.Sender, Translate(handler.Ctx, "tipInviteGroupMessage"))
+		return handler, errors.Create(errors.NoReplyMessageError)
 	}
 
-	if ok, err := TipCheckSyntax(ctx, m); !ok {
-		bot.trySendMessage(m.Sender, helpTipUsage(ctx, err))
+	if ok, err := TipCheckSyntax(handler.Ctx, m); !ok {
+		bot.trySendMessage(m.Sender, helpTipUsage(handler.Ctx, err))
 		NewMessage(m, WithDuration(0, bot))
-		return ctx, errors.Create(errors.InvalidSyntaxError)
+		return handler, errors.Create(errors.InvalidSyntaxError)
 	}
 
 	// get tip amount
@@ -59,23 +61,23 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) (context.Conte
 		errmsg := fmt.Sprintf("[/tip] Error: Tip amount not valid.")
 		// immediately delete if the amount is bullshit
 		NewMessage(m, WithDuration(0, bot))
-		bot.trySendMessage(m.Sender, helpTipUsage(ctx, Translate(ctx, "tipValidAmountMessage")))
+		bot.trySendMessage(m.Sender, helpTipUsage(handler.Ctx, Translate(handler.Ctx, "tipValidAmountMessage")))
 		log.Warnln(errmsg)
-		return ctx, errors.Create(errors.InvalidAmountError)
+		return handler, errors.Create(errors.InvalidAmountError)
 	}
 
-	err = bot.parseCmdDonHandler(ctx, m)
+	err = bot.parseCmdDonHandler(handler)
 	if err == nil {
-		return ctx, fmt.Errorf("invalid parseCmdDonHandler")
+		return handler, fmt.Errorf("invalid parseCmdDonHandler")
 	}
 	// TIP COMMAND IS VALID
-	from := LoadUser(ctx)
-	to := LoadReplyToUser(ctx)
+	from := LoadUser(handler.Ctx)
+	to := LoadReplyToUser(handler.Ctx)
 
 	if from.Telegram.ID == to.Telegram.ID {
 		NewMessage(m, WithDuration(0, bot))
-		bot.trySendMessage(m.Sender, Translate(ctx, "tipYourselfMessage"))
-		return ctx, fmt.Errorf("cannot tip yourself")
+		bot.trySendMessage(m.Sender, Translate(handler.Ctx, "tipYourselfMessage"))
+		return handler, fmt.Errorf("cannot tip yourself")
 	}
 
 	toUserStrMd := GetUserStrMd(to.Telegram)
@@ -89,7 +91,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) (context.Conte
 		if err != nil {
 			errmsg := fmt.Errorf("[/tip] Error: Could not create wallet for %s", toUserStr)
 			log.Errorln(errmsg)
-			return ctx, fmt.Errorf("could not create wallet for %s", toUserStr)
+			return handler, fmt.Errorf("could not create wallet for %s", toUserStr)
 		}
 	}
 
@@ -110,10 +112,10 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) (context.Conte
 	success, err := t.Send()
 	if !success {
 		NewMessage(m, WithDuration(0, bot))
-		bot.trySendMessage(m.Sender, fmt.Sprintf("%s %s", Translate(ctx, "tipErrorMessage"), err))
+		bot.trySendMessage(m.Sender, fmt.Sprintf("%s %s", Translate(handler.Ctx, "tipErrorMessage"), err))
 		errMsg := fmt.Sprintf("[/tip] Transaction failed: %s", err.Error())
 		log.Warnln(errMsg)
-		return ctx, fmt.Errorf("could not create wallet for %s", toUserStr)
+		return handler, fmt.Errorf("could not create wallet for %s", toUserStr)
 	}
 
 	// update tooltip if necessary
@@ -135,5 +137,5 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) (context.Conte
 	}
 	// delete the tip message after a few seconds, this is default behaviour
 	NewMessage(m, WithDuration(time.Second*time.Duration(internal.Configuration.Telegram.MessageDisposeDuration), bot))
-	return ctx, nil
+	return handler, nil
 }

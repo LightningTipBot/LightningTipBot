@@ -5,23 +5,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/telebot.v3"
 )
 
-func (bot *TipBot) anyTextHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) anyTextHandler(handler intercept.Handler) (intercept.Handler, error) {
+	m := handler.Message()
 	if m.Chat.Type != tb.ChatPrivate {
-		return ctx, errors.Create(errors.NoPrivateChatError)
+		return handler, errors.Create(errors.NoPrivateChatError)
 	}
 
 	// check if user is in Database, if not, initialize wallet
-	user := LoadUser(ctx)
+	user := LoadUser(handler.Ctx)
 	if user.Wallet == nil || !user.Initialized {
-		return bot.startHandler(ctx, m)
+		return bot.startHandler(handler)
 	}
 
 	// check if the user clicked on the balance button
@@ -30,24 +32,24 @@ func (bot *TipBot) anyTextHandler(ctx context.Context, m *tb.Message) (context.C
 		// overwrite the message text so it doesn't cause an infinite loop
 		// because balanceHandler calls anyTextHAndler...
 		m.Text = ""
-		return bot.balanceHandler(ctx, m)
+		return bot.balanceHandler(handler)
 	}
 
 	// could be an invoice
 	anyText := strings.ToLower(m.Text)
 	if lightning.IsInvoice(anyText) {
 		m.Text = "/pay " + anyText
-		return bot.payHandler(ctx, m)
+		return bot.payHandler(handler)
 	}
 	if lightning.IsLnurl(anyText) {
 		m.Text = "/lnurl " + anyText
-		return bot.lnurlHandler(ctx, m)
+		return bot.lnurlHandler(handler)
 	}
 	if c := stateCallbackMessage[user.StateKey]; c != nil {
-		return c(ctx, m)
+		return c(handler)
 		//ResetUserState(user, bot)
 	}
-	return ctx, nil
+	return handler, nil
 }
 
 type EnterUserStateData struct {
@@ -84,19 +86,20 @@ func (bot *TipBot) askForUser(ctx context.Context, id string, eventType string, 
 // enterAmountHandler is invoked in anyTextHandler when the user needs to enter an amount
 // the amount is then stored as an entry in the user's stateKey in the user database
 // any other handler that relies on this, needs to load the resulting amount from the database
-func (bot *TipBot) enterUserHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
-	user := LoadUser(ctx)
+func (bot *TipBot) enterUserHandler(handler intercept.Handler) (intercept.Handler, error) {
+	m := handler.Message()
+	user := LoadUser(handler.Ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.UserNoWalletError)
+		return handler, errors.Create(errors.UserNoWalletError)
 	}
 
 	if !(user.StateKey == lnbits.UserEnterUser) {
 		ResetUserState(user, bot)
-		return ctx, errors.Create(errors.InvalidSyntaxError)
+		return handler, errors.Create(errors.InvalidSyntaxError)
 	}
 	if len(m.Text) < 4 || strings.HasPrefix(m.Text, "/") || m.Text == SendMenuCommandEnter {
 		ResetUserState(user, bot)
-		return ctx, errors.Create(errors.InvalidSyntaxError)
+		return handler, errors.Create(errors.InvalidSyntaxError)
 	}
 
 	var EnterUserStateData EnterUserStateData
@@ -104,7 +107,7 @@ func (bot *TipBot) enterUserHandler(ctx context.Context, m *tb.Message) (context
 	if err != nil {
 		log.Errorf("[EnterUserHandler] %s", err.Error())
 		ResetUserState(user, bot)
-		return ctx, err
+		return handler, err
 	}
 
 	userstr := m.Text
@@ -114,10 +117,10 @@ func (bot *TipBot) enterUserHandler(ctx context.Context, m *tb.Message) (context
 	switch EnterUserStateData.Type {
 	case "CreateSendState":
 		m.Text = fmt.Sprintf("/send %s", userstr)
-		return bot.sendHandler(ctx, m)
+		return bot.sendHandler(handler)
 	default:
 		ResetUserState(user, bot)
-		return ctx, errors.Create(errors.InvalidSyntaxError)
+		return handler, errors.Create(errors.InvalidSyntaxError)
 	}
-	return ctx, nil
+	return handler, nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"net/url"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
@@ -17,11 +18,11 @@ import (
 
 	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/telebot.v3"
 )
 
 var (
-	authConfirmationMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	authConfirmationMenu = &tb.ReplyMarkup{ResizeKeyboard: true}
 	btnCancelAuth        = paymentConfirmationMenu.Data("🚫 Cancel", "cancel_login")
 	btnAuth              = paymentConfirmationMenu.Data("✅ Login", "confirm_login")
 )
@@ -69,81 +70,83 @@ func (bot *TipBot) lnurlAuthHandler(ctx context.Context, m *tb.Message, authPara
 	return ctx, nil
 }
 
-func (bot *TipBot) confirmLnurlAuthHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+func (bot *TipBot) confirmLnurlAuthHandler(handler intercept.Handler) (intercept.Handler, error) {
+	c := handler.Callback()
 	tx := &LnurlAuthState{Base: storage.New(storage.ID(c.Data))}
-	mutex.LockWithContext(ctx, tx.ID)
-	defer mutex.UnlockWithContext(ctx, tx.ID)
+	mutex.LockWithContext(handler.Ctx, tx.ID)
+	defer mutex.UnlockWithContext(handler.Ctx, tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[confirmPayHandler] %s", err.Error())
-		return ctx, err
+		return handler, err
 	}
 	lnurlAuthState := sn.(*LnurlAuthState)
 
 	if !lnurlAuthState.Active {
-		return ctx, fmt.Errorf("LnurlAuthData not active.")
+		return handler, fmt.Errorf("LnurlAuthData not active.")
 	}
 
-	user := LoadUser(ctx)
+	user := LoadUser(handler.Ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.UserNoWalletError)
+		return handler, errors.Create(errors.UserNoWalletError)
 	}
 
 	// statusMsg := bot.trySendMessageEditable(c.Sender,
 	// 	Translate(ctx, "lnurlResolvingUrlMessage"),
 	// )
-	bot.editSingleButton(ctx, c.Message, lnurlAuthState.Message.Text, Translate(ctx, "lnurlResolvingUrlMessage"))
+	bot.editSingleButton(handler.Ctx, c.Message, lnurlAuthState.Message.Text, Translate(handler.Ctx, "lnurlResolvingUrlMessage"))
 
 	// from fiatjaf/go-lnurl
 	p := lnurlAuthState.LNURLAuthParams
 	key, sig, err := user.SignKeyAuth(p.Host, p.K1)
 	if err != nil {
-		return ctx, err
+		return handler, err
 	}
 
 	var sentsigres lnurl.LNURLResponse
 	client, err := bot.GetHttpClient()
 	if err != nil {
-		return ctx, err
+		return handler, err
 	}
 	r := req.New()
 	r.SetClient(client)
 	res, err := r.Get(p.CallbackURL.String(), url.Values{"sig": {sig}, "key": {key}})
 	if err != nil {
-		return ctx, err
+		return handler, err
 	}
 	err = json.Unmarshal(res.Bytes(), &sentsigres)
 	if err != nil {
-		return ctx, err
+		return handler, err
 	}
 	if sentsigres.Status == "ERROR" {
-		bot.tryEditMessage(c.Message, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), sentsigres.Reason))
-		return ctx, err
+		bot.tryEditMessage(c.Message, fmt.Sprintf(Translate(handler.Ctx, "errorReasonMessage"), sentsigres.Reason))
+		return handler, err
 	}
-	bot.editSingleButton(ctx, c.Message, lnurlAuthState.Message.Text, Translate(ctx, "lnurlSuccessfulLogin"))
-	return ctx, lnurlAuthState.Inactivate(lnurlAuthState, bot.Bunt)
+	bot.editSingleButton(handler.Ctx, c.Message, lnurlAuthState.Message.Text, Translate(handler.Ctx, "lnurlSuccessfulLogin"))
+	return handler, lnurlAuthState.Inactivate(lnurlAuthState, bot.Bunt)
 }
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation
-func (bot *TipBot) cancelLnurlAuthHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+func (bot *TipBot) cancelLnurlAuthHandler(handler intercept.Handler) (intercept.Handler, error) {
+	c := handler.Callback()
 	tx := &LnurlAuthState{Base: storage.New(storage.ID(c.Data))}
-	mutex.LockWithContext(ctx, tx.ID)
-	defer mutex.UnlockWithContext(ctx, tx.ID)
+	mutex.LockWithContext(handler.Ctx, tx.ID)
+	defer mutex.UnlockWithContext(handler.Ctx, tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[confirmPayHandler] %s", err.Error())
-		return ctx, err
+		return handler, err
 	}
 	lnurlAuthState := sn.(*LnurlAuthState)
 
 	// onnly the correct user can press
 	if lnurlAuthState.From.Telegram.ID != c.Sender.ID {
-		return ctx, errors.Create(errors.UnknownError)
+		return handler, errors.Create(errors.UnknownError)
 	}
 	// delete and send instead of edit for the keyboard to pop up after sending
 	bot.tryEditMessage(c.Message, i18n.Translate(lnurlAuthState.LanguageCode, "loginCancelledMessage"), &tb.ReplyMarkup{})
 	// bot.tryEditMessage(c.Message, i18n.Translate(payData.LanguageCode, "paymentCancelledMessage"), &tb.ReplyMarkup{})
-	return ctx, lnurlAuthState.Inactivate(lnurlAuthState, bot.Bunt)
+	return handler, lnurlAuthState.Inactivate(lnurlAuthState, bot.Bunt)
 }

@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"golang.org/x/time/rate"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/telebot.v3"
 )
 
 // Limiter

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strconv"
 	"strings"
 
@@ -16,7 +17,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/price"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/telebot.v3"
 )
 
 func getArgumentFromCommand(input string, which int) (output string, err error) {
@@ -120,15 +121,15 @@ func (bot *TipBot) askForAmount(ctx context.Context, id string, eventType string
 // enterAmountHandler is invoked in anyTextHandler when the user needs to enter an amount
 // the amount is then stored as an entry in the user's stateKey in the user database
 // any other handler that relies on this, needs to load the resulting amount from the database
-func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
-	user := LoadUser(ctx)
+func (bot *TipBot) enterAmountHandler(handler intercept.Handler) (intercept.Handler, error) {
+	user := LoadUser(handler.Ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.UserNoWalletError)
+		return handler, errors.Create(errors.UserNoWalletError)
 	}
 
 	if !(user.StateKey == lnbits.UserEnterAmount) {
 		ResetUserState(user, bot)
-		return ctx, fmt.Errorf("invalid statekey")
+		return handler, fmt.Errorf("invalid statekey")
 	}
 
 	var EnterAmountStateData EnterAmountStateData
@@ -136,24 +137,24 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) (conte
 	if err != nil {
 		log.Errorf("[enterAmountHandler] %s", err.Error())
 		ResetUserState(user, bot)
-		return ctx, err
+		return handler, err
 	}
 
-	amount, err := getAmount(m.Text)
+	amount, err := getAmount(handler.Message().Text)
 	if err != nil {
 		log.Warnf("[enterAmountHandler] %s", err.Error())
-		bot.trySendMessage(m.Sender, Translate(ctx, "lnurlInvalidAmountMessage"))
+		bot.trySendMessage(handler.Message().Sender, Translate(handler.Ctx, "lnurlInvalidAmountMessage"))
 		ResetUserState(user, bot)
-		return ctx, err
+		return handler, err
 	}
 	// amount not in allowed range from LNURL
 	if EnterAmountStateData.AmountMin > 0 && EnterAmountStateData.AmountMax >= EnterAmountStateData.AmountMin && // this line checks whether min_max is set at all
 		(amount > int64(EnterAmountStateData.AmountMax/1000) || amount < int64(EnterAmountStateData.AmountMin/1000)) { // this line then checks whether the amount is in the range
 		err = fmt.Errorf("amount not in range")
 		log.Warnf("[enterAmountHandler] %s", err.Error())
-		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), EnterAmountStateData.AmountMin/1000, EnterAmountStateData.AmountMax/1000))
+		bot.trySendMessage(handler.Sender(), fmt.Sprintf(Translate(handler.Ctx, "lnurlInvalidAmountRangeMessage"), EnterAmountStateData.AmountMin/1000, EnterAmountStateData.AmountMax/1000))
 		ResetUserState(user, bot)
-		return ctx, errors.Create(errors.InvalidSyntaxError)
+		return handler, errors.Create(errors.InvalidSyntaxError)
 	}
 
 	// find out which type the object in bunt has waiting for an amount
@@ -161,11 +162,11 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) (conte
 	switch EnterAmountStateData.Type {
 	case "LnurlPayState":
 		tx := &LnurlPayState{Base: storage.New(storage.ID(EnterAmountStateData.ID))}
-		mutex.LockWithContext(ctx, tx.ID)
-		defer mutex.UnlockWithContext(ctx, tx.ID)
+		mutex.LockWithContext(handler.Ctx, tx.ID)
+		defer mutex.UnlockWithContext(handler.Ctx, tx.ID)
 		sn, err := tx.Get(tx, bot.Bunt)
 		if err != nil {
-			return ctx, err
+			return handler, err
 		}
 		LnurlPayState := sn.(*LnurlPayState)
 		LnurlPayState.Amount = amount * 1000 // mSat
@@ -176,17 +177,17 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) (conte
 		StateDataJson, err := json.Marshal(EnterAmountStateData)
 		if err != nil {
 			log.Errorln(err)
-			return ctx, err
+			return handler, err
 		}
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(StateDataJson))
-		return bot.lnurlPayHandlerSend(ctx, m)
+		return bot.lnurlPayHandlerSend(handler)
 	case "LnurlWithdrawState":
 		tx := &LnurlWithdrawState{Base: storage.New(storage.ID(EnterAmountStateData.ID))}
-		mutex.LockWithContext(ctx, tx.ID)
-		defer mutex.UnlockWithContext(ctx, tx.ID)
+		mutex.LockWithContext(handler.Ctx, tx.ID)
+		defer mutex.UnlockWithContext(handler.Ctx, tx.ID)
 		sn, err := tx.Get(tx, bot.Bunt)
 		if err != nil {
-			return ctx, err
+			return handler, err
 		}
 		LnurlWithdrawState := sn.(*LnurlWithdrawState)
 		LnurlWithdrawState.Amount = amount * 1000 // mSat
@@ -197,28 +198,28 @@ func (bot *TipBot) enterAmountHandler(ctx context.Context, m *tb.Message) (conte
 		StateDataJson, err := json.Marshal(EnterAmountStateData)
 		if err != nil {
 			log.Errorln(err)
-			return ctx, err
+			return handler, err
 		}
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(StateDataJson))
-		return bot.lnurlWithdrawHandlerWithdraw(ctx, m)
+		return bot.lnurlWithdrawHandlerWithdraw(handler)
 	case "CreateInvoiceState":
-		m.Text = fmt.Sprintf("/invoice %d", amount)
+		handler.Message().Text = fmt.Sprintf("/invoice %d", amount)
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
-		return bot.invoiceHandler(ctx, m)
+		return bot.invoiceHandler(handler)
 	case "CreateDonationState":
-		m.Text = fmt.Sprintf("/donate %d", amount)
+		handler.Message().Text = fmt.Sprintf("/donate %d", amount)
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
-		return bot.donationHandler(ctx, m)
+		return bot.donationHandler(handler)
 	case "CreateSendState":
 		splits := strings.SplitAfterN(EnterAmountStateData.OiringalCommand, " ", 2)
 		if len(splits) > 1 {
-			m.Text = fmt.Sprintf("/send %d %s", amount, splits[1])
+			handler.Message().Text = fmt.Sprintf("/send %d %s", amount, splits[1])
 			SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
-			return bot.sendHandler(ctx, m)
+			return bot.sendHandler(handler)
 		}
-		return ctx, errors.Create(errors.InvalidSyntaxError)
+		return handler, errors.Create(errors.InvalidSyntaxError)
 	default:
 		ResetUserState(user, bot)
-		return ctx, errors.Create(errors.InvalidSyntaxError)
+		return handler, errors.Create(errors.InvalidSyntaxError)
 	}
 }

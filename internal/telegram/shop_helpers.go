@@ -1,21 +1,6 @@
 package telegram
 
-import (
-	"context"
-	"fmt"
-	"time"
-
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage"
-
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-
-	"github.com/eko/gocache/store"
-	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
-)
-
+/*
 func (bot TipBot) shopsMainMenu(ctx context.Context, shops *Shops) *tb.ReplyMarkup {
 	browseShopButton := shopKeyboard.Data("🛍 Browse shops", "shops_browse", shops.ID)
 	shopNewShopButton := shopKeyboard.Data("✅ New Shop", "shops_newshop", shops.ID)
@@ -284,3 +269,4 @@ func (bot *TipBot) getShop(ctx context.Context, shopId string) (*Shop, error) {
 	}
 	return shop, nil
 }
+*/

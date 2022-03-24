@@ -4,6 +4,7 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strconv"
 	"time"
 
@@ -15,36 +16,36 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/telebot.v3"
 	"gorm.io/gorm"
 )
 
-func (bot TipBot) startHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
-	if !m.Private() {
-		return ctx, errors.Create(errors.NoPrivateChatError)
+func (bot TipBot) startHandler(handler intercept.Handler) (intercept.Handler, error) {
+	if !handler.Message().Private() {
+		return handler, errors.Create(errors.NoPrivateChatError)
 	}
 	// ATTENTION: DO NOT CALL ANY HANDLER BEFORE THE WALLET IS CREATED
 	// WILL RESULT IN AN ENDLESS LOOP OTHERWISE
 	// bot.helpHandler(m)
-	log.Printf("[⭐️ /start] New user: %s (%d)\n", GetUserStr(m.Sender), m.Sender.ID)
-	walletCreationMsg := bot.trySendMessageEditable(m.Sender, Translate(ctx, "startSettingWalletMessage"))
-	user, err := bot.initWallet(m.Sender)
+	log.Printf("[⭐️ /start] New user: %s (%d)\n", GetUserStr(handler.Sender()), handler.Sender().ID)
+	walletCreationMsg := bot.trySendMessageEditable(handler.Sender(), Translate(handler.Ctx, "startSettingWalletMessage"))
+	user, err := bot.initWallet(handler.Sender())
 	if err != nil {
 		log.Errorln(fmt.Sprintf("[startHandler] Error with initWallet: %s", err.Error()))
-		bot.tryEditMessage(walletCreationMsg, Translate(ctx, "startWalletErrorMessage"))
-		return ctx, err
+		bot.tryEditMessage(walletCreationMsg, Translate(handler.Ctx, "startWalletErrorMessage"))
+		return handler, err
 	}
 	bot.tryDeleteMessage(walletCreationMsg)
-	ctx = context.WithValue(ctx, "user", user)
-	bot.helpHandler(ctx, m)
-	bot.trySendMessage(m.Sender, Translate(ctx, "startWalletReadyMessage"))
-	bot.balanceHandler(ctx, m)
+	handler.Ctx = context.WithValue(handler.Ctx, "user", user)
+	bot.helpHandler(handler)
+	bot.trySendMessage(handler.Sender(), Translate(handler.Ctx, "startWalletReadyMessage"))
+	bot.balanceHandler(handler)
 
 	// send the user a warning about the fact that they need to set a username
-	if len(m.Sender.Username) == 0 {
-		bot.trySendMessage(m.Sender, Translate(ctx, "startNoUsernameMessage"), tb.NoPreview)
+	if len(handler.Sender().Username) == 0 {
+		bot.trySendMessage(handler.Sender(), Translate(handler.Ctx, "startNoUsernameMessage"), tb.NoPreview)
 	}
-	return ctx, nil
+	return handler, nil
 }
 
 func (bot TipBot) initWallet(tguser *tb.User) (*lnbits.User, error) {

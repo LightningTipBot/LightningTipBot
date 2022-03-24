@@ -2,9 +2,9 @@ package telegram
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"image"
 	"image/jpeg"
 	"strings"
@@ -17,7 +17,7 @@ import (
 	"github.com/nfnt/resize"
 
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/telebot.v3"
 )
 
 // TryRecognizeInvoiceFromQrCode will try to read an invoice string from a qr code and invoke the payment handler.
@@ -40,49 +40,50 @@ func TryRecognizeQrCode(img image.Image) (*gozxing.Result, error) {
 }
 
 // photoHandler is the handler function for every photo from a private chat that the bot receives
-func (bot *TipBot) photoHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) photoHandler(handler intercept.Handler) (intercept.Handler, error) {
+	m := handler.Message()
 	if m.Chat.Type != tb.ChatPrivate {
-		return ctx, errors.Create(errors.NoPrivateChatError)
+		return handler, errors.Create(errors.NoPrivateChatError)
 	}
 	if m.Photo == nil {
-		return ctx, errors.Create(errors.NoPhotoError)
+		return handler, errors.Create(errors.NoPhotoError)
 	}
-	user := LoadUser(ctx)
+	user := LoadUser(handler.Ctx)
 	if c := stateCallbackMessage[user.StateKey]; c != nil {
-		ctx, err := c(ctx, m)
+		ctx, err := c(handler)
 		ResetUserState(user, bot)
 		return ctx, err
 	}
 
 	// get file reader closer from Telegram api
-	reader, err := bot.Telegram.GetFile(m.Photo.MediaFile())
+	reader, err := bot.Telegram.File(m.Photo.MediaFile())
 	if err != nil {
 		log.Errorf("[photoHandler] getfile error: %v\n", err.Error())
-		return ctx, err
+		return handler, err
 	}
 	// decode to jpeg image
 	img, err := jpeg.Decode(reader)
 	if err != nil {
 		log.Errorf("[photoHandler] image.Decode error: %v\n", err.Error())
-		return ctx, err
+		return handler, err
 	}
 	data, err := TryRecognizeQrCode(img)
 	if err != nil {
 		log.Errorf("[photoHandler] tryRecognizeQrCodes error: %v\n", err.Error())
-		bot.trySendMessage(m.Sender, Translate(ctx, "photoQrNotRecognizedMessage"))
-		return ctx, err
+		bot.trySendMessage(m.Sender, Translate(handler.Ctx, "photoQrNotRecognizedMessage"))
+		return handler, err
 	}
 
-	bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "photoQrRecognizedMessage"), data.String()))
+	bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(handler.Ctx, "photoQrRecognizedMessage"), data.String()))
 	// invoke payment handler
 	if lightning.IsInvoice(data.String()) {
 		m.Text = fmt.Sprintf("/pay %s", data.String())
-		return bot.payHandler(ctx, m)
+		return bot.payHandler(handler)
 	} else if lightning.IsLnurl(data.String()) {
 		m.Text = fmt.Sprintf("/lnurl %s", data.String())
-		return bot.lnurlHandler(ctx, m)
+		return bot.lnurlHandler(handler)
 	}
-	return ctx, nil
+	return handler, nil
 }
 
 // DownloadProfilePicture downloads a profile picture from Telegram.
@@ -98,7 +99,7 @@ func DownloadProfilePicture(telegram *tb.Bot, user *tb.User) ([]byte, error) {
 		return nil, err
 	}
 	buf := new(bytes.Buffer)
-	reader, err := telegram.GetFile(&photo[0].File)
+	reader, err := telegram.File(&photo[0].File)
 	if err != nil {
 		log.Errorf("[DownloadProfilePicture] %v", err)
 		return nil, err

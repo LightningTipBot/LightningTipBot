@@ -6,7 +6,7 @@ import (
 
 	cmap "github.com/orcaman/concurrent-map"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/telebot.v3"
 )
 
 var editStack cmap.ConcurrentMap

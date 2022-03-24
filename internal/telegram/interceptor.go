@@ -3,7 +3,6 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"strconv"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
@@ -17,19 +16,10 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
-)
-
-type InterceptorType int
-
-const (
-	MessageInterceptor InterceptorType = iota
-	CallbackInterceptor
-	QueryInterceptor
+	tb "gopkg.in/telebot.v3"
 )
 
 type Interceptor struct {
-	Type    InterceptorType
 	Before  []intercept.Func
 	After   []intercept.Func
 	OnDefer []intercept.Func
@@ -37,36 +27,35 @@ type Interceptor struct {
 
 // singletonClickInterceptor uses the onceMap to determine whether the object k1 already interacted
 // with the user k2. If so, it will return an error.
-func (bot TipBot) singletonCallbackInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
-	switch i.(type) {
-	case *tb.Callback:
-		c := i.(*tb.Callback)
-		return ctx, once.Once(c.Data, strconv.FormatInt(c.Sender.ID, 10))
+func (bot TipBot) singletonCallbackInterceptor(handler intercept.Handler) (intercept.Handler, error) {
+	if handler.Callback() != nil {
+		return handler, once.Once(handler.Callback().Data, strconv.FormatInt(handler.Callback().Sender.ID, 10))
 	}
-	return ctx, errors.Create(errors.InvalidTypeError)
+	return handler, errors.Create(errors.InvalidTypeError)
 }
 
 // lockInterceptor invoked as first before interceptor
-func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
-	user := getTelegramUserFromInterface(i)
+func (bot TipBot) lockInterceptor(handler intercept.Handler) (intercept.Handler, error) {
+	user := handler.Sender()
 	if user != nil {
 		mutex.Lock(strconv.FormatInt(user.ID, 10))
-		return ctx, nil
+		return handler, nil
 	}
-	return nil, errors.Create(errors.InvalidTypeError)
+	return handler, errors.Create(errors.InvalidTypeError)
 }
 
 // unlockInterceptor invoked as onDefer interceptor
-func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
-	user := getTelegramUserFromInterface(i)
+func (bot TipBot) unlockInterceptor(handler intercept.Handler) (intercept.Handler, error) {
+	user := handler.Sender()
 	if user != nil {
 		mutex.Unlock(strconv.FormatInt(user.ID, 10))
-		return ctx, nil
+		return handler, nil
 	}
-	return ctx, errors.Create(errors.InvalidTypeError)
+	return handler, errors.Create(errors.InvalidTypeError)
 }
-func (bot TipBot) idInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
-	return context.WithValue(ctx, "uid", RandStringRunes(64)), nil
+func (bot TipBot) idInterceptor(handler intercept.Handler) (intercept.Handler, error) {
+	handler.Ctx = context.WithValue(handler.Ctx, "uid", RandStringRunes(64))
+	return handler, nil
 }
 
 // answerCallbackInterceptor will answer the callback with the given text in the context
@@ -92,157 +81,140 @@ func (bot TipBot) answerCallbackInterceptor(ctx context.Context, i interface{}) 
 
 // requireUserInterceptor will return an error if user is not found
 // user is here an lnbits.User
-func (bot TipBot) requireUserInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
+func (bot TipBot) requireUserInterceptor(handler intercept.Handler) (intercept.Handler, error) {
 	var user *lnbits.User
 	var err error
-	u := getTelegramUserFromInterface(i)
+	u := handler.Sender()
 	if u != nil {
 		user, err = GetUser(u, bot)
 		// do not respond to banned users
 		if bot.UserIsBanned(user) {
-			ctx = context.WithValue(ctx, "banned", true)
-			return context.WithValue(ctx, "user", user), errors.Create(errors.InvalidTypeError)
+			handler.Ctx = context.WithValue(handler.Ctx, "banned", true)
+			handler.Ctx = context.WithValue(handler.Ctx, "user", user)
+			return handler, errors.Create(errors.InvalidTypeError)
 		}
 		if user != nil {
-			return context.WithValue(ctx, "user", user), err
+			handler.Ctx = context.WithValue(handler.Ctx, "user", user)
+			return handler, err
 		}
 	}
-	return nil, errors.Create(errors.InvalidTypeError)
+	return handler, errors.Create(errors.InvalidTypeError)
 }
 
 // startUserInterceptor will invoke /start if user not exists.
-func (bot TipBot) startUserInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
-	ctx, err := bot.loadUserInterceptor(ctx, i)
+func (bot TipBot) startUserInterceptor(handler intercept.Handler) (intercept.Handler, error) {
+	handler, err := bot.loadUserInterceptor(handler)
 	if err != nil {
 		// user banned
-		return ctx, err
+		return handler, err
 	}
 	// load user
-	u := ctx.Value("user")
+	u := handler.Ctx.Value("user")
 	// check user nil
 	if u != nil {
 		user := u.(*lnbits.User)
 		// check wallet nil or !initialized
 		if user.Wallet == nil || !user.Initialized {
-			ctx, err = bot.startHandler(ctx, i.(*tb.Message))
+			handler, err = bot.startHandler(handler)
 			if err != nil {
-				return ctx, err
+				return handler, err
 			}
-			return ctx, nil
+			return handler, nil
 		}
 	}
-	return ctx, nil
+	return handler, nil
 }
-func (bot TipBot) loadUserInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
-	ctx, _ = bot.requireUserInterceptor(ctx, i)
+func (bot TipBot) loadUserInterceptor(handler intercept.Handler) (intercept.Handler, error) {
+	handler, _ = bot.requireUserInterceptor(handler)
 	// if user is banned, also loadUserInterceptor will return an error
-	if ctx.Value("banned") != nil && ctx.Value("banned").(bool) {
-		return nil, errors.Create(errors.InvalidTypeError)
+	if handler.Ctx.Value("banned") != nil && handler.Ctx.Value("banned").(bool) {
+		return handler, errors.Create(errors.InvalidTypeError)
 	}
-	return ctx, nil
-}
-
-// getTelegramUserFromInterface returns the tb user based in interface type
-func getTelegramUserFromInterface(i interface{}) (user *tb.User) {
-	switch i.(type) {
-	case *tb.Query:
-		user = &i.(*tb.Query).From
-	case *tb.Callback:
-		user = i.(*tb.Callback).Sender
-	case *tb.Message:
-		user = i.(*tb.Message).Sender
-	default:
-		log.Tracef("[getTelegramUserFromInterface] invalid type %s", reflect.TypeOf(i).String())
-	}
-	return
+	return handler, nil
 }
 
 // loadReplyToInterceptor Loading the Telegram user with message intercept
-func (bot TipBot) loadReplyToInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
-	switch i.(type) {
-	case *tb.Message:
-		m := i.(*tb.Message)
-		if m.ReplyTo != nil {
-			if m.ReplyTo.Sender != nil {
-				user, _ := GetUser(m.ReplyTo.Sender, bot)
-				user.Telegram = m.ReplyTo.Sender
-				return context.WithValue(ctx, "reply_to_user", user), nil
+func (bot TipBot) loadReplyToInterceptor(handler intercept.Handler) (intercept.Handler, error) {
+	if handler.Message() != nil {
+		if handler.Message().ReplyTo != nil {
+			if handler.Message().ReplyTo.Sender != nil {
+				user, _ := GetUser(handler.Message().ReplyTo.Sender, bot)
+				user.Telegram = handler.Message().ReplyTo.Sender
+				handler.Ctx = context.WithValue(handler.Ctx, "reply_to_user", user)
+				return handler, nil
+
 			}
 		}
-		return ctx, nil
+		return handler, nil
 	}
-	return ctx, errors.Create(errors.InvalidTypeError)
+	return handler, errors.Create(errors.InvalidTypeError)
 }
 
-func (bot TipBot) localizerInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
+func (bot TipBot) localizerInterceptor(handler intercept.Handler) (intercept.Handler, error) {
 	var userLocalizer *i18n2.Localizer
 	var publicLocalizer *i18n2.Localizer
 
 	// default language is english
 	publicLocalizer = i18n2.NewLocalizer(i18n.Bundle, "en")
-	ctx = context.WithValue(ctx, "publicLanguageCode", "en")
-	ctx = context.WithValue(ctx, "publicLocalizer", publicLocalizer)
+	handler.Ctx = context.WithValue(handler.Ctx, "publicLanguageCode", "en")
+	handler.Ctx = context.WithValue(handler.Ctx, "publicLocalizer", publicLocalizer)
 
-	switch i.(type) {
-	case *tb.Message:
-		m := i.(*tb.Message)
-		userLocalizer = i18n2.NewLocalizer(i18n.Bundle, m.Sender.LanguageCode)
-		ctx = context.WithValue(ctx, "userLanguageCode", m.Sender.LanguageCode)
-		ctx = context.WithValue(ctx, "userLocalizer", userLocalizer)
-		if m.Private() {
+	if handler.Message() != nil {
+		userLocalizer = i18n2.NewLocalizer(i18n.Bundle, handler.Message().Sender.LanguageCode)
+		handler.Ctx = context.WithValue(handler.Ctx, "userLanguageCode", handler.Message().Sender.LanguageCode)
+		handler.Ctx = context.WithValue(handler.Ctx, "userLocalizer", userLocalizer)
+		if handler.Message().Private() {
 			// in pm overwrite public localizer with user localizer
-			ctx = context.WithValue(ctx, "publicLanguageCode", m.Sender.LanguageCode)
-			ctx = context.WithValue(ctx, "publicLocalizer", userLocalizer)
+			handler.Ctx = context.WithValue(handler.Ctx, "publicLanguageCode", handler.Message().Sender.LanguageCode)
+			handler.Ctx = context.WithValue(handler.Ctx, "publicLocalizer", userLocalizer)
 		}
-		return ctx, nil
-	case *tb.Callback:
-		m := i.(*tb.Callback)
-		userLocalizer = i18n2.NewLocalizer(i18n.Bundle, m.Sender.LanguageCode)
-		ctx = context.WithValue(ctx, "userLanguageCode", m.Sender.LanguageCode)
-		return context.WithValue(ctx, "userLocalizer", userLocalizer), nil
-	case *tb.Query:
-		m := i.(*tb.Query)
-		userLocalizer = i18n2.NewLocalizer(i18n.Bundle, m.From.LanguageCode)
-		ctx = context.WithValue(ctx, "userLanguageCode", m.From.LanguageCode)
-		return context.WithValue(ctx, "userLocalizer", userLocalizer), nil
+		return handler, nil
+	} else if handler.Callback() != nil {
+		userLocalizer = i18n2.NewLocalizer(i18n.Bundle, handler.Callback().Sender.LanguageCode)
+		handler.Ctx = context.WithValue(handler.Ctx, "userLanguageCode", handler.Callback().Sender.LanguageCode)
+		handler.Ctx = context.WithValue(handler.Ctx, "userLocalizer", userLocalizer)
+		return handler, nil
+	} else if handler.Query() != nil {
+		userLocalizer = i18n2.NewLocalizer(i18n.Bundle, handler.Query().Sender.LanguageCode)
+		handler.Ctx = context.WithValue(handler.Ctx, "userLanguageCode", handler.Query().Sender.LanguageCode)
+		handler.Ctx = context.WithValue(handler.Ctx, "userLocalizer", userLocalizer)
+		return handler, nil
 	}
-	return ctx, nil
+
+	return handler, nil
 }
 
-func (bot TipBot) requirePrivateChatInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
-	switch i.(type) {
-	case *tb.Message:
-		m := i.(*tb.Message)
-		if m.Chat.Type != tb.ChatPrivate {
-			return nil, fmt.Errorf("[requirePrivateChatInterceptor] no private chat")
+func (bot TipBot) requirePrivateChatInterceptor(handler intercept.Handler) (intercept.Handler, error) {
+	if handler.Message() != nil {
+		if handler.Message().Chat.Type != tb.ChatPrivate {
+			return handler, fmt.Errorf("[requirePrivateChatInterceptor] no private chat")
 		}
-		return ctx, nil
+		return handler, nil
 	}
-	return nil, errors.Create(errors.InvalidTypeError)
+	return handler, errors.Create(errors.InvalidTypeError)
 }
 
 const photoTag = "<Photo>"
 
-func (bot TipBot) logMessageInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
-	switch i.(type) {
-	case *tb.Message:
-		m := i.(*tb.Message)
-		if m.Text != "" {
-			log_string := fmt.Sprintf("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, m.Text)
-			if m.IsReply() {
-				log_string = fmt.Sprintf("%s -> %s", log_string, GetUserStr(m.ReplyTo.Sender))
+func (bot TipBot) logMessageInterceptor(handler intercept.Handler) (intercept.Handler, error) {
+	if handler.Message() != nil {
+
+		if handler.Message().Text != "" {
+			log_string := fmt.Sprintf("[%s:%d %s:%d] %s", handler.Message().Chat.Title, handler.Message().Chat.ID, GetUserStr(handler.Message().Sender), handler.Message().Sender.ID, handler.Message().Text)
+			if handler.Message().IsReply() {
+				log_string = fmt.Sprintf("%s -> %s", log_string, GetUserStr(handler.Message().ReplyTo.Sender))
 			}
 			log.Infof(log_string)
-		} else if m.Photo != nil {
-			log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, photoTag)
+		} else if handler.Message().Photo != nil {
+			log.Infof("[%s:%d %s:%d] %s", handler.Message().Chat.Title, handler.Message().Chat.ID, GetUserStr(handler.Message().Sender), handler.Message().Sender.ID, photoTag)
 		}
-		return ctx, nil
-	case *tb.Callback:
-		m := i.(*tb.Callback)
-		log.Infof("[Callback %s:%d] Data: %s", GetUserStr(m.Sender), m.Sender.ID, m.Data)
-		return ctx, nil
+		return handler, nil
+	} else if handler.Callback() != nil {
+		log.Infof("[Callback %s:%d] Data: %s", GetUserStr(handler.Callback().Sender), handler.Callback().Sender.ID, handler.Callback().Data)
+		return handler, nil
+
 	}
-	return nil, errors.Create(errors.InvalidTypeError)
+	return handler, errors.Create(errors.InvalidTypeError)
 }
 
 // LoadUser from context

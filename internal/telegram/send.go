@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
@@ -18,11 +19,11 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/telebot.v3"
 )
 
 var (
-	sendConfirmationMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	sendConfirmationMenu = &tb.ReplyMarkup{ResizeKeyboard: true}
 	btnCancelSend        = sendConfirmationMenu.Data("🚫 Cancel", "cancel_send")
 	btnSend              = sendConfirmationMenu.Data("✅ Send", "confirm_send")
 )
@@ -55,11 +56,11 @@ type SendData struct {
 }
 
 // sendHandler invoked on "/send 123 @user" command
-func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
-	bot.anyTextHandler(ctx, m)
-	user := LoadUser(ctx)
+func (bot *TipBot) sendHandler(handler intercept.Handler) (intercept.Handler, error) {
+	bot.anyTextHandler(handler)
+	user := LoadUser(handler.Ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.UserNoWalletError)
+		return handler, errors.Create(errors.UserNoWalletError)
 	}
 
 	// reset state immediately
@@ -68,8 +69,8 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) (context.Cont
 	// check and print all commands
 
 	// If the send is a reply, then trigger /tip handler
-	if m.IsReply() && m.Chat.Type != tb.ChatPrivate {
-		return bot.tipHandler(ctx, m)
+	if handler.Message().IsReply() && handler.Message().Chat.Type != tb.ChatPrivate {
+		return bot.tipHandler(handler)
 
 	}
 
@@ -80,41 +81,41 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) (context.Cont
 	// }
 
 	// get send amount, returns 0 if no amount is given
-	amount, err := decodeAmountFromCommand(m.Text)
+	amount, err := decodeAmountFromCommand(handler.Text())
 	// info: /send 10 <user> DEMANDS an amount, while /send <ln@address.com> also works without
 	// todo: /send <user> should also invoke amount input dialog if no amount is given
 
 	// CHECK whether first or second argument is a LIGHTNING ADDRESS
 	arg := ""
-	if len(strings.Split(m.Text, " ")) > 2 {
-		arg, err = getArgumentFromCommand(m.Text, 2)
-	} else if len(strings.Split(m.Text, " ")) == 2 {
-		arg, err = getArgumentFromCommand(m.Text, 1)
+	if len(strings.Split(handler.Message().Text, " ")) > 2 {
+		arg, err = getArgumentFromCommand(handler.Message().Text, 2)
+	} else if len(strings.Split(handler.Message().Text, " ")) == 2 {
+		arg, err = getArgumentFromCommand(handler.Message().Text, 1)
 	}
 	if err == nil {
 		if lightning.IsLightningAddress(arg) {
 			// lightning address, send to that address
-			ctx, err = bot.sendToLightningAddress(ctx, m, arg, amount)
+			handler, err = bot.sendToLightningAddress(handler, arg, amount)
 			if err != nil {
 				log.Errorln(err.Error())
-				return ctx, err
+				return handler, err
 			}
-			return ctx, err
+			return handler, err
 		}
 	}
 
 	// is a user given?
-	arg, err = getArgumentFromCommand(m.Text, 1)
-	if err != nil && m.Chat.Type == tb.ChatPrivate {
-		_, err = bot.askForUser(ctx, "", "CreateSendState", m.Text)
-		return ctx, err
+	arg, err = getArgumentFromCommand(handler.Message().Text, 1)
+	if err != nil && handler.Message().Chat.Type == tb.ChatPrivate {
+		_, err = bot.askForUser(handler.Ctx, "", "CreateSendState", handler.Message().Text)
+		return handler, err
 	}
 
 	// is an amount given?
-	amount, err = decodeAmountFromCommand(m.Text)
-	if (err != nil || amount < 1) && m.Chat.Type == tb.ChatPrivate {
-		_, err = bot.askForAmount(ctx, "", "CreateSendState", 0, 0, m.Text)
-		return ctx, err
+	amount, err = decodeAmountFromCommand(handler.Message().Text)
+	if (err != nil || amount < 1) && handler.Message().Chat.Type == tb.ChatPrivate {
+		_, err = bot.askForAmount(handler.Ctx, "", "CreateSendState", 0, 0, handler.Message().Text)
+		return handler, err
 	}
 
 	// ASSUME INTERNAL SEND TO TELEGRAM USER
@@ -122,60 +123,60 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) (context.Cont
 		errmsg := fmt.Sprintf("[/send] Error: Send amount not valid.")
 		log.Warnln(errmsg)
 		// immediately delete if the amount is bullshit
-		NewMessage(m, WithDuration(0, bot))
-		bot.trySendMessage(m.Sender, helpSendUsage(ctx, Translate(ctx, "sendValidAmountMessage")))
-		return ctx, err
+		NewMessage(handler.Message(), WithDuration(0, bot))
+		bot.trySendMessage(handler.Sender(), helpSendUsage(handler.Ctx, Translate(handler.Ctx, "sendValidAmountMessage")))
+		return handler, err
 	}
 
 	// SEND COMMAND IS VALID
 	// check for memo in command
-	sendMemo := GetMemoFromCommand(m.Text, 3)
+	sendMemo := GetMemoFromCommand(handler.Message().Text, 3)
 
 	toUserStrMention := ""
 	toUserStrWithoutAt := ""
 
 	// check for user in command, accepts user mention or plain username without @
-	if len(m.Entities) > 1 && m.Entities[1].Type == "mention" {
-		toUserStrMention = m.Text[m.Entities[1].Offset : m.Entities[1].Offset+m.Entities[1].Length]
+	if len(handler.Message().Entities) > 1 && handler.Message().Entities[1].Type == "mention" {
+		toUserStrMention = handler.Message().Text[handler.Message().Entities[1].Offset : handler.Message().Entities[1].Offset+handler.Message().Entities[1].Length]
 		toUserStrWithoutAt = strings.TrimPrefix(toUserStrMention, "@")
 	} else {
-		toUserStrWithoutAt, err = getArgumentFromCommand(m.Text, 2)
+		toUserStrWithoutAt, err = getArgumentFromCommand(handler.Message().Text, 2)
 		if err != nil {
 			log.Errorln(err.Error())
-			return ctx, err
+			return handler, err
 		}
 		toUserStrWithoutAt = strings.TrimPrefix(toUserStrWithoutAt, "@")
 		toUserStrMention = "@" + toUserStrWithoutAt
 	}
 
-	err = bot.parseCmdDonHandler(ctx, m)
+	err = bot.parseCmdDonHandler(handler)
 	if err == nil {
-		return ctx, errors.Create(errors.InvalidSyntaxError)
+		return handler, errors.Create(errors.InvalidSyntaxError)
 	}
 
 	toUserDb, err := GetUserByTelegramUsername(toUserStrWithoutAt, *bot)
 	if err != nil {
-		NewMessage(m, WithDuration(0, bot))
+		NewMessage(handler.Message(), WithDuration(0, bot))
 		// cut username if it's too long
 		if len(toUserStrMention) > 100 {
 			toUserStrMention = toUserStrMention[:100]
 		}
-		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "sendUserHasNoWalletMessage"), str.MarkdownEscape(toUserStrMention)))
-		return ctx, err
+		bot.trySendMessage(handler.Message().Sender, fmt.Sprintf(Translate(handler.Ctx, "sendUserHasNoWalletMessage"), str.MarkdownEscape(toUserStrMention)))
+		return handler, err
 	}
 
 	if user.ID == toUserDb.ID {
-		bot.trySendMessage(m.Sender, Translate(ctx, "sendYourselfMessage"))
-		return ctx, errors.Create(errors.SelfPaymentError)
+		bot.trySendMessage(handler.Message().Sender, Translate(handler.Ctx, "sendYourselfMessage"))
+		return handler, errors.Create(errors.SelfPaymentError)
 	}
 
 	// entire text of the inline object
-	confirmText := fmt.Sprintf(Translate(ctx, "confirmSendMessage"), str.MarkdownEscape(toUserStrMention), amount)
+	confirmText := fmt.Sprintf(Translate(handler.Ctx, "confirmSendMessage"), str.MarkdownEscape(toUserStrMention), amount)
 	if len(sendMemo) > 0 {
-		confirmText = confirmText + fmt.Sprintf(Translate(ctx, "confirmSendAppendMemo"), str.MarkdownEscape(sendMemo))
+		confirmText = confirmText + fmt.Sprintf(Translate(handler.Ctx, "confirmSendAppendMemo"), str.MarkdownEscape(sendMemo))
 	}
 	// object that holds all information about the send payment
-	id := fmt.Sprintf("send-%d-%d-%s", m.Sender.ID, amount, RandStringRunes(5))
+	id := fmt.Sprintf("send-%d-%d-%s", handler.Message().Sender.ID, amount, RandStringRunes(5))
 	sendData := &SendData{
 		From:           user,
 		Base:           storage.New(storage.ID(id)),
@@ -184,23 +185,23 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) (context.Cont
 		ToTelegramUser: toUserStrWithoutAt,
 		Memo:           sendMemo,
 		Message:        confirmText,
-		LanguageCode:   ctx.Value("publicLanguageCode").(string),
+		LanguageCode:   handler.Ctx.Value("publicLanguageCode").(string),
 	}
 	// save persistent struct
 	runtime.IgnoreError(sendData.Set(sendData, bot.Bunt))
 
 	sendDataJson, err := json.Marshal(sendData)
 	if err != nil {
-		NewMessage(m, WithDuration(0, bot))
+		NewMessage(handler.Message(), WithDuration(0, bot))
 		log.Printf("[/send] Error: %s\n", err.Error())
-		bot.trySendMessage(m.Sender, fmt.Sprint(Translate(ctx, "errorTryLaterMessage")))
-		return ctx, err
+		bot.trySendMessage(handler.Message().Sender, fmt.Sprint(Translate(handler.Ctx, "errorTryLaterMessage")))
+		return handler, err
 	}
 	// save the send data to the Database
 	// log.Debug(sendData)
 	SetUserState(user, bot, lnbits.UserStateConfirmSend, string(sendDataJson))
-	sendButton := sendConfirmationMenu.Data(Translate(ctx, "sendButtonMessage"), "confirm_send")
-	cancelButton := sendConfirmationMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_send")
+	sendButton := sendConfirmationMenu.Data(Translate(handler.Ctx, "sendButtonMessage"), "confirm_send")
+	cancelButton := sendConfirmationMenu.Data(Translate(handler.Ctx, "cancelButtonMessage"), "cancel_send")
 	sendButton.Data = id
 	cancelButton.Data = id
 
@@ -209,22 +210,22 @@ func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) (context.Cont
 			sendButton,
 			cancelButton),
 	)
-	if m.Private() {
-		bot.trySendMessage(m.Chat, confirmText, sendConfirmationMenu)
+	if handler.Message().Private() {
+		bot.trySendMessage(handler.Chat(), confirmText, sendConfirmationMenu)
 	} else {
-		bot.tryReplyMessage(m, confirmText, sendConfirmationMenu)
+		bot.tryReplyMessage(handler.Message(), confirmText, sendConfirmationMenu)
 	}
-	return ctx, nil
+	return handler, nil
 }
 
 // keyboardSendHandler will be called when the user presses the Send button on the keyboard
 // it will pop up a new keyboard with the last interacted contacts to send funds to
 // then, the flow is handled as if the user entered /send (then ask for contacts from keyboard or entry,
 // then ask for an amount).
-func (bot *TipBot) keyboardSendHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
-	user := LoadUser(ctx)
+func (bot *TipBot) keyboardSendHandler(handler intercept.Handler) (intercept.Handler, error) {
+	user := LoadUser(handler.Ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.UserNoWalletError)
+		return handler, errors.Create(errors.UserNoWalletError)
 	}
 	enterUserStateData := &EnterUserStateData{
 		ID:              "id",
@@ -235,47 +236,47 @@ func (bot *TipBot) keyboardSendHandler(ctx context.Context, m *tb.Message) (cont
 	stateDataJson, err := json.Marshal(enterUserStateData)
 	if err != nil {
 		log.Errorln(err)
-		return ctx, err
+		return handler, err
 	}
 	SetUserState(user, bot, lnbits.UserEnterUser, string(stateDataJson))
-	sendToButtons = bot.makeContactsButtons(ctx)
+	sendToButtons = bot.makeContactsButtons(handler.Ctx)
 
 	// if no contact is found (one entry will always be inside, it's the enter user button)
 	// immediatelly go to the send handler
 	if len(sendToButtons) == 1 {
-		m.Text = "/send"
-		return bot.sendHandler(ctx, m)
+		handler.Message().Text = "/send"
+		return bot.sendHandler(handler)
 	}
 
 	// Attention! We need to ues the original Telegram.Send command here!
 	// bot.trySendMessage will replace the keyboard with the default one and we want to send a different keyboard here
 	// this is suboptimal because Telegram.Send is not rate limited etc. but it's the only way to send a custom keyboard for now
-	_, err = bot.Telegram.Send(user.Telegram, Translate(ctx, "enterUserMessage"), sendToMenu)
+	_, err = bot.Telegram.Send(user.Telegram, Translate(handler.Ctx, "enterUserMessage"), sendToMenu)
 	if err != nil {
 		log.Errorln(err.Error())
 	}
-	return ctx, nil
+	return handler, nil
 }
 
 // sendHandler invoked when user clicked send on payment confirmation
-func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
-	tx := &SendData{Base: storage.New(storage.ID(c.Data))}
-	mutex.LockWithContext(ctx, tx.ID)
-	defer mutex.UnlockWithContext(ctx, tx.ID)
+func (bot *TipBot) confirmSendHandler(handler intercept.Handler) (intercept.Handler, error) {
+	tx := &SendData{Base: storage.New(storage.ID(handler.Data()))}
+	mutex.LockWithContext(handler.Ctx, tx.ID)
+	defer mutex.UnlockWithContext(handler.Ctx, tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err.Error())
-		return ctx, err
+		return handler, err
 	}
 	sendData := sn.(*SendData)
 	// onnly the correct user can press
-	if sendData.From.Telegram.ID != c.Sender.ID {
-		return ctx, errors.Create(errors.UnknownError)
+	if sendData.From.Telegram.ID != handler.Callback().Sender.ID {
+		return handler, errors.Create(errors.UnknownError)
 	}
 	if !sendData.Active {
 		log.Errorf("[acceptSendHandler] send not active anymore")
 		// bot.tryDeleteMessage(c.Message)
-		return ctx, errors.Create(errors.NotActiveError)
+		return handler, errors.Create(errors.NotActiveError)
 	}
 	defer sendData.Set(sendData, bot.Bunt)
 
@@ -284,7 +285,7 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) (cont
 
 	// decode callback data
 	// log.Debug("[send] Callback: %s", c.Data)
-	from := LoadUser(ctx)
+	from := LoadUser(handler.Ctx)
 	ResetUserState(from, bot) // we don't need to check the statekey anymore like we did earlier
 
 	// information about the send
@@ -297,8 +298,8 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) (cont
 	to, err := GetLnbitsUser(&tb.User{ID: toId, Username: toUserStrWithoutAt}, *bot)
 	if err != nil {
 		log.Errorln(err.Error())
-		bot.tryDeleteMessage(c.Message)
-		return ctx, err
+		bot.tryDeleteMessage(handler.Callback().Message)
+		return handler, err
 	}
 	toUserStrMd := GetUserStrMd(to.Telegram)
 	fromUserStrMd := GetUserStrMd(from.Telegram)
@@ -314,8 +315,8 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) (cont
 		// bot.trySendMessage(c.Sender, sendErrorMessage)
 		errmsg := fmt.Sprintf("[/send] Error: Transaction failed. %s", err.Error())
 		log.Errorln(errmsg)
-		bot.tryEditMessage(c.Message, i18n.Translate(sendData.LanguageCode, "sendErrorMessage"), &tb.ReplyMarkup{})
-		return ctx, errors.Create(errors.UnknownError)
+		bot.tryEditMessage(handler.Callback().Message, i18n.Translate(sendData.LanguageCode, "sendErrorMessage"), &tb.ReplyMarkup{})
+		return handler, errors.Create(errors.UnknownError)
 	}
 	sendData.Inactivate(sendData, bot.Bunt)
 
@@ -324,47 +325,48 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) (cont
 	// notify to user
 	bot.trySendMessage(to.Telegram, fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "sendReceivedMessage"), fromUserStrMd, amount))
 	// bot.trySendMessage(from.Telegram, fmt.Sprintf(Translate(ctx, "sendSentMessage"), amount, toUserStrMd))
-	if c.Message.Private() {
+	if handler.Callback().Message.Private() {
 		// if the command was invoked in private chat
 		// the edit below was cool, but we need to get rid of the replymarkup inline keyboard thingy for the main menu to pop up
 		// bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(sendData.LanguageCode, "sendSentMessage"), amount, toUserStrMd), &tb.ReplyMarkup{})
-		bot.tryDeleteMessage(c.Message)
-		bot.trySendMessage(c.Sender, fmt.Sprintf(i18n.Translate(sendData.LanguageCode, "sendSentMessage"), amount, toUserStrMd))
+		bot.tryDeleteMessage(handler.Callback().Message)
+		bot.trySendMessage(handler.Callback().Sender, fmt.Sprintf(i18n.Translate(sendData.LanguageCode, "sendSentMessage"), amount, toUserStrMd))
 	} else {
 		// if the command was invoked in group chat
-		bot.trySendMessage(c.Sender, fmt.Sprintf(i18n.Translate(from.Telegram.LanguageCode, "sendSentMessage"), amount, toUserStrMd))
-		bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(sendData.LanguageCode, "sendPublicSentMessage"), amount, fromUserStrMd, toUserStrMd), &tb.ReplyMarkup{})
+		bot.trySendMessage(handler.Callback().Sender, fmt.Sprintf(i18n.Translate(from.Telegram.LanguageCode, "sendSentMessage"), amount, toUserStrMd))
+		bot.tryEditMessage(handler.Callback().Message, fmt.Sprintf(i18n.Translate(sendData.LanguageCode, "sendPublicSentMessage"), amount, fromUserStrMd, toUserStrMd), &tb.ReplyMarkup{})
 	}
 	// send memo if it was present
 	if len(sendMemo) > 0 {
 		bot.trySendMessage(to.Telegram, fmt.Sprintf("✉️ %s", str.MarkdownEscape(sendMemo)))
 	}
 
-	return ctx, nil
+	return handler, nil
 }
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation
-func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+func (bot *TipBot) cancelSendHandler(handler intercept.Handler) (intercept.Handler, error) {
 	// reset state immediately
-	user := LoadUser(ctx)
+	c := handler.Callback()
+	user := LoadUser(handler.Ctx)
 	ResetUserState(user, bot)
 	tx := &SendData{Base: storage.New(storage.ID(c.Data))}
-	mutex.LockWithContext(ctx, tx.ID)
-	defer mutex.UnlockWithContext(ctx, tx.ID)
+	mutex.LockWithContext(handler.Ctx, tx.ID)
+	defer mutex.UnlockWithContext(handler.Ctx, tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[acceptSendHandler] %s", err.Error())
-		return ctx, err
+		return handler, err
 	}
 
 	sendData := sn.(*SendData)
 	// onnly the correct user can press
 	if sendData.From.Telegram.ID != c.Sender.ID {
-		return ctx, errors.Create(errors.UnknownError)
+		return handler, errors.Create(errors.UnknownError)
 	}
 	// delete and send instead of edit for the keyboard to pop up after sending
 	bot.tryDeleteMessage(c.Message)
 	bot.trySendMessage(c.Message.Chat, i18n.Translate(sendData.LanguageCode, "sendCancelledMessage"))
 	sendData.Inactivate(sendData, bot.Bunt)
-	return ctx, nil
+	return handler, nil
 }

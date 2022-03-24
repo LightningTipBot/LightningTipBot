@@ -6,7 +6,7 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/telebot.v3"
 )
 
 // we can't use space in the label of buttons, because string splitting will mess everything up.
@@ -19,13 +19,13 @@ const (
 )
 
 var (
-	mainMenu           = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	mainMenu           = &tb.ReplyMarkup{ResizeKeyboard: true}
 	btnHelpMainMenu    = mainMenu.Text(MainMenuCommandHelp)
 	btnSendMainMenu    = mainMenu.Text(MainMenuCommandSend)
 	btnBalanceMainMenu = mainMenu.Text(MainMenuCommandBalance)
 	btnInvoiceMainMenu = mainMenu.Text(MainMenuCommandInvoice)
 
-	sendToMenu       = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	sendToMenu       = &tb.ReplyMarkup{ResizeKeyboard: true}
 	sendToButtons    = []tb.Btn{}
 	btnSendMenuEnter = mainMenu.Text(SendMenuCommandEnter)
 )

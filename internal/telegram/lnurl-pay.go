@@ -1,9 +1,9 @@
 package telegram
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"io/ioutil"
 	"net/url"
 	"strconv"
@@ -18,7 +18,6 @@ import (
 
 	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
 // LnurlPayState saves the state of the user for an LNURL payment
@@ -34,8 +33,9 @@ type LnurlPayState struct {
 
 // lnurlPayHandler1 is invoked when the first lnurl response was a lnurlpay response
 // at this point, the user hans't necessarily entered an amount yet
-func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams *LnurlPayState) {
-	user := LoadUser(ctx)
+func (bot *TipBot) lnurlPayHandler(handler intercept.Handler, payParams *LnurlPayState) {
+	m := handler.Message()
+	user := LoadUser(handler.Ctx)
 	if user.Wallet == nil {
 		return
 	}
@@ -43,7 +43,7 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 	id := fmt.Sprintf("lnurlp-%d-%s", m.Sender.ID, RandStringRunes(5))
 	payParams.Base = storage.New(storage.ID(id))
 	payParams.From = user
-	payParams.LanguageCode = ctx.Value("publicLanguageCode").(string)
+	payParams.LanguageCode = handler.Ctx.Value("publicLanguageCode").(string)
 
 	// first we check whether an amount is present in the command
 	amount, amount_err := decodeAmountFromCommand(m.Text)
@@ -72,7 +72,7 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 		(payParams.LNURLPayParams.MaxSendable != 0 && payParams.LNURLPayParams.MinSendable != 0) { // only if max and min are set
 		err := fmt.Errorf("amount not in range")
 		log.Warnf("[lnurlPayHandler] Error: %s", err.Error())
-		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), payParams.LNURLPayParams.MinSendable/1000, payParams.LNURLPayParams.MaxSendable/1000))
+		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(handler.Ctx, "lnurlInvalidAmountRangeMessage"), payParams.LNURLPayParams.MinSendable/1000, payParams.LNURLPayParams.MaxSendable/1000))
 		ResetUserState(user, bot)
 		return
 	}
@@ -88,7 +88,7 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 		payParams.Amount = amount * 1000 // save as mSat
 	} else if amount_err != nil || amount < 1 {
 		// // no amount was entered, set user state and ask for amount
-		bot.askForAmount(ctx, id, "LnurlPayState", payParams.LNURLPayParams.MinSendable, payParams.LNURLPayParams.MaxSendable, m.Text)
+		bot.askForAmount(handler.Ctx, id, "LnurlPayState", payParams.LNURLPayParams.MinSendable, payParams.LNURLPayParams.MaxSendable, m.Text)
 		return
 	}
 
@@ -101,23 +101,24 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 	}
 	SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(paramsJson))
 	// directly go to confirm
-	bot.lnurlPayHandlerSend(ctx, m)
+	bot.lnurlPayHandlerSend(handler)
 	return
 }
 
 // lnurlPayHandlerSend is invoked when the user has delivered an amount and is ready to pay
-func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) (context.Context, error) {
-	user := LoadUser(ctx)
+func (bot *TipBot) lnurlPayHandlerSend(handler intercept.Handler) (intercept.Handler, error) {
+	m := handler.Message()
+	user := LoadUser(handler.Ctx)
 	if user.Wallet == nil {
-		return ctx, errors.Create(errors.UserNoWalletError)
+		return handler, errors.Create(errors.UserNoWalletError)
 	}
-	statusMsg := bot.trySendMessage(m.Sender, Translate(ctx, "lnurlGettingUserMessage"))
+	statusMsg := bot.trySendMessage(m.Sender, Translate(handler.Ctx, "lnurlGettingUserMessage"))
 
 	// assert that user has entered an amount
 	if user.StateKey != lnbits.UserHasEnteredAmount {
 		log.Errorln("[lnurlPayHandlerSend] state keys don't match")
-		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
-		return ctx, fmt.Errorf("wrong state key")
+		bot.tryEditMessage(statusMsg, Translate(handler.Ctx, "errorTryLaterMessage"))
+		return handler, fmt.Errorf("wrong state key")
 	}
 
 	// read the enter amount state from user.StateData
@@ -125,18 +126,18 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) (cont
 	err := json.Unmarshal([]byte(user.StateData), &enterAmountData)
 	if err != nil {
 		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
-		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
-		return ctx, err
+		bot.tryEditMessage(statusMsg, Translate(handler.Ctx, "errorTryLaterMessage"))
+		return handler, err
 	}
 	// use the enter amount state of the user to load the LNURL payment state
 	tx := &LnurlPayState{Base: storage.New(storage.ID(enterAmountData.ID))}
-	mutex.LockWithContext(ctx, tx.ID)
-	defer mutex.UnlockWithContext(ctx, tx.ID)
+	mutex.LockWithContext(handler.Ctx, tx.ID)
+	defer mutex.UnlockWithContext(handler.Ctx, tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
-		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
-		return ctx, err
+		bot.tryEditMessage(statusMsg, Translate(handler.Ctx, "errorTryLaterMessage"))
+		return handler, err
 	}
 	lnurlPayState := fn.(*LnurlPayState)
 
@@ -145,14 +146,14 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) (cont
 	client, err := bot.GetHttpClient()
 	if err != nil {
 		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
-		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
-		return ctx, err
+		bot.tryEditMessage(statusMsg, Translate(handler.Ctx, "errorTryLaterMessage"))
+		return handler, err
 	}
 	callbackUrl, err := url.Parse(lnurlPayState.LNURLPayParams.Callback)
 	if err != nil {
 		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
-		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
-		return ctx, err
+		bot.tryEditMessage(statusMsg, Translate(handler.Ctx, "errorTryLaterMessage"))
+		return handler, err
 	}
 	qs := callbackUrl.Query()
 	// add amount to query string
@@ -167,14 +168,14 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) (cont
 	res, err := client.Get(callbackUrl.String())
 	if err != nil {
 		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
-		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
-		return ctx, err
+		bot.tryEditMessage(statusMsg, Translate(handler.Ctx, "errorTryLaterMessage"))
+		return handler, err
 	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
-		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
-		return ctx, err
+		bot.tryEditMessage(statusMsg, Translate(handler.Ctx, "errorTryLaterMessage"))
+		return handler, err
 	}
 
 	var response2 lnurl.LNURLPayValues
@@ -185,8 +186,8 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) (cont
 			error_reason = response2.Reason
 		}
 		log.Errorf("[lnurlPayHandler] Error in LNURLPayValues: %s", error_reason)
-		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), error_reason))
-		return ctx, fmt.Errorf("Error in LNURLPayValues: %s", error_reason)
+		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(handler.Ctx, "lnurlPaymentFailed"), error_reason))
+		return handler, fmt.Errorf("Error in LNURLPayValues: %s", error_reason)
 	}
 
 	lnurlPayState.LNURLPayValues = response2
@@ -194,13 +195,14 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) (cont
 	runtime.IgnoreError(lnurlPayState.Set(lnurlPayState, bot.Bunt))
 	bot.Telegram.Delete(statusMsg)
 	m.Text = fmt.Sprintf("/pay %s", response2.PR)
-	return bot.payHandler(ctx, m)
+	return bot.payHandler(handler)
 }
 
-func (bot *TipBot) sendToLightningAddress(ctx context.Context, m *tb.Message, address string, amount int64) (context.Context, error) {
+func (bot *TipBot) sendToLightningAddress(handler intercept.Handler, address string, amount int64) (intercept.Handler, error) {
+	m := handler.Message()
 	split := strings.Split(address, "@")
 	if len(split) != 2 {
-		return ctx, fmt.Errorf("lightning address format wrong")
+		return handler, fmt.Errorf("lightning address format wrong")
 	}
 	host := strings.ToLower(split[1])
 	name := strings.ToLower(split[0])
@@ -212,7 +214,7 @@ func (bot *TipBot) sendToLightningAddress(ctx context.Context, m *tb.Message, ad
 
 	lnurl, err := lnurl.LNURLEncode(callback)
 	if err != nil {
-		return ctx, err
+		return handler, err
 	}
 
 	if amount > 0 {
@@ -232,6 +234,5 @@ func (bot *TipBot) sendToLightningAddress(ctx context.Context, m *tb.Message, ad
 		// this will invoke the "enter amount" dialog in the lnurl handler
 		m.Text = fmt.Sprintf("/lnurl %s", lnurl)
 	}
-	bot.lnurlHandler(ctx, m)
-	return ctx, nil
+	return bot.lnurlHandler(handler)
 }
