@@ -264,8 +264,7 @@ func (bot *TipBot) sendInlineReceiveHandler(ctx intercept.Context) (intercept.Co
 
 	log.Infof("[💸 inlineReceive] Send from %s to %s (%d sat).", fromUserStr, toUserStr, inlineReceive.Amount)
 	inlineReceive.Set(inlineReceive, bot.Bunt)
-	finishContext, err := bot.finishInlineReceiveHandler(ctx, ctx.Callback())
-	ctx.Context = finishContext
+	ctx.Context, err = bot.finishInlineReceiveHandler(ctx, ctx.Callback())
 	return ctx, err
 
 }
