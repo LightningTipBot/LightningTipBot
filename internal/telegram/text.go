@@ -11,7 +11,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/telebot.v3"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 func (bot *TipBot) anyTextHandler(ctx intercept.Context) (intercept.Context, error) {

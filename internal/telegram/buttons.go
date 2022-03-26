@@ -6,7 +6,7 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/telebot.v3"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 // we can't use space in the label of buttons, because string splitting will mess everything up.

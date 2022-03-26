@@ -9,7 +9,7 @@ import (
 	"github.com/btcsuite/btcd/btcec"
 
 	"github.com/imroc/req"
-	tb "gopkg.in/telebot.v3"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 type Client struct {

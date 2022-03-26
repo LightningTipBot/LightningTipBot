@@ -20,7 +20,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"github.com/skip2/go-qrcode"
-	tb "gopkg.in/telebot.v3"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 type InvoiceEventCallback map[int]EventHandler

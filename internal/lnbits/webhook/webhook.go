@@ -17,7 +17,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/gorilla/mux"
-	tb "gopkg.in/telebot.v3"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 )

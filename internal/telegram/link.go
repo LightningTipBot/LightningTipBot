@@ -10,7 +10,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
-	tb "gopkg.in/telebot.v3"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 func (bot *TipBot) lndhubHandler(ctx intercept.Context) (intercept.Context, error) {

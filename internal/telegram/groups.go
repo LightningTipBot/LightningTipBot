@@ -18,7 +18,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
-	tb "gopkg.in/telebot.v3"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 type Ticket struct {

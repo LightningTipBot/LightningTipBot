@@ -756,6 +756,8 @@ gopkg.in/lightningtipbot/telebot.v2 v2.4.2-0.20211207185736-224e4f70c5ad h1:HR3v
 gopkg.in/lightningtipbot/telebot.v2 v2.4.2-0.20211207185736-224e4f70c5ad/go.mod h1:lUH49SRidDcQGyXPIL9tR2cN3vztcLBo47AqFUgHgIA=
 gopkg.in/lightningtipbot/telebot.v2 v2.4.2-0.20211217193303-c005cce171ac h1:EcXyrTUaQJYiHtLQstXdW04sRH9HwH9mpaxy9Lkcomc=
 gopkg.in/lightningtipbot/telebot.v2 v2.4.2-0.20211217193303-c005cce171ac/go.mod h1:lUH49SRidDcQGyXPIL9tR2cN3vztcLBo47AqFUgHgIA=
+gopkg.in/lightningtipbot/telebot.v3 v3.0.0-20220326213923-f323bb71ac8e h1:x58PfjVq6dbYSzM4URM9QfKDKVru1CpngxCM5pGqwbk=
+gopkg.in/lightningtipbot/telebot.v3 v3.0.0-20220326213923-f323bb71ac8e/go.mod h1:kIC/Dlp2OjWhVrOkZDN4iEoCaqoac5w1UjpKY6Ftf+U=
 gopkg.in/macaroon-bakery.v2 v2.0.1/go.mod h1:B4/T17l+ZWGwxFSZQmlBwp25x+og7OkhETfr3S9MbIA=
 gopkg.in/macaroon.v2 v2.0.0/go.mod h1:+I6LnTMkm/uV5ew/0nsulNjL16SK4+C8yDmRUzHR17I=
 gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22/go.mod h1:yeKp02qBN3iKW1OzL3MGk2IdtZzaj7SFntXj72NppTA=

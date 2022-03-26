@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
-	tb "gopkg.in/telebot.v3"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 func (bot TipBot) makeHelpMessage(ctx context.Context, m *tb.Message) string {

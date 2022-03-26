@@ -4,7 +4,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
-	tb "gopkg.in/telebot.v3"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 func (bot *TipBot) fileHandler(ctx intercept.Context) (intercept.Context, error) {

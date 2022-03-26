@@ -15,7 +15,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	i18n2 "github.com/nicksnyder/go-i18n/v2/i18n"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/telebot.v3"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 const queryImage = "https://avatars.githubusercontent.com/u/88730856?v=4"
@@ -79,17 +79,21 @@ func (bot TipBot) inlineQueryReplyWithError(ctx intercept.Context, message strin
 	results := make(tb.Results, 1) // []tb.Result
 	result := &tb.ArticleResult{
 		// URL:         url,
-		Text:  help,
-		Title: message,
-		// Description: help,
-		// required for photos
+		// requ
+		Title: "ASD",
+		//ired for photos
 		ThumbURL: queryImage,
 	}
 	id := fmt.Sprintf("inl-error-%d-%s", ctx.Query().Sender.ID, RandStringRunes(5))
 	result.SetResultID(id)
+	result.SetContent(&tb.InputTextMessageContent{
+		Text:           message + "\n" + help,
+		ParseMode:      tb.ModeDefault,
+		DisablePreview: false})
 	results[0] = result
 	err := ctx.Answer(&tb.QueryResponse{
-		Results:   results,
+		Results: results,
+
 		CacheTime: 1, // 60 == 1 minute, todo: make higher than 1 s in production
 
 	})
