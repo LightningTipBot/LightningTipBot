@@ -11,14 +11,14 @@ var stateCallbackMessage StateCallbackMessage
 
 func initializeStateCallbackMessage(bot *TipBot) {
 	stateCallbackMessage = StateCallbackMessage{
-		lnbits.UserStateLNURLEnterAmount: bot.enterAmountHandler,
-		lnbits.UserEnterAmount:           bot.enterAmountHandler,
-		lnbits.UserEnterUser:             bot.enterUserHandler,
-		/*lnbits.UserEnterShopTitle:            bot.enterShopTitleHandler,
+		lnbits.UserStateLNURLEnterAmount:     bot.enterAmountHandler,
+		lnbits.UserEnterAmount:               bot.enterAmountHandler,
+		lnbits.UserEnterUser:                 bot.enterUserHandler,
+		lnbits.UserEnterShopTitle:            bot.enterShopTitleHandler,
 		lnbits.UserStateShopItemSendPhoto:    bot.addShopItemPhoto,
 		lnbits.UserStateShopItemSendPrice:    bot.enterShopItemPriceHandler,
 		lnbits.UserStateShopItemSendTitle:    bot.enterShopItemTitleHandler,
 		lnbits.UserStateShopItemSendItemFile: bot.addItemFileHandler,
-		lnbits.UserEnterShopsDescription:     bot.enterShopsDescriptionHandler,*/
+		lnbits.UserEnterShopsDescription:     bot.enterShopsDescriptionHandler,
 	}
 }
