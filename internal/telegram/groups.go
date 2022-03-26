@@ -123,7 +123,7 @@ func (bot TipBot) groupRequestJoinHandler(ctx intercept.Context) (intercept.Cont
 	if ctx.Chat().Type != tb.ChatPrivate {
 		return ctx, fmt.Errorf("not private chat")
 	}
-	splits := strings.Split(ctx.Text(), " ")
+	splits := strings.Split(ctx.Message().Text, " ")
 	// if the command was /group join
 	splitIdx := 1
 	// we also have the simpler command /join that can be used
