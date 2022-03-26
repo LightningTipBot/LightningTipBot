@@ -10,11 +10,11 @@ import (
 	tb "gopkg.in/telebot.v3"
 )
 
-func (bot *TipBot) balanceHandler(handler intercept.Handler) (intercept.Handler, error) {
-	m := handler.Message()
+func (bot *TipBot) balanceHandler(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
 	// check and print all commands
 	if len(m.Text) > 0 {
-		bot.anyTextHandler(handler)
+		bot.anyTextHandler(ctx)
 	}
 
 	// reply only in private message
@@ -23,24 +23,24 @@ func (bot *TipBot) balanceHandler(handler intercept.Handler) (intercept.Handler,
 		bot.tryDeleteMessage(m)
 	}
 	// first check whether the user is initialized
-	user := LoadUser(handler.Ctx)
+	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return handler, errors.Create(errors.UserNoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 
 	if !user.Initialized {
-		return bot.startHandler(handler)
+		return bot.startHandler(ctx)
 	}
 
-	usrStr := GetUserStr(handler.Sender())
+	usrStr := GetUserStr(ctx.Sender())
 	balance, err := bot.GetUserBalance(user)
 	if err != nil {
 		log.Errorf("[/balance] Error fetching %s's balance: %s", usrStr, err)
-		bot.trySendMessage(handler.Sender(), Translate(handler.Ctx, "balanceErrorMessage"))
-		return handler, err
+		bot.trySendMessage(ctx.Sender(), Translate(ctx, "balanceErrorMessage"))
+		return ctx, err
 	}
 
 	log.Infof("[/balance] %s's balance: %d sat\n", usrStr, balance)
-	bot.trySendMessage(handler.Sender(), fmt.Sprintf(Translate(handler.Ctx, "balanceMessage"), balance))
-	return handler, nil
+	bot.trySendMessage(ctx.Sender(), fmt.Sprintf(Translate(ctx, "balanceMessage"), balance))
+	return ctx, nil
 }

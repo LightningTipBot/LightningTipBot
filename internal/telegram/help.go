@@ -27,26 +27,26 @@ func (bot TipBot) makeHelpMessage(ctx context.Context, m *tb.Message) string {
 	return fmt.Sprintf(helpMessage, dynamicHelpMessage)
 }
 
-func (bot TipBot) helpHandler(handler intercept.Handler) (intercept.Handler, error) {
+func (bot TipBot) helpHandler(ctx intercept.Context) (intercept.Context, error) {
 	// check and print all commands
-	bot.anyTextHandler(handler)
-	if !handler.Message().Private() {
+	bot.anyTextHandler(ctx)
+	if !ctx.Message().Private() {
 		// delete message
-		bot.tryDeleteMessage(handler.Message())
+		bot.tryDeleteMessage(ctx.Message())
 	}
-	bot.trySendMessage(handler.Sender(), bot.makeHelpMessage(handler.Ctx, handler.Message()), tb.NoPreview)
-	return handler, nil
+	bot.trySendMessage(ctx.Sender(), bot.makeHelpMessage(ctx, ctx.Message()), tb.NoPreview)
+	return ctx, nil
 }
 
-func (bot TipBot) basicsHandler(handler intercept.Handler) (intercept.Handler, error) {
+func (bot TipBot) basicsHandler(ctx intercept.Context) (intercept.Context, error) {
 	// check and print all commands
-	bot.anyTextHandler(handler)
-	if !handler.Message().Private() {
+	bot.anyTextHandler(ctx)
+	if !ctx.Message().Private() {
 		// delete message
-		bot.tryDeleteMessage(handler.Message())
+		bot.tryDeleteMessage(ctx.Message())
 	}
-	bot.trySendMessage(handler.Sender(), Translate(handler.Ctx, "basicsMessage"), tb.NoPreview)
-	return handler, nil
+	bot.trySendMessage(ctx.Sender(), Translate(ctx, "basicsMessage"), tb.NoPreview)
+	return ctx, nil
 }
 
 func (bot TipBot) makeAdvancedHelpMessage(ctx context.Context, m *tb.Message) string {
@@ -75,13 +75,13 @@ func (bot TipBot) makeAdvancedHelpMessage(ctx context.Context, m *tb.Message) st
 	)
 }
 
-func (bot TipBot) advancedHelpHandler(handler intercept.Handler) (intercept.Handler, error) {
+func (bot TipBot) advancedHelpHandler(ctx intercept.Context) (intercept.Context, error) {
 	// check and print all commands
-	bot.anyTextHandler(handler)
-	if !handler.Message().Private() {
+	bot.anyTextHandler(ctx)
+	if !ctx.Message().Private() {
 		// delete message
-		bot.tryDeleteMessage(handler.Message())
+		bot.tryDeleteMessage(ctx.Message())
 	}
-	bot.trySendMessage(handler.Sender(), bot.makeAdvancedHelpMessage(handler.Ctx, handler.Message()), tb.NoPreview)
-	return handler, nil
+	bot.trySendMessage(ctx.Sender(), bot.makeAdvancedHelpMessage(ctx, ctx.Message()), tb.NoPreview)
+	return ctx, nil
 }

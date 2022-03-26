@@ -5,7 +5,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 )
 
-type StateCallbackMessage map[lnbits.UserStateKey]func(handler intercept.Handler) (intercept.Handler, error)
+type StateCallbackMessage map[lnbits.UserStateKey]func(ctx intercept.Context) (intercept.Context, error)
 
 var stateCallbackMessage StateCallbackMessage
 

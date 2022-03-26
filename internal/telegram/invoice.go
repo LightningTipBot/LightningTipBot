@@ -103,26 +103,26 @@ func helpInvoiceUsage(ctx context.Context, errormsg string) string {
 	}
 }
 
-func (bot *TipBot) invoiceHandler(handler intercept.Handler) (intercept.Handler, error) {
-	m := handler.Message()
+func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
 	// check and print all commands
-	bot.anyTextHandler(handler)
-	user := LoadUser(handler.Ctx)
+	bot.anyTextHandler(ctx)
+	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return handler, errors.Create(errors.UserNoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 	userStr := GetUserStr(user.Telegram)
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
 		bot.tryDeleteMessage(m)
-		return handler, errors.Create(errors.NoPrivateChatError)
+		return ctx, errors.Create(errors.NoPrivateChatError)
 	}
 	// if no amount is in the command, ask for it
 	amount, err := decodeAmountFromCommand(m.Text)
 	if (err != nil || amount < 1) && m.Chat.Type == tb.ChatPrivate {
 		// // no amount was entered, set user state and ask fo""r amount
-		_, err = bot.askForAmount(handler.Ctx, "", "CreateInvoiceState", 0, 0, m.Text)
-		return handler, err
+		_, err = bot.askForAmount(ctx, "", "CreateInvoiceState", 0, 0, m.Text)
+		return ctx, err
 	}
 
 	// check for memo in command
@@ -137,23 +137,23 @@ func (bot *TipBot) invoiceHandler(handler intercept.Handler) (intercept.Handler,
 		memo = memo + tag
 	}
 
-	creatingMsg := bot.trySendMessageEditable(m.Sender, Translate(handler.Ctx, "lnurlGettingUserMessage"))
+	creatingMsg := bot.trySendMessageEditable(m.Sender, Translate(ctx, "lnurlGettingUserMessage"))
 	log.Debugf("[/invoice] Creating invoice for %s of %d sat.", userStr, amount)
-	invoice, err := bot.createInvoiceWithEvent(handler.Ctx, user, amount, memo, InvoiceCallbackGeneric, "")
+	invoice, err := bot.createInvoiceWithEvent(ctx, user, amount, memo, InvoiceCallbackGeneric, "")
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
-		bot.tryEditMessage(creatingMsg, Translate(handler.Ctx, "errorTryLaterMessage"))
+		bot.tryEditMessage(creatingMsg, Translate(ctx, "errorTryLaterMessage"))
 		log.Errorln(errmsg)
-		return handler, err
+		return ctx, err
 	}
 
 	// create qr code
 	qr, err := qrcode.Encode(invoice.PaymentRequest, qrcode.Medium, 256)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Failed to create QR code for invoice: %s", err.Error())
-		bot.tryEditMessage(creatingMsg, Translate(handler.Ctx, "errorTryLaterMessage"))
+		bot.tryEditMessage(creatingMsg, Translate(ctx, "errorTryLaterMessage"))
 		log.Errorln(errmsg)
-		return handler, err
+		return ctx, err
 	}
 
 	// deleting messages will delete the main menu.
@@ -162,7 +162,7 @@ func (bot *TipBot) invoiceHandler(handler intercept.Handler) (intercept.Handler,
 	// send the invoice data to user
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
 	log.Printf("[/invoice] Incvoice created. User: %s, amount: %d sat.", userStr, amount)
-	return handler, nil
+	return ctx, nil
 }
 
 func (bot *TipBot) createInvoiceWithEvent(ctx context.Context, user *lnbits.User, amount int64, memo string, callback int, callbackData string) (InvoiceEvent, error) {

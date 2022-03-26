@@ -27,35 +27,35 @@ type Interceptor struct {
 
 // singletonClickInterceptor uses the onceMap to determine whether the object k1 already interacted
 // with the user k2. If so, it will return an error.
-func (bot TipBot) singletonCallbackInterceptor(handler intercept.Handler) (intercept.Handler, error) {
-	if handler.Callback() != nil {
-		return handler, once.Once(handler.Callback().Data, strconv.FormatInt(handler.Callback().Sender.ID, 10))
+func (bot TipBot) singletonCallbackInterceptor(ctx intercept.Context) (intercept.Context, error) {
+	if ctx.Callback() != nil {
+		return ctx, once.Once(ctx.Callback().Data, strconv.FormatInt(ctx.Callback().Sender.ID, 10))
 	}
-	return handler, errors.Create(errors.InvalidTypeError)
+	return ctx, errors.Create(errors.InvalidTypeError)
 }
 
 // lockInterceptor invoked as first before interceptor
-func (bot TipBot) lockInterceptor(handler intercept.Handler) (intercept.Handler, error) {
-	user := handler.Sender()
+func (bot TipBot) lockInterceptor(ctx intercept.Context) (intercept.Context, error) {
+	user := ctx.Sender()
 	if user != nil {
 		mutex.Lock(strconv.FormatInt(user.ID, 10))
-		return handler, nil
+		return ctx, nil
 	}
-	return handler, errors.Create(errors.InvalidTypeError)
+	return ctx, errors.Create(errors.InvalidTypeError)
 }
 
 // unlockInterceptor invoked as onDefer interceptor
-func (bot TipBot) unlockInterceptor(handler intercept.Handler) (intercept.Handler, error) {
-	user := handler.Sender()
+func (bot TipBot) unlockInterceptor(ctx intercept.Context) (intercept.Context, error) {
+	user := ctx.Sender()
 	if user != nil {
 		mutex.Unlock(strconv.FormatInt(user.ID, 10))
-		return handler, nil
+		return ctx, nil
 	}
-	return handler, errors.Create(errors.InvalidTypeError)
+	return ctx, errors.Create(errors.InvalidTypeError)
 }
-func (bot TipBot) idInterceptor(handler intercept.Handler) (intercept.Handler, error) {
-	handler.Ctx = context.WithValue(handler.Ctx, "uid", RandStringRunes(64))
-	return handler, nil
+func (bot TipBot) idInterceptor(ctx intercept.Context) (intercept.Context, error) {
+	ctx.Context = context.WithValue(ctx, "uid", RandStringRunes(64))
+	return ctx, nil
 }
 
 // answerCallbackInterceptor will answer the callback with the given text in the context
@@ -81,35 +81,35 @@ func (bot TipBot) answerCallbackInterceptor(ctx context.Context, i interface{}) 
 
 // requireUserInterceptor will return an error if user is not found
 // user is here an lnbits.User
-func (bot TipBot) requireUserInterceptor(handler intercept.Handler) (intercept.Handler, error) {
+func (bot TipBot) requireUserInterceptor(ctx intercept.Context) (intercept.Context, error) {
 	var user *lnbits.User
 	var err error
-	u := handler.Sender()
+	u := ctx.Sender()
 	if u != nil {
 		user, err = GetUser(u, bot)
 		// do not respond to banned users
 		if bot.UserIsBanned(user) {
-			handler.Ctx = context.WithValue(handler.Ctx, "banned", true)
-			handler.Ctx = context.WithValue(handler.Ctx, "user", user)
-			return handler, errors.Create(errors.InvalidTypeError)
+			ctx.Context = context.WithValue(ctx, "banned", true)
+			ctx.Context = context.WithValue(ctx, "user", user)
+			return ctx, errors.Create(errors.InvalidTypeError)
 		}
 		if user != nil {
-			handler.Ctx = context.WithValue(handler.Ctx, "user", user)
-			return handler, err
+			ctx.Context = context.WithValue(ctx, "user", user)
+			return ctx, err
 		}
 	}
-	return handler, errors.Create(errors.InvalidTypeError)
+	return ctx, errors.Create(errors.InvalidTypeError)
 }
 
 // startUserInterceptor will invoke /start if user not exists.
-func (bot TipBot) startUserInterceptor(handler intercept.Handler) (intercept.Handler, error) {
-	handler, err := bot.loadUserInterceptor(handler)
+func (bot TipBot) startUserInterceptor(ctx intercept.Context) (intercept.Context, error) {
+	handler, err := bot.loadUserInterceptor(ctx)
 	if err != nil {
 		// user banned
 		return handler, err
 	}
 	// load user
-	u := handler.Ctx.Value("user")
+	u := ctx.Value("user")
 	// check user nil
 	if u != nil {
 		user := u.(*lnbits.User)
@@ -124,97 +124,97 @@ func (bot TipBot) startUserInterceptor(handler intercept.Handler) (intercept.Han
 	}
 	return handler, nil
 }
-func (bot TipBot) loadUserInterceptor(handler intercept.Handler) (intercept.Handler, error) {
-	handler, _ = bot.requireUserInterceptor(handler)
+func (bot TipBot) loadUserInterceptor(ctx intercept.Context) (intercept.Context, error) {
+	ctx, _ = bot.requireUserInterceptor(ctx)
 	// if user is banned, also loadUserInterceptor will return an error
-	if handler.Ctx.Value("banned") != nil && handler.Ctx.Value("banned").(bool) {
-		return handler, errors.Create(errors.InvalidTypeError)
+	if ctx.Value("banned") != nil && ctx.Value("banned").(bool) {
+		return ctx, errors.Create(errors.InvalidTypeError)
 	}
-	return handler, nil
+	return ctx, nil
 }
 
 // loadReplyToInterceptor Loading the Telegram user with message intercept
-func (bot TipBot) loadReplyToInterceptor(handler intercept.Handler) (intercept.Handler, error) {
-	if handler.Message() != nil {
-		if handler.Message().ReplyTo != nil {
-			if handler.Message().ReplyTo.Sender != nil {
-				user, _ := GetUser(handler.Message().ReplyTo.Sender, bot)
-				user.Telegram = handler.Message().ReplyTo.Sender
-				handler.Ctx = context.WithValue(handler.Ctx, "reply_to_user", user)
-				return handler, nil
+func (bot TipBot) loadReplyToInterceptor(ctx intercept.Context) (intercept.Context, error) {
+	if ctx.Message() != nil {
+		if ctx.Message().ReplyTo != nil {
+			if ctx.Message().ReplyTo.Sender != nil {
+				user, _ := GetUser(ctx.Message().ReplyTo.Sender, bot)
+				user.Telegram = ctx.Message().ReplyTo.Sender
+				ctx.Context = context.WithValue(ctx, "reply_to_user", user)
+				return ctx, nil
 
 			}
 		}
-		return handler, nil
+		return ctx, nil
 	}
-	return handler, errors.Create(errors.InvalidTypeError)
+	return ctx, errors.Create(errors.InvalidTypeError)
 }
 
-func (bot TipBot) localizerInterceptor(handler intercept.Handler) (intercept.Handler, error) {
+func (bot TipBot) localizerInterceptor(ctx intercept.Context) (intercept.Context, error) {
 	var userLocalizer *i18n2.Localizer
 	var publicLocalizer *i18n2.Localizer
 
 	// default language is english
 	publicLocalizer = i18n2.NewLocalizer(i18n.Bundle, "en")
-	handler.Ctx = context.WithValue(handler.Ctx, "publicLanguageCode", "en")
-	handler.Ctx = context.WithValue(handler.Ctx, "publicLocalizer", publicLocalizer)
+	ctx.Context = context.WithValue(ctx, "publicLanguageCode", "en")
+	ctx.Context = context.WithValue(ctx, "publicLocalizer", publicLocalizer)
 
-	if handler.Message() != nil {
-		userLocalizer = i18n2.NewLocalizer(i18n.Bundle, handler.Message().Sender.LanguageCode)
-		handler.Ctx = context.WithValue(handler.Ctx, "userLanguageCode", handler.Message().Sender.LanguageCode)
-		handler.Ctx = context.WithValue(handler.Ctx, "userLocalizer", userLocalizer)
-		if handler.Message().Private() {
+	if ctx.Message() != nil {
+		userLocalizer = i18n2.NewLocalizer(i18n.Bundle, ctx.Message().Sender.LanguageCode)
+		ctx.Context = context.WithValue(ctx, "userLanguageCode", ctx.Message().Sender.LanguageCode)
+		ctx.Context = context.WithValue(ctx, "userLocalizer", userLocalizer)
+		if ctx.Message().Private() {
 			// in pm overwrite public localizer with user localizer
-			handler.Ctx = context.WithValue(handler.Ctx, "publicLanguageCode", handler.Message().Sender.LanguageCode)
-			handler.Ctx = context.WithValue(handler.Ctx, "publicLocalizer", userLocalizer)
+			ctx.Context = context.WithValue(ctx, "publicLanguageCode", ctx.Message().Sender.LanguageCode)
+			ctx.Context = context.WithValue(ctx, "publicLocalizer", userLocalizer)
 		}
-		return handler, nil
-	} else if handler.Callback() != nil {
-		userLocalizer = i18n2.NewLocalizer(i18n.Bundle, handler.Callback().Sender.LanguageCode)
-		handler.Ctx = context.WithValue(handler.Ctx, "userLanguageCode", handler.Callback().Sender.LanguageCode)
-		handler.Ctx = context.WithValue(handler.Ctx, "userLocalizer", userLocalizer)
-		return handler, nil
-	} else if handler.Query() != nil {
-		userLocalizer = i18n2.NewLocalizer(i18n.Bundle, handler.Query().Sender.LanguageCode)
-		handler.Ctx = context.WithValue(handler.Ctx, "userLanguageCode", handler.Query().Sender.LanguageCode)
-		handler.Ctx = context.WithValue(handler.Ctx, "userLocalizer", userLocalizer)
-		return handler, nil
+		return ctx, nil
+	} else if ctx.Callback() != nil {
+		userLocalizer = i18n2.NewLocalizer(i18n.Bundle, ctx.Callback().Sender.LanguageCode)
+		ctx.Context = context.WithValue(ctx, "userLanguageCode", ctx.Callback().Sender.LanguageCode)
+		ctx.Context = context.WithValue(ctx, "userLocalizer", userLocalizer)
+		return ctx, nil
+	} else if ctx.Query() != nil {
+		userLocalizer = i18n2.NewLocalizer(i18n.Bundle, ctx.Query().Sender.LanguageCode)
+		ctx.Context = context.WithValue(ctx, "userLanguageCode", ctx.Query().Sender.LanguageCode)
+		ctx.Context = context.WithValue(ctx, "userLocalizer", userLocalizer)
+		return ctx, nil
 	}
 
-	return handler, nil
+	return ctx, nil
 }
 
-func (bot TipBot) requirePrivateChatInterceptor(handler intercept.Handler) (intercept.Handler, error) {
-	if handler.Message() != nil {
-		if handler.Message().Chat.Type != tb.ChatPrivate {
-			return handler, fmt.Errorf("[requirePrivateChatInterceptor] no private chat")
+func (bot TipBot) requirePrivateChatInterceptor(ctx intercept.Context) (intercept.Context, error) {
+	if ctx.Message() != nil {
+		if ctx.Message().Chat.Type != tb.ChatPrivate {
+			return ctx, fmt.Errorf("[requirePrivateChatInterceptor] no private chat")
 		}
-		return handler, nil
+		return ctx, nil
 	}
-	return handler, errors.Create(errors.InvalidTypeError)
+	return ctx, errors.Create(errors.InvalidTypeError)
 }
 
 const photoTag = "<Photo>"
 
-func (bot TipBot) logMessageInterceptor(handler intercept.Handler) (intercept.Handler, error) {
-	if handler.Message() != nil {
+func (bot TipBot) logMessageInterceptor(ctx intercept.Context) (intercept.Context, error) {
+	if ctx.Message() != nil {
 
-		if handler.Message().Text != "" {
-			log_string := fmt.Sprintf("[%s:%d %s:%d] %s", handler.Message().Chat.Title, handler.Message().Chat.ID, GetUserStr(handler.Message().Sender), handler.Message().Sender.ID, handler.Message().Text)
-			if handler.Message().IsReply() {
-				log_string = fmt.Sprintf("%s -> %s", log_string, GetUserStr(handler.Message().ReplyTo.Sender))
+		if ctx.Message().Text != "" {
+			log_string := fmt.Sprintf("[%s:%d %s:%d] %s", ctx.Message().Chat.Title, ctx.Message().Chat.ID, GetUserStr(ctx.Message().Sender), ctx.Message().Sender.ID, ctx.Message().Text)
+			if ctx.Message().IsReply() {
+				log_string = fmt.Sprintf("%s -> %s", log_string, GetUserStr(ctx.Message().ReplyTo.Sender))
 			}
 			log.Infof(log_string)
-		} else if handler.Message().Photo != nil {
-			log.Infof("[%s:%d %s:%d] %s", handler.Message().Chat.Title, handler.Message().Chat.ID, GetUserStr(handler.Message().Sender), handler.Message().Sender.ID, photoTag)
+		} else if ctx.Message().Photo != nil {
+			log.Infof("[%s:%d %s:%d] %s", ctx.Message().Chat.Title, ctx.Message().Chat.ID, GetUserStr(ctx.Message().Sender), ctx.Message().Sender.ID, photoTag)
 		}
-		return handler, nil
-	} else if handler.Callback() != nil {
-		log.Infof("[Callback %s:%d] Data: %s", GetUserStr(handler.Callback().Sender), handler.Callback().Sender.ID, handler.Callback().Data)
-		return handler, nil
+		return ctx, nil
+	} else if ctx.Callback() != nil {
+		log.Infof("[Callback %s:%d] Data: %s", GetUserStr(ctx.Callback().Sender), ctx.Callback().Sender.ID, ctx.Callback().Data)
+		return ctx, nil
 
 	}
-	return handler, errors.Create(errors.InvalidTypeError)
+	return ctx, errors.Create(errors.InvalidTypeError)
 }
 
 // LoadUser from context

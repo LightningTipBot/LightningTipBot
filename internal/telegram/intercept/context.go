@@ -7,12 +7,15 @@ import (
 	tb "gopkg.in/telebot.v3"
 )
 
-type Handler struct {
-	Ctx context.Context
+type Context struct {
+	context.Context
+	TeleContext
+}
+type TeleContext struct {
 	tb.Context
 }
 
-type Func func(handler Handler) (Handler, error)
+type Func func(ctx Context) (Context, error)
 
 type handlerInterceptor struct {
 	handler Func
@@ -39,7 +42,7 @@ func WithDefer(chain ...Func) Option {
 	}
 }
 
-func intercept(h Handler, hm Chain) (Handler, error) {
+func intercept(h Context, hm Chain) (Context, error) {
 
 	if hm != nil {
 		var err error
@@ -59,7 +62,7 @@ func WithHandler(handler Func, option ...Option) tb.HandlerFunc {
 		opt(hm)
 	}
 	return func(c tb.Context) error {
-		h := Handler{Ctx: context.Background(), Context: c}
+		h := Context{TeleContext: TeleContext{Context: c}, Context: context.Background()}
 		h, err := intercept(h, hm.before)
 		if err != nil {
 			log.Traceln(err)

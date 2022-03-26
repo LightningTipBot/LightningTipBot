@@ -35,36 +35,36 @@ func helpDonateUsage(ctx context.Context, errormsg string) string {
 	}
 }
 
-func (bot TipBot) donationHandler(handler intercept.Handler) (intercept.Handler, error) {
+func (bot TipBot) donationHandler(ctx intercept.Context) (intercept.Context, error) {
 	// check and print all commands
-	m := handler.Message()
-	bot.anyTextHandler(handler)
-	user := LoadUser(handler.Ctx)
+	m := ctx.Message()
+	bot.anyTextHandler(ctx)
+	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return handler, errors.Create(errors.UserNoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 	// if no amount is in the command, ask for it
 	amount, err := decodeAmountFromCommand(m.Text)
 	if (err != nil || amount < 1) && m.Chat.Type == tb.ChatPrivate {
 		// // no amount was entered, set user state and ask for amount
-		_, err = bot.askForAmount(handler.Ctx, "", "CreateDonationState", 0, 0, m.Text)
-		return handler, err
+		_, err = bot.askForAmount(ctx, "", "CreateDonationState", 0, 0, m.Text)
+		return ctx, err
 	}
 
 	// command is valid
-	msg := bot.trySendMessageEditable(m.Chat, Translate(handler.Ctx, "donationProgressMessage"))
+	msg := bot.trySendMessageEditable(m.Chat, Translate(ctx, "donationProgressMessage"))
 	// get invoice
 	resp, err := http.Get(fmt.Sprintf(donationEndpoint, amount, GetUserStr(user.Telegram), GetUserStr(bot.Telegram.Me)))
 	if err != nil {
 		log.Errorln(err)
-		bot.tryEditMessage(msg, Translate(handler.Ctx, "donationErrorMessage"))
-		return handler, err
+		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
+		return ctx, err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Errorln(err)
-		bot.tryEditMessage(msg, Translate(handler.Ctx, "donationErrorMessage"))
-		return handler, err
+		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
+		return ctx, err
 	}
 
 	// send donation invoice
@@ -75,15 +75,15 @@ func (bot TipBot) donationHandler(handler intercept.Handler) (intercept.Handler,
 		userStr := GetUserStr(user.Telegram)
 		errmsg := fmt.Sprintf("[/donate] Donation failed for user %s: %s", userStr, err)
 		log.Errorln(errmsg)
-		bot.tryEditMessage(msg, Translate(handler.Ctx, "donationErrorMessage"))
-		return handler, err
+		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
+		return ctx, err
 	}
 	// hotfix because the edit doesn't work!
 	// todo: fix edit
 	// bot.tryEditMessage(msg, Translate(ctx, "donationSuccess"))
 	bot.tryDeleteMessage(msg)
-	bot.trySendMessage(m.Chat, Translate(handler.Ctx, "donationSuccess"))
-	return handler, nil
+	bot.trySendMessage(m.Chat, Translate(ctx, "donationSuccess"))
+	return ctx, nil
 }
 
 func init() {
@@ -120,8 +120,8 @@ func (rot13 rot13Reader) Read(b []byte) (int, error) {
 	return n, err
 }
 
-func (bot TipBot) parseCmdDonHandler(handler intercept.Handler) error {
-	m := handler.Message()
+func (bot TipBot) parseCmdDonHandler(ctx intercept.Context) error {
+	m := ctx.Message()
 	arg := ""
 	if strings.HasPrefix(strings.ToLower(m.Text), "/send") {
 		arg, _ = getArgumentFromCommand(m.Text, 2)
@@ -153,7 +153,7 @@ func (bot TipBot) parseCmdDonHandler(handler intercept.Handler) error {
 
 	bot.trySendMessage(m.Sender, str.MarkdownEscape(donationInterceptMessage))
 	m.Text = fmt.Sprintf("/donate %d", amount)
-	bot.donationHandler(handler)
-	// returning nil here will abort the parent handler (/pay or /tip)
+	bot.donationHandler(ctx)
+	// returning nil here will abort the parent ctx (/pay or /tip)
 	return nil
 }

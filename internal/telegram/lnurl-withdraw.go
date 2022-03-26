@@ -59,9 +59,9 @@ func (bot *TipBot) editSingleButton(ctx context.Context, m *tb.Message, message 
 
 // lnurlWithdrawHandler is invoked when the first lnurl response was a lnurl-withdraw response
 // at this point, the user hans't necessarily entered an amount yet
-func (bot *TipBot) lnurlWithdrawHandler(handler intercept.Handler, withdrawParams *LnurlWithdrawState) {
-	m := handler.Message()
-	user := LoadUser(handler.Ctx)
+func (bot *TipBot) lnurlWithdrawHandler(ctx intercept.Context, withdrawParams *LnurlWithdrawState) {
+	m := ctx.Message()
+	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return
 	}
@@ -70,7 +70,7 @@ func (bot *TipBot) lnurlWithdrawHandler(handler intercept.Handler, withdrawParam
 
 	withdrawParams.Base = storage.New(storage.ID(id))
 	withdrawParams.From = user
-	withdrawParams.LanguageCode = handler.Ctx.Value("publicLanguageCode").(string)
+	withdrawParams.LanguageCode = ctx.Value("publicLanguageCode").(string)
 
 	// first we check whether an amount is present in the command
 	amount, amount_err := decodeAmountFromCommand(m.Text)
@@ -82,7 +82,7 @@ func (bot *TipBot) lnurlWithdrawHandler(handler intercept.Handler, withdrawParam
 		(withdrawParams.LNURLWithdrawResponse.MaxWithdrawable != 0 && withdrawParams.LNURLWithdrawResponse.MinWithdrawable != 0) { // only if max and min are set
 		err := fmt.Errorf("amount not in range")
 		log.Warnf("[lnurlWithdrawHandler] Error: %s", err.Error())
-		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(handler.Ctx, "lnurlInvalidAmountRangeMessage"), withdrawParams.LNURLWithdrawResponse.MinWithdrawable/1000, withdrawParams.LNURLWithdrawResponse.MaxWithdrawable/1000))
+		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), withdrawParams.LNURLWithdrawResponse.MinWithdrawable/1000, withdrawParams.LNURLWithdrawResponse.MaxWithdrawable/1000))
 		ResetUserState(user, bot)
 		return
 	}
@@ -102,11 +102,11 @@ func (bot *TipBot) lnurlWithdrawHandler(handler intercept.Handler, withdrawParam
 	// now we actualy check whether the amount was in the command and if not, ask for it
 	if amount_err != nil || amount < 1 {
 		// // no amount was entered, set user state and ask for amount
-		bot.askForAmount(handler.Ctx, id, "LnurlWithdrawState", withdrawParams.LNURLWithdrawResponse.MinWithdrawable, withdrawParams.LNURLWithdrawResponse.MaxWithdrawable, m.Text)
+		bot.askForAmount(ctx, id, "LnurlWithdrawState", withdrawParams.LNURLWithdrawResponse.MinWithdrawable, withdrawParams.LNURLWithdrawResponse.MaxWithdrawable, m.Text)
 		return
 	}
 
-	// We need to save the pay state in the user state so we can load the payment in the next handler
+	// We need to save the pay state in the user state so we can load the payment in the next ctx
 	paramsJson, err := json.Marshal(withdrawParams)
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandler] Error: %s", err.Error())
@@ -115,24 +115,24 @@ func (bot *TipBot) lnurlWithdrawHandler(handler intercept.Handler, withdrawParam
 	}
 	SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(paramsJson))
 	// directly go to confirm
-	bot.lnurlWithdrawHandlerWithdraw(handler)
+	bot.lnurlWithdrawHandlerWithdraw(ctx)
 	return
 }
 
 // lnurlWithdrawHandlerWithdraw is invoked when the user has delivered an amount and is ready to pay
-func (bot *TipBot) lnurlWithdrawHandlerWithdraw(handler intercept.Handler) (intercept.Handler, error) {
-	m := handler.Message()
-	user := LoadUser(handler.Ctx)
+func (bot *TipBot) lnurlWithdrawHandlerWithdraw(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
+	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return handler, errors.Create(errors.UserNoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
-	statusMsg := bot.trySendMessageEditable(m.Sender, Translate(handler.Ctx, "lnurlPreparingWithdraw"))
+	statusMsg := bot.trySendMessageEditable(m.Sender, Translate(ctx, "lnurlPreparingWithdraw"))
 
 	// assert that user has entered an amount
 	if user.StateKey != lnbits.UserHasEnteredAmount {
 		log.Errorln("[lnurlWithdrawHandlerWithdraw] state keys don't match")
-		bot.tryEditMessage(statusMsg, Translate(handler.Ctx, "errorTryLaterMessage"))
-		return handler, fmt.Errorf("wrong state key")
+		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
+		return ctx, fmt.Errorf("wrong state key")
 	}
 
 	// read the enter amount state from user.StateData
@@ -140,19 +140,19 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(handler intercept.Handler) (inte
 	err := json.Unmarshal([]byte(user.StateData), &enterAmountData)
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
-		bot.tryEditMessage(statusMsg, Translate(handler.Ctx, "errorTryLaterMessage"))
-		return handler, err
+		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
+		return ctx, err
 	}
 
 	// use the enter amount state of the user to load the LNURL payment state
 	tx := &LnurlWithdrawState{Base: storage.New(storage.ID(enterAmountData.ID))}
-	mutex.LockWithContext(handler.Ctx, tx.ID)
-	defer mutex.UnlockWithContext(handler.Ctx, tx.ID)
+	mutex.LockWithContext(ctx, tx.ID)
+	defer mutex.UnlockWithContext(ctx, tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
-		bot.tryEditMessage(statusMsg, Translate(handler.Ctx, "errorTryLaterMessage"))
-		return handler, err
+		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
+		return ctx, err
 	}
 	var lnurlWithdrawState *LnurlWithdrawState
 	switch fn.(type) {
@@ -160,19 +160,19 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(handler intercept.Handler) (inte
 		lnurlWithdrawState = fn.(*LnurlWithdrawState)
 	default:
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] invalid type")
-		bot.tryEditMessage(statusMsg, Translate(handler.Ctx, "errorTryLaterMessage"))
-		return handler, fmt.Errorf("invalid type")
+		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
+		return ctx, fmt.Errorf("invalid type")
 	}
 
-	confirmText := fmt.Sprintf(Translate(handler.Ctx, "confirmLnurlWithdrawMessage"), lnurlWithdrawState.Amount/1000)
+	confirmText := fmt.Sprintf(Translate(ctx, "confirmLnurlWithdrawMessage"), lnurlWithdrawState.Amount/1000)
 	if len(lnurlWithdrawState.LNURLWithdrawResponse.DefaultDescription) > 0 {
-		confirmText = confirmText + fmt.Sprintf(Translate(handler.Ctx, "confirmPayAppendMemo"), str.MarkdownEscape(lnurlWithdrawState.LNURLWithdrawResponse.DefaultDescription))
+		confirmText = confirmText + fmt.Sprintf(Translate(ctx, "confirmPayAppendMemo"), str.MarkdownEscape(lnurlWithdrawState.LNURLWithdrawResponse.DefaultDescription))
 	}
 	lnurlWithdrawState.Message = confirmText
 
 	// create inline buttons
-	withdrawButton := paymentConfirmationMenu.Data(Translate(handler.Ctx, "withdrawButtonMessage"), "confirm_withdraw", lnurlWithdrawState.ID)
-	btnCancelWithdraw := paymentConfirmationMenu.Data(Translate(handler.Ctx, "cancelButtonMessage"), "cancel_withdraw", lnurlWithdrawState.ID)
+	withdrawButton := paymentConfirmationMenu.Data(Translate(ctx, "withdrawButtonMessage"), "confirm_withdraw", lnurlWithdrawState.ID)
+	btnCancelWithdraw := paymentConfirmationMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_withdraw", lnurlWithdrawState.ID)
 
 	withdrawConfirmationMenu.Inline(
 		withdrawConfirmationMenu.Row(
@@ -185,19 +185,19 @@ func (bot *TipBot) lnurlWithdrawHandlerWithdraw(handler intercept.Handler) (inte
 	// // add response to persistent struct
 	// lnurlWithdrawState.LNURResponse = response2
 	runtime.IgnoreError(lnurlWithdrawState.Set(lnurlWithdrawState, bot.Bunt))
-	return handler, nil
+	return ctx, nil
 }
 
 // confirmPayHandler when user clicked pay on payment confirmation
-func (bot *TipBot) confirmWithdrawHandler(handler intercept.Handler) (intercept.Handler, error) {
-	c := handler.Callback()
+func (bot *TipBot) confirmWithdrawHandler(ctx intercept.Context) (intercept.Context, error) {
+	c := ctx.Callback()
 	tx := &LnurlWithdrawState{Base: storage.New(storage.ID(c.Data))}
-	mutex.LockWithContext(handler.Ctx, tx.ID)
-	defer mutex.UnlockWithContext(handler.Ctx, tx.ID)
+	mutex.LockWithContext(ctx, tx.ID)
+	defer mutex.UnlockWithContext(ctx, tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[confirmWithdrawHandler] Error: %s", err.Error())
-		return handler, err
+		return ctx, err
 	}
 
 	var lnurlWithdrawState *LnurlWithdrawState
@@ -206,38 +206,38 @@ func (bot *TipBot) confirmWithdrawHandler(handler intercept.Handler) (intercept.
 		lnurlWithdrawState = fn.(*LnurlWithdrawState)
 	default:
 		log.Errorf("[confirmWithdrawHandler] invalid type")
-		return handler, errors.Create(errors.InvalidTypeError)
+		return ctx, errors.Create(errors.InvalidTypeError)
 	}
 	// onnly the correct user can press
 	if lnurlWithdrawState.From.Telegram.ID != c.Sender.ID {
-		return handler, errors.Create(errors.UnknownError)
+		return ctx, errors.Create(errors.UnknownError)
 	}
 	if !lnurlWithdrawState.Active {
 		log.Errorf("[confirmPayHandler] send not active anymore")
 		bot.tryEditMessage(c, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"), &tb.ReplyMarkup{})
 		bot.tryDeleteMessage(c)
-		return handler, errors.Create(errors.NotActiveError)
+		return ctx, errors.Create(errors.NotActiveError)
 	}
 	defer lnurlWithdrawState.Set(lnurlWithdrawState, bot.Bunt)
 
-	user := LoadUser(handler.Ctx)
+	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		bot.tryDeleteMessage(c)
-		return handler, errors.Create(errors.UserNoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 
 	// reset state immediately
 	ResetUserState(user, bot)
 
 	// update button text
-	bot.editSingleButton(handler.Ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlPreparingWithdraw"))
+	bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlPreparingWithdraw"))
 
 	callbackUrl, err := url.Parse(lnurlWithdrawState.LNURLWithdrawResponse.Callback)
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
 		// bot.trySendMessage(c.Sender, Translate(handler.Ctx, "errorTryLaterMessage"))
-		bot.editSingleButton(handler.Ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
-		return handler, err
+		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
+		return ctx, err
 	}
 
 	// generate an invoice and add the pr to the request
@@ -252,8 +252,8 @@ func (bot *TipBot) confirmWithdrawHandler(handler intercept.Handler) (intercept.
 	if err != nil {
 		errmsg := fmt.Sprintf("[lnurlWithdrawHandlerWithdraw] Could not create an invoice: %s", err.Error())
 		log.Errorln(errmsg)
-		bot.editSingleButton(handler.Ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
-		return handler, err
+		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
+		return ctx, err
 	}
 	lnurlWithdrawState.Invoice = invoice
 
@@ -267,23 +267,23 @@ func (bot *TipBot) confirmWithdrawHandler(handler intercept.Handler) (intercept.
 	client, err := bot.GetHttpClient()
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
-		// bot.trySendMessage(c.Sender, Translate(handler.Ctx, "errorTryLaterMessage"))
-		bot.editSingleButton(handler.Ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
-		return handler, err
+		// bot.trySendMessage(c.Sender, Translate(ctx, "errorTryLaterMessage"))
+		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
+		return ctx, err
 	}
 	res, err := client.Get(callbackUrl.String())
 	if err != nil || res.StatusCode >= 300 {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Failed.")
 		// bot.trySendMessage(c.Sender, Translate(handler.Ctx, "errorTryLaterMessage"))
-		bot.editSingleButton(handler.Ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
-		return handler, errors.New(errors.UnknownError, err)
+		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
+		return ctx, errors.New(errors.UnknownError, err)
 	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
 		// bot.trySendMessage(c.Sender, Translate(handler.Ctx, "errorTryLaterMessage"))
-		bot.editSingleButton(handler.Ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
-		return handler, err
+		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
+		return ctx, err
 	}
 
 	// parse the response
@@ -291,34 +291,34 @@ func (bot *TipBot) confirmWithdrawHandler(handler intercept.Handler) (intercept.
 	json.Unmarshal(body, &response2)
 	if response2.Status == "OK" {
 		// update button text
-		bot.editSingleButton(handler.Ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlWithdrawSuccess"))
+		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlWithdrawSuccess"))
 
 	} else {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] LNURLWithdraw failed.")
 		// update button text
-		bot.editSingleButton(handler.Ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlWithdrawFailed"))
-		return handler, errors.New(errors.UnknownError, fmt.Errorf("LNURLWithdraw failed"))
+		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlWithdrawFailed"))
+		return ctx, errors.New(errors.UnknownError, fmt.Errorf("LNURLWithdraw failed"))
 	}
 
 	// add response to persistent struct
 	lnurlWithdrawState.LNURResponse = response2
-	return handler, lnurlWithdrawState.Set(lnurlWithdrawState, bot.Bunt)
+	return ctx, lnurlWithdrawState.Set(lnurlWithdrawState, bot.Bunt)
 
 }
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation
-func (bot *TipBot) cancelWithdrawHandler(handler intercept.Handler) (intercept.Handler, error) {
-	c := handler.Callback()
+func (bot *TipBot) cancelWithdrawHandler(ctx intercept.Context) (intercept.Context, error) {
+	c := ctx.Callback()
 	// reset state immediately
-	user := LoadUser(handler.Ctx)
+	user := LoadUser(ctx)
 	ResetUserState(user, bot)
 	tx := &LnurlWithdrawState{Base: storage.New(storage.ID(c.Data))}
-	mutex.LockWithContext(handler.Ctx, tx.ID)
-	defer mutex.UnlockWithContext(handler.Ctx, tx.ID)
+	mutex.LockWithContext(ctx, tx.ID)
+	defer mutex.UnlockWithContext(ctx, tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[cancelWithdrawHandler] Error: %s", err.Error())
-		return handler, err
+		return ctx, err
 	}
 	var lnurlWithdrawState *LnurlWithdrawState
 	switch fn.(type) {
@@ -329,8 +329,8 @@ func (bot *TipBot) cancelWithdrawHandler(handler intercept.Handler) (intercept.H
 	}
 	// onnly the correct user can press
 	if lnurlWithdrawState.From.Telegram.ID != c.Sender.ID {
-		return handler, errors.Create(errors.UnknownError)
+		return ctx, errors.Create(errors.UnknownError)
 	}
 	bot.tryEditMessage(c, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlWithdrawCancelled"), &tb.ReplyMarkup{})
-	return handler, lnurlWithdrawState.Inactivate(lnurlWithdrawState, bot.Bunt)
+	return ctx, lnurlWithdrawState.Inactivate(lnurlWithdrawState, bot.Bunt)
 }

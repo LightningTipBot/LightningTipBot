@@ -1,7 +1,19 @@
 package telegram
 
-/*
-func (bot TipBot) shopsMainMenu(ctx context.Context, shops *Shops) *tb.ReplyMarkup {
+import (
+	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"github.com/eko/gocache/store"
+	log "github.com/sirupsen/logrus"
+	tb "gopkg.in/telebot.v3"
+	"time"
+)
+
+func (bot TipBot) shopsMainMenu(ctx intercept.Context, shops *Shops) *tb.ReplyMarkup {
 	browseShopButton := shopKeyboard.Data("🛍 Browse shops", "shops_browse", shops.ID)
 	shopNewShopButton := shopKeyboard.Data("✅ New Shop", "shops_newshop", shops.ID)
 	shopSettingsButton := shopKeyboard.Data("⚙️ Settings", "shops_settings", shops.ID)
@@ -20,7 +32,7 @@ func (bot TipBot) shopsMainMenu(ctx context.Context, shops *Shops) *tb.ReplyMark
 	return shopKeyboard
 }
 
-func (bot TipBot) shopsSettingsMenu(ctx context.Context, shops *Shops) *tb.ReplyMarkup {
+func (bot TipBot) shopsSettingsMenu(ctx intercept.Context, shops *Shops) *tb.ReplyMarkup {
 	shopShopsButton := shopKeyboard.Data("⬅️ Back", "shops_shops", shops.ID)
 	shopLinkShopButton := shopKeyboard.Data("🔗 Shop links", "shops_linkshop", shops.ID)
 	shopRenameShopButton := shopKeyboard.Data("⌨️ Rename a shop", "shops_renameshop", shops.ID)
@@ -51,7 +63,7 @@ func (bot TipBot) shopsSettingsMenu(ctx context.Context, shops *Shops) *tb.Reply
 }
 
 // shopItemSettingsMenu builds the buttons of the item settings
-func (bot TipBot) shopItemSettingsMenu(ctx context.Context, shop *Shop, item *ShopItem) *tb.ReplyMarkup {
+func (bot TipBot) shopItemSettingsMenu(ctx intercept.Context, shop *Shop, item *ShopItem) *tb.ReplyMarkup {
 	shopItemPriceButton = shopKeyboard.Data("💯 Set price", "shop_itemprice", item.ID)
 	shopItemDeleteButton = shopKeyboard.Data("🚫 Delete item", "shop_itemdelete", item.ID)
 	shopItemTitleButton = shopKeyboard.Data("⌨️ Set title", "shop_itemtitle", item.ID)
@@ -71,7 +83,7 @@ func (bot TipBot) shopItemSettingsMenu(ctx context.Context, shop *Shop, item *Sh
 }
 
 // shopItemConfirmBuyMenu builds the buttons to confirm a purchase
-func (bot TipBot) shopItemConfirmBuyMenu(ctx context.Context, shop *Shop, item *ShopItem) *tb.ReplyMarkup {
+func (bot TipBot) shopItemConfirmBuyMenu(ctx intercept.Context, shop *Shop, item *ShopItem) *tb.ReplyMarkup {
 	shopItemBuyButton = shopKeyboard.Data(fmt.Sprintf("💸 Pay %d sat", item.Price), "shop_itembuy", item.ID)
 	shopItemCancelBuyButton = shopKeyboard.Data("⬅️ Back", "shop_itemcancelbuy", item.ID)
 	buttons := []tb.Row{}
@@ -84,7 +96,7 @@ func (bot TipBot) shopItemConfirmBuyMenu(ctx context.Context, shop *Shop, item *
 }
 
 // shopMenu builds the buttons in the item browser
-func (bot TipBot) shopMenu(ctx context.Context, shop *Shop, item *ShopItem) *tb.ReplyMarkup {
+func (bot TipBot) shopMenu(ctx intercept.Context, shop *Shop, item *ShopItem) *tb.ReplyMarkup {
 	user := LoadUser(ctx)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
@@ -137,7 +149,7 @@ func (bot *TipBot) makseShopSelectionButtons(shops []*Shop, uniqueString string)
 // -------------- ShopView --------------
 
 // getUserShopview returns ShopView object from cache that holds information about the user's current browsing view
-func (bot *TipBot) getUserShopview(ctx context.Context, user *lnbits.User) (shopView ShopView, err error) {
+func (bot *TipBot) getUserShopview(ctx intercept.Context, user *lnbits.User) (shopView ShopView, err error) {
 	sv, err := bot.Cache.Get(fmt.Sprintf("shopview-%d", user.Telegram.ID))
 	if err != nil {
 		return
@@ -145,7 +157,7 @@ func (bot *TipBot) getUserShopview(ctx context.Context, user *lnbits.User) (shop
 	shopView = sv.(ShopView)
 	return
 }
-func (bot *TipBot) shopViewDeleteAllStatusMsgs(ctx context.Context, user *lnbits.User) (shopView ShopView, err error) {
+func (bot *TipBot) shopViewDeleteAllStatusMsgs(ctx intercept.Context, user *lnbits.User) (shopView ShopView, err error) {
 	mutex.Lock(fmt.Sprintf("shopview-delete-%d", user.Telegram.ID))
 	defer mutex.Unlock(fmt.Sprintf("shopview-delete-%d", user.Telegram.ID))
 	shopView, err = bot.getUserShopview(ctx, user)
@@ -167,7 +179,7 @@ func deleteStatusMessages(messages []*tb.Message, bot *TipBot) {
 
 // sendStatusMessage adds a status message to the shopVoew.statusMessages
 // slide and sends a status message to the user.
-func (bot *TipBot) sendStatusMessage(ctx context.Context, to tb.Recipient, what interface{}, options ...interface{}) (msg *tb.Message) {
+func (bot *TipBot) sendStatusMessage(ctx intercept.Context, to tb.Recipient, what interface{}, options ...interface{}) (msg *tb.Message) {
 	user := LoadUser(ctx)
 	id := fmt.Sprintf("shopview-delete-%d", user.Telegram.ID)
 
@@ -186,7 +198,7 @@ func (bot *TipBot) sendStatusMessage(ctx context.Context, to tb.Recipient, what 
 
 // sendStatusMessageAndDelete invokes sendStatusMessage and creates
 // a ticker to delete all status messages after 5 seconds.
-func (bot *TipBot) sendStatusMessageAndDelete(ctx context.Context, to tb.Recipient, what interface{}, options ...interface{}) (msg *tb.Message) {
+func (bot *TipBot) sendStatusMessageAndDelete(ctx intercept.Context, to tb.Recipient, what interface{}, options ...interface{}) (msg *tb.Message) {
 	user := LoadUser(ctx)
 	id := fmt.Sprintf("shopview-delete-%d", user.Telegram.ID)
 	statusMsg := bot.sendStatusMessage(ctx, to, what, options...)
@@ -207,7 +219,7 @@ func (bot *TipBot) sendStatusMessageAndDelete(ctx context.Context, to tb.Recipie
 // --------------- Shop ---------------
 
 // initUserShops is a helper function for creating a Shops for the user in the database
-func (bot *TipBot) initUserShops(ctx context.Context, user *lnbits.User) (*Shops, error) {
+func (bot *TipBot) initUserShops(ctx intercept.Context, user *lnbits.User) (*Shops, error) {
 	id := fmt.Sprintf("shops-%d", user.Telegram.ID)
 	shops := &Shops{
 		Base:     storage.New(storage.ID(id)),
@@ -220,7 +232,7 @@ func (bot *TipBot) initUserShops(ctx context.Context, user *lnbits.User) (*Shops
 }
 
 // getUserShops returns the Shops for the user
-func (bot *TipBot) getUserShops(ctx context.Context, user *lnbits.User) (*Shops, error) {
+func (bot *TipBot) getUserShops(ctx intercept.Context, user *lnbits.User) (*Shops, error) {
 	tx := &Shops{Base: storage.New(storage.ID(fmt.Sprintf("shops-%d", user.Telegram.ID)))}
 	sn, err := tx.Get(tx, bot.ShopBunt)
 	if err != nil {
@@ -232,7 +244,7 @@ func (bot *TipBot) getUserShops(ctx context.Context, user *lnbits.User) (*Shops,
 }
 
 // addUserShop adds a new Shop to the Shops of a user
-func (bot *TipBot) addUserShop(ctx context.Context, user *lnbits.User) (*Shop, error) {
+func (bot *TipBot) addUserShop(ctx intercept.Context, user *lnbits.User) (*Shop, error) {
 	shops, err := bot.getUserShops(ctx, user)
 	if err != nil {
 		return &Shop{}, err
@@ -255,7 +267,7 @@ func (bot *TipBot) addUserShop(ctx context.Context, user *lnbits.User) (*Shop, e
 }
 
 // getShop returns the Shop of a given ID
-func (bot *TipBot) getShop(ctx context.Context, shopId string) (*Shop, error) {
+func (bot *TipBot) getShop(ctx intercept.Context, shopId string) (*Shop, error) {
 	tx := &Shop{Base: storage.New(storage.ID(shopId))}
 	// immediatelly set intransaction to block duplicate calls
 	sn, err := tx.Get(tx, bot.ShopBunt)
@@ -269,4 +281,3 @@ func (bot *TipBot) getShop(ctx context.Context, shopId string) (*Shop, error) {
 	}
 	return shop, nil
 }
-*/

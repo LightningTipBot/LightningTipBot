@@ -37,26 +37,26 @@ func (bot TipBot) cancelLnUrlHandler(c *tb.Callback) {
 }
 
 // lnurlHandler is invoked on /lnurl command
-func (bot *TipBot) lnurlHandler(handler intercept.Handler) (intercept.Handler, error) {
+func (bot *TipBot) lnurlHandler(ctx intercept.Context) (intercept.Context, error) {
 	// commands:
 	// /lnurl
 	// /lnurl <LNURL>
 	// or /lnurl <amount> <LNURL>
-	m := handler.Message()
+	m := ctx.Message()
 	if m.Chat.Type != tb.ChatPrivate {
-		return handler, errors.Create(errors.NoPrivateChatError)
+		return ctx, errors.Create(errors.NoPrivateChatError)
 	}
 	log.Infof("[lnurlHandler] %s", m.Text)
-	user := LoadUser(handler.Ctx)
+	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return handler, errors.Create(errors.UserNoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 
 	// if only /lnurl is entered, show the lnurl of the user
 	if m.Text == "/lnurl" {
-		return bot.lnurlReceiveHandler(handler)
+		return bot.lnurlReceiveHandler(ctx)
 	}
-	statusMsg := bot.trySendMessageEditable(m.Sender, Translate(handler.Ctx, "lnurlResolvingUrlMessage"))
+	statusMsg := bot.trySendMessageEditable(m.Sender, Translate(ctx, "lnurlResolvingUrlMessage"))
 
 	var lnurlSplit string
 	split := strings.Split(m.Text, " ")
@@ -68,9 +68,9 @@ func (bot *TipBot) lnurlHandler(handler intercept.Handler) (intercept.Handler, e
 	} else if len(split) > 1 {
 		lnurlSplit = split[1]
 	} else {
-		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(handler.Ctx, "errorReasonMessage"), "Could not parse command."))
+		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), "Could not parse command."))
 		log.Warnln("[/lnurl] Could not parse command.")
-		return handler, errors.Create(errors.InvalidSyntaxError)
+		return ctx, errors.Create(errors.InvalidSyntaxError)
 	}
 
 	// get rid of the URI prefix
@@ -80,18 +80,18 @@ func (bot *TipBot) lnurlHandler(handler intercept.Handler) (intercept.Handler, e
 	// HandleLNURL by fiatjaf/go-lnurl
 	_, params, err := bot.HandleLNURL(lnurlSplit)
 	if err != nil {
-		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(handler.Ctx, "errorReasonMessage"), "LNURL error."))
+		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), "LNURL error."))
 		// bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), err.Error()))
 		log.Warnf("[HandleLNURL] Error: %s", err.Error())
-		return handler, err
+		return ctx, err
 	}
 	switch params.(type) {
 	case lnurl.LNURLAuthParams:
 		authParams := &LnurlAuthState{LNURLAuthParams: params.(lnurl.LNURLAuthParams)}
 		log.Infof("[LNURL-auth] %s", authParams.LNURLAuthParams.Callback)
 		bot.tryDeleteMessage(statusMsg)
-		handler.Ctx, err = bot.lnurlAuthHandler(handler.Ctx, m, authParams)
-		return handler, err
+		ctx.Context, err = bot.lnurlAuthHandler(ctx, m, authParams)
+		return ctx, err
 
 	case lnurl.LNURLPayParams:
 		payParams := &LnurlPayState{LNURLPayParams: params.(lnurl.LNURLPayParams)}
@@ -109,23 +109,23 @@ func (bot *TipBot) lnurlHandler(handler intercept.Handler) (intercept.Handler, e
 			bot.trySendMessage(m.Sender, fmt.Sprintf("`%s`", payParams.LNURLPayParams.Metadata.Description))
 		}
 		// ask whether to make payment
-		bot.lnurlPayHandler(handler, payParams)
+		bot.lnurlPayHandler(ctx, payParams)
 
 	case lnurl.LNURLWithdrawResponse:
 		withdrawParams := &LnurlWithdrawState{LNURLWithdrawResponse: params.(lnurl.LNURLWithdrawResponse)}
 		log.Infof("[LNURL-w] %s", withdrawParams.LNURLWithdrawResponse.Callback)
 		bot.tryDeleteMessage(statusMsg)
-		bot.lnurlWithdrawHandler(handler, withdrawParams)
+		bot.lnurlWithdrawHandler(ctx, withdrawParams)
 	default:
 		if err == nil {
 			err = fmt.Errorf("invalid LNURL type")
 		}
 		log.Warnln(err)
-		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(handler.Ctx, "errorReasonMessage"), err.Error()))
+		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), err.Error()))
 		// bot.trySendMessage(m.Sender, err.Error())
-		return handler, err
+		return ctx, err
 	}
-	return handler, nil
+	return ctx, nil
 }
 
 func (bot *TipBot) UserGetLightningAddress(user *lnbits.User) (string, error) {
@@ -154,28 +154,28 @@ func UserGetLNURL(user *lnbits.User) (string, error) {
 }
 
 // lnurlReceiveHandler outputs the LNURL of the user
-func (bot TipBot) lnurlReceiveHandler(handler intercept.Handler) (intercept.Handler, error) {
-	m := handler.Message()
-	fromUser := LoadUser(handler.Ctx)
+func (bot TipBot) lnurlReceiveHandler(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
+	fromUser := LoadUser(ctx)
 	lnurlEncode, err := UserGetLNURL(fromUser)
 	if err != nil {
 		errmsg := fmt.Sprintf("[userLnurlHandler] Failed to get LNURL: %s", err.Error())
 		log.Errorln(errmsg)
-		bot.trySendMessage(m.Sender, Translate(handler.Ctx, "lnurlNoUsernameMessage"))
-		return handler, err
+		bot.trySendMessage(m.Sender, Translate(ctx, "lnurlNoUsernameMessage"))
+		return ctx, err
 	}
 	// create qr code
 	qr, err := qrcode.Encode(lnurlEncode, qrcode.Medium, 256)
 	if err != nil {
 		errmsg := fmt.Sprintf("[userLnurlHandler] Failed to create QR code for LNURL: %s", err.Error())
 		log.Errorln(errmsg)
-		return handler, err
+		return ctx, err
 	}
 
-	bot.trySendMessage(m.Sender, Translate(handler.Ctx, "lnurlReceiveInfoText"))
+	bot.trySendMessage(m.Sender, Translate(ctx, "lnurlReceiveInfoText"))
 	// send the lnurl QR code
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lnurlEncode)})
-	return handler, nil
+	return ctx, nil
 }
 
 // fiatjaf/go-lnurl 1.8.4 with proxy

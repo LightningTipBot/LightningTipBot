@@ -96,34 +96,34 @@ var (
 	groupReceiveTicketInvoice           = "🎟 You received *%d sat* for a ticket for group `%s` paid by user %s."
 )
 
-func (bot TipBot) groupHandler(handler intercept.Handler) (intercept.Handler, error) {
-	m := handler.Message()
+func (bot TipBot) groupHandler(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
 	splits := strings.Split(m.Text, " ")
 	if len(splits) == 1 {
-		return handler, nil
+		return ctx, nil
 	} else if len(splits) > 1 {
 		if splits[1] == "join" {
-			return bot.groupRequestJoinHandler(handler)
+			return bot.groupRequestJoinHandler(ctx)
 		}
 		if splits[1] == "add" {
-			return bot.addGroupHandler(handler)
+			return bot.addGroupHandler(ctx)
 		}
 		if splits[1] == "remove" {
 			// todo -- implement this
 			// return bot.addGroupHandler(ctx, m)
 		}
 	}
-	return handler, nil
+	return ctx, nil
 }
 
 // groupRequestJoinHandler sends a payment request to the user who wants to join a group
-func (bot TipBot) groupRequestJoinHandler(handler intercept.Handler) (intercept.Handler, error) {
-	user := LoadUser(handler.Ctx)
+func (bot TipBot) groupRequestJoinHandler(ctx intercept.Context) (intercept.Context, error) {
+	user := LoadUser(ctx)
 	// // reply only in private message
-	if handler.Chat().Type != tb.ChatPrivate {
-		return handler, fmt.Errorf("not private chat")
+	if ctx.Chat().Type != tb.ChatPrivate {
+		return ctx, fmt.Errorf("not private chat")
 	}
-	splits := strings.Split(handler.Text(), " ")
+	splits := strings.Split(ctx.Text(), " ")
 	// if the command was /group join
 	splitIdx := 1
 	// we also have the simpler command /join that can be used
@@ -131,17 +131,17 @@ func (bot TipBot) groupRequestJoinHandler(handler intercept.Handler) (intercept.
 	if splits[0] == "/join" {
 		splitIdx = 0
 	}
-	if len(splits) != splitIdx+2 || len(handler.Message().Text) > 100 {
-		bot.trySendMessage(handler.Message().Chat, grouJoinGroupHelpMessage)
-		return handler, nil
+	if len(splits) != splitIdx+2 || len(ctx.Message().Text) > 100 {
+		bot.trySendMessage(ctx.Message().Chat, grouJoinGroupHelpMessage)
+		return ctx, nil
 	}
 	groupName := strings.ToLower(splits[splitIdx+1])
 
 	group := &Group{}
 	tx := bot.GroupsDb.Where("name = ? COLLATE NOCASE", groupName).First(group)
 	if tx.Error != nil {
-		bot.trySendMessage(handler.Message().Chat, groupNotFoundMessage)
-		return handler, fmt.Errorf("group not found")
+		bot.trySendMessage(ctx.Message().Chat, groupNotFoundMessage)
+		return ctx, fmt.Errorf("group not found")
 	}
 
 	// create tickets
@@ -149,7 +149,7 @@ func (bot TipBot) groupRequestJoinHandler(handler intercept.Handler) (intercept.
 	invoiceEvent := &InvoiceEvent{
 		Base:         storage.New(storage.ID(id)),
 		User:         group.Ticket.Creator,
-		LanguageCode: handler.Ctx.Value("publicLanguageCode").(string),
+		LanguageCode: ctx.Value("publicLanguageCode").(string),
 		Payer:        user,
 		Chat:         &tb.Chat{ID: group.ID},
 		CallbackData: id,
@@ -164,18 +164,18 @@ func (bot TipBot) groupRequestJoinHandler(handler intercept.Handler) (intercept.
 		// save ticketevent for later
 		runtime.IgnoreError(ticketEvent.Set(ticketEvent, bot.Bunt))
 		bot.groupGetInviteLinkHandler(invoiceEvent)
-		return handler, nil
+		return ctx, nil
 	}
 
 	// create an invoice
 	memo := fmt.Sprintf(groupInvoiceMemo, groupName)
 	var err error
-	invoiceEvent, err = bot.createGroupTicketInvoice(handler.Ctx, user, group, memo, InvoiceCallbackGroupTicket, id)
+	invoiceEvent, err = bot.createGroupTicketInvoice(ctx, user, group, memo, InvoiceCallbackGroupTicket, id)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
-		bot.trySendMessage(user.Telegram, Translate(handler.Ctx, "errorTryLaterMessage"))
+		bot.trySendMessage(user.Telegram, Translate(ctx, "errorTryLaterMessage"))
 		log.Errorln(errmsg)
-		return handler, err
+		return ctx, err
 	}
 
 	ticketEvent.InvoiceEvent = invoiceEvent
@@ -187,11 +187,11 @@ func (bot TipBot) groupRequestJoinHandler(handler intercept.Handler) (intercept.
 	if err != nil {
 		errmsg := fmt.Sprintf("[/group] Error: Could not get user balance: %s", err.Error())
 		log.Errorln(errmsg)
-		bot.trySendMessage(handler.Message().Sender, Translate(handler.Ctx, "errorTryLaterMessage"))
-		return handler, errors.New(errors.GetBalanceError, err)
+		bot.trySendMessage(ctx.Message().Sender, Translate(ctx, "errorTryLaterMessage"))
+		return ctx, errors.New(errors.GetBalanceError, err)
 	}
 	if balance >= group.Ticket.Price {
-		return bot.groupSendPayButtonHandler(handler, *ticketEvent)
+		return bot.groupSendPayButtonHandler(ctx, *ticketEvent)
 	}
 
 	// otherwise we send a payment request
@@ -200,59 +200,59 @@ func (bot TipBot) groupRequestJoinHandler(handler intercept.Handler) (intercept.
 	qr, err := qrcode.Encode(invoiceEvent.PaymentRequest, qrcode.Medium, 256)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Failed to create QR code for invoice: %s", err.Error())
-		bot.trySendMessage(user.Telegram, Translate(handler.Ctx, "errorTryLaterMessage"))
+		bot.trySendMessage(user.Telegram, Translate(ctx, "errorTryLaterMessage"))
 		log.Errorln(errmsg)
-		return handler, err
+		return ctx, err
 	}
-	ticketEvent.Message = bot.trySendMessage(handler.Message().Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoiceEvent.PaymentRequest)})
-	bot.trySendMessage(handler.Message().Sender, fmt.Sprintf(groupPayInvoiceMessage, groupName))
-	return handler, nil
+	ticketEvent.Message = bot.trySendMessage(ctx.Message().Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoiceEvent.PaymentRequest)})
+	bot.trySendMessage(ctx.Message().Sender, fmt.Sprintf(groupPayInvoiceMessage, groupName))
+	return ctx, nil
 }
 
-func (bot *TipBot) groupSendPayButtonHandler(handler intercept.Handler, ticket TicketEvent) (intercept.Handler, error) {
+func (bot *TipBot) groupSendPayButtonHandler(ctx intercept.Context, ticket TicketEvent) (intercept.Context, error) {
 	// object that holds all information about the send payment
 	// // // create inline buttons
-	btnPayTicket := ticketPayConfirmationMenu.Data(Translate(handler.Ctx, "payButtonMessage"), "pay_ticket", ticket.Base.ID)
+	btnPayTicket := ticketPayConfirmationMenu.Data(Translate(ctx, "payButtonMessage"), "pay_ticket", ticket.Base.ID)
 	ticketPayConfirmationMenu.Inline(
 		ticketPayConfirmationMenu.Row(
 			btnPayTicket),
 	)
-	confirmText := fmt.Sprintf(Translate(handler.Ctx, "confirmPayInvoiceMessage"), ticket.Group.Ticket.Price)
+	confirmText := fmt.Sprintf(Translate(ctx, "confirmPayInvoiceMessage"), ticket.Group.Ticket.Price)
 	if len(ticket.Group.Ticket.Memo) > 0 {
-		confirmText = confirmText + fmt.Sprintf(Translate(handler.Ctx, "confirmPayAppendMemo"), str.MarkdownEscape(ticket.Group.Ticket.Memo))
+		confirmText = confirmText + fmt.Sprintf(Translate(ctx, "confirmPayAppendMemo"), str.MarkdownEscape(ticket.Group.Ticket.Memo))
 	}
-	bot.trySendMessageEditable(handler.Message().Chat, confirmText, ticketPayConfirmationMenu)
-	return handler, nil
+	bot.trySendMessageEditable(ctx.Message().Chat, confirmText, ticketPayConfirmationMenu)
+	return ctx, nil
 }
 
-func (bot *TipBot) groupConfirmPayButtonHandler(handler intercept.Handler) (intercept.Handler, error) {
-	tx := &TicketEvent{Base: storage.New(storage.ID(handler.Callback().Data))}
-	mutex.LockWithContext(handler.Ctx, tx.ID)
-	defer mutex.UnlockWithContext(handler.Ctx, tx.ID)
+func (bot *TipBot) groupConfirmPayButtonHandler(ctx intercept.Context) (intercept.Context, error) {
+	tx := &TicketEvent{Base: storage.New(storage.ID(ctx.Callback().Data))}
+	mutex.LockWithContext(ctx, tx.ID)
+	defer mutex.UnlockWithContext(ctx, tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[groupConfirmPayButtonHandler] %s", err.Error())
-		return handler, err
+		return ctx, err
 	}
 	ticketEvent := sn.(*TicketEvent)
-	c := handler.Callback()
+	c := ctx.Callback()
 	// onnly the correct user can press
 	if ticketEvent.Payer.Telegram.ID != c.Sender.ID {
-		return handler, errors.Create(errors.UnknownError)
+		return ctx, errors.Create(errors.UnknownError)
 	}
 	if !ticketEvent.Active {
 		log.Errorf("[confirmPayHandler] send not active anymore")
 		bot.tryEditMessage(c, i18n.Translate(ticketEvent.LanguageCode, "errorTryLaterMessage"), &tb.ReplyMarkup{})
 		bot.tryDeleteMessage(c)
-		return handler, errors.Create(errors.NotActiveError)
+		return ctx, errors.Create(errors.NotActiveError)
 	}
 	defer ticketEvent.Set(ticketEvent, bot.Bunt)
 
-	user := LoadUser(handler.Ctx)
+	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		bot.tryDeleteMessage(c)
-		return handler, errors.Create(errors.UserNoWalletError)
+		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 
 	log.Infof("[/pay] Attempting %s's invoice %s (%d sat)", GetUserStr(user.Telegram), ticketEvent.ID, ticketEvent.Group.Ticket.Price)
@@ -263,12 +263,12 @@ func (bot *TipBot) groupConfirmPayButtonHandler(handler intercept.Handler) (inte
 		err = fmt.Errorf(i18n.Translate(ticketEvent.LanguageCode, "invoiceUndefinedErrorMessage"))
 		bot.tryEditMessage(c, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "invoicePaymentFailedMessage"), err.Error()), &tb.ReplyMarkup{})
 		log.Errorln(errmsg)
-		return handler, err
+		return ctx, err
 	}
 
 	// update the message and remove the button
 	bot.tryEditMessage(c, i18n.Translate(ticketEvent.LanguageCode, "invoicePaidMessage"), &tb.ReplyMarkup{})
-	return handler, nil
+	return ctx, nil
 }
 
 // groupGetInviteLinkHandler is called when the invoice is paid and sends a one-time group invite link to the payer
@@ -366,28 +366,28 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 	return
 }
 
-func (bot TipBot) addGroupHandler(handler intercept.Handler) (intercept.Handler, error) {
-	m := handler.Message()
+func (bot TipBot) addGroupHandler(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
 	if m.Chat.Type == tb.ChatPrivate {
-		return handler, fmt.Errorf("not in group")
+		return ctx, fmt.Errorf("not in group")
 	}
 	// parse command "/group add <grou_name> [<amount>]"
 	splits := strings.Split(m.Text, " ")
 	if len(splits) < 3 || len(m.Text) > 100 {
 		bot.trySendMessage(m.Chat, groupAddGroupHelpMessage)
-		return handler, nil
+		return ctx, nil
 	}
 	groupName := strings.ToLower(splits[2])
 
-	user := LoadUser(handler.Ctx)
+	user := LoadUser(ctx)
 	// check if the user is the owner of the group
 	if !bot.isOwner(m.Chat, user.Telegram) {
-		return handler, fmt.Errorf("not owner")
+		return ctx, fmt.Errorf("not owner")
 	}
 
 	if !bot.isAdminAndCanInviteUsers(m.Chat, bot.Telegram.Me) {
 		bot.trySendMessage(m.Chat, groupBotIsNotAdminMessage)
-		return handler, fmt.Errorf("bot is not admin")
+		return ctx, fmt.Errorf("bot is not admin")
 	}
 
 	// check if the group with this name is already in db
@@ -398,7 +398,7 @@ func (bot TipBot) addGroupHandler(handler intercept.Handler) (intercept.Handler,
 		// if it is already added, check if this user is the admin
 		if user.Telegram.ID != group.Owner.ID || group.ID != m.Chat.ID {
 			bot.trySendMessage(m.Chat, groupNameExists)
-			return handler, fmt.Errorf("not owner")
+			return ctx, fmt.Errorf("not owner")
 		}
 	}
 
@@ -406,8 +406,8 @@ func (bot TipBot) addGroupHandler(handler intercept.Handler) (intercept.Handler,
 	if amount_str, err := getArgumentFromCommand(m.Text, 3); err == nil {
 		amount, err = getAmount(amount_str)
 		if err != nil {
-			bot.trySendMessage(m.Sender, Translate(handler.Ctx, "lnurlInvalidAmountMessage"))
-			return handler, err
+			bot.trySendMessage(m.Sender, Translate(ctx, "lnurlInvalidAmountMessage"))
+			return ctx, err
 		}
 	}
 
@@ -433,7 +433,7 @@ func (bot TipBot) addGroupHandler(handler intercept.Handler) (intercept.Handler,
 	log.Infof("[group] Ticket of %d sat added to group %s.", group.Ticket.Price, group.Name)
 	bot.trySendMessage(m.Chat, fmt.Sprintf(groupAddedMessage, str.MarkdownEscape(m.Chat.Title), group.Name, group.Ticket.Price, GetUserStrMd(bot.Telegram.Me), group.Name))
 
-	return handler, nil
+	return ctx, nil
 }
 
 func (bot *TipBot) createGroupTicketInvoice(ctx context.Context, payer *lnbits.User, group *Group, memo string, callback int, callbackData string) (*InvoiceEvent, error) {

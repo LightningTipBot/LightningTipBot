@@ -20,32 +20,32 @@ import (
 	"gorm.io/gorm"
 )
 
-func (bot TipBot) startHandler(handler intercept.Handler) (intercept.Handler, error) {
-	if !handler.Message().Private() {
-		return handler, errors.Create(errors.NoPrivateChatError)
+func (bot TipBot) startHandler(ctx intercept.Context) (intercept.Context, error) {
+	if !ctx.Message().Private() {
+		return ctx, errors.Create(errors.NoPrivateChatError)
 	}
 	// ATTENTION: DO NOT CALL ANY HANDLER BEFORE THE WALLET IS CREATED
 	// WILL RESULT IN AN ENDLESS LOOP OTHERWISE
 	// bot.helpHandler(m)
-	log.Printf("[⭐️ /start] New user: %s (%d)\n", GetUserStr(handler.Sender()), handler.Sender().ID)
-	walletCreationMsg := bot.trySendMessageEditable(handler.Sender(), Translate(handler.Ctx, "startSettingWalletMessage"))
-	user, err := bot.initWallet(handler.Sender())
+	log.Printf("[⭐️ /start] New user: %s (%d)\n", GetUserStr(ctx.Sender()), ctx.Sender().ID)
+	walletCreationMsg := bot.trySendMessageEditable(ctx.Sender(), Translate(ctx, "startSettingWalletMessage"))
+	user, err := bot.initWallet(ctx.Sender())
 	if err != nil {
 		log.Errorln(fmt.Sprintf("[startHandler] Error with initWallet: %s", err.Error()))
-		bot.tryEditMessage(walletCreationMsg, Translate(handler.Ctx, "startWalletErrorMessage"))
-		return handler, err
+		bot.tryEditMessage(walletCreationMsg, Translate(ctx, "startWalletErrorMessage"))
+		return ctx, err
 	}
 	bot.tryDeleteMessage(walletCreationMsg)
-	handler.Ctx = context.WithValue(handler.Ctx, "user", user)
-	bot.helpHandler(handler)
-	bot.trySendMessage(handler.Sender(), Translate(handler.Ctx, "startWalletReadyMessage"))
-	bot.balanceHandler(handler)
+	ctx.Context = context.WithValue(ctx, "user", user)
+	bot.helpHandler(ctx)
+	bot.trySendMessage(ctx.Sender(), Translate(ctx, "startWalletReadyMessage"))
+	bot.balanceHandler(ctx)
 
 	// send the user a warning about the fact that they need to set a username
-	if len(handler.Sender().Username) == 0 {
-		bot.trySendMessage(handler.Sender(), Translate(handler.Ctx, "startNoUsernameMessage"), tb.NoPreview)
+	if len(ctx.Sender().Username) == 0 {
+		bot.trySendMessage(ctx.Sender(), Translate(ctx, "startNoUsernameMessage"), tb.NoPreview)
 	}
-	return handler, nil
+	return ctx, nil
 }
 
 func (bot TipBot) initWallet(tguser *tb.User) (*lnbits.User, error) {

@@ -43,12 +43,12 @@ func startApiServer(bot *telegram.TipBot) {
 	// start external api server
 	s := api.NewServer(internal.Configuration.Bot.LNURLServerUrl.Host)
 
-	// append lnurl handler functions
+	// append lnurl ctx functions
 	lnUrl := lnurl.New(bot)
 	s.AppendRoute("/.well-known/lnurlp/{username}", lnUrl.Handle, http.MethodGet)
 	s.AppendRoute("/@{username}", lnUrl.Handle, http.MethodGet)
 
-	// append lndhub handler functions
+	// append lndhub ctx functions
 	hub := lndhub.New(bot)
 	s.AppendRoute(`/lndhub/ext/{.*}`, hub.Handle)
 	s.AppendRoute(`/lndhub/ext`, hub.Handle)

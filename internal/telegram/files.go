@@ -7,28 +7,28 @@ import (
 	tb "gopkg.in/telebot.v3"
 )
 
-func (bot *TipBot) fileHandler(handler intercept.Handler) (intercept.Handler, error) {
-	m := handler.Message()
+func (bot *TipBot) fileHandler(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
 	if m.Chat.Type != tb.ChatPrivate {
-		return handler, errors.Create(errors.NoPrivateChatError)
+		return ctx, errors.Create(errors.NoPrivateChatError)
 	}
-	user := LoadUser(handler.Ctx)
+	user := LoadUser(ctx)
 	if c := stateCallbackMessage[user.StateKey]; c != nil {
-		// found handler for this state
+		// found ctx for this state
 		// now looking for user state reset ticker
 		ticker := runtime.GetTicker(user.ID)
 		if !ticker.Started {
 			ticker.Do(func() {
 				ResetUserState(user, bot)
 				// removing ticker asap done
-				//bot.shopViewDeleteAllStatusMsgs(handler.Ctx, user)
+				//bot.shopViewDeleteAllStatusMsgs(ctx.Ctx, user)
 				runtime.RemoveTicker(user.ID)
 			})
 		} else {
 			ticker.ResetChan <- struct{}{}
 		}
 
-		return c(handler)
+		return c(ctx)
 	}
-	return handler, errors.Create(errors.NoFileFoundError)
+	return ctx, errors.Create(errors.NoFileFoundError)
 }

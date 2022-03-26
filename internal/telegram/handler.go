@@ -37,7 +37,7 @@ func getDefaultAfterInterceptor(bot TipBot) []intercept.Func {
 	return []intercept.Func{}
 }
 
-// registerHandlerWithInterceptor will register a handler with all the predefined interceptors, based on the interceptor type
+// registerHandlerWithInterceptor will register a ctx with all the predefined interceptors, based on the interceptor type
 func (bot TipBot) registerHandlerWithInterceptor(h InterceptionWrapper) {
 	h.Interceptor.Before = append(getDefaultBeforeInterceptor(bot), h.Interceptor.Before...)
 	//h.Interceptor.After = append(h.Interceptor.After, getDefaultAfterInterceptor(bot)...)
@@ -148,7 +148,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 		},
 		/*{
 			Endpoints: []interface{}{"/shops"},
-			Handler:   bot.shopsHandler,
+			Context:   bot.shopsHandler,
 			Interceptor: &Interceptor{
 
 				Before: []intercept.Func{
@@ -163,7 +163,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 		},
 		{
 			Endpoints: []interface{}{"/shop"},
-			Handler:   bot.shopHandler,
+			Context:   bot.shopHandler,
 			Interceptor: &Interceptor{
 
 				Before: []intercept.Func{
@@ -707,7 +707,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 				},
 			},
 		},
-		/*{
+		{
 			Endpoints: []interface{}{&shopNewShopButton},
 			Handler:   bot.shopNewShopHandler,
 			Interceptor: &Interceptor{
@@ -1080,6 +1080,6 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
 				}},
-		},*/
+		},
 	}
 }
