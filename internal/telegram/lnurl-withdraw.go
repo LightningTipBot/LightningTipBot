@@ -214,15 +214,15 @@ func (bot *TipBot) confirmWithdrawHandler(handler intercept.Handler) (intercept.
 	}
 	if !lnurlWithdrawState.Active {
 		log.Errorf("[confirmPayHandler] send not active anymore")
-		bot.tryEditMessage(c.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"), &tb.ReplyMarkup{})
-		bot.tryDeleteMessage(c.Message)
+		bot.tryEditMessage(c, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"), &tb.ReplyMarkup{})
+		bot.tryDeleteMessage(c)
 		return handler, errors.Create(errors.NotActiveError)
 	}
 	defer lnurlWithdrawState.Set(lnurlWithdrawState, bot.Bunt)
 
 	user := LoadUser(handler.Ctx)
 	if user.Wallet == nil {
-		bot.tryDeleteMessage(c.Message)
+		bot.tryDeleteMessage(c)
 		return handler, errors.Create(errors.UserNoWalletError)
 	}
 
@@ -331,6 +331,6 @@ func (bot *TipBot) cancelWithdrawHandler(handler intercept.Handler) (intercept.H
 	if lnurlWithdrawState.From.Telegram.ID != c.Sender.ID {
 		return handler, errors.Create(errors.UnknownError)
 	}
-	bot.tryEditMessage(c.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlWithdrawCancelled"), &tb.ReplyMarkup{})
+	bot.tryEditMessage(c, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlWithdrawCancelled"), &tb.ReplyMarkup{})
 	return handler, lnurlWithdrawState.Inactivate(lnurlWithdrawState, bot.Bunt)
 }

@@ -243,15 +243,15 @@ func (bot *TipBot) groupConfirmPayButtonHandler(handler intercept.Handler) (inte
 	}
 	if !ticketEvent.Active {
 		log.Errorf("[confirmPayHandler] send not active anymore")
-		bot.tryEditMessage(c.Message, i18n.Translate(ticketEvent.LanguageCode, "errorTryLaterMessage"), &tb.ReplyMarkup{})
-		bot.tryDeleteMessage(c.Message)
+		bot.tryEditMessage(c, i18n.Translate(ticketEvent.LanguageCode, "errorTryLaterMessage"), &tb.ReplyMarkup{})
+		bot.tryDeleteMessage(c)
 		return handler, errors.Create(errors.NotActiveError)
 	}
 	defer ticketEvent.Set(ticketEvent, bot.Bunt)
 
 	user := LoadUser(handler.Ctx)
 	if user.Wallet == nil {
-		bot.tryDeleteMessage(c.Message)
+		bot.tryDeleteMessage(c)
 		return handler, errors.Create(errors.UserNoWalletError)
 	}
 
@@ -261,13 +261,13 @@ func (bot *TipBot) groupConfirmPayButtonHandler(handler intercept.Handler) (inte
 	if err != nil {
 		errmsg := fmt.Sprintf("[/pay] Could not pay invoice of %s: %s", GetUserStr(user.Telegram), err)
 		err = fmt.Errorf(i18n.Translate(ticketEvent.LanguageCode, "invoiceUndefinedErrorMessage"))
-		bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "invoicePaymentFailedMessage"), err.Error()), &tb.ReplyMarkup{})
+		bot.tryEditMessage(c, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "invoicePaymentFailedMessage"), err.Error()), &tb.ReplyMarkup{})
 		log.Errorln(errmsg)
 		return handler, err
 	}
 
 	// update the message and remove the button
-	bot.tryEditMessage(c.Message, i18n.Translate(ticketEvent.LanguageCode, "invoicePaidMessage"), &tb.ReplyMarkup{})
+	bot.tryEditMessage(c, i18n.Translate(ticketEvent.LanguageCode, "invoicePaidMessage"), &tb.ReplyMarkup{})
 	return handler, nil
 }
 

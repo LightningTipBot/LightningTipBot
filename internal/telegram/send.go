@@ -365,7 +365,7 @@ func (bot *TipBot) cancelSendHandler(handler intercept.Handler) (intercept.Handl
 		return handler, errors.Create(errors.UnknownError)
 	}
 	// delete and send instead of edit for the keyboard to pop up after sending
-	bot.tryDeleteMessage(c.Message)
+	bot.tryDeleteMessage(c)
 	bot.trySendMessage(c.Message.Chat, i18n.Translate(sendData.LanguageCode, "sendCancelledMessage"))
 	sendData.Inactivate(sendData, bot.Bunt)
 	return handler, nil

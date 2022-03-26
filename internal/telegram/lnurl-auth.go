@@ -120,7 +120,7 @@ func (bot *TipBot) confirmLnurlAuthHandler(handler intercept.Handler) (intercept
 		return handler, err
 	}
 	if sentsigres.Status == "ERROR" {
-		bot.tryEditMessage(c.Message, fmt.Sprintf(Translate(handler.Ctx, "errorReasonMessage"), sentsigres.Reason))
+		bot.tryEditMessage(c, fmt.Sprintf(Translate(handler.Ctx, "errorReasonMessage"), sentsigres.Reason))
 		return handler, err
 	}
 	bot.editSingleButton(handler.Ctx, c.Message, lnurlAuthState.Message.Text, Translate(handler.Ctx, "lnurlSuccessfulLogin"))
@@ -146,7 +146,7 @@ func (bot *TipBot) cancelLnurlAuthHandler(handler intercept.Handler) (intercept.
 		return handler, errors.Create(errors.UnknownError)
 	}
 	// delete and send instead of edit for the keyboard to pop up after sending
-	bot.tryEditMessage(c.Message, i18n.Translate(lnurlAuthState.LanguageCode, "loginCancelledMessage"), &tb.ReplyMarkup{})
+	bot.tryEditMessage(c, i18n.Translate(lnurlAuthState.LanguageCode, "loginCancelledMessage"), &tb.ReplyMarkup{})
 	// bot.tryEditMessage(c.Message, i18n.Translate(payData.LanguageCode, "paymentCancelledMessage"), &tb.ReplyMarkup{})
 	return handler, lnurlAuthState.Inactivate(lnurlAuthState, bot.Bunt)
 }

@@ -258,7 +258,7 @@ func (bot *TipBot) sendInlineReceiveHandler(handler intercept.Handler) (intercep
 	if !success {
 		errMsg := fmt.Sprintf("[acceptInlineReceiveHandler] Transaction failed: %s", err.Error())
 		log.Errorln(errMsg)
-		bot.tryEditMessage(c.Message, i18n.Translate(inlineReceive.LanguageCode, "inlineReceiveFailedMessage"), &tb.ReplyMarkup{})
+		bot.tryEditMessage(c, i18n.Translate(inlineReceive.LanguageCode, "inlineReceiveFailedMessage"), &tb.ReplyMarkup{})
 		return handler, errors.Create(errors.UnknownError)
 	}
 
@@ -367,7 +367,7 @@ func (bot *TipBot) cancelInlineReceiveHandler(handler intercept.Handler) (interc
 	if c.Sender.ID != inlineReceive.To.Telegram.ID {
 		return handler, errors.Create(errors.UnknownError)
 	}
-	bot.tryEditMessage(c.Message, i18n.Translate(inlineReceive.LanguageCode, "inlineReceiveCancelledMessage"), &tb.ReplyMarkup{})
+	bot.tryEditMessage(c, i18n.Translate(inlineReceive.LanguageCode, "inlineReceiveCancelledMessage"), &tb.ReplyMarkup{})
 	// set the inlineReceive inactive
 	inlineReceive.Active = false
 	return handler, inlineReceive.Set(inlineReceive, bot.Bunt)

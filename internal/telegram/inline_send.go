@@ -230,7 +230,7 @@ func (bot *TipBot) acceptInlineSendHandler(handler intercept.Handler) (intercept
 	if !success {
 		errMsg := fmt.Sprintf("[sendInline] Transaction failed: %s", err.Error())
 		log.Errorln(errMsg)
-		bot.tryEditMessage(c.Message, i18n.Translate(inlineSend.LanguageCode, "inlineSendFailedMessage"), &tb.ReplyMarkup{})
+		bot.tryEditMessage(c, i18n.Translate(inlineSend.LanguageCode, "inlineSendFailedMessage"), &tb.ReplyMarkup{})
 		return handler, errors.Create(errors.UnknownError)
 	}
 
@@ -244,7 +244,7 @@ func (bot *TipBot) acceptInlineSendHandler(handler intercept.Handler) (intercept
 	if !to.Initialized {
 		inlineSend.Message += "\n\n" + fmt.Sprintf(i18n.Translate(inlineSend.LanguageCode, "inlineSendCreateWalletMessage"), GetUserStrMd(bot.Telegram.Me))
 	}
-	bot.tryEditMessage(c.Message, inlineSend.Message, &tb.ReplyMarkup{})
+	bot.tryEditMessage(c, inlineSend.Message, &tb.ReplyMarkup{})
 	// notify users
 	bot.trySendMessage(to.Telegram, fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "sendReceivedMessage"), fromUserStrMd, amount))
 	bot.trySendMessage(fromUser.Telegram, fmt.Sprintf(i18n.Translate(fromUser.Telegram.LanguageCode, "sendSentMessage"), amount, toUserStrMd))
@@ -270,7 +270,7 @@ func (bot *TipBot) cancelInlineSendHandler(handler intercept.Handler) (intercept
 	if c.Sender.ID != inlineSend.From.Telegram.ID {
 		return handler, errors.Create(errors.UnknownError)
 	}
-	bot.tryEditMessage(c.Message, i18n.Translate(inlineSend.LanguageCode, "sendCancelledMessage"), &tb.ReplyMarkup{})
+	bot.tryEditMessage(c, i18n.Translate(inlineSend.LanguageCode, "sendCancelledMessage"), &tb.ReplyMarkup{})
 	// set the inlineSend inactive
 	inlineSend.Active = false
 	return handler, inlineSend.Set(inlineSend, bot.Bunt)

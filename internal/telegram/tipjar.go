@@ -252,7 +252,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(handler intercept.Handler) (interce
 	to := inlineTipjar.To
 	if !inlineTipjar.Active {
 		log.Errorf(fmt.Sprintf("[tipjar] tipjar %s inactive.", inlineTipjar.ID))
-		bot.tryEditMessage(c.Message, i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarCancelledMessage"), &tb.ReplyMarkup{})
+		bot.tryEditMessage(c, i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarCancelledMessage"), &tb.ReplyMarkup{})
 		return handler, errors.Create(errors.NotActiveError)
 	}
 
@@ -318,7 +318,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(handler intercept.Handler) (interce
 		}
 		// update message
 		log.Infoln(inlineTipjar.Message)
-		bot.tryEditMessage(c.Message, inlineTipjar.Message, bot.makeTipjarKeyboard(handler.Ctx, inlineTipjar))
+		bot.tryEditMessage(c, inlineTipjar.Message, bot.makeTipjarKeyboard(handler.Ctx, inlineTipjar))
 	}
 	if inlineTipjar.GivenAmount >= inlineTipjar.Amount {
 		// tipjar is full
@@ -328,7 +328,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(handler intercept.Handler) (interce
 			inlineTipjar.Amount,
 			inlineTipjar.NGiven,
 		)
-		bot.tryEditMessage(c.Message, inlineTipjar.Message)
+		bot.tryEditMessage(c, inlineTipjar.Message)
 		// send update to tipjar creator
 		if inlineTipjar.Active && inlineTipjar.To.Telegram.ID != 0 {
 			bot.trySendMessage(inlineTipjar.To.Telegram, listTipjarGivers(inlineTipjar))
@@ -353,7 +353,7 @@ func (bot *TipBot) cancelInlineTipjarHandler(handler intercept.Handler) (interce
 	if c.Sender.ID != inlineTipjar.To.Telegram.ID {
 		return handler, errors.Create(errors.UnknownError)
 	}
-	bot.tryEditMessage(c.Message, i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarCancelledMessage"), &tb.ReplyMarkup{})
+	bot.tryEditMessage(c, i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarCancelledMessage"), &tb.ReplyMarkup{})
 
 	// send update to tipjar creator
 	if inlineTipjar.Active && inlineTipjar.To.Telegram.ID != 0 {
