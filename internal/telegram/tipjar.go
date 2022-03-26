@@ -3,9 +3,10 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strings"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -132,28 +133,28 @@ func (bot TipBot) makeTipjar(ctx context.Context, m *tb.Message, query bool) (*I
 	return tipjar, err
 }
 
-func (bot TipBot) makeQueryTipjar(ctx context.Context, q *tb.Query, query bool) (*InlineTipjar, error) {
-	tipjar, err := bot.createTipjar(ctx, q.Text, q.Sender)
+func (bot TipBot) makeQueryTipjar(ctx intercept.Context) (*InlineTipjar, error) {
+	tipjar, err := bot.createTipjar(ctx, ctx.Query().Text, ctx.Query().Sender)
 	if err != nil {
 		switch err.(errors.TipBotError).Code {
 		case errors.DecodeAmountError:
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineQueryTipjarTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryTipjarDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineQueryTipjarTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryTipjarDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.DecodePerUserAmountError:
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineQueryTipjarTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryTipjarDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineQueryTipjarTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryTipjarDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.InvalidAmountError:
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryTipjarDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryTipjarDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.InvalidAmountPerUserError:
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineTipjarInvalidPeruserAmountMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryTipjarDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineTipjarInvalidPeruserAmountMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryTipjarDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.GetBalanceError:
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineQueryTipjarTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryTipjarDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineQueryTipjarTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryTipjarDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.BalanceToLowError:
 			log.Errorf(err.Error())
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineSendBalanceLowMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryTipjarDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineSendBalanceLowMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryTipjarDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		}
 	}
@@ -195,7 +196,7 @@ func (bot TipBot) tipjarHandler(ctx intercept.Context) (intercept.Context, error
 
 func (bot TipBot) handleInlineTipjarQuery(ctx intercept.Context) (intercept.Context, error) {
 	q := ctx.Query()
-	inlineTipjar, err := bot.makeQueryTipjar(ctx, q, false)
+	inlineTipjar, err := bot.makeQueryTipjar(ctx)
 	if err != nil {
 		// log.Errorf("[tipjar] %s", err.Error())
 		return ctx, err

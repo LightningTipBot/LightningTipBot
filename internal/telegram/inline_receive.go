@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strings"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -61,11 +62,11 @@ func (bot TipBot) handleInlineReceiveQuery(ctx intercept.Context) (intercept.Con
 	to := LoadUser(ctx)
 	amount, err := decodeAmountFromCommand(q.Text)
 	if err != nil {
-		bot.inlineQueryReplyWithError(q, Translate(ctx, "inlineQueryReceiveTitle"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.Telegram.Me.Username))
+		bot.inlineQueryReplyWithError(ctx, Translate(ctx, "inlineQueryReceiveTitle"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.Telegram.Me.Username))
 		return ctx, err
 	}
 	if amount < 1 {
-		bot.inlineQueryReplyWithError(q, Translate(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.Telegram.Me.Username))
+		bot.inlineQueryReplyWithError(ctx, Translate(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.Telegram.Me.Username))
 		return ctx, errors.Create(errors.InvalidAmountError)
 	}
 	toUserStr := GetUserStr(q.Sender)
@@ -82,7 +83,7 @@ func (bot TipBot) handleInlineReceiveQuery(ctx intercept.Context) (intercept.Con
 			if err != nil {
 				//bot.tryDeleteMessage(m)
 				//bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "sendUserHasNoWalletMessage"), toUserStrMention))
-				bot.inlineQueryReplyWithError(q,
+				bot.inlineQueryReplyWithError(ctx,
 					fmt.Sprintf(TranslateUser(ctx, "sendUserHasNoWalletMessage"), from_username),
 					fmt.Sprintf(TranslateUser(ctx, "inlineQueryReceiveDescription"),
 						bot.Telegram.Me.Username))

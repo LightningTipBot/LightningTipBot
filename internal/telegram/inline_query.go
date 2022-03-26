@@ -3,10 +3,11 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -74,20 +75,20 @@ func (bot TipBot) inlineQueryInstructions(ctx intercept.Context) (intercept.Cont
 	return ctx, err
 }
 
-func (bot TipBot) inlineQueryReplyWithError(q *tb.Query, message string, help string) {
+func (bot TipBot) inlineQueryReplyWithError(ctx intercept.Context, message string, help string) {
 	results := make(tb.Results, 1) // []tb.Result
 	result := &tb.ArticleResult{
 		// URL:         url,
-		Text:        help,
-		Title:       message,
-		Description: help,
+		Text:  help,
+		Title: message,
+		// Description: help,
 		// required for photos
 		ThumbURL: queryImage,
 	}
-	id := fmt.Sprintf("inl-error-%d-%s", q.Sender.ID, RandStringRunes(5))
+	id := fmt.Sprintf("inl-error-%d-%s", ctx.Query().Sender.ID, RandStringRunes(5))
 	result.SetResultID(id)
 	results[0] = result
-	err := bot.Telegram.Answer(q, &tb.QueryResponse{
+	err := ctx.Answer(&tb.QueryResponse{
 		Results:   results,
 		CacheTime: 1, // 60 == 1 minute, todo: make higher than 1 s in production
 

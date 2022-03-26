@@ -3,10 +3,11 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/once"
@@ -137,28 +138,28 @@ func (bot TipBot) makeFaucet(ctx context.Context, m *tb.Message, query bool) (*I
 	return faucet, err
 }
 
-func (bot TipBot) makeQueryFaucet(ctx context.Context, q *tb.Query, query bool) (*InlineFaucet, error) {
-	faucet, err := bot.createFaucet(ctx, q.Text, q.Sender)
+func (bot TipBot) makeQueryFaucet(ctx intercept.Context) (*InlineFaucet, error) {
+	faucet, err := bot.createFaucet(ctx, ctx.Query().Text, ctx.Query().Sender)
 	if err != nil {
 		switch err.(errors.TipBotError).Code {
 		case errors.DecodeAmountError:
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineQueryFaucetTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineQueryFaucetTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.DecodePerUserAmountError:
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineQueryFaucetTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineQueryFaucetTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.InvalidAmountError:
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.InvalidAmountPerUserError:
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineFaucetInvalidPeruserAmountMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineFaucetInvalidPeruserAmountMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.GetBalanceError:
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineQueryFaucetTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineQueryFaucetTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.BalanceToLowError:
 			log.Errorf(err.Error())
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineSendBalanceLowMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineSendBalanceLowMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		}
 	}
@@ -201,7 +202,7 @@ func (bot TipBot) faucetHandler(ctx intercept.Context) (intercept.Context, error
 }
 
 func (bot TipBot) handleInlineFaucetQuery(ctx intercept.Context) (intercept.Context, error) {
-	inlineFaucet, err := bot.makeQueryFaucet(ctx, ctx.Query(), false)
+	inlineFaucet, err := bot.makeQueryFaucet(ctx)
 	if err != nil {
 		log.Errorf("[handleInlineFaucetQuery] %s", err.Error())
 		return ctx, err
