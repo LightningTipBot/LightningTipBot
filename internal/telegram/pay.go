@@ -56,13 +56,13 @@ func (bot *TipBot) payHandler(ctx intercept.Context) (intercept.Context, error) 
 	if user.Wallet == nil {
 		return ctx, errors.Create(errors.UserNoWalletError)
 	}
-	if len(strings.Split(ctx.Text(), " ")) < 2 {
+	if len(strings.Split(ctx.Message().Text, " ")) < 2 {
 		NewMessage(ctx.Message(), WithDuration(0, bot))
 		bot.trySendMessage(ctx.Sender(), helpPayInvoiceUsage(ctx, ""))
 		return ctx, errors.Create(errors.InvalidSyntaxError)
 	}
 	userStr := GetUserStr(ctx.Sender())
-	paymentRequest, err := getArgumentFromCommand(ctx.Text(), 1)
+	paymentRequest, err := getArgumentFromCommand(ctx.Message().Text, 1)
 	if err != nil {
 		NewMessage(ctx.Message(), WithDuration(0, bot))
 		bot.trySendMessage(ctx.Sender(), helpPayInvoiceUsage(ctx, Translate(ctx, "invalidInvoiceHelpMessage")))

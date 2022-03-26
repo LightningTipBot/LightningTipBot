@@ -123,7 +123,7 @@ func (bot TipBot) groupRequestJoinHandler(ctx intercept.Context) (intercept.Cont
 	if ctx.Chat().Type != tb.ChatPrivate {
 		return ctx, fmt.Errorf("not private chat")
 	}
-	splits := strings.Split(ctx.Text(), " ")
+	splits := strings.Split(ctx.Message().Text, " ")
 	// if the command was /group join
 	splitIdx := 1
 	// we also have the simpler command /join that can be used
@@ -226,7 +226,8 @@ func (bot *TipBot) groupSendPayButtonHandler(ctx intercept.Context, ticket Ticke
 }
 
 func (bot *TipBot) groupConfirmPayButtonHandler(ctx intercept.Context) (intercept.Context, error) {
-	tx := &TicketEvent{Base: storage.New(storage.ID(ctx.Callback().Data))}
+	c := ctx.Callback()
+	tx := &TicketEvent{Base: storage.New(storage.ID(c.Data))}
 	mutex.LockWithContext(ctx, tx.ID)
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
@@ -236,7 +237,7 @@ func (bot *TipBot) groupConfirmPayButtonHandler(ctx intercept.Context) (intercep
 		return ctx, err
 	}
 	ticketEvent := sn.(*TicketEvent)
-	c := ctx.Callback()
+
 	// onnly the correct user can press
 	if ticketEvent.Payer.Telegram.ID != c.Sender.ID {
 		return ctx, errors.Create(errors.UnknownError)
