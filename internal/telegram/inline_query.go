@@ -79,17 +79,14 @@ func (bot TipBot) inlineQueryReplyWithError(ctx intercept.Context, message strin
 	results := make(tb.Results, 1) // []tb.Result
 	result := &tb.ArticleResult{
 		// URL:         url,
-		// requ
-		Title: "ASD",
-		//ired for photos
+		Text:        help,
+		Title:       message,
+		Description: help,
+		// required for photos
 		ThumbURL: queryImage,
 	}
 	id := fmt.Sprintf("inl-error-%d-%s", ctx.Query().Sender.ID, RandStringRunes(5))
 	result.SetResultID(id)
-	result.SetContent(&tb.InputTextMessageContent{
-		Text:           message + "\n" + help,
-		ParseMode:      tb.ModeDefault,
-		DisablePreview: false})
 	results[0] = result
 	err := ctx.Answer(&tb.QueryResponse{
 		Results: results,
