@@ -224,7 +224,7 @@ donateHelpText           = """📖 Oops, that didn't work. %s
 
 # PHOTO
 
-photoQrNotRecognizedMessage = """🚫 Could not regocognize a Lightning invoice or an LNURL. Try to center the QR code, crop the photo, or zoom in."""
+photoQrNotRecognizedMessage = """🚫 Could not recognize a Lightning invoice or a LNURL. Try to center the QR code, crop the photo, or zoom in."""
 photoQrRecognizedMessage = """✅ QR code:
 `%s`"""
 
