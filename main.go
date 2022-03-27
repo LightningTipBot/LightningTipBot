@@ -1,16 +1,19 @@
 package main
 
 import (
+	"net/http"
+	"runtime/debug"
+
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/api"
 	"github.com/LightningTipBot/LightningTipBot/internal/api/admin"
 	"github.com/LightningTipBot/LightningTipBot/internal/lndhub"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
-	"net/http"
-	"runtime/debug"
 
 	_ "net/http/pprof"
+
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits/webhook"
 	"github.com/LightningTipBot/LightningTipBot/internal/price"
@@ -38,6 +41,10 @@ func main() {
 	bot.Start()
 }
 func startApiServer(bot *telegram.TipBot) {
+	// log errors from interceptors
+	bot.Telegram.OnError = func(err error, ctx tb.Context) {
+		// we already log in the interceptors
+	}
 	// start internal webhook server
 	webhook.NewServer(bot)
 	// start external api server
