@@ -33,7 +33,7 @@ var (
 type InlineReceive struct {
 	*storage.Base
 	MessageText       string       `json:"inline_receive_messagetext"`
-	Message           *tb.Message  `json:"inline_receive_message"`
+	Message           tb.Editable  `json:"inline_receive_message"`
 	Amount            int64        `json:"inline_receive_amount"`
 	From              *lnbits.User `json:"inline_receive_from"`
 	To                *lnbits.User `json:"inline_receive_to"`
@@ -181,7 +181,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx intercept.Context) (intercept.
 		inlineReceive.From = from
 
 	}
-	inlineReceive.Message = c.Message
+	inlineReceive.Message = c
 	runtime.IgnoreError(inlineReceive.Set(inlineReceive, bot.Bunt))
 
 	to := inlineReceive.To
@@ -200,12 +200,11 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx intercept.Context) (intercept.
 		// if user has no wallet, show invoice
 		bot.tryEditMessage(inlineReceive.Message, inlineReceive.MessageText, &tb.ReplyMarkup{})
 		// runtime.IgnoreError(inlineReceive.Set(inlineReceive, bot.Bunt))
-		bot.inlineReceiveInvoice(ctx, c, inlineReceive)
+		bot.inlineReceiveInvoice(ctx, inlineReceive)
 		return ctx, errors.Create(errors.BalanceToLowError)
 	} else {
 		// else, do an internal transaction
 		return bot.sendInlineReceiveHandler(ctx)
-
 	}
 }
 
@@ -270,7 +269,7 @@ func (bot *TipBot) sendInlineReceiveHandler(ctx intercept.Context) (intercept.Co
 
 }
 
-func (bot *TipBot) inlineReceiveInvoice(ctx context.Context, c *tb.Callback, inlineReceive *InlineReceive) {
+func (bot *TipBot) inlineReceiveInvoice(ctx intercept.Context, inlineReceive *InlineReceive) {
 	if !inlineReceive.Active {
 		log.Errorf("[acceptInlineReceiveHandler] inline receive not active anymore")
 		return
@@ -293,13 +292,8 @@ func (bot *TipBot) inlineReceiveInvoice(ctx context.Context, c *tb.Callback, inl
 	}
 
 	// send the invoice data to user
-	var msg *tb.Message
-	if inlineReceive.Message.Chat != nil {
-		msg = bot.trySendMessage(inlineReceive.Message.Chat, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
-	} else {
-		msg = bot.trySendMessage(c.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
-		bot.tryEditMessage(inlineReceive.Message, fmt.Sprintf("%s\n\nPay this invoice:\n```%s```", inlineReceive.MessageText, invoice.PaymentRequest))
-	}
+	msg := bot.trySendMessage(ctx.Callback().Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
+	bot.tryEditMessage(inlineReceive.Message, fmt.Sprintf("%s\n\nPay this invoice:\n```%s```", inlineReceive.MessageText, invoice.PaymentRequest))
 	invoice.InvoiceMessage = msg
 	runtime.IgnoreError(bot.Bunt.Set(invoice))
 	log.Printf("[/invoice] Incvoice created. User: %s, amount: %d sat.", GetUserStr(inlineReceive.To.Telegram), inlineReceive.Amount)
@@ -315,8 +309,10 @@ func (bot *TipBot) inlineReceiveEvent(event Event) {
 func (bot *TipBot) finishInlineReceiveHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
 	tx := &InlineReceive{Base: storage.New(storage.ID(c.Data))}
 	// immediatelly set intransaction to block duplicate calls
-	mutex.LockWithContext(ctx, tx.ID)
-	defer mutex.UnlockWithContext(ctx, tx.ID)
+	if ctx != nil {
+		mutex.LockWithContext(ctx, tx.ID)
+		defer mutex.UnlockWithContext(ctx, tx.ID)
+	}
 	rn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[getInlineReceive] %s", err.Error())
@@ -329,7 +325,7 @@ func (bot *TipBot) finishInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	toUserStrMd := GetUserStrMd(to.Telegram)
 	fromUserStrMd := GetUserStrMd(from.Telegram)
 	toUserStr := GetUserStr(to.Telegram)
-	inlineReceive.MessageText = fmt.Sprintf("%s", fmt.Sprintf(i18n.Translate(inlineReceive.LanguageCode, "inlineSendUpdateMessageAccept"), inlineReceive.Amount, fromUserStrMd, toUserStrMd))
+	inlineReceive.MessageText = fmt.Sprintf(i18n.Translate(inlineReceive.LanguageCode, "inlineSendUpdateMessageAccept"), inlineReceive.Amount, fromUserStrMd, toUserStrMd)
 	memo := inlineReceive.Memo
 	if len(memo) > 0 {
 		inlineReceive.MessageText += fmt.Sprintf(i18n.Translate(inlineReceive.LanguageCode, "inlineReceiveAppendMemo"), memo)
