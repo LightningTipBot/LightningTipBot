@@ -28,7 +28,6 @@ type ShopView struct {
 	Page           int
 	Message        *tb.Message
 	StatusMessages []*tb.Message
-	Chat           *tb.Chat
 }
 
 type ShopItem struct {
@@ -527,7 +526,6 @@ func (bot *TipBot) shopHandler(ctx intercept.Context) (intercept.Context, error)
 		ShopID:    shop.ID,
 		Page:      0,
 		ShopOwner: shopOwner,
-		Chat:      m.Chat,
 	}
 	bot.Cache.Set(shopView.ID, shopView, &store.Options{Expiration: 24 * time.Hour})
 	shopView.Message = bot.displayShopItem(ctx, m, shop)
