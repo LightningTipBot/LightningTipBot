@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strings"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 
@@ -175,9 +176,9 @@ func (bot *TipBot) enterShopItemPriceHandler(ctx intercept.Context) (intercept.C
 		}
 	}
 
-	if amount > 200 {
-		bot.sendStatusMessageAndDelete(ctx, m.Sender, fmt.Sprintf("ℹ️ During alpha testing, price can be max 200 sat."))
-		amount = 200
+	if amount > 2000 {
+		bot.sendStatusMessageAndDelete(ctx, m.Sender, "ℹ️ During testing, price can be max 2000 sat.")
+		amount = 2000
 	}
 	item.Price = amount
 	shop.Items[item.ID] = item
@@ -433,7 +434,7 @@ func (bot *TipBot) getItemTitle(ctx context.Context, item *ShopItem) string {
 // m is the message that will be edited
 func (bot *TipBot) displayShopItem(ctx intercept.Context, m *tb.Message, shop *Shop) *tb.Message {
 	user := LoadUser(ctx)
-	log.Debugf("[displayShopItem] User: %d shop: %s", GetUserStr(user.Telegram), shop.ID)
+	log.Debugf("[displayShopItem] User: %s shop: %s", GetUserStr(user.Telegram), shop.ID)
 	shopView, err := bot.getUserShopview(ctx, user)
 	if err != nil {
 		log.Errorf("[displayShopItem] %s", err.Error())
@@ -455,7 +456,7 @@ func (bot *TipBot) displayShopItem(ctx intercept.Context, m *tb.Message, shop *S
 			if shopView.Message != nil {
 				bot.tryDeleteMessage(shopView.Message)
 			}
-			shopView.Message = bot.trySendMessage(shopView.Chat, no_items_message, bot.shopMenu(ctx, shop, &ShopItem{}))
+			shopView.Message = bot.trySendMessage(shopView.Message.Chat, no_items_message, bot.shopMenu(ctx, shop, &ShopItem{}))
 		}
 		shopView.Page = 0
 		return shopView.Message

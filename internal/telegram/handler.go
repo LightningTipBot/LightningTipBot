@@ -146,9 +146,9 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 				},
 			},
 		},
-		/*{
+		{
 			Endpoints: []interface{}{"/shops"},
-			Context:   bot.shopsHandler,
+			Handler:   bot.shopsHandler,
 			Interceptor: &Interceptor{
 
 				Before: []intercept.Func{
@@ -163,7 +163,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 		},
 		{
 			Endpoints: []interface{}{"/shop"},
-			Context:   bot.shopHandler,
+			Handler:   bot.shopHandler,
 			Interceptor: &Interceptor{
 
 				Before: []intercept.Func{
@@ -176,7 +176,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 				OnDefer: []intercept.Func{
 					bot.unlockInterceptor,
 				}},
-		},*/
+		},
 		{
 			Endpoints: []interface{}{"/balance", &btnBalanceMainMenu},
 			Handler:   bot.balanceHandler,
