@@ -5,8 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
@@ -86,6 +87,7 @@ var (
 	groupAddGroupHelpMessage            = "📖 Oops, that didn't work. Please try again.\nUsage: `/group add <group_name> [<amount>]`\nExample: `/group add TheBestBitcoinGroup 1000`"
 	grouJoinGroupHelpMessage            = "📖 Oops, that didn't work. Please try again.\nUsage: `/join <group_name>`\nExample: `/join TheBestBitcoinGroup`"
 	groupClickToJoinMessage             = "🎟 [Click here](%s) 👈 to join `%s`."
+	groupTicketIssuedGroupMessage       = "🎟 User %s has received a ticket for this group."
 	groupInvoiceMemo                    = "Ticket for group %s"
 	groupPayInvoiceMessage              = "🎟 To join the group %s, pay the invoice above."
 	groupBotIsNotAdminMessage           = "🚫 Oops, that didn't work. You must make me admin and grant me rights to invite users."
@@ -96,6 +98,8 @@ var (
 	groupReceiveTicketInvoice           = "🎟 You received *%d sat* for a ticket for group `%s` paid by user %s."
 )
 
+// groupHandler is called if the /group <cmd> command is invoked. It then decides with other
+// handler to call depending on the <cmd> passed.
 func (bot TipBot) groupHandler(ctx intercept.Context) (intercept.Context, error) {
 	m := ctx.Message()
 	splits := strings.Split(m.Text, " ")
@@ -209,6 +213,8 @@ func (bot TipBot) groupRequestJoinHandler(ctx intercept.Context) (intercept.Cont
 	return ctx, nil
 }
 
+// groupSendPayButtonHandler is invoked if the user has enough balance so a message with a
+// pay button is sent to the user.
 func (bot *TipBot) groupSendPayButtonHandler(ctx intercept.Context, ticket TicketEvent) (intercept.Context, error) {
 	// object that holds all information about the send payment
 	// // // create inline buttons
@@ -225,6 +231,7 @@ func (bot *TipBot) groupSendPayButtonHandler(ctx intercept.Context, ticket Ticke
 	return ctx, nil
 }
 
+// groupConfirmPayButtonHandler is invoked if th user clicks the pay button.
 func (bot *TipBot) groupConfirmPayButtonHandler(ctx intercept.Context) (intercept.Context, error) {
 	c := ctx.Callback()
 	tx := &TicketEvent{Base: storage.New(storage.ID(c.Data))}
@@ -316,7 +323,11 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 		bot.trySendMessage(ticketEvent.Payer.Telegram, i18n.Translate(ticketEvent.LanguageCode, "invoicePaidText"))
 	}
 
+	// send confirmation text with the ticket to the user
 	bot.trySendMessage(ticketEvent.Payer.Telegram, fmt.Sprintf(groupClickToJoinMessage, resp.Result.InviteLink, ticketEvent.Group.Title))
+
+	// send a notification to the group that sold the ticket
+	bot.trySendMessage(&tb.Chat{ID: ticketEvent.Group.ID}, fmt.Sprintf(groupTicketIssuedGroupMessage, GetUserStr(ticketEvent.Payer.Telegram)))
 
 	// take a commission
 	ticketSat := ticketEvent.Group.Ticket.Price
@@ -326,7 +337,6 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 			log.Errorf("[groupGetInviteLinkHandler] Could not get bot user from DB: %s", err.Error())
 			return
 		}
-
 		// 2% cut + 100 sat base fee
 		commissionSat := ticketEvent.Group.Ticket.Price*ticketEvent.Group.Ticket.Cut/100 + ticketEvent.Group.Ticket.BaseFee
 		if ticketEvent.Group.Ticket.Price <= 1000 {
@@ -367,6 +377,7 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 	return
 }
 
+// addGroupHandler is invoked if the user calls the "/group add" command
 func (bot TipBot) addGroupHandler(ctx intercept.Context) (intercept.Context, error) {
 	m := ctx.Message()
 	if m.Chat.Type == tb.ChatPrivate {
@@ -437,6 +448,8 @@ func (bot TipBot) addGroupHandler(ctx intercept.Context) (intercept.Context, err
 	return ctx, nil
 }
 
+// createGroupTicketInvoice produces an invoice for the group ticket with a
+// callback that then calls groupGetInviteLinkHandler upton payment
 func (bot *TipBot) createGroupTicketInvoice(ctx context.Context, payer *lnbits.User, group *Group, memo string, callback int, callbackData string) (*InvoiceEvent, error) {
 	invoice, err := group.Ticket.Creator.Wallet.Invoice(
 		lnbits.InvoiceParams{
