@@ -372,12 +372,11 @@ Sell tickets for your _private Group_ and get rid of spam bots.
 2) Make your group private (otherwise bots can peek inside and get a list of members even without joining).
 3) In your group, you (the group owner) write `/group add <mygroup> <ticket_price>`
 
-
 _Fees: The bot takes a 10%% +10 sat commission for cheap tickets. If the ticket is >= 1000 sat, the commission is 2%% + 100 sat._
 
 *Instructions for group members:*
 
-To join a group, talk to %s and write `/join <mygroup>` to the bot.
+To join a group, talk to %s and write in a private message `/join <mygroup>`.
 
 
 📖 *Usage:*
