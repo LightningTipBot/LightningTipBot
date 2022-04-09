@@ -121,7 +121,8 @@ advancedMessage = """%s
 */link* 🔗 Verbinde dein Wallet mit [BlueWallet](https://bluewallet.io/) oder [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ Lnurl empfangen oder senden: `/lnurl` or `/lnurl <lnurl>`
 */faucet* 🚰 Erzeuge einen Zapfhahn: `/faucet <gesamt> <pro_user>`
-*/tipjar* 🍯 Erzeuge eine Spendendose: `/tipjar <gesamt> <pro_user>`"""
+*/tipjar* 🍯 Erzeuge eine Spendendose: `/tipjar <gesamt> <pro_user>`
+*/group* 🎟 Tickets für Gruppenchats: `/group add <meine_gruppe> [<ticket_preis>]`"""
 
 # GENERIC
 enterAmountRangeMessage        = """⌨️ Gebe einen Betrag zwischen %d und %d sat ein."""

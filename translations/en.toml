@@ -124,7 +124,8 @@ advancedMessage = """%s
 */link* 🔗 Link your wallet to [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ Lnurl receive or pay: `/lnurl` or `/lnurl <lnurl>`
 */faucet* 🚰 Create a faucet: `/faucet <capacity> <per_user>`
-*/tipjar* 🍯 Create a tipjar: `/tipjar <capacity> <per_user>`"""
+*/tipjar* 🍯 Create a tipjar: `/tipjar <capacity> <per_user>`
+*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`"""
 
 # GENERIC
 enterAmountRangeMessage        = """💯 Enter an amount between %d and %d sat."""
@@ -369,8 +370,8 @@ Sell tickets for your _private Group_ and get rid of spam bots.
 *Instructions for group admins:*
 
 1) Invite %s to your group and make it admin.
-2) Make your group private (otherwise bots can peek inside and get a list of members even without joining).
-3) In your group, you (the group owner) write `/group add <mygroup> <ticket_price>`
+2) Make your group private.
+3) In your group, you (the group owner) write `/group add <mygroup> [<ticket_price>]`.
 
 _Fees: The bot takes a 10%% +10 sat commission for cheap tickets. If the ticket is >= 1000 sat, the commission is 2%% + 100 sat._
 
@@ -378,7 +379,6 @@ _Fees: The bot takes a 10%% +10 sat commission for cheap tickets. If the ticket 
 
 To join a group, talk to %s and write in a private message `/join <mygroup>`.
 
-
 📖 *Usage:*
-*For admins (in group chat):* `/group add <group_name> [<amount>]`\nExample: `/group add TheBestBitcoinGroup 1000`
+*For admins (in group chat):* `/group add <group_name> [<ticket_price>]`\nExample: `/group add TheBestBitcoinGroup 1000`
 *For users (in private chat):* `/join <group_name>`\nExample: `/join TheBestBitcoinGroup`"""

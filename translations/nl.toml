@@ -120,7 +120,8 @@ advancedMessage = """%s
 */link* 🔗 Koppel uw wallet aan [BlueWallet](https://bluewallet.io/) of [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ Lnurl ontvangen of betalen: `/lnurl` of `/lnurl <lnurl>`
 */faucet* 🚰 Maak een kraan: `/faucet <capacity> <per_user>`
-*/tipjar* 🍯 Maak een tipjar: `/tipjar <capacity> <per_user>`"""
+*/tipjar* 🍯 Maak een tipjar: `/tipjar <capacity> <per_user>`
+*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`"""
 
 # GENERIC
 enterAmountRangeMessage        = """💯 Voer een bedrag in tussen %d en %d sat."""

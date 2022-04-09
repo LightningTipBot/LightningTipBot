@@ -124,7 +124,8 @@ advancedMessage = """%s
 */link* 🔗 Link your wallet to [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)
 */lnurl* Получить или оплатить через ⚡️Lnurl: `/lnurl` or `/lnurl <lnurl>`
 */faucet* 🚰 Создать криптораздачу: `/faucet <ёмкость> <на_пользователя>`
-*/tipjar* 🍯 Создать копилку: `/tipjar <ёмкость> <на_пользователя>`"""
+*/tipjar* 🍯 Создать копилку: `/tipjar <ёмкость> <на_пользователя>`
+*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`"""
 
 # GENERIC
 enterAmountRangeMessage        = """💯 Введите количество между %d и %d sat."""

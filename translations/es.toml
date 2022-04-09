@@ -120,7 +120,8 @@ advancedMessage = """%s
 */link* 🔗 Enlaza tu monedero a [ BlueWallet ](https://bluewallet.io/) o [ Zeus ](https://zeusln.app/)
 */lnurl* ⚡️ Lnurl recibir o pagar: `/lnurl` o `/lnurl <lnurl>`
 */faucet* 🚰 Crear un grifo: `/faucet <capacidad> <por_usuario>`
-*/tipjar* 🍯 Crear un tipjar: `/tipjar <capacidad> <por_usuario>`"""
+*/tipjar* 🍯 Crear un tipjar: `/tipjar <capacidad> <por_usuario>`
+*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`"""
 
 # GENERIC
 enterAmountRangeMessage        = """💯 Introduce un monto entre %d y %d sat."""
