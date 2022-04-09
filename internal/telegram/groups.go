@@ -84,18 +84,7 @@ var (
 )
 
 var (
-	groupAddGroupHelpMessage            = "📖 Oops, that didn't work. Please try again.\nUsage: `/group add <group_name> [<amount>]`\nExample: `/group add TheBestBitcoinGroup 1000`"
-	grouJoinGroupHelpMessage            = "📖 Oops, that didn't work. Please try again.\nUsage: `/join <group_name>`\nExample: `/join TheBestBitcoinGroup`"
-	groupClickToJoinMessage             = "🎟 [Click here](%s) 👈 to join `%s`."
-	groupTicketIssuedGroupMessage       = "🎟 User %s has received a ticket for this group."
-	groupInvoiceMemo                    = "Ticket for group %s"
-	groupPayInvoiceMessage              = "🎟 To join the group %s, pay the invoice above."
-	groupBotIsNotAdminMessage           = "🚫 Oops, that didn't work. You must make me admin and grant me rights to invite users."
-	groupNameExists                     = "🚫 A group with this name already exists. Please choose a different name."
-	groupAddedMessage                   = "🎟 Tickets for group `%s` added.\nAlias: `%s` Price: %d sat\n\nTo request a ticket for this group, start a private chat with %s and write `/join %s`."
-	groupNotFoundMessage                = "🚫 Could not find a group with this name."
-	groupReceiveTicketInvoiceCommission = "🎟 You received *%d sat* (excl. %d sat commission) for a ticket for group `%s` paid by user %s."
-	groupReceiveTicketInvoice           = "🎟 You received *%d sat* for a ticket for group `%s` paid by user %s."
+	groupInvoiceMemo = "Ticket for group %s"
 )
 
 // groupHandler is called if the /group <cmd> command is invoked. It then decides with other
@@ -103,7 +92,15 @@ var (
 func (bot TipBot) groupHandler(ctx intercept.Context) (intercept.Context, error) {
 	m := ctx.Message()
 	splits := strings.Split(m.Text, " ")
+	user := LoadUser(ctx)
 	if len(splits) == 1 {
+		if ctx.Message().Private() {
+			bot.trySendMessage(ctx.Message().Chat, fmt.Sprintf(Translate(ctx, "groupHelpMessage"), GetUserStr(bot.Telegram.Me), GetUserStr(bot.Telegram.Me)))
+		} else {
+			if bot.isOwner(ctx.Message().Chat, user.Telegram) {
+				bot.trySendMessage(ctx.Message().Chat, fmt.Sprintf(Translate(ctx, "commandPrivateMessage"), GetUserStr(bot.Telegram.Me)))
+			}
+		}
 		return ctx, nil
 	} else if len(splits) > 1 {
 		if splits[1] == "join" {
@@ -136,7 +133,7 @@ func (bot TipBot) groupRequestJoinHandler(ctx intercept.Context) (intercept.Cont
 		splitIdx = 0
 	}
 	if len(splits) != splitIdx+2 || len(ctx.Message().Text) > 100 {
-		bot.trySendMessage(ctx.Message().Chat, grouJoinGroupHelpMessage)
+		bot.trySendMessage(ctx.Message().Chat, Translate(ctx, "groupJoinGroupHelpMessage"))
 		return ctx, nil
 	}
 	groupName := strings.ToLower(splits[splitIdx+1])
@@ -144,7 +141,7 @@ func (bot TipBot) groupRequestJoinHandler(ctx intercept.Context) (intercept.Cont
 	group := &Group{}
 	tx := bot.GroupsDb.Where("name = ? COLLATE NOCASE", groupName).First(group)
 	if tx.Error != nil {
-		bot.trySendMessage(ctx.Message().Chat, groupNotFoundMessage)
+		bot.trySendMessage(ctx.Message().Chat, Translate(ctx, "groupNotFoundMessage"))
 		return ctx, fmt.Errorf("group not found")
 	}
 
@@ -209,7 +206,7 @@ func (bot TipBot) groupRequestJoinHandler(ctx intercept.Context) (intercept.Cont
 		return ctx, err
 	}
 	ticketEvent.Message = bot.trySendMessage(ctx.Message().Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoiceEvent.PaymentRequest)})
-	bot.trySendMessage(ctx.Message().Sender, fmt.Sprintf(groupPayInvoiceMessage, groupName))
+	bot.trySendMessage(ctx.Message().Sender, fmt.Sprintf(Translate(ctx, "groupPayInvoiceMessage"), groupName))
 	return ctx, nil
 }
 
@@ -324,10 +321,10 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 	}
 
 	// send confirmation text with the ticket to the user
-	bot.trySendMessage(ticketEvent.Payer.Telegram, fmt.Sprintf(groupClickToJoinMessage, resp.Result.InviteLink, ticketEvent.Group.Title))
+	bot.trySendMessage(ticketEvent.Payer.Telegram, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "groupClickToJoinMessage"), resp.Result.InviteLink, ticketEvent.Group.Title))
 
 	// send a notification to the group that sold the ticket
-	bot.trySendMessage(&tb.Chat{ID: ticketEvent.Group.ID}, fmt.Sprintf(groupTicketIssuedGroupMessage, GetUserStr(ticketEvent.Payer.Telegram)))
+	bot.trySendMessage(&tb.Chat{ID: ticketEvent.Group.ID}, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "groupTicketIssuedGroupMessage"), GetUserStr(ticketEvent.Payer.Telegram)))
 
 	// take a commission
 	ticketSat := ticketEvent.Group.Ticket.Price
@@ -360,7 +357,6 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 		_, err = ticketEvent.User.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoice.PaymentRequest}, bot.Client)
 		if err != nil {
 			errmsg := fmt.Sprintf("[groupGetInviteLinkHandler] Could not pay commission of %s: %s", GetUserStr(ticketEvent.User.Telegram), err)
-			err = fmt.Errorf(i18n.Translate(ticketEvent.LanguageCode, "invoiceUndefinedErrorMessage"))
 			log.Errorln(errmsg)
 			return
 		}
@@ -370,23 +366,23 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 			errmsg := fmt.Sprintf("could not get balance of user %s", GetUserStr(ticketEvent.Payer.Telegram))
 			log.Errorln(errmsg)
 		}
-		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(groupReceiveTicketInvoiceCommission, ticketSat, commissionSat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
+		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "groupReceiveTicketInvoiceCommission"), ticketSat, commissionSat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
 	} else {
-		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(groupReceiveTicketInvoice, ticketSat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
+		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "groupReceiveTicketInvoice"), ticketSat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
 	}
-	return
 }
 
 // addGroupHandler is invoked if the user calls the "/group add" command
 func (bot TipBot) addGroupHandler(ctx intercept.Context) (intercept.Context, error) {
 	m := ctx.Message()
 	if m.Chat.Type == tb.ChatPrivate {
+		bot.trySendMessage(m.Chat, Translate(ctx, "groupAddGroupHelpMessage"))
 		return ctx, fmt.Errorf("not in group")
 	}
 	// parse command "/group add <grou_name> [<amount>]"
 	splits := strings.Split(m.Text, " ")
 	if len(splits) < 3 || len(m.Text) > 100 {
-		bot.trySendMessage(m.Chat, groupAddGroupHelpMessage)
+		bot.trySendMessage(m.Chat, Translate(ctx, "groupAddGroupHelpMessage"))
 		return ctx, nil
 	}
 	groupName := strings.ToLower(splits[2])
@@ -398,7 +394,7 @@ func (bot TipBot) addGroupHandler(ctx intercept.Context) (intercept.Context, err
 	}
 
 	if !bot.isAdminAndCanInviteUsers(m.Chat, bot.Telegram.Me) {
-		bot.trySendMessage(m.Chat, groupBotIsNotAdminMessage)
+		bot.trySendMessage(m.Chat, Translate(ctx, "groupBotIsNotAdminMessage"))
 		return ctx, fmt.Errorf("bot is not admin")
 	}
 
@@ -409,7 +405,7 @@ func (bot TipBot) addGroupHandler(ctx intercept.Context) (intercept.Context, err
 	if tx.Error == nil {
 		// if it is already added, check if this user is the admin
 		if user.Telegram.ID != group.Owner.ID || group.ID != m.Chat.ID {
-			bot.trySendMessage(m.Chat, groupNameExists)
+			bot.trySendMessage(m.Chat, Translate(ctx, "groupNameExists"))
 			return ctx, fmt.Errorf("not owner")
 		}
 	}
@@ -443,7 +439,7 @@ func (bot TipBot) addGroupHandler(ctx intercept.Context) (intercept.Context, err
 
 	bot.GroupsDb.Save(group)
 	log.Infof("[group] Ticket of %d sat added to group %s.", group.Ticket.Price, group.Name)
-	bot.trySendMessage(m.Chat, fmt.Sprintf(groupAddedMessage, str.MarkdownEscape(m.Chat.Title), group.Name, group.Ticket.Price, GetUserStrMd(bot.Telegram.Me), group.Name))
+	bot.trySendMessage(m.Chat, fmt.Sprintf(Translate(ctx, "groupAddedMessage"), str.MarkdownEscape(m.Chat.Title), group.Name, group.Ticket.Price, GetUserStrMd(bot.Telegram.Me), group.Name))
 
 	return ctx, nil
 }

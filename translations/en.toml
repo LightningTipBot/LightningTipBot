@@ -348,3 +348,38 @@ inlineTipjarHelpText                    = """📖 Oops, that didn't work. %s
 
 *Usage:* `/tipjar <capacity> <per_user>`
 *Example:* `/tipjar 210 21`"""
+
+# GROUP TICKETS
+groupAddGroupHelpMessage            = """📖 Oops, that didn't work. This command only works in a group chat. Only group owners can use this command.\nUsage: `/group add <group_name> [<amount>]`\nExample: `/group add TheBestBitcoinGroup 1000`"""
+groupJoinGroupHelpMessage           = """📖 Oops, that didn't work. Please try again.\nUsage: `/join <group_name>`\nExample: `/join TheBestBitcoinGroup`"""
+groupClickToJoinMessage             = """🎟 [Click here](%s) 👈 to join `%s`."""
+groupTicketIssuedGroupMessage       = """🎟 User %s has received a ticket for this group."""
+groupPayInvoiceMessage              = """🎟 To join the group %s, pay the invoice above."""
+groupBotIsNotAdminMessage           = """🚫 Oops, that didn't work. You must make me admin and grant me rights to invite users."""
+groupNameExists                     = """🚫 A group with this name already exists. Please choose a different name."""
+groupAddedMessage                   = """🎟 Tickets for group `%s` added.\nAlias: `%s` Price: %d sat\n\nTo request a ticket for this group, start a private chat with %s and write `/join %s`."""
+groupNotFoundMessage                = """🚫 Could not find a group with this name."""
+groupReceiveTicketInvoiceCommission = """🎟 You received *%d sat* (excl. %d sat commission) for a ticket for group `%s` paid by user %s."""
+groupReceiveTicketInvoice           = """🎟 You received *%d sat* for a ticket for group `%s` paid by user %s."""
+commandPrivateMessage               = """Please use this command in a private chat with %s."""
+groupHelpMessage                    = """🎟 Private group tickets 🎟
+
+Sell tickets for your _private Group_ and get rid of spam bots. 
+
+*Instructions for group admins:*
+
+1) Invite %s to your group and make it admin.
+2) Make your group private (otherwise bots can peek inside and get a list of members even without joining).
+3) In your group, you (the group owner) write `/group add <mygroup> <ticket_price>`
+
+
+_Fees: The bot takes a 10%% +10 sat commission for cheap tickets. If the ticket is >= 1000 sat, the commission is 2%% + 100 sat._
+
+*Instructions for group members:*
+
+To join a group, talk to %s and write `/join <mygroup>` to the bot.
+
+
+📖 *Usage:*
+*For admins (in group chat):* `/group add <group_name> [<amount>]`\nExample: `/group add TheBestBitcoinGroup 1000`
+*For users (in private chat):* `/join <group_name>`\nExample: `/join TheBestBitcoinGroup`"""
