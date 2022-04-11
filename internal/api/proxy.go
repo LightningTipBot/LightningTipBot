@@ -2,16 +2,17 @@ package api
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func Proxy(wr http.ResponseWriter, req *http.Request, rawUrl string) error {
 
-	client := &http.Client{Timeout: time.Second * 10}
+	client := &http.Client{Timeout: time.Second * 30}
 
 	//http: Request.RequestURI can't be set in client requests.
 	//http://golang.org/src/pkg/net/http/client.go
