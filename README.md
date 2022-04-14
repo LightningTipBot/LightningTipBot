@@ -1,5 +1,5 @@
 <p align="center">
-  	<img alt="logo" src="resources/logo_round.png" >
+  	<img alt="logo" width="150" src="resources/logo_round.png" >
 </p>
 
 # @LightningTipBot 🏅
