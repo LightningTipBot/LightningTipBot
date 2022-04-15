@@ -66,7 +66,7 @@ func (txlist *TransactionsList) printTransactions(ctx intercept.Context) string 
 			memo = memo[:memo_maxlen] + "..."
 		}
 		if len(memo) > 0 {
-			txstr += fmt.Sprintf("\n✉️ _%s_", str.MarkdownEscape(memo))
+			txstr += fmt.Sprintf("\n✉️ %s", str.MarkdownEscape(memo))
 		}
 		txstr += "\n"
 	}
