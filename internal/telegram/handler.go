@@ -120,6 +120,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			Handler:   bot.payHandler,
 			Interceptor: &Interceptor{
 				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
@@ -136,6 +137,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			Interceptor: &Interceptor{
 
 				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
@@ -183,6 +185,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			Interceptor: &Interceptor{
 
 				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
@@ -228,10 +231,50 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			},
 		},
 		{
+			Endpoints: []interface{}{"/transactions"},
+			Handler:   bot.transactionsHandler,
+			Interceptor: &Interceptor{
+				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+				}},
+		},
+		{
+			Endpoints: []interface{}{&btnLeftTransactionsButton},
+			Handler:   bot.transactionsScrollLeftHandler,
+			Interceptor: &Interceptor{
+
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.loadUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{&btnRightTransactionsButton},
+			Handler:   bot.transactionsScrollRightHandler,
+			Interceptor: &Interceptor{
+
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.loadUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
 			Endpoints: []interface{}{"/faucet", "/zapfhahn", "/kraan", "/grifo"},
 			Handler:   bot.faucetHandler,
 			Interceptor: &Interceptor{
-
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,

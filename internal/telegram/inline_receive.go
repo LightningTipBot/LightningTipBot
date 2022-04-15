@@ -251,7 +251,7 @@ func (bot *TipBot) sendInlineReceiveHandler(ctx intercept.Context) (intercept.Co
 	inlineReceive.Inactivate(inlineReceive, bot.Bunt)
 
 	// todo: user new get username function to get userStrings
-	transactionMemo := fmt.Sprintf("InlineReceive from %s to %s (%d sat).", fromUserStr, toUserStr, inlineReceive.Amount)
+	transactionMemo := fmt.Sprintf("💸 Receive from %s to %s.", fromUserStr, toUserStr)
 	t := NewTransaction(bot, from, to, inlineReceive.Amount, TransactionType("inline receive"))
 	t.Memo = transactionMemo
 	success, err := t.Send()

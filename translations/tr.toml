@@ -117,11 +117,13 @@ advancedMessage = """%s
 📖 İnline komutları her sohbette ve hatta özel mesajlarda kullanabilirsin. Komutu yazdıktan sonra bir saniye bekle ve Enter yazmak yerine sonuca *tıkla*.
 
 ⚙️ *Gelişmiş komutlar*
+*/transactions* 📊 List transactions
 */link* 🔗 Cüzdanını bağla: [BlueWallet](https://bluewallet.io/) veya [Zeus](https://zeusln.app/) 
 */lnurl* ⚡️ Lnurl iste veya gönder: `/lnurl` veya `/lnurl <lnurl>`
 */faucet* 🚰 Bir fıçı oluştur: `/faucet <toplam> <kullanıcı_başına>`
 */tipjar* 🍯 Bir tipjar oluştur: `/tipjar <capacity> <per_user>`
-*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`"""
+*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`
+*/shop* 🛍 Browse shops: `/shop` or `/shop <user/shop_id>`"""
 
 # GENERIC
 enterAmountRangeMessage        = """💯 %d ve %d sat arasında bir miktar gir."""

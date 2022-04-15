@@ -117,11 +117,13 @@ advancedMessage = """%s
 📖 Kamu dapat menggunakan sebaris perintah di tiap percakapan, bahkan di percakapan privat. Tunggu sejenak setelah memasukkan sebaris perintah lalu *pencet* hasilnya, jangan tekan enter.
 
 ⚙️ *Perintah lanjutan*
+*/transactions* 📊 List transactions
 */link* 🔗 Menghubungkan dompet mu ke [BlueWallet](https://bluewallet.io/) atau [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ Lnurl menerima atau membayar: `/lnurl` atau `/lnurl <lnurl>`
 */faucet* 🚰 Membuat sebuah keran `/faucet <kapasitas> <per_pengguna>`
 */tipjar* 🍯 Create a tipjar: `/tipjar <capacity> <per_user>`
-*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`"""
+*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`
+*/shop* 🛍 Browse shops: `/shop` or `/shop <user/shop_id>`"""
 
 # GENERIC
 enterAmountRangeMessage        = """💯 Masukkan jumlah diantara %d dan %d sat."""

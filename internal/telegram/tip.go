@@ -3,10 +3,11 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strings"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
@@ -106,7 +107,7 @@ func (bot *TipBot) tipHandler(ctx intercept.Context) (intercept.Context, error) 
 	}
 
 	// todo: user new get username function to get userStrings
-	transactionMemo := fmt.Sprintf("Tip from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
+	transactionMemo := fmt.Sprintf("🏅 Tip from %s to %s.", fromUserStr, toUserStr)
 	t := NewTransaction(bot, from, to, amount, TransactionType("tip"), TransactionChat(m.Chat))
 	t.Memo = transactionMemo
 	success, err := t.Send()

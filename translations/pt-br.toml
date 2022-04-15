@@ -117,11 +117,13 @@ advancedMessage = """%s
 📖 Você pode usar comandos _inline_ em todas as conversas, mesmo em conversas privadas. Espere um segundo após inserir um comando _inline_ e *clique* no resultado, não pressione enter.
 
 ⚙️ *Comandos avançados*
+*/transactions* 📊 List transactions
 */link* 🔗 Vincule sua carteira a [ BlueWallet ](https://bluewallet.io/) ou [ Zeus ](https://zeusln.app/)
 */lnurl* ⚡️ Receber ou pagar com lnurl: `/lnurl` o `/lnurl <lnurl>`
 */faucet* 🚰 Criar uma torneira: `/faucet <capacidade> <por_usuário>`
 */tipjar* 🍯 Criar uma tipjar: `/tipjar <capacidade> <por_usuário>`
-*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`"""
+*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`
+*/shop* 🛍 Browse shops: `/shop` or `/shop <user/shop_id>`"""
 
 # GENERIC
 enterAmountRangeMessage        = """💯 Insira uma quantia entre %d e %d sat."""

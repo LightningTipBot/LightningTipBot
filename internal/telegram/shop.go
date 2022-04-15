@@ -858,7 +858,7 @@ func (bot *TipBot) shopConfirmBuyHandler(ctx intercept.Context) (intercept.Conte
 		log.Errorf("[shopConfirmBuyHandler] item has no price.")
 		return ctx, errors.Create(errors.InvalidAmountError)
 	}
-	transactionMemo := fmt.Sprintf("Buy item %s (%d sat).", toUserStr, amount)
+	transactionMemo := fmt.Sprintf("🛍 Shop from %s.", toUserStr)
 	t := NewTransaction(bot, from, to, amount, TransactionType("shop"))
 	t.Memo = transactionMemo
 

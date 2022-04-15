@@ -304,7 +304,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx intercept.Context) (intercept.C
 		}
 
 		// todo: user new get username function to get userStrings
-		transactionMemo := fmt.Sprintf("Faucet from %s to %s (%d sat).", fromUserStr, toUserStr, inlineFaucet.PerUserAmount)
+		transactionMemo := fmt.Sprintf("🚰 Faucet from %s to %s.", fromUserStr, toUserStr)
 		t := NewTransaction(bot, from, to, inlineFaucet.PerUserAmount, TransactionType("faucet"))
 		t.Memo = transactionMemo
 

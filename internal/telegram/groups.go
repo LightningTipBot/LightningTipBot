@@ -84,7 +84,7 @@ var (
 )
 
 var (
-	groupInvoiceMemo = "Ticket for group %s"
+	groupInvoiceMemo = "🎟 Ticket for group %s"
 )
 
 // groupHandler is called if the /group <cmd> command is invoked. It then decides with other
@@ -346,7 +346,7 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 			lnbits.InvoiceParams{
 				Out:     false,
 				Amount:  commissionSat,
-				Memo:    "Ticket commission for group " + ticketEvent.Group.Title,
+				Memo:    "🎟 Ticket commission for group " + ticketEvent.Group.Title,
 				Webhook: internal.Configuration.Lnbits.WebhookServer},
 			bot.Client)
 		if err != nil {

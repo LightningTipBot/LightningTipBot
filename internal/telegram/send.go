@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 
@@ -306,7 +307,7 @@ func (bot *TipBot) confirmSendHandler(ctx intercept.Context) (intercept.Context,
 	toUserStr := GetUserStr(to.Telegram)
 	fromUserStr := GetUserStr(from.Telegram)
 
-	transactionMemo := fmt.Sprintf("Send from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
+	transactionMemo := fmt.Sprintf("💸 Send from %s to %s.", fromUserStr, toUserStr)
 	t := NewTransaction(bot, from, to, amount, TransactionType("send"))
 	t.Memo = transactionMemo
 

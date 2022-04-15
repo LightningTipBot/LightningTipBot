@@ -279,7 +279,7 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx intercept.Context) (intercept.C
 		fromUserStr := GetUserStr(from.Telegram)
 
 		// todo: user new get username function to get userStrings
-		transactionMemo := fmt.Sprintf("Tipjar from %s to %s (%d sat).", fromUserStr, toUserStr, inlineTipjar.PerUserAmount)
+		transactionMemo := fmt.Sprintf("🍯 Tipjar from %s to %s.", fromUserStr, toUserStr)
 		t := NewTransaction(bot, from, to, inlineTipjar.PerUserAmount, TransactionType("tipjar"))
 		t.Memo = transactionMemo
 

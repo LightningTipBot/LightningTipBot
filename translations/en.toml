@@ -121,11 +121,13 @@ advancedMessage = """%s
 📖 You can use inline commands in every chat, even in private conversations. Wait a second after entering an inline command and *click* the result, don't press enter.
 
 ⚙️ *Advanced commands*
+*/transactions* 📊 List transactions
 */link* 🔗 Link your wallet to [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ Lnurl receive or pay: `/lnurl` or `/lnurl <lnurl>`
 */faucet* 🚰 Create a faucet: `/faucet <capacity> <per_user>`
 */tipjar* 🍯 Create a tipjar: `/tipjar <capacity> <per_user>`
-*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`"""
+*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`
+*/shop* 🛍 Browse shops: `/shop` or `/shop <user/shop_id>`"""
 
 # GENERIC
 enterAmountRangeMessage        = """💯 Enter an amount between %d and %d sat."""

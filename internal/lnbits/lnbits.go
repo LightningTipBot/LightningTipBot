@@ -1,8 +1,9 @@
 package lnbits
 
 import (
-	"github.com/imroc/req"
 	"time"
+
+	"github.com/imroc/req"
 )
 
 // NewClient returns a new lnbits api client. Pass your API key and url here.
@@ -115,6 +116,30 @@ func (c Client) Info(w Wallet) (wtx Wallet, err error) {
 		"X-Api-Key":    w.Inkey,
 	}
 	resp, err := req.Get(c.url+"/api/v1/wallet", invoiceHeader, nil)
+	if err != nil {
+		return
+	}
+
+	if resp.Response().StatusCode >= 300 {
+		var reqErr Error
+		resp.ToJSON(&reqErr)
+		err = reqErr
+		return
+	}
+
+	err = resp.ToJSON(&wtx)
+	return
+}
+
+// Info returns wallet payments
+func (c Client) Payments(w Wallet) (wtx Payments, err error) {
+	// custom header with invoice key
+	invoiceHeader := req.Header{
+		"Content-Type": "application/json",
+		"Accept":       "application/json",
+		"X-Api-Key":    w.Inkey,
+	}
+	resp, err := req.Get(c.url+"/api/v1/payments?limit=60", invoiceHeader, nil)
 	if err != nil {
 		return
 	}

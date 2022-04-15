@@ -117,11 +117,13 @@ advancedMessage = """%s
 📖 Puoi usare i comandi in linea in ogni chat, anche nelle conversazioni private. Attendi un secondo dopo aver inviato un comando in linea e *clicca* sull'azione desiderata, non premere invio.
 
 ⚙️ *Comandi avanzati*
+*/transactions* 📊 List transactions
 */link* 🔗 Crea un collegamento al tuo wallet [BlueWallet](https://bluewallet.io/) o [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ Ricevi o paga un Lnurl: `/lnurl` or `/lnurl <lnurl>`
 */faucet* 🚰 Crea una distribuzione: `/faucet <totale> <per_utente>`
 */tipjar* 🍯 Crea un tipjar: `/tipjar <totale> <per_utente>`
-*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`"""
+*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`
+*/shop* 🛍 Browse shops: `/shop` or `/shop <user/shop_id>`"""
 
 # GENERIC
 enterAmountRangeMessage        = """💯 Imposta un ammontare tra %d e %d sat."""
