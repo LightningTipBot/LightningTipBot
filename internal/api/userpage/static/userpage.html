@@ -1,0 +1,56 @@
+<!-- @format -->
+
+{{define "userpage"}}
+
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<title>{{.Username}}@ln.tips</title>
+<script src="https://unpkg.com/kjua@0.6.0/dist/kjua.min.js"></script>
+<style>
+  body {
+    background: rgb(36,71,247);
+    background: radial-gradient(circle, rgba(36,71,247,1) 0%, rgba(249,42,84,1) 100%);
+    margin: auto;
+    text-align: center;
+    font-family: monospace;
+    width: 600px;
+  }
+  #photo {
+    margin-top: 50px;
+    width: 100px;
+  }
+  a {
+    color: #f3f3f3c5;
+  }
+  #qr {
+    display: block;
+    margin-top: 50px;
+    margin-bottom: 50px;
+  }
+  #invoice {
+    margin: 10px;
+    padding-bottom: 10px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-all;
+    font-size: 23px;
+  }
+</style>
+
+<a href="https://t.me/{{.Username}}"><img id="photo" src="{{.Image}}"/></a>
+<h1>Pay to <a href="https://t.me/{{.Username}}">{{.Username}}@ln.tips</a></h1>
+
+<div><a href="lightning:{{.LNURLPay}}" id="qr"></a></div>
+<div id="invoice">{{.LNURLPay}}</div>
+
+<script>
+  qr.appendChild(
+    kjua({
+      text: invoice.innerHTML,
+      rounded: 50,
+      size: 500
+    })
+  )
+</script>
+
+{{end}}
