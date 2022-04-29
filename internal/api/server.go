@@ -33,7 +33,7 @@ func NewServer(address string) *Server {
 	apiServer.router = mux.NewRouter()
 	apiServer.httpServer.Handler = apiServer.router
 	go apiServer.httpServer.ListenAndServe()
-	log.Infof("[LNURL] Server started at %s", internal.Configuration.Bot.LNURLServerUrl.Host)
+	log.Infof("[API] Server started at %s", internal.Configuration.Bot.LNURLServerUrl.Host)
 	return apiServer
 }
 
