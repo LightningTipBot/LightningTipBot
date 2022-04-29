@@ -17,6 +17,7 @@ var defaultTickerCoolDown = time.Second * 10
 type ResettableFunctionTicker struct {
 	Ticker    *time.Ticker
 	ResetChan chan struct{} // channel used to reset the ticker
+	StopChan  chan struct{} // channel used to stop the ticker
 	duration  time.Duration
 	Started   bool
 	name      string
@@ -44,6 +45,7 @@ func GetTicker(name string, option ...ResettableFunctionTickerOption) *Resettabl
 func NewResettableFunctionTicker(name string, option ...ResettableFunctionTickerOption) *ResettableFunctionTicker {
 	t := &ResettableFunctionTicker{
 		ResetChan: make(chan struct{}, 1),
+		StopChan:  make(chan struct{}, 1),
 		name:      name,
 	}
 
@@ -70,6 +72,11 @@ func (t *ResettableFunctionTicker) Do(f func()) {
 			case <-t.ResetChan:
 				// reset signal received. creating new ticker.
 				t.Ticker = time.NewTicker(t.duration)
+			case <-t.StopChan:
+				// reset signal received. creating new ticker.
+				t.Ticker = nil
+				tickerMap.Remove(t.name)
+				return
 			}
 		}
 	}()
