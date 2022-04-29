@@ -3,11 +3,13 @@ package telegram
 import (
 	"bytes"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 
@@ -22,7 +24,9 @@ import (
 )
 
 func (bot *TipBot) GetHttpClient() (*http.Client, error) {
-	client := http.Client{}
+	client := http.Client{
+		Timeout: 10 * time.Second,
+	}
 	if internal.Configuration.Bot.HttpProxy != "" {
 		proxyUrl, err := url.Parse(internal.Configuration.Bot.HttpProxy)
 		if err != nil {
@@ -33,6 +37,7 @@ func (bot *TipBot) GetHttpClient() (*http.Client, error) {
 	}
 	return &client, nil
 }
+
 func (bot TipBot) cancelLnUrlHandler(c *tb.Callback) {
 }
 
