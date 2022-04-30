@@ -14,12 +14,20 @@
     text-align: center;
     font-family: monospace;
     width: 600px;
+    color: #f3f3f3c5 !important;
   }
+  .image-cropper {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 50%;
+}
   #photo {
     margin-top: 50px;
     width: 100px;
   }
-  a {
+  .white {
     color: #f3f3f3c5;
   }
   #qr {
@@ -37,18 +45,19 @@
   }
 </style>
 
-<a href="https://t.me/{{.Username}}"><img id="photo" src="{{.Image}}"/></a>
-<h1>Pay to <a href="https://t.me/{{.Username}}">{{.Username}}@ln.tips</a></h1>
+<a href="https://t.me/{{.Username}}"><img id="photo" class="image-cropper" src="{{.Image}}"/></a>
+<h1>Pay to <a class="white" href="https://t.me/{{.Username}}">{{.Username}}@ln.tips</a></h1>
 
 <div><a href="lightning:{{.LNURLPay}}" id="qr"></a></div>
-<div id="invoice">{{.LNURLPay}}</div>
+<div class="white" id="invoice">{{.LNURLPay}}</div>
 
 <script>
   qr.appendChild(
     kjua({
       text: invoice.innerHTML,
       rounded: 50,
-      size: 500
+      size: 500,
+      render: 'canvas',
     })
   )
 </script>
