@@ -67,14 +67,15 @@ func (s Service) UserPageHandler(w http.ResponseWriter, r *http.Request) {
 	// https://ln.tips/.well-known/lnurlp/<username>
 	username := mux.Vars(r)["username"]
 	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, username)
+	log.Infof("[UserPage] rendering page of %s", username)
 	lnurlEncode, err := lnurl.LNURLEncode(callback)
 	if err != nil {
-		log.Errorln("[UserPageHandler]", err)
+		log.Errorln("[UserPage]", err)
 		return
 	}
 	image, err := s.getTelegramUserPictureURL(username)
 	if err != nil {
-		log.Errorln("[UserPageHandler]", err)
+		log.Errorln("[UserPage]", err)
 		image = "https://telegram.org/img/t_logo.png"
 	}
 	if err := tmpl.ExecuteTemplate(w, "userpage", struct {
