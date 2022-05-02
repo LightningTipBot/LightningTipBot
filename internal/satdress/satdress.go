@@ -2,13 +2,16 @@ package satdress
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"golang.org/x/net/proxy"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -99,6 +102,17 @@ func MakeInvoice(params Params) (CheckInvoiceParams, error) {
 	if !params.Backend.isLocal() && len(HttpProxyURL) > 0 {
 		proxyURL, _ := url.Parse(HttpProxyURL)
 		specialTransport.Proxy = http.ProxyURL(proxyURL)
+		d, err := proxy.SOCKS5("tcp", HttpProxyURL, nil, &net.Dialer{
+			Timeout:   20 * time.Second,
+			Deadline:  time.Now().Add(time.Second * 10),
+			KeepAlive: -1,
+		})
+		if err != nil {
+			return CheckInvoiceParams{}, err
+		}
+		specialTransport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+			return d.Dial(network, addr)
+		}
 	}
 
 	Client.Transport = specialTransport
