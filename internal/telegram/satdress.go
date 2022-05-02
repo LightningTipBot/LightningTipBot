@@ -331,7 +331,7 @@ func (bot *TipBot) satdressCheckInvoiceHandler(ctx intercept.Context) (intercept
 	// save it in the cache for another call later
 	bot.Cache.Set(fmt.Sprintf("invoice:msg:%s", getInvoiceParams.Hash), check_message, &store.Options{Expiration: 24 * time.Hour})
 
-	deadLineCtx, cancel := context.WithDeadline(ctx, time.Now().Add(time.Second*30))
+	deadLineCtx, cancel := context.WithDeadline(ctx, time.Now().Add(time.Second*60))
 	runtime.NewRetryTicker(deadLineCtx, "node_invoice_check", runtime.WithRetryDuration(5*time.Second)).Do(func() {
 		// get invoice from user's node
 		log.Debugf("[satdressCheckInvoiceHandler] Checking invoice: %s", getInvoiceParams.Hash)
