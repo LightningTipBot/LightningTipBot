@@ -4,11 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/network"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
@@ -23,20 +22,44 @@ import (
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
-func (bot *TipBot) GetHttpClient() (*http.Client, error) {
-	client := http.Client{
-		Timeout: 10 * time.Second,
-	}
-	if internal.Configuration.Bot.HttpProxy != "" {
-		proxyUrl, err := url.Parse(internal.Configuration.Bot.HttpProxy)
-		if err != nil {
-			log.Errorln(err)
-			return nil, err
-		}
-		client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
-	}
-	return &client, nil
-}
+// func (bot *TipBot) GetHttpClient() (*http.Client, error) {
+// 	client := http.Client{
+// 		Timeout: 10 * time.Second,
+// 	}
+// 	if internal.Configuration.Bot.HttpProxy != "" {
+// 		proxyUrl, err := url.Parse(internal.Configuration.Bot.HttpProxy)
+// 		if err != nil {
+// 			log.Errorln(err)
+// 			return nil, err
+// 		}
+// 		client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
+// 	}
+// 	return &client, nil
+// }
+// func (bot *TipBot) GetSocksClient() (*http.Client, error) {
+// 	client := http.Client{
+// 		Timeout: 10 * time.Second,
+// 	}
+// 	if internal.Configuration.Bot.SocksProxy != "" {
+// 		proxyURL, _ := url.Parse(internal.Configuration.Bot.SocksProxy)
+// 		specialTransport := &http.Transport{}
+// 		specialTransport.Proxy = http.ProxyURL(proxyURL)
+// 		d, err := proxy.SOCKS5("tcp", internal.Configuration.Bot.SocksProxy, nil, &net.Dialer{
+// 			Timeout:   20 * time.Second,
+// 			Deadline:  time.Now().Add(time.Second * 10),
+// 			KeepAlive: -1,
+// 		})
+// 		if err != nil {
+// 			log.Errorln(err)
+// 			return &client, nil
+// 		}
+// 		specialTransport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+// 			return d.Dial(network, addr)
+// 		}
+// 		client.Transport = specialTransport
+// 	}
+// 	return &client, nil
+// }
 
 func (bot TipBot) cancelLnUrlHandler(c *tb.Callback) {
 }
@@ -244,7 +267,7 @@ func (bot TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error
 	// 	return rawurl, nil, err
 	// }
 
-	client, err := bot.GetHttpClient()
+	client, err := network.GetHttpClient()
 	if err != nil {
 		return "", nil, err
 	}

@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"io/ioutil"
 	"net/url"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/network"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 
@@ -264,7 +266,7 @@ func (bot *TipBot) confirmWithdrawHandler(ctx intercept.Context) (intercept.Cont
 	callbackUrl.RawQuery = qs.Encode()
 
 	// lnurlWithdrawState loaded
-	client, err := bot.GetHttpClient()
+	client, err := network.GetHttpClient()
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
 		// bot.trySendMessage(c.Sender, Translate(ctx, "errorTryLaterMessage"))

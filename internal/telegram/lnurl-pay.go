@@ -3,11 +3,13 @@ package telegram
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"io/ioutil"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/network"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
@@ -143,7 +145,7 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx intercept.Context) (intercept.Context
 
 	// LnurlPayState loaded
 
-	client, err := bot.GetHttpClient()
+	client, err := network.GetHttpClient()
 	if err != nil {
 		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))

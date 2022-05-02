@@ -37,7 +37,7 @@ var Client = &http.Client{
 // thank you fiatjaf for this code
 func (s Service) getTelegramUserPictureURL(username string) (string, error) {
 	// with proxy:
-	// client, err := s.bot.GetHttpClient()
+	// client, err := s.network.GetHttpClient()
 	// if err != nil {
 	// 	return "", err
 	// }

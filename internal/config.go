@@ -18,6 +18,7 @@ var Configuration = struct {
 
 type BotConfiguration struct {
 	HttpProxy      string   `yaml:"http_proxy"`
+	SocksProxy     string   `yaml:"socks_proxy"`
 	LNURLServer    string   `yaml:"lnurl_server"`
 	LNURLServerUrl *url.URL `yaml:"-"`
 	LNURLHostName  string   `yaml:"lnurl_public_host_name"`
