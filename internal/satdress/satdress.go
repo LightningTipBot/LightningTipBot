@@ -117,36 +117,6 @@ func MakeInvoice(params Params) (CheckInvoiceParams, error) {
 		return CheckInvoiceParams{}, errors.New("no backend specified")
 	}
 
-	// specialTransport := &http.Transport{}
-
-	// // use a cert or skip TLS verification?
-	// if len(params.Backend.getCert()) > 0 {
-	// 	caCertPool := x509.NewCertPool()
-	// 	ok := caCertPool.AppendCertsFromPEM([]byte(params.Backend.getCert()))
-	// 	if !ok {
-	// 		return CheckInvoiceParams{}, fmt.Errorf("invalid root certificate")
-	// 	}
-	// 	specialTransport.TLSClientConfig = &tls.Config{RootCAs: caCertPool}
-	// } else {
-	// 	specialTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	// }
-
-	// // use a proxy?
-	// if !params.Backend.isLocal() && len(HttpProxyURL) > 0 {
-	// 	proxyURL, _ := url.Parse(HttpProxyURL)
-	// 	specialTransport.Proxy = http.ProxyURL(proxyURL)
-	// 	d, err := proxy.SOCKS5("tcp", HttpProxyURL, nil, &net.Dialer{
-	// 		Timeout:   20 * time.Second,
-	// 		Deadline:  time.Now().Add(time.Second * 10),
-	// 		KeepAlive: -1,
-	// 	})
-	// 	if err != nil {
-	// 		return CheckInvoiceParams{}, err
-	// 	}
-	// 	specialTransport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
-	// 		return d.Dial(network, addr)
-	// 	}
-	// }
 	var err error
 	Client, err := SetupHttpClient(!params.Backend.isLocal(), params.Backend.getCert())
 	if err != nil {
@@ -289,39 +259,6 @@ func CheckInvoice(params CheckInvoiceParams) (CheckInvoiceParams, error) {
 		log.Errorf(err.Error())
 		return CheckInvoiceParams{}, err
 	}
-
-	// specialTransport := &http.Transport{}
-
-	// // use a cert or skip TLS verification?
-	// if len(params.Backend.getCert()) > 0 {
-	// 	caCertPool := x509.NewCertPool()
-	// 	ok := caCertPool.AppendCertsFromPEM(params.Backend.getCert())
-	// 	if !ok {
-	// 		return CheckInvoiceParams{}, fmt.Errorf("invalid root certificate")
-	// 	}
-	// 	specialTransport.TLSClientConfig = &tls.Config{RootCAs: caCertPool}
-	// } else {
-	// 	specialTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	// }
-
-	// // use a proxy?
-	// if !params.Backend.isLocal() && len(HttpProxyURL) > 0 {
-	// 	proxyURL, _ := url.Parse(HttpProxyURL)
-	// 	specialTransport.Proxy = http.ProxyURL(proxyURL)
-	// 	d, err := proxy.SOCKS5("tcp", HttpProxyURL, nil, &net.Dialer{
-	// 		Timeout:   20 * time.Second,
-	// 		Deadline:  time.Now().Add(time.Second * 10),
-	// 		KeepAlive: -1,
-	// 	})
-	// 	if err != nil {
-	// 		return CheckInvoiceParams{}, err
-	// 	}
-	// 	specialTransport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
-	// 		return d.Dial(network, addr)
-	// 	}
-	// }
-
-	// Client.Transport = specialTransport
 
 	switch backend := params.Backend.(type) {
 	case LNDParams:
