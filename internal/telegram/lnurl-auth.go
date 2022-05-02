@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/url"
-
-	"github.com/LightningTipBot/LightningTipBot/internal/network"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"net/url"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
@@ -107,7 +105,7 @@ func (bot *TipBot) confirmLnurlAuthHandler(ctx intercept.Context) (intercept.Con
 	}
 
 	var sentsigres lnurl.LNURLResponse
-	client, err := network.GetHttpClient()
+	client, err := bot.GetHttpClient()
 	if err != nil {
 		return ctx, err
 	}

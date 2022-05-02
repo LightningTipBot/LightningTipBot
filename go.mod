@@ -23,7 +23,6 @@ require (
 	github.com/tidwall/buntdb v1.2.7
 	github.com/tidwall/gjson v1.12.1
 	github.com/tidwall/sjson v1.2.4
-	golang.org/x/net v0.0.0-20210916014120-12bc252f5db8
 	golang.org/x/text v0.3.6
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	gopkg.in/lightningtipbot/telebot.v3 v3.0.0-20220326213923-f323bb71ac8e
