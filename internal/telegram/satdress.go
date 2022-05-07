@@ -23,7 +23,8 @@ import (
 )
 
 var (
-	registerNodeMessage            = "📖 You did not register a node yet.\n\nCurrently supported backends: `lnd` and `lnbits`\nTo register a node, type: `/node add <Type> <Node_info>`\n*LND:* `/node add lnd <Host> <Macaroon> <Cert>`\n*LNbits:* `/node add lnbits <Host> <Key>`\n\nFor security reasons, you should *only use an invoice macaroon* for LND and an *invoice key* for LNbits."
+	registerNodeMessage            = "📖 Connect your Lightning node with your wallet.\n\nCurrently supported backends: `lnd` and `lnbits`\nTo register a node, type: `/node add <type> <info>`\n*LND:* `/node add lnd <host> <macaroon> <cert>`\n*LNbits:* `/node add lnbits <host> <key>`\n\n⚠️ For security reasons, you should *only use an invoice macaroon* for LND and an *invoice key* for LNbits."
+	nodeHelpMessage                = "⚙️ *Commands:*\n`/node add <type> <info>` ✅ Add your node.\n`/node invoice <admount>` ⤵️ Fetch an invoice from your node.\n`/node proxy <amount>` 🔀 Proxy a payment to your node (privacy feature).\n`/node help` 📖 Show help."
 	checkingInvoiceMessage         = "⏳ Checking invoice on your node..."
 	invoiceNotSettledMessage       = "❌ Invoice has not settled yet."
 	checkInvoiceButtonMessage      = "🔄 Check invoice"
@@ -49,29 +50,34 @@ func parseUserSettingInput(ctx intercept.Context, m *tb.Message) (satdress.Backe
 	if splitlen < 4 {
 		return params, fmt.Errorf("not enough arguments")
 	}
-	if strings.ToLower(splits[2]) == "lnd" {
-		if splitlen < 6 || splitlen > 7 {
-			return params, fmt.Errorf("wrong format. Use <Type> <Host> <Macaroon> <Cert>")
+	switch strings.ToLower(splits[2]) {
+	case "lnd":
+		if splitlen < 5 || splitlen > 7 {
+			return params, fmt.Errorf("wrong format. Use <Type> <Host> <Macaroon> [<Cert>]")
 		}
 		host := splits[3]
 		macaroon := splits[4]
-		cert := splits[5]
+		var pem []byte
+		if splitlen == 6 {
+			cert := splits[5]
+			pem := parseCertificateToPem(cert)
+			if len(pem) < 1 {
+				return params, fmt.Errorf("certificate has invalid format")
+			}
+		}
 
 		hostsplit := strings.Split(host, ".")
 		if len(hostsplit) == 0 {
 			return params, fmt.Errorf("host has wrong format")
 		}
-		pem := parseCertificateToPem(cert)
-		if len(pem) < 1 {
-			return params, fmt.Errorf("certificate has invalid format")
-		}
+
 		return satdress.LNDParams{
 			Cert:       pem,
 			Host:       host,
 			Macaroon:   macaroon,
 			CertString: string(pem),
 		}, nil
-	} else if strings.ToLower(splits[2]) == "lnbits" {
+	case "lnbits":
 		if splitlen < 5 || splitlen > 6 {
 			return params, fmt.Errorf("wrong format. Use <Type> <Host> <Key>")
 		}
@@ -87,8 +93,9 @@ func parseUserSettingInput(ctx intercept.Context, m *tb.Message) (satdress.Backe
 			Host: host,
 			Key:  key,
 		}, nil
+	default:
+		return params, fmt.Errorf("unknown backend type. Supported types: `lnd`, `lnbits`")
 	}
-	return params, fmt.Errorf("unknown backend type. Supported types: `lnd`, `lnbits`")
 }
 
 func nodeInfoString(node *lnbits.NodeSettings) (string, error) {
@@ -110,6 +117,11 @@ func nodeInfoString(node *lnbits.NodeSettings) (string, error) {
 	return fmt.Sprintf("ℹ️ *Your node information.*\n\n%s", node_info_str_filled), nil
 }
 
+func (bot *TipBot) nodeHelpHandler(ctx intercept.Context) (intercept.Context, error) {
+	bot.trySendMessage(ctx.Message().Sender, registerNodeMessage+"\n\n"+nodeHelpMessage)
+	return ctx, nil
+}
+
 func (bot *TipBot) getNodeHandler(ctx intercept.Context) (intercept.Context, error) {
 	m := ctx.Message()
 	user, err := GetLnbitsUserWithSettings(m.Sender, *bot)
@@ -119,14 +131,14 @@ func (bot *TipBot) getNodeHandler(ctx intercept.Context) (intercept.Context, err
 	}
 
 	if user.Settings == nil {
-		bot.trySendMessage(m.Sender, registerNodeMessage)
+		bot.trySendMessage(m.Sender, registerNodeMessage+"\n\n"+nodeHelpMessage)
 		return ctx, fmt.Errorf("no node registered")
 	}
 
 	node_info_str, err := nodeInfoString(&user.Settings.Node)
 	if err != nil {
 		log.Infof("Could not get node info for user %s", GetUserStr(user.Telegram))
-		bot.trySendMessage(m.Sender, registerNodeMessage)
+		bot.trySendMessage(m.Sender, registerNodeMessage+"\n\n"+nodeHelpMessage)
 		return ctx, err
 	}
 	bot.trySendMessage(m.Sender, node_info_str)
@@ -140,17 +152,17 @@ func (bot *TipBot) nodeHandler(ctx intercept.Context) (intercept.Context, error)
 	if len(splits) == 1 {
 		return bot.getNodeHandler(ctx)
 	} else if len(splits) > 1 {
-		if splits[1] == "invoice" {
+		switch strings.ToLower(splits[1]) {
+		case "invoice":
 			return bot.invHandler(ctx)
-		}
-		if splits[1] == "add" {
+		case "add":
 			return bot.registerNodeHandler(ctx)
-		}
-		if splits[1] == "check" {
+		case "check":
 			return bot.satdressCheckInvoiceHandler(ctx)
-		}
-		if splits[1] == "proxy" {
+		case "proxy":
 			return bot.satdressProxyHandler(ctx)
+		case "help":
+			return bot.nodeHelpHandler(ctx)
 		}
 	}
 	return ctx, nil
@@ -216,7 +228,7 @@ func (bot *TipBot) registerNodeHandler(ctx intercept.Context) (intercept.Context
 	node_info_str, err := nodeInfoString(&user.Settings.Node)
 	if err != nil {
 		log.Infof("Could not get node info for user %s", GetUserStr(user.Telegram))
-		bot.trySendMessage(m.Sender, registerNodeMessage)
+		bot.trySendMessage(m.Sender, registerNodeMessage+"\n\n"+nodeHelpMessage)
 		return ctx, err
 	}
 	bot.tryEditMessage(check_message, fmt.Sprintf("%s\n\n%s", node_info_str, nodeAddedMessage))
@@ -245,7 +257,8 @@ func (bot *TipBot) invHandler(ctx intercept.Context) (intercept.Context, error) 
 	check_message := bot.trySendMessageEditable(user.Telegram, routingInvoiceMessage)
 	var getInvoiceParams satdress.CheckInvoiceParams
 
-	if user.Settings.Node.NodeType == "lnd" {
+	switch user.Settings.Node.NodeType {
+	case "lnd":
 		// get invoice from user's node
 		getInvoiceParams, err = satdress.MakeInvoice(
 			satdress.Params{
@@ -258,7 +271,7 @@ func (bot *TipBot) invHandler(ctx intercept.Context) (intercept.Context, error) 
 				Description: fmt.Sprintf("Invoice by %s", GetUserStr(bot.Telegram.Me)),
 			},
 		)
-	} else if user.Settings.Node.NodeType == "lnbits" {
+	case "lnbits":
 		// get invoice from user's node
 		getInvoiceParams, err = satdress.MakeInvoice(
 			satdress.Params{
@@ -270,6 +283,8 @@ func (bot *TipBot) invHandler(ctx intercept.Context) (intercept.Context, error) 
 				Description: fmt.Sprintf("Invoice by %s", GetUserStr(bot.Telegram.Me)),
 			},
 		)
+	default:
+		return ctx, fmt.Errorf("unknown node type %s", user.Settings.Node.NodeType)
 	}
 	if err != nil {
 		log.Errorln(err.Error())
