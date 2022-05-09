@@ -23,7 +23,7 @@ import (
 )
 
 var (
-	registerNodeMessage            = "📖 Connect your Lightning node with your wallet.\n\nCurrently supported backends: `lnd` and `lnbits`\nTo register a node, type: `/node add <type> <info>`\n*LND:* `/node add lnd <host> <macaroon> <cert>`\n*LNbits:* `/node add lnbits <host> <key>`\n\n⚠️ For security reasons, you should *only use an invoice macaroon* for LND and an *invoice key* for LNbits."
+	registerNodeMessage            = "📖 Connect your Lightning node with your wallet.\n\nCurrently supported backends: `lnd` and `lnbits`\nTo register a node, type: `/node add <type> <info>`\n\n*LND (REST):* `/node add lnd <host> <macaroon> <cert>`\n*LNbits:* `/node add lnbits <host> <key>`\n\nℹ️ Always use `https://` for the `<host>`, even if you use a Tor node. Certificates and macaroons need to be in base64 format.\n\n⚠️ For security reasons, you should *only use an invoice macaroon* for LND and an *invoice key* for LNbits."
 	nodeHelpMessage                = "⚙️ *Commands:*\n`/node add <type> <info>` ✅ Add your node.\n`/node invoice <admount>` ⤵️ Fetch an invoice from your node.\n`/node proxy <amount>` 🔀 Proxy a payment to your node (privacy feature).\n`/node help` 📖 Show help."
 	checkingInvoiceMessage         = "⏳ Checking invoice on your node..."
 	invoiceNotSettledMessage       = "❌ Invoice has not settled yet."
@@ -232,6 +232,8 @@ func (bot *TipBot) registerNodeHandler(ctx intercept.Context) (intercept.Context
 		return ctx, err
 	}
 	bot.tryEditMessage(check_message, fmt.Sprintf("%s\n\n%s", node_info_str, nodeAddedMessage))
+
+	log.Infof("[node:add] Added node of user %s backend %s", GetUserStr(user.Telegram), user.Settings.Node.NodeType)
 	return ctx, nil
 }
 
@@ -253,6 +255,8 @@ func (bot *TipBot) invHandler(ctx intercept.Context) (intercept.Context, error) 
 			return ctx, err
 		}
 	}
+
+	log.Infof("[node:invoice] Getting invoice for user %s backend %s", GetUserStr(user.Telegram), user.Settings.Node.NodeType)
 
 	check_message := bot.trySendMessageEditable(user.Telegram, routingInvoiceMessage)
 	var getInvoiceParams satdress.CheckInvoiceParams
@@ -306,6 +310,8 @@ func (bot *TipBot) invHandler(ctx intercept.Context) (intercept.Context, error) 
 
 	// add the getInvoiceParams to cache to check it later
 	bot.Cache.Set(fmt.Sprintf("invoice:%d", user.Telegram.ID), getInvoiceParams, &store.Options{Expiration: 24 * time.Hour})
+
+	log.Infof("[node:invoice] Invoice created for user %s backend %s", GetUserStr(user.Telegram), user.Settings.Node.NodeType)
 
 	// check if invoice settles
 	return bot.satdressCheckInvoiceHandler(ctx)
@@ -442,6 +448,8 @@ func (bot *TipBot) satdressProxyHandler(ctx intercept.Context) (intercept.Contex
 		return ctx, err
 	}
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
+
+	log.Infof("[node] Proxy payment for user %s backend %s", GetUserStr(user.Telegram), user.Settings.Node.NodeType)
 	return ctx, nil
 }
 
@@ -453,6 +461,8 @@ func (bot *TipBot) satdressProxyRelayPaymentHandler(event Event) {
 		log.Errorf("node of user %s not registered", GetUserStr(user.Telegram))
 		return
 	}
+
+	log.Infof("[node:proxy] Relaying payment for user %s backend %s", GetUserStr(user.Telegram), user.Settings.Node.NodeType)
 
 	bot.notifyInvoiceReceivedEvent(invoiceEvent)
 
@@ -496,6 +506,8 @@ func (bot *TipBot) satdressProxyRelayPaymentHandler(event Event) {
 
 	// bot.trySendMessage(user.Telegram, fmt.Sprintf("PR: `%s`\n\nHash: `%s`\n\nStatus: `%s`", getInvoiceParams.PR, string(getInvoiceParams.Hash), getInvoiceParams.Status))
 
+	log.Infof("[node:proxy] Retrieved invoice for payment of user %s backend %s. Paying...", GetUserStr(user.Telegram), user.Settings.Node.NodeType)
+
 	// pay invoice
 	invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: getInvoiceParams.PR}, bot.Client)
 	if err != nil {
@@ -536,6 +548,8 @@ func (bot *TipBot) satdressProxyRelayPaymentHandler(event Event) {
 		return
 	}
 	bot.tryEditMessage(check_message, invoiceRoutedMessage)
+
+	log.Infof("[node:proxy] Proxy paid for user %s backend %s.", GetUserStr(user.Telegram), user.Settings.Node.NodeType)
 	// bot.trySendMessage(user.Telegram, fmt.Sprintf("PR: `%s`\n\nHash: `%s`\n\nStatus: `%s`", getInvoiceParams.PR, string(getInvoiceParams.Hash), getInvoiceParams.Status))
 
 	return
