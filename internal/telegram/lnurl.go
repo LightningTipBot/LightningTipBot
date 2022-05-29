@@ -133,8 +133,16 @@ func (bot *TipBot) UserGetAnonLightningAddress(user *lnbits.User) (string, error
 func UserGetLNURL(user *lnbits.User) (string, error) {
 	name := fmt.Sprint(user.UUID)
 	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, name)
-	log.Debugf("[lnurlReceiveHandler] %s's LNURL: %s", GetUserStr(user.Telegram), callback)
 
+	lnurlEncode, err := lnurl.LNURLEncode(callback)
+	if err != nil {
+		return "", err
+	}
+	return lnurlEncode, nil
+}
+
+func UserGetAnonLNURL(user *lnbits.User) (string, error) {
+	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, fmt.Sprint(user.AnonIDSha256))
 	lnurlEncode, err := lnurl.LNURLEncode(callback)
 	if err != nil {
 		return "", err

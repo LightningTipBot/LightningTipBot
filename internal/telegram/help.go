@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	tb "gopkg.in/lightningtipbot/telebot.v3"
@@ -60,11 +61,11 @@ func (bot TipBot) makeAdvancedHelpMessage(ctx context.Context, m *tb.Message) st
 	// we print the anonymous ln address in the advanced help
 	lnaddr, err := bot.UserGetAnonLightningAddress(fromUser)
 	if err == nil {
-		dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("Anonymous lightning address: `%s`\n", lnaddr)
+		dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("Anonymous Lightning address: `%s`\n", lnaddr)
 	}
-	lnurl, err := UserGetLNURL(fromUser)
+	lnurl, err := UserGetAnonLNURL(fromUser)
 	if err == nil {
-		dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("LNURL: `%s`", lnurl)
+		dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("Anonymous LNURL: `%s`", lnurl)
 	}
 
 	// this is so stupid:
