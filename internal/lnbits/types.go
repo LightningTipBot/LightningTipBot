@@ -122,8 +122,8 @@ type Wallet struct {
 type Payments []struct {
 	CheckingID    string      `json:"checking_id"`
 	Pending       bool        `json:"pending"`
-	Amount        int         `json:"amount"`
-	Fee           int         `json:"fee"`
+	Amount        int64       `json:"amount"`
+	Fee           int64       `json:"fee"`
 	Memo          string      `json:"memo"`
 	Time          int         `json:"time"`
 	Bolt11        string      `json:"bolt11"`
