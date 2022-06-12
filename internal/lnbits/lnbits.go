@@ -1,6 +1,9 @@
 package lnbits
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/tidwall/gjson"
 	"time"
 
 	"github.com/imroc/req"
@@ -40,8 +43,8 @@ func (c *Client) GetUser(userId string) (user User, err error) {
 	return
 }
 
-// CreateUserWithInitialWallet creates new user with initial wallet
-func (c *Client) CreateUserWithInitialWallet(userName, walletName, adminId string, email string) (wal User, err error) {
+// CreateUserWithWallet creates new user with wallet
+func (c *Client) CreateUserWithWallet(userName, walletName, adminId string, email string) (user User, err error) {
 	resp, err := req.Post(c.url+"/usermanager/api/v1/users", c.header, req.BodyJSON(struct {
 		WalletName string `json:"wallet_name"`
 		AdminId    string `json:"admin_id"`
@@ -58,7 +61,14 @@ func (c *Client) CreateUserWithInitialWallet(userName, walletName, adminId strin
 		err = reqErr
 		return
 	}
-	err = resp.ToJSON(&wal)
+	err = resp.ToJSON(&user)
+	res := gjson.Get(resp.String(), "wallets.0")
+	if res.Index == 0 {
+		err = fmt.Errorf("could not create initial wallet")
+		return
+	}
+	user.Wallet = &Wallet{}
+	err = json.Unmarshal([]byte(res.Raw), user.Wallet)
 	return
 }
 

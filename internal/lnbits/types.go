@@ -20,6 +20,11 @@ type Client struct {
 	InvoiceKey string
 }
 
+// User is a bot user containing lnbits and telegram information.
+// This struct is used for orm persistence.
+// Users are created, by talking to the bot or by receiving funds (tips, receive, faucet)
+// The initialized flag is set true, if user already talked to the bot.
+// This is used for the '<- talk to this bot' message when sending tips to new users.
 type User struct {
 	ID           string       `json:"id"`
 	Name         string       `json:"name" gorm:"primaryKey"`

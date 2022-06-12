@@ -74,9 +74,9 @@ func newTelegramBot() *tb.Bot {
 // todo -- may want to derive user wallets from this specific bot wallet (master wallet), since lnbits usermanager extension is able to do that.
 func (bot TipBot) initBotWallet() error {
 	botWalletInitialisation.Do(func() {
-		_, err := bot.initWallet(bot.Telegram.Me)
+		_, err := bot.userWithInitWallet(bot.Telegram.Me)
 		if err != nil {
-			log.Errorln(fmt.Sprintf("[initBotWallet] Could not initialize bot wallet: %s", err.Error()))
+			log.Errorln(fmt.Sprintf("[initBotWallet] ❌ 🧨 ❌ Could not initialize bot wallet: %s", err.Error()))
 			return
 		}
 	})
