@@ -113,10 +113,10 @@ func (bot *TipBot) tipHandler(ctx intercept.Context) (intercept.Context, error) 
 	success, err := t.Send()
 	if !success {
 		NewMessage(m, WithDuration(0, bot))
-		bot.trySendMessage(m.Sender, fmt.Sprintf("%s %s", Translate(ctx, "tipErrorMessage"), err))
+		bot.trySendMessage(m.Sender, fmt.Sprintf("%s: %s", Translate(ctx, "tipErrorMessage"), Translate(ctx, "tipUndefinedErrorMsg")))
 		errMsg := fmt.Sprintf("[/tip] Transaction failed: %s", err.Error())
 		log.Warnln(errMsg)
-		return ctx, fmt.Errorf("could not create wallet for %s", toUserStr)
+		return ctx, err
 	}
 
 	// update tooltip if necessary
