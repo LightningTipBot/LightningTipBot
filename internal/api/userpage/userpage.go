@@ -70,10 +70,17 @@ func (s Service) UserPageHandler(w http.ResponseWriter, r *http.Request) {
 	// https://ln.tips/.well-known/lnurlp/<username>
 	username := strings.ToLower(mux.Vars(r)["username"])
 	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, username)
-	log.Infof("[UserPage] rendering page of %s", username)
+	log.WithFields(log.Fields{
+		"module": "api",
+		"func":   "UserPageHandler",
+		"user":   username}).Infof("rendering page")
 	lnurlEncode, err := lnurl.LNURLEncode(callback)
 	if err != nil {
-		log.Errorln("[UserPage]", err)
+		log.WithFields(log.Fields{
+			"module": "api",
+			"func":   "UserPageHandler",
+			"user":   username,
+			"error":  err.Error()}).Errorln("[UserPage]", "error encoding lnurl")
 		return
 	}
 	image, err := s.getTelegramUserPictureURL(username)
@@ -87,6 +94,10 @@ func (s Service) UserPageHandler(w http.ResponseWriter, r *http.Request) {
 		Image    string
 		LNURLPay string
 	}{username, image, lnurlEncode}); err != nil {
-		log.Errorf("failed to render template")
+		log.WithFields(log.Fields{
+			"module": "api",
+			"func":   "UserPageHandler",
+			"user":   username,
+			"error":  err.Error()}).Errorf("failed to render template")
 	}
 }

@@ -48,7 +48,9 @@ func NewPriceWatcher() *PriceWatcher {
 	pricewatcher.Exchanges["coinbase"] = pricewatcher.GetCoinbasePrice
 	pricewatcher.Exchanges["bitfinex"] = pricewatcher.GetBitfinexPrice
 	Price = make(map[string]float64, 0)
-	log.Infof("[PriceWatcher] Watcher started")
+	log.WithFields(log.Fields{
+		"module": "price",
+		"func":   "PriceWatcher"}).Infof("Watcher started")
 	P = pricewatcher
 	return pricewatcher
 }

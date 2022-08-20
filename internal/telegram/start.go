@@ -27,11 +27,23 @@ func (bot TipBot) startHandler(ctx intercept.Context) (intercept.Context, error)
 	// ATTENTION: DO NOT CALL ANY HANDLER BEFORE THE WALLET IS CREATED
 	// WILL RESULT IN AN ENDLESS LOOP OTHERWISE
 	// bot.helpHandler(m)
-	log.Printf("[⭐️ /start] New user: %s (%d)\n", GetUserStr(ctx.Sender()), ctx.Sender().ID)
+	log.WithFields(log.Fields{
+		"module":  "telegram",
+		"func":    "startHandler",
+		"path":    "/start",
+		"user":    GetUserStr(ctx.Sender()),
+		"user_id": ctx.Sender().ID,
+	}).Printf(" New user")
 	walletCreationMsg := bot.trySendMessageEditable(ctx.Sender(), Translate(ctx, "startSettingWalletMessage"))
 	user, err := bot.initWallet(ctx.Sender())
 	if err != nil {
-		log.Errorln(fmt.Sprintf("[startHandler] Error with initWallet: %s", err.Error()))
+		log.WithFields(log.Fields{
+			"module":  "telegram",
+			"func":    "startHandler",
+			"path":    "/start",
+			"user":    GetUserStr(ctx.Sender()),
+			"user_id": ctx.Sender().ID,
+		}).Errorln(fmt.Sprintf("Error with initWallet: %s", err.Error()))
 		bot.tryEditMessage(walletCreationMsg, Translate(ctx, "startWalletErrorMessage"))
 		return ctx, err
 	}
@@ -61,7 +73,6 @@ func (bot TipBot) initWallet(tguser *tb.User) (*lnbits.User, error) {
 		user.Initialized = true
 		err = UpdateUserRecord(user, bot)
 		if err != nil {
-			log.Errorln(fmt.Sprintf("[initWallet] error updating user: %s", err.Error()))
 			return user, err
 		}
 	} else if !user.Initialized {
@@ -70,15 +81,13 @@ func (bot TipBot) initWallet(tguser *tb.User) (*lnbits.User, error) {
 		user.Initialized = true
 		err = UpdateUserRecord(user, bot)
 		if err != nil {
-			log.Errorln(fmt.Sprintf("[initWallet] error updating user: %s", err.Error()))
 			return user, err
 		}
 	} else if user.Initialized {
 		// wallet is already initialized
 		return user, nil
 	} else {
-		err = fmt.Errorf("could not initialize wallet")
-		return user, err
+		return user, fmt.Errorf("could not initialize wallet")
 	}
 	return user, nil
 }
@@ -90,8 +99,6 @@ func (bot TipBot) createWallet(user *lnbits.User) error {
 		internal.Configuration.Lnbits.AdminId,
 		UserStr)
 	if err != nil {
-		errormsg := fmt.Sprintf("[createWallet] Create wallet error: %s", err.Error())
-		log.Errorln(errormsg)
 		return err
 	}
 	user.Wallet = &lnbits.Wallet{}
@@ -99,8 +106,6 @@ func (bot TipBot) createWallet(user *lnbits.User) error {
 	user.Name = u.Name
 	wallet, err := bot.Client.Wallets(*user)
 	if err != nil {
-		errormsg := fmt.Sprintf("[createWallet] Get wallet error: %s", err.Error())
-		log.Errorln(errormsg)
 		return err
 	}
 	user.Wallet = &wallet[0]
@@ -113,8 +118,6 @@ func (bot TipBot) createWallet(user *lnbits.User) error {
 	user.CreatedAt = time.Now()
 	err = UpdateUserRecord(user, bot)
 	if err != nil {
-		errormsg := fmt.Sprintf("[createWallet] Update user record error: %s", err.Error())
-		log.Errorln(errormsg)
 		return err
 	}
 	return nil

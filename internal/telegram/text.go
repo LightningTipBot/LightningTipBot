@@ -105,7 +105,14 @@ func (bot *TipBot) enterUserHandler(ctx intercept.Context) (intercept.Context, e
 	var EnterUserStateData EnterUserStateData
 	err := json.Unmarshal([]byte(user.StateData), &EnterUserStateData)
 	if err != nil {
-		log.Errorf("[EnterUserHandler] %s", err.Error())
+		log.WithFields(log.Fields{
+			"module":      "telegram",
+			"func":        "lnurlPayHandlerSend",
+			"user":        GetUserStr(user.Telegram),
+			"user_id":     user.ID,
+			"wallet_id":   user.Wallet.ID,
+			"telegram_id": user.Telegram.ID,
+			"error":       err}).Errorf("error unmarshaling state data")
 		ResetUserState(user, bot)
 		return ctx, err
 	}

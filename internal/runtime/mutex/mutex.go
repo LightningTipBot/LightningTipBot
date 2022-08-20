@@ -69,7 +69,11 @@ func LockWithContext(ctx context.Context, s string) {
 	if nLocks == 0 {
 		Lock(s)
 	} else {
-		log.Tracef("[Mutex] Skip lock (nLocks: %d)", nLocks)
+		log.WithFields(log.Fields{
+			"module":      "mutex",
+			"func":        "Unlock",
+			"telegram_id": s,
+		}).Tracef("[Mutex] Skip lock (nLocks: %d)", nLocks)
 	}
 	nLocks++
 	mutexMap.Set(fmt.Sprintf("nLocks:%s", uid), nLocks)
@@ -98,7 +102,11 @@ func UnlockWithContext(ctx context.Context, s string) {
 		Unlock(s)
 		mutexMap.Remove(fmt.Sprintf("nLocks:%s", uid))
 	} else {
-		log.Tracef("[Mutex] Skip unlock (nLocks: %d)", nLocks)
+		log.WithFields(log.Fields{
+			"module":      "mutex",
+			"func":        "Unlock",
+			"telegram_id": s,
+		}).Tracef("[Mutex] Skip unlock (nLocks: %d)", nLocks)
 	}
 	Unlock(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
 	//mutexMap.Remove(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
@@ -108,7 +116,11 @@ func UnlockWithContext(ctx context.Context, s string) {
 // After it another call unlocks the mutex (and deletes it from the mutexMap) the mutex written again into the mutexMap.
 // If the mutex was not in the mutexMap before, a new mutext is created and locked and written into the mutexMap.
 func Lock(s string) {
-	log.Tracef("[Mutex] Attempt Lock %s", s)
+	log.WithFields(log.Fields{
+		"module":      "mutex",
+		"func":        "Lock",
+		"telegram_id": s,
+	}).Tracef("Locking attempt")
 	if m, ok := mutexMap.Get(s); ok {
 		m.(*sync.Mutex).Lock()
 		// write into mutex map
@@ -123,7 +135,11 @@ func Lock(s string) {
 		mutexMap.Set(s, m)
 		mutexMapSync.Unlock()
 	}
-	log.Tracef("[Mutex] Locked %s", s)
+	log.WithFields(log.Fields{
+		"module":      "mutex",
+		"func":        "Lock",
+		"telegram_id": s,
+	}).Tracef("Locked")
 }
 
 // Unlock unlocks a mutex in the mutexMap.
@@ -132,10 +148,18 @@ func Unlock(s string) {
 	if m, ok := mutexMap.Get(s); ok {
 		mutexMap.Remove(s)
 		m.(*sync.Mutex).Unlock()
-		log.Tracef("[Mutex] Unlocked %s", s)
+		log.WithFields(log.Fields{
+			"module":      "mutex",
+			"func":        "Unlock",
+			"telegram_id": s,
+		}).Tracef("Unlocked")
 	} else {
 		// this should never happen. Mutex should have been in the mutexMap.
-		log.Errorf("[Mutex] ⚠️⚠️⚠️ Unlock %s not in mutexMap. Skip.", s)
+		log.WithFields(log.Fields{
+			"module":      "mutex",
+			"func":        "Unlock",
+			"telegram_id": s,
+		}).Errorf("⚠️⚠️⚠️ Unlock not in mutexMap. Skip.")
 	}
 	mutexMapSync.Unlock()
 }

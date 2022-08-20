@@ -61,7 +61,9 @@ func NewServer(bot *telegram.TipBot) *Server {
 	}
 	apiServer.httpServer.Handler = apiServer.newRouter()
 	go apiServer.httpServer.ListenAndServe()
-	log.Infof("[Webhook] Server started at %s", internal.Configuration.Lnbits.WebhookServerUrl)
+	log.WithFields(log.Fields{
+		"module": "lnbits",
+		"func":   "NewServer", "host": internal.Configuration.Lnbits.WebhookServerUrl.String()}).Infof("started webhook server")
 	return apiServer
 }
 
@@ -81,23 +83,37 @@ func (w *Server) newRouter() *mux.Router {
 }
 
 func (w *Server) receive(writer http.ResponseWriter, request *http.Request) {
-	log.Debugln("[Webhook] Received request")
+	log.WithFields(log.Fields{
+		"module": "webhook",
+		"func":   "receive"}).Debugln("Received request")
 	webhookEvent := Webhook{}
 	// need to delete the header otherwise the Decode will fail
 	request.Header.Del("content-length")
 	err := json.NewDecoder(request.Body).Decode(&webhookEvent)
 	if err != nil {
-		log.Errorf("[Webhook] Error decoding request: %s", err.Error())
+		log.WithFields(log.Fields{
+			"module": "webhook",
+			"func":   "receive",
+			"error":  err.Error()}).Errorf("Error decoding request")
 		writer.WriteHeader(400)
 		return
 	}
 	user, err := w.GetUserByWalletId(webhookEvent.WalletID)
 	if err != nil {
-		log.Errorf("[Webhook] Error getting user: %s", err.Error())
+		log.WithFields(log.Fields{
+			"module": "webhook",
+			"func":   "receive",
+			"error":  err.Error()}).Errorf("Error getting user")
 		writer.WriteHeader(400)
 		return
 	}
-	log.Infoln(fmt.Sprintf("[⚡️ WebHook] User %s (%d) received invoice of %d sat.", telegram.GetUserStr(user.Telegram), user.Telegram.ID, webhookEvent.Amount/1000))
+	amount := webhookEvent.Amount / 1000
+	log.WithFields(log.Fields{
+		"module":      "webhook",
+		"func":        "receive",
+		"user":        telegram.GetUserStr(user.Telegram),
+		"telegram_id": user.Telegram.ID,
+		"amount":      amount}).Infoln(fmt.Sprintf("User received invoice"))
 
 	writer.WriteHeader(200)
 
@@ -105,12 +121,24 @@ func (w *Server) receive(writer http.ResponseWriter, request *http.Request) {
 	txInvoiceEvent := &telegram.InvoiceEvent{Invoice: &telegram.Invoice{PaymentHash: webhookEvent.PaymentHash}}
 	err = w.buntdb.Get(txInvoiceEvent)
 	if err != nil {
-		log.Errorln(err)
+		log.WithFields(log.Fields{
+			"module":      "webhook",
+			"func":        "receive",
+			"user":        telegram.GetUserStr(user.Telegram),
+			"telegram_id": user.Telegram.ID,
+			"error":       err.Error(),
+			"amount":      amount}).Errorln(err)
 	} else {
 		// do something with the event
 		if c := telegram.InvoiceCallback[txInvoiceEvent.Callback]; c.Function != nil {
 			if err := telegram.AssertEventType(txInvoiceEvent, c.Type); err != nil {
-				log.Errorln(err)
+				log.WithFields(log.Fields{
+					"module":      "webhook",
+					"func":        "receive",
+					"user":        telegram.GetUserStr(user.Telegram),
+					"telegram_id": user.Telegram.ID,
+					"error":       err.Error(),
+					"amount":      amount}).Errorln("invalid event type")
 				return
 			}
 			c.Function(txInvoiceEvent)
@@ -121,6 +149,12 @@ func (w *Server) receive(writer http.ResponseWriter, request *http.Request) {
 	// fallback: send a message to the user if there is no callback for this invoice
 	_, err = w.bot.Send(user.Telegram, fmt.Sprintf(i18n.Translate(user.Telegram.LanguageCode, "invoiceReceivedMessage"), webhookEvent.Amount/1000))
 	if err != nil {
-		log.Errorln(err)
+		log.WithFields(log.Fields{
+			"module":      "webhook",
+			"func":        "receive",
+			"user":        telegram.GetUserStr(user.Telegram),
+			"telegram_id": user.Telegram.ID,
+			"error":       err.Error(),
+			"amount":      amount}).Errorln("could not send fallback message")
 	}
 }

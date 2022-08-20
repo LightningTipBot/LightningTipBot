@@ -72,7 +72,13 @@ func (bot *TipBot) mainMenuBalanceButtonUpdate(to int64) {
 	if user.Wallet != nil {
 		amount, err := bot.GetUserBalanceCached(user)
 		if err == nil {
-			log.Tracef("[appendMainMenu] user %s balance %d sat", GetUserStr(user.Telegram), amount)
+			log.WithFields(log.Fields{
+				"module":      "telegram-buttons",
+				"func":        "mainMenuBalanceButtonUpdate",
+				"user":        GetUserStr(user.Telegram),
+				"user_id":     user.ID,
+				"wallet_id":   user.Wallet.ID,
+				"telegram_id": user.Telegram.ID}).Tracef("user %s balance %d sat", GetUserStr(user.Telegram), amount)
 			MainMenuCommandBalance := fmt.Sprintf("%s %d sat", MainMenuCommandBalance, amount)
 			btnBalanceMainMenu = mainMenu.Text(MainMenuCommandBalance)
 			mainMenu.Reply(
@@ -93,7 +99,13 @@ func (bot *TipBot) makeContactsButtons(ctx context.Context) []tb.Btn {
 	// get 5 most recent transactions by from_id with distint to_user
 	// where to_user starts with an @ and is not the user itself
 	bot.DB.Transactions.Where("from_id = ? AND to_user LIKE ? AND to_user <> ?", user.Telegram.ID, "@%", GetUserStr(user.Telegram)).Distinct("to_user").Order("id desc").Limit(5).Find(&records)
-	log.Debugf("[makeContactsButtons] found %d records", len(records))
+	log.WithFields(log.Fields{
+		"module":      "telegram-buttons",
+		"func":        "makeContactsButtons",
+		"user":        GetUserStr(user.Telegram),
+		"user_id":     user.ID,
+		"wallet_id":   user.Wallet.ID,
+		"telegram_id": user.Telegram.ID}).Debugf("[makeContactsButtons] found %d records", len(records))
 
 	// get all contacts and add them to the buttons
 	for i, r := range records {

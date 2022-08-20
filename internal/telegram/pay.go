@@ -200,7 +200,16 @@ func (bot *TipBot) confirmPayHandler(ctx intercept.Context) (intercept.Context, 
 		},
 	)
 
-	log.Infof("[/pay] Attempting %s's invoice %s (%d sat)", userStr, payData.ID, payData.Amount)
+	log.WithFields(log.Fields{
+		"module":      "telegram",
+		"func":        "confirmPayHandler",
+		"user":        userStr,
+		"user_id":     user.ID,
+		"telegram_id": user.Telegram.ID,
+		"path":        "/pay",
+		"data":        payData.ID,
+		"amount":      payData.Amount,
+		"wallet_id":   user.Wallet.ID}).Infof("Attempting invoice payment")
 	// pay invoice
 	invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoiceString}, bot.Client)
 	if err != nil {
@@ -235,7 +244,16 @@ func (bot *TipBot) confirmPayHandler(ctx intercept.Context) (intercept.Context, 
 		bot.trySendMessage(ctx.Sender(), i18n.Translate(payData.LanguageCode, "invoicePaidMessage"))
 		bot.tryEditMessage(ctx.Message(), fmt.Sprintf(i18n.Translate(payData.LanguageCode, "invoicePublicPaidMessage"), userStr), &tb.ReplyMarkup{})
 	}
-	log.Infof("[⚡️ pay] User %s paid invoice %s (%d sat)", userStr, payData.ID, payData.Amount)
+	log.WithFields(log.Fields{
+		"module":      "telegram",
+		"func":        "confirmPayHandler",
+		"user":        userStr,
+		"user_id":     user.ID,
+		"telegram_id": user.Telegram.ID,
+		"path":        "⚡️ pay",
+		"data":        payData.ID,
+		"amount":      payData.Amount,
+		"wallet_id":   user.Wallet.ID}).Infof("User paid invoice")
 	return ctx, nil
 }
 

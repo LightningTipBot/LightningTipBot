@@ -200,17 +200,35 @@ func (bot TipBot) logMessageInterceptor(ctx intercept.Context) (intercept.Contex
 	if ctx.Message() != nil {
 
 		if ctx.Message().Text != "" {
-			log_string := fmt.Sprintf("[%s:%d %s:%d] %s", ctx.Message().Chat.Title, ctx.Message().Chat.ID, GetUserStr(ctx.Message().Sender), ctx.Message().Sender.ID, ctx.Message().Text)
+			logString := fmt.Sprintf("[%s:%d %s:%d] %s", ctx.Message().Chat.Title, ctx.Message().Chat.ID, GetUserStr(ctx.Message().Sender), ctx.Message().Sender.ID, ctx.Message().Text)
 			if ctx.Message().IsReply() {
-				log_string = fmt.Sprintf("%s -> %s", log_string, GetUserStr(ctx.Message().ReplyTo.Sender))
+				logString = fmt.Sprintf("%s -> %s", logString, GetUserStr(ctx.Message().ReplyTo.Sender))
 			}
-			log.Infof(log_string)
+			log.WithFields(log.Fields{
+				"module":      "telegram",
+				"func":        "logMessageInterceptor",
+				"path":        ctx.Message().Text,
+				"user":        GetUserStr(ctx.Message().Sender),
+				"data":        logString,
+				"telegram_id": ctx.Sender().ID}).Infof("intercepting message")
 		} else if ctx.Message().Photo != nil {
-			log.Infof("[%s:%d %s:%d] %s", ctx.Message().Chat.Title, ctx.Message().Chat.ID, GetUserStr(ctx.Message().Sender), ctx.Message().Sender.ID, photoTag)
+			log.WithFields(log.Fields{
+				"module":      "telegram",
+				"func":        "logMessageInterceptor",
+				"path":        ctx.Message().Text,
+				"user":        GetUserStr(ctx.Message().Sender),
+				"data":        fmt.Sprintf("[%s:%d %s:%d] %s", ctx.Message().Chat.Title, ctx.Message().Chat.ID, GetUserStr(ctx.Message().Sender), ctx.Message().Sender.ID, photoTag),
+				"telegram_id": ctx.Sender().ID}).Infof("intercepting photo message")
 		}
 		return ctx, nil
 	} else if ctx.Callback() != nil {
-		log.Infof("[Callback %s:%d] Data: %s", GetUserStr(ctx.Callback().Sender), ctx.Callback().Sender.ID, ctx.Callback().Data)
+		log.WithFields(log.Fields{
+			"module":      "telegram",
+			"func":        "logMessageInterceptor",
+			"path":        ctx.Message().Text,
+			"user":        GetUserStr(ctx.Message().Sender),
+			"data":        fmt.Sprintf("[Callback %s:%d] Data: %s", GetUserStr(ctx.Callback().Sender), ctx.Callback().Sender.ID, ctx.Callback().Data),
+			"telegram_id": ctx.Sender().ID}).Infof("intercepting callback")
 		return ctx, nil
 
 	}

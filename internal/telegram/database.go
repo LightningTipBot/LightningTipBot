@@ -256,28 +256,61 @@ func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
 	if user.AnonIDSha256 == "" {
 		debugStack()
 		user.AnonIDSha256 = str.AnonIdSha256(user)
-		log.Errorf("[UpdateUserRecord] AnonIDSha256 empty! Setting to: %s", user.AnonIDSha256)
+		log.WithFields(log.Fields{
+			"module":    "database",
+			"func":      "UpdateUserRecord",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID,
+			"annon_id":  user.AnonIDSha256,
+		}).Errorf("Setting AnonIDSha256")
 	}
 	// TODO -- Remove this after empty anon id bug is identified
 	if user.AnonID == "" {
 		debugStack()
 		user.AnonID = fmt.Sprint(str.Int32Hash(user.ID))
-		log.Errorf("[UpdateUserRecord] AnonID empty! Setting to: %s", user.AnonID)
+		log.WithFields(log.Fields{
+			"module":    "database",
+			"func":      "UpdateUserRecord",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID,
+			"annon_id":  user.AnonID,
+		}).Errorf("Setting AnonID")
 	}
 	// TODO -- Remove this after empty anon id bug is identified
 	if user.UUID == "" {
 		debugStack()
 		user.UUID = str.UUIDSha256(user)
-		log.Errorf("[UpdateUserRecord] UUID empty! Setting to: %s", user.UUID)
+		log.WithFields(log.Fields{
+			"module":    "database",
+			"func":      "UpdateUserRecord",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID,
+			"annon_id":  user.UUID,
+		}).Errorf("Setting UUID")
 	}
 
 	tx := bot.DB.Users.Save(user)
 	if tx.Error != nil {
-		errmsg := fmt.Sprintf("[UpdateUserRecord] Error: Couldn't update %s's info in Database.", GetUserStr(user.Telegram))
-		log.Errorln(errmsg)
+		errmsg := fmt.Sprintf("[UpdateUserRecord] Error: Couldn't update userinfo in Database.")
+		log.WithFields(log.Fields{
+			"module":    "database",
+			"func":      "UpdateUserRecord",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID,
+		}).Errorln(errmsg)
 		return tx.Error
 	}
-	log.Tracef("[UpdateUserRecord] Records of user %s updated.", GetUserStr(user.Telegram))
+	log.WithFields(log.Fields{
+		"module":    "database",
+		"func":      "UpdateUserRecord",
+		"user":      GetUserStr(user.Telegram),
+		"user_id":   user.ID,
+		"wallet_id": user.Wallet.ID,
+	}).Tracef("[UpdateUserRecord] Updated records of user.")
 	if bot.Cache.GoCacheStore != nil {
 		updateCachedUser(user, bot)
 	}

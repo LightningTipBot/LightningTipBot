@@ -76,7 +76,9 @@ func (bot TipBot) initBotWallet() error {
 	botWalletInitialisation.Do(func() {
 		_, err := bot.initWallet(bot.Telegram.Me)
 		if err != nil {
-			log.Errorln(fmt.Sprintf("[initBotWallet] Could not initialize bot wallet: %s", err.Error()))
+			log.WithFields(log.Fields{
+				"module": "telegram",
+				"func":   "initBotWallet"}).Errorln(fmt.Sprintf("Could not initialize bot wallet: %s", err.Error()))
 			return
 		}
 	})
@@ -108,7 +110,10 @@ func (bot *TipBot) GracefulShutdown() {
 
 // Start will initialize the Telegram bot and lnbits.
 func (bot *TipBot) Start() {
-	log.Infof("[Telegram] Authorized on account @%s", bot.Telegram.Me.Username)
+	log.WithFields(log.Fields{
+		"module": "telegram",
+		"func":   "Start",
+		"user":   bot.Telegram.Me.Username}).Infof("Authorized on account")
 	// initialize the bot wallet
 	err := bot.initBotWallet()
 	if err != nil {

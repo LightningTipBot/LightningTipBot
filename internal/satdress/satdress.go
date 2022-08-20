@@ -105,7 +105,6 @@ func MakeInvoice(params Params) (CheckInvoiceParams, error) {
 	var err error
 	Client, err := SetupHttpClient(!params.Backend.isLocal(), params.Backend.getCert())
 	if err != nil {
-		log.Errorf(err.Error())
 		return CheckInvoiceParams{}, err
 	}
 
@@ -118,7 +117,10 @@ func MakeInvoice(params Params) (CheckInvoiceParams, error) {
 
 	switch backend := params.Backend.(type) {
 	case LNDParams:
-		log.Debugf("[MakeInvoice] LND invoice at %s", backend.Host)
+		log.WithFields(log.Fields{
+			"module": "satdress",
+			"func":   "MakeInvoice",
+			"host":   backend.Host}).Debugf("LND invoice")
 		body, _ := sjson.Set("{}", "value_msat", params.Msatoshi)
 
 		if params.DescriptionHash == nil {
@@ -173,7 +175,10 @@ func MakeInvoice(params Params) (CheckInvoiceParams, error) {
 		return checkInvoiceParams, nil
 
 	case LNBitsParams:
-		log.Debugf("[MakeInvoice] LNBits invoice at %s", backend.Host)
+		log.WithFields(log.Fields{
+			"module": "satdress",
+			"func":   "MakeInvoice",
+			"host":   backend.Host}).Debug("LNBits invoice")
 		body, _ := sjson.Set("{}", "amount", params.Msatoshi/1000)
 		body, _ = sjson.Set(body, "out", false)
 
@@ -241,13 +246,16 @@ func CheckInvoice(params CheckInvoiceParams) (CheckInvoiceParams, error) {
 	var err error
 	Client, err := SetupHttpClient(!params.Backend.isLocal(), params.Backend.getCert())
 	if err != nil {
-		log.Errorf(err.Error())
 		return CheckInvoiceParams{}, err
 	}
 
 	switch backend := params.Backend.(type) {
 	case LNDParams:
-		log.Debugf("[CheckInvoice] LND invoice %s at %s", base64.StdEncoding.EncodeToString(params.Hash), backend.Host)
+		log.WithFields(log.Fields{
+			"module":  "satdress",
+			"func":    "CheckInvoice",
+			"invoice": base64.StdEncoding.EncodeToString(params.Hash),
+			"host":    backend.Host}).Debugf("[CheckInvoice] LND invoice")
 		p, err := base64.StdEncoding.DecodeString(string(params.Hash))
 		if err != nil {
 			return CheckInvoiceParams{}, fmt.Errorf("invalid hash")
@@ -291,8 +299,16 @@ func CheckInvoice(params CheckInvoiceParams) (CheckInvoiceParams, error) {
 		return params, nil
 
 	case LNBitsParams:
-		log.Debugf("[CheckInvoice] LNBits invoice %s at %s", base64.StdEncoding.EncodeToString(params.Hash), backend.Host)
-		log.Debug("Getting ", backend.Host+"/api/v1/payments/"+string(params.Hash))
+		log.WithFields(log.Fields{
+			"module":  "satdress",
+			"func":    "CheckInvoice",
+			"invoice": base64.StdEncoding.EncodeToString(params.Hash),
+			"host":    backend.Host}).Debugf("LNBits invoice")
+		log.WithFields(log.Fields{
+			"module":  "satdress",
+			"func":    "CheckInvoice",
+			"invoice": base64.StdEncoding.EncodeToString(params.Hash),
+			"host":    backend.Host + "/api/v1/payments/" + string(params.Hash)}).Debug("Fetching GET")
 		req, err := http.NewRequest("GET", backend.Host+"/api/v1/payments/"+string(params.Hash), nil)
 		if err != nil {
 			return CheckInvoiceParams{}, err

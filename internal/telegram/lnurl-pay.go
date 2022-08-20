@@ -75,7 +75,12 @@ func (bot *TipBot) lnurlPayHandler(ctx intercept.Context, payParams *LnurlPaySta
 		(int64(amount) > (payParams.LNURLPayParams.MaxSendable/1000) || int64(amount) < (payParams.LNURLPayParams.MinSendable/1000)) &&
 		(payParams.LNURLPayParams.MaxSendable != 0 && payParams.LNURLPayParams.MinSendable != 0) { // only if max and min are set
 		err := fmt.Errorf("amount not in range")
-		log.Warnf("[lnurlPayHandler] Error: %s", err.Error())
+		log.WithFields(log.Fields{
+			"module":    "telegram",
+			"func":      "lnurlPayHandler",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID}).Warnf("%s", err.Error())
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), payParams.LNURLPayParams.MinSendable/1000, payParams.LNURLPayParams.MaxSendable/1000))
 		ResetUserState(user, bot)
 		return ctx, err
@@ -106,7 +111,12 @@ func (bot *TipBot) lnurlPayHandler(ctx intercept.Context, payParams *LnurlPaySta
 	// We need to save the pay state in the user state so we can load the payment in the next ctx
 	paramsJson, err := json.Marshal(payParams)
 	if err != nil {
-		log.Errorf("[lnurlPayHandler] Error: %s", err.Error())
+		log.WithFields(log.Fields{
+			"module":    "telegram",
+			"func":      "lnurlPayHandler",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID}).Errorf(err.Error())
 		// bot.trySendMessage(m.Sender, err.Error())
 		return ctx, err
 	}
@@ -127,7 +137,12 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx intercept.Context) (intercept.Context
 
 	// assert that user has entered an amount
 	if user.StateKey != lnbits.UserHasEnteredAmount {
-		log.Errorln("[lnurlPayHandlerSend] state keys don't match")
+		log.WithFields(log.Fields{
+			"module":    "telegram",
+			"func":      "lnurlPayHandlerSend",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID}).Errorln("state keys don't match")
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return ctx, fmt.Errorf("wrong state key")
 	}
@@ -136,7 +151,12 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx intercept.Context) (intercept.Context
 	var enterAmountData EnterAmountStateData
 	err := json.Unmarshal([]byte(user.StateData), &enterAmountData)
 	if err != nil {
-		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
+		log.WithFields(log.Fields{
+			"module":    "telegram",
+			"func":      "lnurlPayHandlerSend",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID}).Errorf("Error: %s", err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return ctx, err
 	}
@@ -146,7 +166,12 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx intercept.Context) (intercept.Context
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
+		log.WithFields(log.Fields{
+			"module":    "telegram",
+			"func":      "lnurlPayHandlerSend",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID}).Errorf(err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return ctx, err
 	}
@@ -156,13 +181,23 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx intercept.Context) (intercept.Context
 
 	client, err := network.GetClient(network.ClientTypeClearNet)
 	if err != nil {
-		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
+		log.WithFields(log.Fields{
+			"module":    "telegram",
+			"func":      "lnurlPayHandlerSend",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID}).Errorf(err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return ctx, err
 	}
 	callbackUrl, err := url.Parse(lnurlPayState.LNURLPayParams.Callback)
 	if err != nil {
-		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
+		log.WithFields(log.Fields{
+			"module":    "telegram",
+			"func":      "lnurlPayHandlerSend",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID}).Errorf(err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return ctx, err
 	}
@@ -178,13 +213,23 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx intercept.Context) (intercept.Context
 
 	res, err := client.Get(callbackUrl.String())
 	if err != nil {
-		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
+		log.WithFields(log.Fields{
+			"module":    "telegram",
+			"func":      "lnurlPayHandlerSend",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID}).Errorf(err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return ctx, err
 	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
+		log.WithFields(log.Fields{
+			"module":    "telegram",
+			"func":      "lnurlPayHandlerSend",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID}).Errorf(err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return ctx, err
 	}
@@ -196,7 +241,14 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx intercept.Context) (intercept.Context
 		if len(response2.Reason) > 0 {
 			error_reason = response2.Reason
 		}
-		log.Errorf("[lnurlPayHandlerSend] Error in LNURLPayValues: %s", error_reason)
+		log.WithFields(log.Fields{
+			"module":      "telegram",
+			"func":        "lnurlPayHandlerSend",
+			"user":        GetUserStr(user.Telegram),
+			"user_id":     user.ID,
+			"wallet_id":   user.Wallet.ID,
+			"telegram_id": user.Telegram.ID,
+			"error":       error_reason}).Error("Error in LNURLPayValues")
 		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), error_reason))
 		return ctx, fmt.Errorf("error in LNURLPayValues: %s", error_reason)
 	}

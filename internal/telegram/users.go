@@ -88,7 +88,15 @@ func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int64, err error) {
 	}
 	// msat to sat
 	amount = int64(wallet.Balance) / 1000
-	log.Debugf("[GetUserBalance] %s's balance: %d sat\n", GetUserStr(user.Telegram), amount)
+	log.WithFields(log.Fields{
+		"module":      "telegram",
+		"func":        "GetUserBalance",
+		"user":        GetUserStr(user.Telegram),
+		"user_id":     user.ID,
+		"wallet_id":   user.Wallet.ID,
+		"telegram_id": user.Telegram.ID,
+		"amount":      amount},
+	).Debugf("updated user balance")
 
 	// update user balance in cache
 	bot.Cache.Set(
@@ -109,8 +117,6 @@ func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) (*lnbits.User, e
 	log.Printf("[CreateWalletForTelegramUser] Creating wallet for user %s ... ", userStr)
 	err := bot.createWallet(user)
 	if err != nil {
-		errmsg := fmt.Sprintf("[CreateWalletForTelegramUser] Error: Could not create wallet for user %s", userStr)
-		log.Errorln(errmsg)
 		return user, err
 	}
 	// todo: remove this. we're doing this already in bot.createWallet().
@@ -118,7 +124,14 @@ func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) (*lnbits.User, e
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("[CreateWalletForTelegramUser] Wallet created for user %s. ", userStr)
+	log.WithFields(log.Fields{
+		"module":    "telegram",
+		"func":      "CreateWalletForTelegramUser",
+		"user":      GetUserStr(user.Telegram),
+		"user_id":   user.ID,
+		"wallet_id": user.Wallet.ID,
+		"error":     err.Error()},
+	).Printf("Wallet created")
 	return user, nil
 }
 

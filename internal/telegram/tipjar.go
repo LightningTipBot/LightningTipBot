@@ -153,7 +153,6 @@ func (bot TipBot) makeQueryTipjar(ctx intercept.Context) (*InlineTipjar, error) 
 			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineQueryTipjarTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryTipjarDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.BalanceToLowError:
-			log.Errorf(err.Error())
 			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineSendBalanceLowMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryTipjarDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		}
@@ -220,7 +219,16 @@ func (bot TipBot) handleInlineTipjarQuery(ctx intercept.Context) (intercept.Cont
 		results[i].SetResultID(inlineTipjar.ID)
 
 		bot.Cache.Set(inlineTipjar.ID, inlineTipjar, &store.Options{Expiration: 5 * time.Minute})
-		log.Infof("[tipjar] %s created inline tipjar %s: %d sat (%d per user)", GetUserStr(inlineTipjar.To.Telegram), inlineTipjar.ID, inlineTipjar.Amount, inlineTipjar.PerUserAmount)
+		log.WithFields(log.Fields{
+			"module":         "telegram-tipjar",
+			"func":           "handleInlineTipjarQuery",
+			"to_user":        GetUserStr(inlineTipjar.To.Telegram),
+			"to_user_id":     inlineTipjar.To.ID,
+			"to_telegram_id": inlineTipjar.To.Telegram.ID,
+			"to_wallet_id":   inlineTipjar.To.Wallet.ID,
+			"amount":         inlineTipjar.PerUserAmount,
+			"data":           fmt.Sprintf("[tipjar] %s created inline tipjar %s: %d sat (%d per user)", GetUserStr(inlineTipjar.To.Telegram), inlineTipjar.ID, inlineTipjar.Amount, inlineTipjar.PerUserAmount)}).
+			Infof("created tipjar")
 	}
 
 	err = bot.Telegram.Answer(q, &tb.QueryResponse{
@@ -229,7 +237,9 @@ func (bot TipBot) handleInlineTipjarQuery(ctx intercept.Context) (intercept.Cont
 		IsPersonal: true,
 	})
 	if err != nil {
-		log.Errorln(err)
+		log.WithFields(log.Fields{
+			"module": "telegram-tipjar",
+			"func":   "handleInlineTipjarQuery"}).Errorln("could not answer query")
 		return ctx, err
 	}
 	return ctx, nil
@@ -252,7 +262,14 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx intercept.Context) (intercept.C
 	inlineTipjar := fn.(*InlineTipjar)
 	to := inlineTipjar.To
 	if !inlineTipjar.Active {
-		log.Errorf(fmt.Sprintf("[tipjar] tipjar %s inactive.", inlineTipjar.ID))
+		log.WithFields(log.Fields{
+			"module":      "telegram",
+			"func":        "acceptInlineTipjarHandler",
+			"to_user_id":  to.ID,
+			"user_id":     from.ID,
+			"wallet_id":   from.Wallet.ID,
+			"amount":      inlineTipjar.PerUserAmount,
+			"telegram_id": from.Telegram.ID}).Errorf(fmt.Sprintf("tipjar %s inactive.", inlineTipjar.ID))
 		bot.tryEditMessage(c, i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarCancelledMessage"), &tb.ReplyMarkup{})
 		return ctx, errors.Create(errors.NotActiveError)
 	}
@@ -291,7 +308,16 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx intercept.Context) (intercept.C
 			return ctx, errors.New(errors.UnknownError, err)
 		}
 
-		log.Infof("[💸 tipjar] Tipjar %s from %s to %s (%d sat).", inlineTipjar.ID, fromUserStr, toUserStr, inlineTipjar.PerUserAmount)
+		log.WithFields(log.Fields{
+			"module":      "telegram",
+			"func":        "acceptInlineTipjarHandler",
+			"user":        fromUserStr,
+			"to_user":     toUserStr,
+			"to_user_id":  to.ID,
+			"user_id":     from.ID,
+			"wallet_id":   from.Wallet.ID,
+			"amount":      inlineTipjar.PerUserAmount,
+			"telegram_id": from.Telegram.ID}).Infof("Draining tipjar")
 		inlineTipjar.NGiven += 1
 		inlineTipjar.From = append(inlineTipjar.From, from)
 		inlineTipjar.GivenAmount = inlineTipjar.GivenAmount + inlineTipjar.PerUserAmount
@@ -300,7 +326,16 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx intercept.Context) (intercept.C
 		bot.trySendMessage(from.Telegram, fmt.Sprintf(i18n.Translate(from.Telegram.LanguageCode, "inlineTipjarSentMessage"), inlineTipjar.PerUserAmount, toUserStrMd))
 		if err != nil {
 			errmsg := fmt.Errorf("[tipjar] Error: Send message to %s: %s", toUserStr, err)
-			log.Warnln(errmsg)
+			log.WithFields(log.Fields{
+				"module":      "telegram",
+				"func":        "acceptInlineTipjarHandler",
+				"user":        fromUserStr,
+				"to_user":     toUserStr,
+				"to_user_id":  to.ID,
+				"user_id":     from.ID,
+				"wallet_id":   from.Wallet.ID,
+				"amount":      inlineTipjar.PerUserAmount,
+				"telegram_id": from.Telegram.ID}).Warnln(errmsg)
 		}
 
 		// build tipjar message
@@ -318,7 +353,16 @@ func (bot *TipBot) acceptInlineTipjarHandler(ctx intercept.Context) (intercept.C
 			inlineTipjar.Message = inlineTipjar.Message + fmt.Sprintf(i18n.Translate(inlineTipjar.LanguageCode, "inlineTipjarAppendMemo"), memo)
 		}
 		// update message
-		log.Infoln(inlineTipjar.Message)
+		log.WithFields(log.Fields{
+			"module":      "telegram",
+			"func":        "acceptInlineTipjarHandler",
+			"user":        fromUserStr,
+			"to_user":     toUserStr,
+			"to_user_id":  to.ID,
+			"user_id":     from.ID,
+			"wallet_id":   from.Wallet.ID,
+			"amount":      inlineTipjar.PerUserAmount,
+			"telegram_id": from.Telegram.ID}).Infoln(inlineTipjar.Message)
 		bot.tryEditMessage(c, inlineTipjar.Message, bot.makeTipjarKeyboard(ctx, inlineTipjar))
 	}
 	if inlineTipjar.GivenAmount >= inlineTipjar.Amount {

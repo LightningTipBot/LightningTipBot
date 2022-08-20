@@ -11,7 +11,6 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/lndhub"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
-
 	_ "net/http/pprof"
 
 	tb "gopkg.in/lightningtipbot/telebot.v3"
@@ -23,17 +22,8 @@ import (
 )
 
 // setLogger will initialize the log format
-func setLogger() {
-	log.SetLevel(log.DebugLevel)
-	customFormatter := new(log.TextFormatter)
-	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
-	customFormatter.FullTimestamp = true
-	log.SetFormatter(customFormatter)
-}
 
 func main() {
-	// set logger
-	setLogger()
 
 	defer withRecovery()
 	price.NewPriceWatcher().Start()

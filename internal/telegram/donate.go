@@ -56,13 +56,29 @@ func (bot TipBot) donationHandler(ctx intercept.Context) (intercept.Context, err
 	// get invoice
 	resp, err := http.Get(fmt.Sprintf(donationEndpoint, amount, GetUserStr(user.Telegram), GetUserStr(bot.Telegram.Me)))
 	if err != nil {
-		log.Errorln(err)
+		log.WithFields(log.Fields{
+			"module":      "telegram",
+			"func":        "donationHandler",
+			"user":        GetUserStr(user.Telegram),
+			"telegram_id": user.Telegram.ID,
+			"user_id":     user.ID,
+			"amount":      amount,
+			"wallet_id":   user.Wallet.ID,
+			"error":       err.Error()}).Errorln("could not GET donation endpoint")
 		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
 		return ctx, err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Errorln(err)
+		log.WithFields(log.Fields{
+			"module":      "telegram",
+			"func":        "donationHandler",
+			"user":        GetUserStr(user.Telegram),
+			"telegram_id": user.Telegram.ID,
+			"user_id":     user.ID,
+			"amount":      amount,
+			"wallet_id":   user.Wallet.ID,
+			"error":       err.Error()}).Errorln("could not read body")
 		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
 		return ctx, err
 	}
@@ -72,9 +88,15 @@ func (bot TipBot) donationHandler(ctx intercept.Context) (intercept.Context, err
 	// bot.trySendMessage(user.Telegram, string(body))
 	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: string(body)}, bot.Client)
 	if err != nil {
-		userStr := GetUserStr(user.Telegram)
-		errmsg := fmt.Sprintf("[/donate] Donation failed for user %s: %s", userStr, err)
-		log.Errorln(errmsg)
+		log.WithFields(log.Fields{
+			"module":      "telegram",
+			"func":        "donationHandler",
+			"user":        GetUserStr(user.Telegram),
+			"telegram_id": user.Telegram.ID,
+			"user_id":     user.ID,
+			"amount":      amount,
+			"wallet_id":   user.Wallet.ID,
+			"error":       err}).Errorln("donation failed")
 		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
 		return ctx, err
 	}

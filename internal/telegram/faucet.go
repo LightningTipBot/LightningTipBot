@@ -158,7 +158,6 @@ func (bot TipBot) makeQueryFaucet(ctx intercept.Context) (*InlineFaucet, error) 
 			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineQueryFaucetTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.BalanceToLowError:
-			log.Errorf(err.Error())
 			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineSendBalanceLowMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		}
@@ -187,16 +186,31 @@ func (bot TipBot) faucetHandler(ctx intercept.Context) (intercept.Context, error
 	ctx.Context = bot.mapFaucetLanguage(ctx, ctx.Text())
 	inlineFaucet, err := bot.makeFaucet(ctx, ctx.Message(), false)
 	if err != nil {
-		log.Warnf("[faucet] %s", err.Error())
+		log.WithFields(log.Fields{
+			"module": "telegram-faucet",
+			"func":   "faucetHandler",
+			"error":  err.Error()}).Warnf("could not create faucet from message")
 		return ctx, err
 	}
 	fromUserStr := GetUserStr(ctx.Message().Sender)
 	mFaucet := bot.trySendMessage(ctx.Message().Chat, inlineFaucet.Message, bot.makeFaucetKeyboard(ctx, inlineFaucet.ID))
-	log.Infof("[faucet] %s created faucet %s: %d sat (%d per user)", fromUserStr, inlineFaucet.ID, inlineFaucet.Amount, inlineFaucet.PerUserAmount)
+	log.WithFields(log.Fields{
+		"module":      "telegram-faucet",
+		"func":        "faucetHandler",
+		"user":        fromUserStr,
+		"telegram_id": ctx.Message().Sender.ID,
+		"data":        fmt.Sprintf("[faucet] %s created faucet %s: %d sat (%d per user)", fromUserStr, inlineFaucet.ID, inlineFaucet.Amount, inlineFaucet.PerUserAmount),
+		"error":       err.Error()}).Infof("created faucet")
 
 	// log faucet link if possible
 	if mFaucet != nil && mFaucet.Chat != nil {
-		log.Infof("[faucet] Link: https://t.me/c/%s/%d", strconv.FormatInt(mFaucet.Chat.ID, 10)[4:], mFaucet.ID)
+		log.WithFields(log.Fields{
+			"module":      "telegram-faucet",
+			"func":        "faucetHandler",
+			"user":        fromUserStr,
+			"telegram_id": ctx.Message().Sender.ID,
+			"data":        fmt.Sprintf("https://t.me/c/%s/%d", strconv.FormatInt(mFaucet.Chat.ID, 10)[4:], mFaucet.ID),
+			"error":       err.Error()}).Infof("found faucet link")
 	}
 	return ctx, inlineFaucet.Set(inlineFaucet, bot.Bunt)
 }
@@ -204,7 +218,10 @@ func (bot TipBot) faucetHandler(ctx intercept.Context) (intercept.Context, error
 func (bot TipBot) handleInlineFaucetQuery(ctx intercept.Context) (intercept.Context, error) {
 	inlineFaucet, err := bot.makeQueryFaucet(ctx)
 	if err != nil {
-		log.Errorf("[handleInlineFaucetQuery] %s", err.Error())
+		log.WithFields(log.Fields{
+			"module": "telegram-faucet",
+			"func":   "handleInlineFaucetQuery",
+			"error":  err.Error()}).Errorf("could not create faucet from query")
 		return ctx, err
 	}
 	urls := []string{
@@ -248,7 +265,12 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx intercept.Context) (intercept.C
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	fn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[acceptInlineFaucetHandler] c.Data: %s, Error: %s", c.Data, err.Error())
+		log.WithFields(log.Fields{
+			"module":      "telegram-faucet",
+			"func":        "acceptInlineFaucetHandler",
+			"telegram_id": ctx.Message().Sender.ID,
+			"data":        c.Data,
+			"error":       err.Error()}).Errorf("could not fetch transaction")
 		return ctx, err
 	}
 	log.Tracef("[acceptInlineFaucetHandler] Callback c.Data: %s tx.ID: %s", c.Data, tx.ID)
@@ -263,11 +285,27 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx intercept.Context) (intercept.C
 	}
 	// log faucet link if possible
 	if c.Message != nil && c.Message.Chat != nil {
-		log.Infof("[faucet] Link: https://t.me/c/%s/%d", strconv.FormatInt(c.Message.Chat.ID, 10)[4:], c.Message.ID)
+		log.WithFields(log.Fields{
+			"module":      "telegram-faucet",
+			"func":        "acceptInlineFaucetHandler",
+			"user":        GetUserStr(from.Telegram),
+			"user_id":     from.ID,
+			"telegram_id": from.Telegram.ID,
+			"wallet_id":   from.Wallet.ID,
+			"data":        fmt.Sprintf("[faucet] Link: https://t.me/c/%s/%d", strconv.FormatInt(c.Message.Chat.ID, 10)[4:], c.Message.ID),
+		}).Infof("found faucet link")
 	}
 
 	if from.Telegram.ID == to.Telegram.ID {
-		log.Debugf("[faucet] %s is the owner faucet %s", GetUserStr(to.Telegram), inlineFaucet.ID)
+		log.WithFields(log.Fields{
+			"module":      "telegram-faucet",
+			"func":        "acceptInlineFaucetHandler",
+			"user":        GetUserStr(from.Telegram),
+			"user_id":     from.ID,
+			"telegram_id": from.Telegram.ID,
+			"wallet_id":   from.Wallet.ID,
+			"data":        inlineFaucet.ID,
+		}).Debugf("cannot drain own faucet")
 		ctx.Context = context.WithValue(ctx, "callback_response", Translate(ctx, "sendYourselfMessage"))
 		return ctx, errors.Create(errors.SelfPaymentError)
 	}
@@ -275,7 +313,17 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx intercept.Context) (intercept.C
 	for _, a := range inlineFaucet.To {
 		if a.Telegram.ID == to.Telegram.ID {
 			// to user is already in To slice, has taken from facuet
-			log.Debugf("[faucet] %s:%d already took from faucet %s", GetUserStr(to.Telegram), to.Telegram.ID, inlineFaucet.ID)
+			log.WithFields(log.Fields{
+				"module":         "telegram-faucet",
+				"func":           "acceptInlineFaucetHandler",
+				"user":           GetUserStr(from.Telegram),
+				"to_user_id":     to.ID,
+				"to_telegram_id": to.Telegram.ID,
+				"user_id":        from.ID,
+				"telegram_id":    from.Telegram.ID,
+				"wallet_id":      from.Wallet.ID,
+				"data":           inlineFaucet.ID,
+			}).Debugf("already took from faucet")
 			ctx.Context = context.WithValue(ctx, "callback_response", Translate(ctx, "inlineFaucetAlreadyTookMessage"))
 			return ctx, errors.Create(errors.UnknownError)
 		}
@@ -293,8 +341,17 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx intercept.Context) (intercept.C
 		if !exists {
 			to, err = bot.CreateWalletForTelegramUser(to.Telegram)
 			if err != nil {
-				errmsg := fmt.Errorf("[faucet] Error: Could not create wallet for %s", toUserStr)
-				log.Errorln(errmsg)
+				log.WithFields(log.Fields{
+					"module":       "telegram-faucet",
+					"func":         "acceptInlineFaucetHandler",
+					"to_user":      GetUserStr(to.Telegram),
+					"to_user_id":   to.ID,
+					"to_wallet_id": to.Wallet.ID,
+					"user":         GetUserStr(from.Telegram),
+					"user_id":      from.ID,
+					"wallet_id":    from.Wallet.ID,
+					"error":        err.Error()},
+				).Errorln("Could not create wallet for user")
 				return ctx, err
 			}
 		}

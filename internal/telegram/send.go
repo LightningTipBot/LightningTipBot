@@ -98,7 +98,13 @@ func (bot *TipBot) sendHandler(ctx intercept.Context) (intercept.Context, error)
 			// lightning address, send to that address
 			ctx, err = bot.sendToLightningAddress(ctx, arg, amount)
 			if err != nil {
-				log.Errorln(err.Error())
+				log.WithFields(log.Fields{
+					"module":    "telegram",
+					"func":      "sendHandler",
+					"user":      GetUserStr(user.Telegram),
+					"user_id":   user.ID,
+					"wallet_id": user.Wallet.ID},
+				).Errorln(err.Error())
 				return ctx, err
 			}
 			return ctx, err
@@ -122,7 +128,14 @@ func (bot *TipBot) sendHandler(ctx intercept.Context) (intercept.Context, error)
 	// ASSUME INTERNAL SEND TO TELEGRAM USER
 	if err != nil || amount < 1 {
 		errmsg := fmt.Sprintf("[/send] Error: Send amount not valid.")
-		log.Warnln(errmsg)
+		log.WithFields(log.Fields{
+			"module":    "telegram",
+			"func":      "sendHandler",
+			"path":      "/send",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID},
+		).Warnln(errmsg)
 		// immediately delete if the amount is bullshit
 		NewMessage(ctx.Message(), WithDuration(0, bot))
 		bot.trySendMessage(ctx.Sender(), helpSendUsage(ctx, Translate(ctx, "sendValidAmountMessage")))
@@ -143,7 +156,14 @@ func (bot *TipBot) sendHandler(ctx intercept.Context) (intercept.Context, error)
 	} else {
 		toUserStrWithoutAt, err = getArgumentFromCommand(ctx.Message().Text, 2)
 		if err != nil {
-			log.Errorln(err.Error())
+			log.WithFields(log.Fields{
+				"module":    "telegram",
+				"func":      "sendHandler",
+				"path":      "/send",
+				"user":      GetUserStr(user.Telegram),
+				"user_id":   user.ID,
+				"wallet_id": user.Wallet.ID},
+			).Errorln(err.Error())
 			return ctx, err
 		}
 		toUserStrWithoutAt = strings.TrimPrefix(toUserStrWithoutAt, "@")
@@ -194,7 +214,14 @@ func (bot *TipBot) sendHandler(ctx intercept.Context) (intercept.Context, error)
 	sendDataJson, err := json.Marshal(sendData)
 	if err != nil {
 		NewMessage(ctx.Message(), WithDuration(0, bot))
-		log.Printf("[/send] Error: %s\n", err.Error())
+		log.WithFields(log.Fields{
+			"module":    "telegram",
+			"func":      "sendHandler",
+			"path":      "/send",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID},
+		).Error(err.Error())
 		bot.trySendMessage(ctx.Message().Sender, fmt.Sprint(Translate(ctx, "errorTryLaterMessage")))
 		return ctx, err
 	}
@@ -236,7 +263,14 @@ func (bot *TipBot) keyboardSendHandler(ctx intercept.Context) (intercept.Context
 	// set LNURLPayParams in the state of the user
 	stateDataJson, err := json.Marshal(enterUserStateData)
 	if err != nil {
-		log.Errorln(err)
+		log.WithFields(log.Fields{
+			"module":    "telegram",
+			"func":      "keyboardSendHandler",
+			"path":      "/send",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID},
+		).Errorln(err)
 		return ctx, err
 	}
 	SetUserState(user, bot, lnbits.UserEnterUser, string(stateDataJson))
@@ -254,7 +288,14 @@ func (bot *TipBot) keyboardSendHandler(ctx intercept.Context) (intercept.Context
 	// this is suboptimal because Telegram.Send is not rate limited etc. but it's the only way to send a custom keyboard for now
 	_, err = bot.Telegram.Send(user.Telegram, Translate(ctx, "enterUserMessage"), sendToMenu)
 	if err != nil {
-		log.Errorln(err.Error())
+		log.WithFields(log.Fields{
+			"module":    "telegram",
+			"func":      "keyboardSendHandler",
+			"path":      "/send",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID},
+		).Errorln(err.Error())
 	}
 	return ctx, nil
 }
@@ -266,7 +307,11 @@ func (bot *TipBot) confirmSendHandler(ctx intercept.Context) (intercept.Context,
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[acceptSendHandler] %s", err.Error())
+		log.WithFields(log.Fields{
+			"module": "telegram",
+			"func":   "confirmSendHandler",
+			"path":   "/send"},
+		).Errorf(err.Error())
 		return ctx, err
 	}
 	sendData := sn.(*SendData)
@@ -275,7 +320,16 @@ func (bot *TipBot) confirmSendHandler(ctx intercept.Context) (intercept.Context,
 		return ctx, errors.Create(errors.UnknownError)
 	}
 	if !sendData.Active {
-		log.Errorf("[acceptSendHandler] send not active anymore")
+		log.WithFields(log.Fields{
+			"module":         "telegram",
+			"func":           "confirmSendHandler",
+			"path":           "/send",
+			"user":           GetUserStr(sendData.From.Telegram),
+			"user_id":        sendData.From.ID,
+			"wallet_id":      sendData.From.Wallet.ID,
+			"to_user":        sendData.ToTelegramUser,
+			"to_telegram_id": sendData.ToTelegramId},
+		).Errorf("send not active anymore")
 		// bot.tryDeleteMessage(c.Message)
 		return ctx, errors.Create(errors.NotActiveError)
 	}
@@ -298,7 +352,16 @@ func (bot *TipBot) confirmSendHandler(ctx intercept.Context) (intercept.Context,
 	// we can now get the wallets of both users
 	to, err := GetLnbitsUser(&tb.User{ID: toId, Username: toUserStrWithoutAt}, *bot)
 	if err != nil {
-		log.Errorln(err.Error())
+		log.WithFields(log.Fields{
+			"module":         "telegram",
+			"func":           "confirmSendHandler",
+			"path":           "/send",
+			"user":           GetUserStr(sendData.From.Telegram),
+			"user_id":        sendData.From.ID,
+			"wallet_id":      sendData.From.Wallet.ID,
+			"to_user":        sendData.ToTelegramUser,
+			"to_telegram_id": sendData.ToTelegramId},
+		).Errorln(err.Error())
 		bot.tryDeleteMessage(ctx.Callback().Message)
 		return ctx, err
 	}
@@ -315,13 +378,33 @@ func (bot *TipBot) confirmSendHandler(ctx intercept.Context) (intercept.Context,
 	if !success || err != nil {
 		// bot.trySendMessage(c.Sender, sendErrorMessage)
 		errmsg := fmt.Sprintf("[/send] Error: Transaction failed. %s", err.Error())
-		log.Errorln(errmsg)
+		log.WithFields(log.Fields{
+			"module":         "telegram",
+			"func":           "confirmSendHandler",
+			"path":           "/send",
+			"user":           GetUserStr(sendData.From.Telegram),
+			"user_id":        sendData.From.ID,
+			"wallet_id":      sendData.From.Wallet.ID,
+			"to_user":        toUserStr,
+			"to_user_id":     to.ID,
+			"to_telegram_id": to.Telegram.ID},
+		).Errorln(errmsg)
 		bot.tryEditMessage(ctx.Callback().Message, i18n.Translate(sendData.LanguageCode, "sendErrorMessage"), &tb.ReplyMarkup{})
 		return ctx, errors.Create(errors.UnknownError)
 	}
 	sendData.Inactivate(sendData, bot.Bunt)
 
-	log.Infof("[💸 send] Send from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
+	log.WithFields(log.Fields{
+		"module":         "telegram",
+		"func":           "confirmSendHandler",
+		"user":           fromUserStr,
+		"to_user":        toUserStr,
+		"to_user_id":     to.ID,
+		"to_telegram_id": to.Telegram.ID,
+		"user_id":        from.ID,
+		"wallet_id":      from.Wallet.ID,
+		"amount":         amount,
+		"telegram_id":    from.Telegram.ID}).Infof("Send confirmation received")
 
 	// notify to user
 	bot.trySendMessage(to.Telegram, fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "sendReceivedMessage"), fromUserStrMd, amount))
@@ -356,7 +439,10 @@ func (bot *TipBot) cancelSendHandler(ctx intercept.Context) (intercept.Context, 
 	defer mutex.UnlockWithContext(ctx, tx.ID)
 	sn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
-		log.Errorf("[acceptSendHandler] %s", err.Error())
+		log.WithFields(log.Fields{
+			"module": "telegram",
+			"func":   "cancelSendHandler"},
+		).Errorf(err.Error())
 		return ctx, err
 	}
 

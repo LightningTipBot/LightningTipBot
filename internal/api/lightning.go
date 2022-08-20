@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
@@ -21,6 +22,7 @@ type ErrorResponse struct {
 func RespondError(w http.ResponseWriter, message string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusBadRequest)
+	log.WithFields(log.Fields{"module": "api", "func": "RespondError"}).Error(message)
 	json.NewEncoder(w).Encode(ErrorResponse{Message: message})
 }
 
@@ -35,7 +37,14 @@ func (s Service) Balance(w http.ResponseWriter, r *http.Request) {
 	balanceResponse := BalanceResponse{
 		Balance: balance,
 	}
-
+	log.WithFields(log.Fields{
+		"module":      "api",
+		"func":        "PayInvoice",
+		"user":        telegram.GetUserStr(user.Telegram),
+		"user_id":     user.ID,
+		"amount":      balance,
+		"wallet_id":   user.Wallet.ID,
+		"telegram_id": user.Telegram.ID}).Info("checked balance")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(balanceResponse)
@@ -62,6 +71,15 @@ func (s Service) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.WithFields(log.Fields{
+		"module":      "api",
+		"func":        "CreateInvoice",
+		"user":        telegram.GetUserStr(user.Telegram),
+		"user_id":     user.ID,
+		"wallet_id":   user.Wallet.ID,
+		"amount":      createInvoiceRequest.Amount,
+		"invoice":     invoice.PaymentRequest,
+		"telegram_id": user.Telegram.ID}).Info("created invoice")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(invoice)
@@ -86,7 +104,14 @@ func (s Service) PayInvoice(w http.ResponseWriter, r *http.Request) {
 		// we assume that it's paid since thre was no error earlier
 		payment.Paid = true
 	}
-
+	log.WithFields(log.Fields{
+		"module":      "api",
+		"func":        "PayInvoice",
+		"user":        telegram.GetUserStr(user.Telegram),
+		"user_id":     user.ID,
+		"wallet_id":   user.Wallet.ID,
+		"invoice":     invoice.PaymentRequest,
+		"telegram_id": user.Telegram.ID}).Info("payed invoice")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(payment)
@@ -100,6 +125,14 @@ func (s Service) PaymentStatus(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, "could not get payment")
 		return
 	}
+	log.WithFields(log.Fields{
+		"module":      "api",
+		"func":        "PayInvoice",
+		"user":        telegram.GetUserStr(user.Telegram),
+		"user_id":     user.ID,
+		"status":      payment.Paid,
+		"wallet_id":   user.Wallet.ID,
+		"telegram_id": user.Telegram.ID}).Info("returning payment status")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(payment)
@@ -115,6 +148,14 @@ func (s Service) InvoiceStatus(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, "could not get invoice")
 		return
 	}
+	log.WithFields(log.Fields{
+		"module":      "api",
+		"func":        "PayInvoice",
+		"user":        telegram.GetUserStr(user.Telegram),
+		"user_id":     user.ID,
+		"status":      payment.Paid,
+		"wallet_id":   user.Wallet.ID,
+		"telegram_id": user.Telegram.ID}).Info("returning invoice status")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(payment)

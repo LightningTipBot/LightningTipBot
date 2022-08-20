@@ -78,8 +78,17 @@ func (t *Transaction) Send() (success bool, err error) {
 	// save transaction to db
 	tx := t.Bot.DB.Transactions.Save(t)
 	if tx.Error != nil {
-		errMsg := fmt.Sprintf("Error: Could not log transaction: %s", err.Error())
-		log.Errorln(errMsg)
+		log.WithFields(log.Fields{
+			"module":       "telegram",
+			"func":         "SendTransaction",
+			"user":         t.FromUser,
+			"user_id":      t.From.ID,
+			"wallet_id":    t.From.Wallet.ID,
+			"telegram_id":  t.From.Telegram.ID,
+			"to_user":      t.ToUser,
+			"to_wallet_id": t.To.Wallet.ID,
+			"to_user_id":   t.To.ID,
+			"error":        tx.Error}).Errorln("could not log transaction")
 	}
 	return success, err
 }
@@ -94,14 +103,30 @@ func (t *Transaction) SendTransaction(bot *TipBot, from *lnbits.User, to *lnbits
 	// check if fromUser has balance
 	balance, err := bot.GetUserBalance(from)
 	if err != nil {
-		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
-		log.Errorln(errmsg)
+		log.WithFields(log.Fields{
+			"module":       "telegram",
+			"func":         "SendTransaction",
+			"to_user":      toUserStr,
+			"to_user_id":   to.ID,
+			"to_wallet_id": to.Wallet.ID,
+			"user":         fromUserStr,
+			"user_id":      from.ID,
+			"wallet_id":    from.Wallet.ID,
+			"amount":       amount},
+		).Errorln("error checking balance")
 		return false, err
 	}
 	// check if fromUser has balance
 	if balance < amount {
 		errmsg := fmt.Sprintf("balance too low.")
-		log.Warnf("Balance of user %s too low", fromUserStr)
+		log.WithFields(log.Fields{
+			"module":      "telegram",
+			"func":        "SendTransaction",
+			"to_user":     to.ID,
+			"user":        fromUserStr,
+			"user_id":     from.ID,
+			"wallet_id":   from.Wallet.ID,
+			"telegram_id": from.Telegram.ID}).Warn("balance of too low")
 		return false, fmt.Errorf(errmsg)
 	}
 
@@ -116,30 +141,63 @@ func (t *Transaction) SendTransaction(bot *TipBot, from *lnbits.User, to *lnbits
 			Memo:   memo},
 		bot.Client)
 	if err != nil {
-		errmsg := fmt.Sprintf("[Send] Error: Could not create invoice for user %s", toUserStr)
-		log.Errorln(errmsg)
+		log.WithFields(log.Fields{
+			"module":      "telegram",
+			"func":        "SendTransaction",
+			"user":        toUserStr,
+			"user_id":     to.ID,
+			"wallet_id":   to.Wallet.ID,
+			"telegram_id": to.Telegram.ID,
+			"error":       err.Error()}).Errorln("could not create invoice")
 		return false, err
 	}
 	t.Invoice = invoice
 	// pay invoice
 	_, err = from.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoice.PaymentRequest}, bot.Client)
 	if err != nil {
-		errmsg := fmt.Sprintf("[Send] Payment failed (%s to %s of %d sat): %s", fromUserStr, toUserStr, amount, err.Error())
-		log.Warnf(errmsg)
+		log.WithFields(log.Fields{
+			"module":       "telegram",
+			"func":         "SendTransaction",
+			"user":         fromUserStr,
+			"user_id":      from.ID,
+			"wallet_id":    from.Wallet.ID,
+			"telegram_id":  from.Telegram.ID,
+			"to_user":      toUserStr,
+			"to_wallet_id": to.Wallet.ID,
+			"to_user_id":   to.ID,
+			"error":        err.Error()}).Warnf("Payment failed")
 		return false, err
 	}
 
 	// check if fromUser has balance
 	_, err = bot.GetUserBalance(from)
 	if err != nil {
-		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
-		log.Errorln(errmsg)
+		log.WithFields(log.Fields{
+			"module":       "telegram",
+			"func":         "SendTransaction",
+			"user":         fromUserStr,
+			"user_id":      from.ID,
+			"wallet_id":    from.Wallet.ID,
+			"telegram_id":  from.Telegram.ID,
+			"to_user":      toUserStr,
+			"to_wallet_id": to.Wallet.ID,
+			"to_user_id":   to.ID,
+			"error":        err.Error()}).Errorln("could not get sender balance")
 		return false, err
 	}
 	_, err = bot.GetUserBalance(to)
 	if err != nil {
-		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
-		log.Errorln(errmsg)
+		log.WithFields(log.Fields{
+			"module":       "telegram",
+			"func":         "SendTransaction",
+			"user":         fromUserStr,
+			"user_id":      from.ID,
+			"wallet_id":    from.Wallet.ID,
+			"telegram_id":  from.Telegram.ID,
+			"to_user":      toUserStr,
+			"to_wallet_id": to.Wallet.ID,
+			"to_user_id":   to.ID,
+			"error":        err.Error()}).Errorln("could not get receiver balance")
 		return false, err
 	}
 

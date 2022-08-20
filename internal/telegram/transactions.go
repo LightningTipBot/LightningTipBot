@@ -133,7 +133,10 @@ func (bot *TipBot) transactionsScrollLeftHandler(ctx intercept.Context) (interce
 	user := LoadUser(ctx)
 	transactionsListInterface, err := bot.Cache.Get(fmt.Sprintf("%s_transactions", user.Name))
 	if err != nil {
-		log.Info("Transactions not in cache anymore")
+		log.WithFields(log.Fields{
+			"module": "telegram",
+			"func":   "transactionsScrollLeftHandler",
+		}).Info("Transactions not in cache anymore")
 		return ctx, err
 	}
 	transactionsList := transactionsListInterface.(TransactionsList)
@@ -155,7 +158,9 @@ func (bot *TipBot) transactionsScrollRightHandler(ctx intercept.Context) (interc
 	user := LoadUser(ctx)
 	transactionsListInterface, err := bot.Cache.Get(fmt.Sprintf("%s_transactions", user.Name))
 	if err != nil {
-		log.Info("Transactions not in cache anymore")
+		log.WithFields(log.Fields{
+			"module": "telegram",
+			"func":   "transactionsScrollRightHandler"}).Info("Transactions not in cache anymore")
 		return ctx, err
 	}
 	transactionsList := transactionsListInterface.(TransactionsList)

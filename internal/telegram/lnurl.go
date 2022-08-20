@@ -37,8 +37,15 @@ func (bot *TipBot) lnurlHandler(ctx intercept.Context) (intercept.Context, error
 	if m.Chat.Type != tb.ChatPrivate {
 		return ctx, errors.Create(errors.NoPrivateChatError)
 	}
-	log.Infof("[lnurlHandler] %s", m.Text)
 	user := LoadUser(ctx)
+	log.WithFields(log.Fields{
+		"module":      "lnurl",
+		"func":        "lnurlHandler",
+		"path":        "/lnurl",
+		"user":        GetUserStr(user.Telegram),
+		"user_id":     user.ID,
+		"wallet_id":   user.Wallet.ID,
+		"telegram_id": user.Telegram.ID}).Infof("%s", m.Text)
 	if user.Wallet == nil {
 		return ctx, errors.Create(errors.UserNoWalletError)
 	}
@@ -60,7 +67,14 @@ func (bot *TipBot) lnurlHandler(ctx intercept.Context) (intercept.Context, error
 		lnurlSplit = split[1]
 	} else {
 		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), "Could not parse command."))
-		log.Warnln("[/lnurl] Could not parse command.")
+		log.WithFields(log.Fields{
+			"module":      "lnurl",
+			"func":        "lnurlHandler",
+			"path":        "/lnurl",
+			"user":        GetUserStr(user.Telegram),
+			"user_id":     user.ID,
+			"wallet_id":   user.Wallet.ID,
+			"telegram_id": user.Telegram.ID}).Warnln("Could not parse command.")
 		return ctx, errors.Create(errors.InvalidSyntaxError)
 	}
 
@@ -73,20 +87,41 @@ func (bot *TipBot) lnurlHandler(ctx intercept.Context) (intercept.Context, error
 	if err != nil {
 		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), "LNURL error."))
 		// bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), err.Error()))
-		log.Warnf("[HandleLNURL] Error: %s", err.Error())
+		log.WithFields(log.Fields{
+			"module":      "lnurl",
+			"func":        "lnurlHandler",
+			"path":        "/lnurl",
+			"user":        GetUserStr(user.Telegram),
+			"user_id":     user.ID,
+			"wallet_id":   user.Wallet.ID,
+			"telegram_id": user.Telegram.ID}).Error(err.Error())
 		return ctx, err
 	}
 	switch params.(type) {
 	case lnurl.LNURLAuthParams:
 		authParams := &LnurlAuthState{LNURLAuthParams: params.(lnurl.LNURLAuthParams)}
-		log.Infof("[LNURL-auth] %s", authParams.LNURLAuthParams.Callback)
+		log.WithFields(log.Fields{
+			"module":      "lnurl-auth",
+			"func":        "lnurlHandler",
+			"path":        "/lnurl",
+			"user":        GetUserStr(user.Telegram),
+			"user_id":     user.ID,
+			"wallet_id":   user.Wallet.ID,
+			"telegram_id": user.Telegram.ID}).Info(authParams.LNURLAuthParams.Callback)
 		bot.tryDeleteMessage(statusMsg)
 		ctx.Context, err = bot.lnurlAuthHandler(ctx, m, authParams)
 		return ctx, err
 
 	case lnurl.LNURLPayParams:
 		payParams := &LnurlPayState{LNURLPayParams: params.(lnurl.LNURLPayParams)}
-		log.Infof("[LNURL-p] %s", payParams.LNURLPayParams.Callback)
+		log.WithFields(log.Fields{
+			"module":      "lnurl-p",
+			"func":        "lnurlHandler",
+			"path":        "/lnurl",
+			"user":        GetUserStr(user.Telegram),
+			"user_id":     user.ID,
+			"wallet_id":   user.Wallet.ID,
+			"telegram_id": user.Telegram.ID}).Infof(payParams.LNURLPayParams.Callback)
 		bot.tryDeleteMessage(statusMsg)
 
 		// display the metadata image from the first LNURL-p response
@@ -104,14 +139,28 @@ func (bot *TipBot) lnurlHandler(ctx intercept.Context) (intercept.Context, error
 
 	case lnurl.LNURLWithdrawResponse:
 		withdrawParams := &LnurlWithdrawState{LNURLWithdrawResponse: params.(lnurl.LNURLWithdrawResponse)}
-		log.Infof("[LNURL-w] %s", withdrawParams.LNURLWithdrawResponse.Callback)
+		log.WithFields(log.Fields{
+			"module":      "lnurl-w",
+			"func":        "lnurlHandler",
+			"path":        "/lnurl",
+			"user":        GetUserStr(user.Telegram),
+			"user_id":     user.ID,
+			"wallet_id":   user.Wallet.ID,
+			"telegram_id": user.Telegram.ID}).Info(withdrawParams.LNURLWithdrawResponse.Callback)
 		bot.tryDeleteMessage(statusMsg)
 		bot.lnurlWithdrawHandler(ctx, withdrawParams)
 	default:
 		if err == nil {
 			err = fmt.Errorf("invalid LNURL type")
 		}
-		log.Warnln(err)
+		log.WithFields(log.Fields{
+			"module":      "lnurl",
+			"func":        "lnurlHandler",
+			"path":        "/lnurl",
+			"user":        GetUserStr(user.Telegram),
+			"user_id":     user.ID,
+			"wallet_id":   user.Wallet.ID,
+			"telegram_id": user.Telegram.ID}).Warnln(err)
 		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), err.Error()))
 		// bot.trySendMessage(m.Sender, err.Error())
 		return ctx, err

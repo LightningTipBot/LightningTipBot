@@ -4,22 +4,20 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	"net/http"
 	"net/http/httputil"
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	"gorm.io/gorm"
 
 	log "github.com/sirupsen/logrus"
 )
 
-func LoggingMiddleware(prefix string, next http.HandlerFunc) http.HandlerFunc {
+func LoggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Tracef("[%s] %s %s", prefix, r.Method, r.URL.Path)
-		log.Tracef("[%s]\n%s", prefix, dump(r))
-		r.BasicAuth()
+		log.WithFields(log.Fields{"module": "api", "method": r.Method, "path": r.URL.Path, "request": dump(r)}).Info("incoming api request")
 		next.ServeHTTP(w, r)
 	}
 }
@@ -38,7 +36,7 @@ func AuthorizationMiddleware(database *gorm.DB, authType AuthType, next http.Han
 		// check if the user is banned
 		if auth == "" {
 			w.WriteHeader(401)
-			log.Warn("[AuthorizationMiddleware] no auth")
+			log.WithFields(log.Fields{"module": "api", "func": "AuthorizationMiddleware"}).Warn("no auth")
 			return
 		}
 		_, password, ok := parseAuth(authType, auth)
@@ -49,25 +47,32 @@ func AuthorizationMiddleware(database *gorm.DB, authType AuthType, next http.Han
 		// first we make sure that the password is not already "banned_"
 		if strings.Contains(password, "_") || strings.HasPrefix(password, "banned_") {
 			w.WriteHeader(401)
-			log.Warnf("[AuthorizationMiddleware] Banned user %s. Not forwarding request", password)
+			log.WithFields(log.Fields{"module": "api", "func": "AuthorizationMiddleware", "user": password}).Warn("Banned user. Not forwarding request")
 			return
 		}
 		// then we check whether the "normal" password provided is in the database (it should be not if the user is banned)
 		user := &lnbits.User{}
 		tx := database.Where("wallet_adminkey = ? COLLATE NOCASE", password).First(user)
 		if tx.Error != nil {
+			log.WithFields(log.Fields{"module": "api", "func": "AuthorizationMiddleware", "user": password, "error": tx.Error}).
+				Warnf("could not get wallet admin key")
+
 			tx = database.Where("wallet_inkey = ? COLLATE NOCASE", password).First(user)
-			log.Warnf("[AuthorizationMiddleware] Could not get wallet admin key %s: %v", password, tx.Error)
 			if tx.Error != nil {
-				log.Warnf("[AuthorizationMiddleware] need admin key to pay invoice %s: %v", password, tx.Error)
+				log.WithFields(log.Fields{"module": "api", "func": "AuthorizationMiddleware", "user": password, "error": tx.Error}).
+					Warnf("need admin key to pay invoice")
+
 				return
 			}
 			if r.URL.Path == "/api/v1/payinvoice" {
-				log.Warnf("[AuthorizationMiddleware] need admin key to pay invoice %s: %v", password, tx.Error)
+				log.WithFields(log.Fields{"module": "api", "func": "AuthorizationMiddleware", "user": password, "error": tx.Error}).
+					Warnf("need admin key to pay invoice")
+
 				return
 			}
 		}
-		log.Debugf("[AuthorizationMiddleware] User: %s", telegram.GetUserStr(user.Telegram))
+		log.WithFields(log.Fields{"module": "api", "func": "AuthorizationMiddleware", "user": telegram.GetUserStr(user.Telegram), "error": tx.Error}).
+			Debugf("Loaded Api user")
 		r = r.WithContext(context.WithValue(r.Context(), "user", user))
 		next.ServeHTTP(w, r)
 	}

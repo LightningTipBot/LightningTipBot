@@ -59,7 +59,6 @@ func getAmount(input string) (amount int64, err error) {
 			numeric_string = strings.Replace(strings.ToLower(numeric_string), strings.ToLower(currency), "", 1) // for 1USD
 			fmount, err := strconv.ParseFloat(numeric_string, 64)
 			if err != nil {
-				log.Errorln(err)
 				return 0, err
 			}
 			if !(price.Price[currency] > 0) {
@@ -105,7 +104,10 @@ func (bot *TipBot) askForAmount(ctx context.Context, id string, eventType string
 	// set LNURLPayParams in the state of the user
 	stateDataJson, err := json.Marshal(enterAmountStateData)
 	if err != nil {
-		log.Errorln(err)
+		log.WithFields(log.Fields{
+			"module": "telegram",
+			"func":   "askForAmount",
+			"error":  err.Error()}).Errorln("could not marshal state data")
 		return
 	}
 	SetUserState(user, bot, lnbits.UserEnterAmount, string(stateDataJson))
@@ -135,23 +137,44 @@ func (bot *TipBot) enterAmountHandler(ctx intercept.Context) (intercept.Context,
 	var EnterAmountStateData EnterAmountStateData
 	err := json.Unmarshal([]byte(user.StateData), &EnterAmountStateData)
 	if err != nil {
-		log.Errorf("[enterAmountHandler] %s", err.Error())
+		log.WithFields(log.Fields{
+			"module":      "telegram",
+			"func":        "enterAmountHandler",
+			"user":        GetUserStr(user.Telegram),
+			"telegram_id": user.Telegram.ID,
+			"user_id":     user.ID,
+			"wallet_id":   user.Wallet.ID,
+			"error":       err.Error()}).Errorf("could not unmarshal state data")
 		ResetUserState(user, bot)
 		return ctx, err
 	}
 
 	amount, err := getAmount(ctx.Message().Text)
 	if err != nil {
-		log.Warnf("[enterAmountHandler] %s", err.Error())
+		log.WithFields(log.Fields{
+			"module":      "telegram",
+			"func":        "enterAmountHandler",
+			"user":        GetUserStr(user.Telegram),
+			"telegram_id": user.Telegram.ID,
+			"user_id":     user.ID,
+			"wallet_id":   user.Wallet.ID,
+			"data":        ctx.Message().Text,
+			"error":       err.Error()}).Warnf("invalid amount")
 		bot.trySendMessage(ctx.Message().Sender, Translate(ctx, "lnurlInvalidAmountMessage"))
 		ResetUserState(user, bot)
 		return ctx, err
 	}
 	// amount not in allowed range from LNURL
 	if EnterAmountStateData.AmountMin > 0 && EnterAmountStateData.AmountMax >= EnterAmountStateData.AmountMin && // this line checks whether min_max is set at all
-		(amount > int64(EnterAmountStateData.AmountMax/1000) || amount < int64(EnterAmountStateData.AmountMin/1000)) { // this line then checks whether the amount is in the range
-		err = fmt.Errorf("amount not in range")
-		log.Warnf("[enterAmountHandler] %s", err.Error())
+		(amount > EnterAmountStateData.AmountMax/1000 || amount < EnterAmountStateData.AmountMin/1000) { // this line then checks whether the amount is in the range
+		log.WithFields(log.Fields{
+			"module":      "telegram",
+			"func":        "enterAmountHandler",
+			"user":        GetUserStr(user.Telegram),
+			"telegram_id": user.Telegram.ID,
+			"user_id":     user.ID,
+			"wallet_id":   user.Wallet.ID,
+			"data":        ctx.Message().Text}).Warnf("amount not in range")
 		bot.trySendMessage(ctx.Sender(), fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), EnterAmountStateData.AmountMin/1000, EnterAmountStateData.AmountMax/1000))
 		ResetUserState(user, bot)
 		return ctx, errors.Create(errors.InvalidSyntaxError)
@@ -176,7 +199,14 @@ func (bot *TipBot) enterAmountHandler(ctx intercept.Context) (intercept.Context,
 		EnterAmountStateData.Amount = int64(amount) * 1000 // mSat
 		StateDataJson, err := json.Marshal(EnterAmountStateData)
 		if err != nil {
-			log.Errorln(err)
+			log.WithFields(log.Fields{
+				"module":      "telegram",
+				"func":        "enterAmountHandler",
+				"user":        GetUserStr(user.Telegram),
+				"telegram_id": user.Telegram.ID,
+				"user_id":     user.ID,
+				"wallet_id":   user.Wallet.ID,
+				"data":        ctx.Message().Text}).Errorln(err)
 			return ctx, err
 		}
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(StateDataJson))
@@ -187,6 +217,14 @@ func (bot *TipBot) enterAmountHandler(ctx intercept.Context) (intercept.Context,
 		defer mutex.UnlockWithContext(ctx, tx.ID)
 		sn, err := tx.Get(tx, bot.Bunt)
 		if err != nil {
+			log.WithFields(log.Fields{
+				"module":      "telegram",
+				"func":        "enterAmountHandler",
+				"user":        GetUserStr(user.Telegram),
+				"telegram_id": user.Telegram.ID,
+				"user_id":     user.ID,
+				"wallet_id":   user.Wallet.ID,
+				"data":        ctx.Message().Text}).Warnf("transaction not found")
 			return ctx, err
 		}
 		LnurlWithdrawState := sn.(*LnurlWithdrawState)
@@ -197,7 +235,14 @@ func (bot *TipBot) enterAmountHandler(ctx intercept.Context) (intercept.Context,
 		EnterAmountStateData.Amount = int64(amount) * 1000 // mSat
 		StateDataJson, err := json.Marshal(EnterAmountStateData)
 		if err != nil {
-			log.Errorln(err)
+			log.WithFields(log.Fields{
+				"module":      "telegram",
+				"func":        "enterAmountHandler",
+				"user":        GetUserStr(user.Telegram),
+				"telegram_id": user.Telegram.ID,
+				"user_id":     user.ID,
+				"wallet_id":   user.Wallet.ID,
+				"data":        ctx.Message().Text}).Errorln("could not marshal state data")
 			return ctx, err
 		}
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(StateDataJson))

@@ -114,7 +114,16 @@ func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, err
 	if user.Wallet == nil {
 		return ctx, errors.Create(errors.UserNoWalletError)
 	}
-	userStr := GetUserStr(user.Telegram)
+
+	logfields := log.Fields{
+		"module":      "telegram",
+		"func":        "invoiceHandler",
+		"path":        "/invoice",
+		"user":        GetUserStr(user.Telegram),
+		"user_id":     user.ID,
+		"wallet_id":   user.Wallet.ID,
+		"telegram_id": user.Telegram.ID}
+
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
 		bot.tryDeleteMessage(m)
@@ -141,7 +150,9 @@ func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, err
 	}
 
 	creatingMsg := bot.trySendMessageEditable(m.Sender, Translate(ctx, "lnurlGettingUserMessage"))
-	log.Debugf("[/invoice] Creating invoice for %s of %d sat.", userStr, amount)
+	logfields["amount"] = amount
+	log.WithFields(logfields).
+		Debugf("Creating invoice")
 	invoice, err := bot.createInvoiceWithEvent(ctx, user, amount, memo, InvoiceCallbackGeneric, "")
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
@@ -149,13 +160,13 @@ func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, err
 		log.Errorln(errmsg)
 		return ctx, err
 	}
-
+	logfields["invoice"] = invoice.PaymentRequest
 	// create qr code
 	qr, err := qrcode.Encode(invoice.PaymentRequest, qrcode.Medium, 256)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Failed to create QR code for invoice: %s", err.Error())
 		bot.tryEditMessage(creatingMsg, Translate(ctx, "errorTryLaterMessage"))
-		log.Errorln(errmsg)
+		log.WithFields(logfields).Errorln(errmsg)
 		return ctx, err
 	}
 
@@ -164,7 +175,7 @@ func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, err
 
 	// send the invoice data to user
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
-	log.Printf("[/invoice] Incvoice created. User: %s, amount: %d sat.", userStr, amount)
+	log.WithFields(logfields).Printf("Incvoice created.")
 	return ctx, nil
 }
 
@@ -172,13 +183,20 @@ func (bot *TipBot) createInvoiceWithEvent(ctx context.Context, user *lnbits.User
 	invoice, err := user.Wallet.Invoice(
 		lnbits.InvoiceParams{
 			Out:     false,
-			Amount:  int64(amount),
+			Amount:  amount,
 			Memo:    memo,
 			Webhook: internal.Configuration.Lnbits.WebhookServer},
 		bot.Client)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
-		log.Errorln(errmsg)
+		logfields := log.Fields{
+			"module":      "telegram",
+			"func":        "createInvoiceWithEvent",
+			"user":        GetUserStr(user.Telegram),
+			"user_id":     user.ID,
+			"wallet_id":   user.Wallet.ID,
+			"telegram_id": user.Telegram.ID}
+		log.WithFields(logfields).Errorln(errmsg)
 		return InvoiceEvent{}, err
 	}
 	invoiceEvent := InvoiceEvent{
@@ -202,7 +220,7 @@ func (bot *TipBot) notifyInvoiceReceivedEvent(event Event) {
 	_, err := bot.GetUserBalance(invoiceEvent.User)
 	if err != nil {
 		errmsg := fmt.Sprintf("could not get balance of user %s", GetUserStr(invoiceEvent.User.Telegram))
-		log.Errorln(errmsg)
+		log.WithFields(log.Fields{"module": "telegram", "func": "notifyInvoiceReceivedEvent"}).Error(errmsg)
 	}
 
 	bot.trySendMessage(invoiceEvent.User.Telegram, fmt.Sprintf(i18n.Translate(invoiceEvent.User.Telegram.LanguageCode, "invoiceReceivedMessage"), invoiceEvent.Amount))
@@ -228,7 +246,7 @@ func (bot *TipBot) lnurlReceiveEvent(event Event) {
 	bot.notifyInvoiceReceivedEvent(invoiceEvent)
 	tx := &LNURLInvoice{Invoice: &Invoice{PaymentHash: invoiceEvent.PaymentHash}}
 	err := bot.Bunt.Get(tx)
-	log.Debugf("[lnurl-p] Received invoice for %s of %d sat.", GetUserStr(invoiceEvent.User.Telegram), tx.Amount)
+	log.WithFields(log.Fields{"module": "lnurl", "func": "lnurlReceiveEvent", "user": GetUserStr(invoiceEvent.User.Telegram), "amount": tx.Amount}).Debugf("Received invoice")
 	if err == nil {
 		if len(tx.Comment) > 0 {
 			if len(tx.From) == 0 {

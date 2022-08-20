@@ -19,8 +19,10 @@ type InterceptionWrapper struct {
 func (bot TipBot) registerTelegramHandlers() {
 	telegramHandlerRegistration.Do(func() {
 		// Set up handlers
+		log.WithFields(log.Fields{
+			"module": "telegram",
+			"func":   "registerTelegramHandlers"}).Traceln("registering endpoints")
 		for _, h := range bot.getHandler() {
-			log.Traceln("registering", h.Endpoints)
 			bot.register(h)
 		}
 

@@ -35,12 +35,27 @@ func (bot *TipBot) balanceHandler(ctx intercept.Context) (intercept.Context, err
 	usrStr := GetUserStr(ctx.Sender())
 	balance, err := bot.GetUserBalance(user)
 	if err != nil {
-		log.Errorf("[/balance] Error fetching %s's balance: %s", usrStr, err)
+		log.WithFields(log.Fields{
+			"module":      "telegram",
+			"func":        "balanceHandler",
+			"path":        "/balance",
+			"user":        usrStr,
+			"user_id":     user.ID,
+			"wallet_id":   user.Wallet.ID,
+			"telegram_id": user.Telegram.ID}).Errorf("Error fetching balance: %s", err)
 		bot.trySendMessage(ctx.Sender(), Translate(ctx, "balanceErrorMessage"))
 		return ctx, err
 	}
 
-	log.Infof("[/balance] %s's balance: %d sat\n", usrStr, balance)
+	log.WithFields(log.Fields{
+		"module":      "telegram",
+		"func":        "balanceHandler",
+		"path":        "/balance",
+		"amount":      balance,
+		"user":        usrStr,
+		"user_id":     user.ID,
+		"wallet_id":   user.Wallet.ID,
+		"telegram_id": user.Telegram.ID}).Infof("sending balance to user")
 	bot.trySendMessage(ctx.Sender(), fmt.Sprintf(Translate(ctx, "balanceMessage"), balance))
 	return ctx, nil
 }

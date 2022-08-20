@@ -31,17 +31,26 @@ func (w LndHub) Handle(writer http.ResponseWriter, request *http.Request) {
 		}
 		// first we make sure that the password is not already "banned_"
 		if strings.Contains(password, "_") || strings.HasPrefix(password, "banned_") {
-			log.Warnf("[LNDHUB] Banned user %s. Not forwarding request", password)
+			log.WithFields(log.Fields{
+				"module": "lndhub",
+				"func":   "Handle",
+				"user":   password}).Warn("Banned user . Not forwarding request")
 			return
 		}
 		// then we check whether the "normal" password provided is in the database (it should be not if the user is banned)
 		user := &lnbits.User{}
 		tx := w.database.Where("wallet_adminkey = ? COLLATE NOCASE", password).First(user)
 		if tx.Error != nil {
-			log.Warnf("[LNDHUB] Could not get wallet admin key %s: %v", password, tx.Error)
+			log.WithFields(log.Fields{
+				"module": "lndhub",
+				"func":   "Handle",
+				"user":   password}).Warnf("Could not get wallet admin key: %v", tx.Error)
 			return
 		}
-		log.Debugf("[LNDHUB] User: %s", telegram.GetUserStr(user.Telegram))
+		log.WithFields(log.Fields{
+			"module": "lndhub",
+			"func":   "Handle",
+			"user":   telegram.GetUserStr(user.Telegram)}).Debugf("User")
 	}
 	// if not, proxy the request
 	api.Proxy(writer, request, internal.Configuration.Lnbits.Url)

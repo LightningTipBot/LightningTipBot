@@ -126,7 +126,12 @@ func (bot *TipBot) getNodeHandler(ctx intercept.Context) (intercept.Context, err
 	m := ctx.Message()
 	user, err := GetLnbitsUserWithSettings(m.Sender, *bot)
 	if err != nil {
-		log.Infof("Could not get user settings for user %s", GetUserStr(user.Telegram))
+		log.WithFields(log.Fields{
+			"module":    "telegram",
+			"func":      "getNodeHandler",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID}).Infof("Could not get user settings for user")
 		return ctx, err
 	}
 
@@ -137,7 +142,12 @@ func (bot *TipBot) getNodeHandler(ctx intercept.Context) (intercept.Context, err
 
 	node_info_str, err := nodeInfoString(&user.Settings.Node)
 	if err != nil {
-		log.Infof("Could not get node info for user %s", GetUserStr(user.Telegram))
+		log.WithFields(log.Fields{
+			"module":    "telegram",
+			"func":      "getNodeHandler",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID}).Infof("Could not get node info for user")
 		bot.trySendMessage(m.Sender, registerNodeMessage+"\n\n"+nodeHelpMessage)
 		return ctx, err
 	}
@@ -193,7 +203,15 @@ func (bot *TipBot) registerNodeHandler(ctx intercept.Context) (intercept.Context
 			},
 		)
 		if err != nil {
-			log.Errorf("[registerNodeHandler] Could not add user %s's %s node: %s", GetUserStr(user.Telegram), getInvoiceParams.Status, err.Error())
+			log.WithFields(log.Fields{
+				"module":    "telegram",
+				"func":      "registerNodeHandler",
+				"user":      GetUserStr(user.Telegram),
+				"user_id":   user.ID,
+				"wallet_id": user.Wallet.ID,
+				"backend":   user.Settings.Node.NodeType,
+				"error":     err.Error(),
+				"status":    getInvoiceParams.Status}).Errorf("Could not add user %s's %s node: %s", GetUserStr(user.Telegram), getInvoiceParams.Status, err.Error())
 			bot.tryEditMessage(check_message, errorCouldNotAddNodeMessage)
 			return ctx, err
 		}
@@ -227,13 +245,24 @@ func (bot *TipBot) registerNodeHandler(ctx intercept.Context) (intercept.Context
 	}
 	node_info_str, err := nodeInfoString(&user.Settings.Node)
 	if err != nil {
-		log.Infof("Could not get node info for user %s", GetUserStr(user.Telegram))
+		log.WithFields(log.Fields{
+			"module":    "telegram",
+			"func":      "registerNodeHandler",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID}).Infof("Could not get node info for user")
 		bot.trySendMessage(m.Sender, registerNodeMessage+"\n\n"+nodeHelpMessage)
 		return ctx, err
 	}
 	bot.tryEditMessage(check_message, fmt.Sprintf("%s\n\n%s", node_info_str, nodeAddedMessage))
 
-	log.Infof("[node:add] Added node of user %s backend %s", GetUserStr(user.Telegram), user.Settings.Node.NodeType)
+	log.WithFields(log.Fields{
+		"module":    "telegram",
+		"func":      "registerNodeHandler",
+		"user":      GetUserStr(user.Telegram),
+		"user_id":   user.ID,
+		"wallet_id": user.Wallet.ID,
+		"backend":   user.Settings.Node.NodeType}).Infof("Added node")
 	return ctx, nil
 }
 
@@ -256,7 +285,12 @@ func (bot *TipBot) invHandler(ctx intercept.Context) (intercept.Context, error) 
 		}
 	}
 
-	log.Infof("[node:invoice] Getting invoice for user %s backend %s", GetUserStr(user.Telegram), user.Settings.Node.NodeType)
+	log.WithFields(log.Fields{
+		"module":    "satdress",
+		"func":      "invHandler",
+		"user":      GetUserStr(user.Telegram),
+		"user_id":   user.ID,
+		"wallet_id": user.Wallet.ID}).Infof("Getting invoice with backend %s", user.Settings.Node.NodeType)
 
 	check_message := bot.trySendMessageEditable(user.Telegram, routingInvoiceMessage)
 	var getInvoiceParams satdress.CheckInvoiceParams
@@ -311,7 +345,12 @@ func (bot *TipBot) invHandler(ctx intercept.Context) (intercept.Context, error) 
 	// add the getInvoiceParams to cache to check it later
 	bot.Cache.Set(fmt.Sprintf("invoice:%d", user.Telegram.ID), getInvoiceParams, &store.Options{Expiration: 24 * time.Hour})
 
-	log.Infof("[node:invoice] Invoice created for user %s backend %s", GetUserStr(user.Telegram), user.Settings.Node.NodeType)
+	log.WithFields(log.Fields{
+		"module":    "satdress",
+		"func":      "invHandler",
+		"user":      GetUserStr(user.Telegram),
+		"user_id":   user.ID,
+		"wallet_id": user.Wallet.ID}).Infof("Invoice created with backend %s", user.Settings.Node.NodeType)
 
 	// check if invoice settles
 	return bot.satdressCheckInvoiceHandler(ctx)
@@ -325,10 +364,24 @@ func (bot *TipBot) satdressCheckInvoiceHandler(ctx intercept.Context) (intercept
 	}
 
 	// get the getInvoiceParams from cache
-	log.Debugf("[Cache] Getting key: %s", fmt.Sprintf("invoice:%d", user.Telegram.ID))
+	log.WithFields(log.Fields{
+		"module":    "satdress",
+		"func":      "satdressCheckInvoiceHandler",
+		"user":      GetUserStr(user.Telegram),
+		"user_id":   user.ID,
+		"wallet_id": user.Wallet.ID,
+		"key":       fmt.Sprintf("invoice:%d", user.Telegram.ID)},
+	).Debugf("Getting key")
 	getInvoiceParamsInterface, err := bot.Cache.Get(fmt.Sprintf("invoice:%d", user.Telegram.ID))
 	if err != nil {
-		log.Errorf("[satdressCheckInvoiceHandler] UserID: %d,  %s", user.Telegram.ID, err.Error())
+		log.WithFields(log.Fields{
+			"module":    "satdress",
+			"func":      "satdressCheckInvoiceHandler",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID,
+			"key":       fmt.Sprintf("invoice:%d", user.Telegram.ID)},
+		).Errorf(err.Error())
 		return ctx, err
 	}
 	getInvoiceParams := getInvoiceParamsInterface.(satdress.CheckInvoiceParams)
@@ -345,7 +398,14 @@ func (bot *TipBot) satdressCheckInvoiceHandler(ctx intercept.Context) (intercept
 		check_message = check_message_interface.(*tb.Message)
 		check_message, err = bot.tryEditMessage(check_message, checkingInvoiceMessage)
 		if err != nil {
-			log.Errorf("[satdressCheckInvoiceHandler] UserID: %d,  %s", user.Telegram.ID, err.Error())
+			log.WithFields(log.Fields{
+				"module":    "satdress",
+				"func":      "satdressCheckInvoiceHandler",
+				"user":      GetUserStr(user.Telegram),
+				"user_id":   user.ID,
+				"wallet_id": user.Wallet.ID,
+				"key":       fmt.Sprintf("invoice:%d", user.Telegram.ID)},
+			).Errorf(err.Error())
 		}
 	}
 
@@ -355,14 +415,37 @@ func (bot *TipBot) satdressCheckInvoiceHandler(ctx intercept.Context) (intercept
 	deadLineCtx, cancel := context.WithDeadline(ctx, time.Now().Add(time.Second*60))
 	runtime.NewRetryTicker(deadLineCtx, "node_invoice_check", runtime.WithRetryDuration(5*time.Second)).Do(func() {
 		// get invoice from user's node
-		log.Debugf("[satdressCheckInvoiceHandler] Checking invoice: %s", getInvoiceParams.Hash)
+		log.WithFields(log.Fields{
+			"module":    "satdress",
+			"func":      "satdressCheckInvoiceHandler",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID,
+			"key":       fmt.Sprintf("invoice:%d", user.Telegram.ID),
+			"invoice":   getInvoiceParams.Hash},
+		).Debugf("Checking invoice")
 		getInvoiceParams, err = satdress.CheckInvoice(getInvoiceParams)
 		if err != nil {
-			log.Errorln(err.Error())
+			log.WithFields(log.Fields{
+				"module":    "satdress",
+				"func":      "satdressCheckInvoiceHandler",
+				"user":      GetUserStr(user.Telegram),
+				"user_id":   user.ID,
+				"wallet_id": user.Wallet.ID,
+				"key":       fmt.Sprintf("invoice:%d", user.Telegram.ID)},
+			).Errorln(err.Error())
 			return
 		}
 		if getInvoiceParams.Status == "SETTLED" {
-			log.Debugf("[satdressCheckInvoiceHandler] Invoice settled: %s", getInvoiceParams.Hash)
+			log.WithFields(log.Fields{
+				"module":    "satdress",
+				"func":      "satdressCheckInvoiceHandler",
+				"user":      GetUserStr(user.Telegram),
+				"user_id":   user.ID,
+				"wallet_id": user.Wallet.ID,
+				"key":       fmt.Sprintf("invoice:%d", user.Telegram.ID),
+				"invoice":   getInvoiceParams.Hash},
+			).Debugf("Invoice settled")
 			bot.tryEditMessage(check_message, invoiceSettledMessage)
 			cancel()
 		}
@@ -372,7 +455,15 @@ func (bot *TipBot) satdressCheckInvoiceHandler(ctx intercept.Context) (intercept
 	},
 		func() {
 			// deadline
-			log.Debugf("[satdressCheckInvoiceHandler] Invoice check expired: %s", getInvoiceParams.Hash)
+			log.WithFields(log.Fields{
+				"module":    "satdress",
+				"func":      "satdressCheckInvoiceHandler",
+				"user":      GetUserStr(user.Telegram),
+				"user_id":   user.ID,
+				"wallet_id": user.Wallet.ID,
+				"key":       fmt.Sprintf("invoice:%d", user.Telegram.ID),
+				"invoice":   getInvoiceParams.Hash},
+			).Debugf("Invoice check expired")
 			bot.tryEditMessage(check_message, invoiceNotSettledMessage,
 				&tb.ReplyMarkup{
 					InlineKeyboard: [][]tb.InlineButton{
@@ -418,8 +509,14 @@ func (bot *TipBot) satdressProxyHandler(ctx intercept.Context) (intercept.Contex
 	}
 	if user.Settings == nil || user.Settings.Node.LNDParams == nil {
 		bot.trySendMessage(user.Telegram, "You did not register a node yet.")
-		log.Errorf("node of user %s not registered", GetUserStr(user.Telegram))
-		return ctx, fmt.Errorf("no node settings.")
+		log.WithFields(log.Fields{
+			"module":    "satdress",
+			"func":      "satdressProxyHandler",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID},
+		).Errorf("node of user %s not registered", GetUserStr(user.Telegram))
+		return ctx, fmt.Errorf("no node settings")
 	}
 
 	var amount int64
@@ -435,7 +532,13 @@ func (bot *TipBot) satdressProxyHandler(ctx intercept.Context) (intercept.Contex
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
 		bot.trySendMessage(user.Telegram, Translate(ctx, "errorTryLaterMessage"))
-		log.Errorln(errmsg)
+		log.WithFields(log.Fields{
+			"module":    "satdress",
+			"func":      "satdressProxyHandler",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID},
+		).Errorln(errmsg)
 		return ctx, err
 	}
 
@@ -444,12 +547,26 @@ func (bot *TipBot) satdressProxyHandler(ctx intercept.Context) (intercept.Contex
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Failed to create QR code for invoice: %s", err.Error())
 		bot.trySendMessage(user.Telegram, Translate(ctx, "errorTryLaterMessage"))
-		log.Errorln(errmsg)
+		log.WithFields(log.Fields{
+			"module":    "satdress",
+			"func":      "satdressProxyHandler",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID,
+			"backend":   user.Settings.Node.NodeType},
+		).Errorln(errmsg)
 		return ctx, err
 	}
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
 
-	log.Infof("[node] Proxy payment for user %s backend %s", GetUserStr(user.Telegram), user.Settings.Node.NodeType)
+	log.WithFields(log.Fields{
+		"module":    "satdress",
+		"func":      "satdressProxyHandler",
+		"user":      GetUserStr(user.Telegram),
+		"user_id":   user.ID,
+		"wallet_id": user.Wallet.ID,
+		"backend":   user.Settings.Node.NodeType},
+	).Infof("Proxy payment done")
 	return ctx, nil
 }
 
@@ -458,11 +575,24 @@ func (bot *TipBot) satdressProxyRelayPaymentHandler(event Event) {
 	user := invoiceEvent.User
 	if user.Settings == nil || user.Settings.Node.LNDParams == nil {
 		bot.trySendMessage(user.Telegram, "You did not register a node yet.")
-		log.Errorf("node of user %s not registered", GetUserStr(user.Telegram))
+		log.WithFields(log.Fields{
+			"module":    "satdress",
+			"func":      "satdressProxyRelayPaymentHandler",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID},
+		).Errorf("node not registered")
 		return
 	}
 
-	log.Infof("[node:proxy] Relaying payment for user %s backend %s", GetUserStr(user.Telegram), user.Settings.Node.NodeType)
+	log.WithFields(log.Fields{
+		"module":    "satdress",
+		"func":      "satdressProxyRelayPaymentHandler",
+		"user":      GetUserStr(user.Telegram),
+		"user_id":   user.ID,
+		"wallet_id": user.Wallet.ID,
+		"backend":   user.Settings.Node.NodeType},
+	).Infof("Relaying payment", GetUserStr(user.Telegram), user.Settings.Node.NodeType)
 
 	bot.notifyInvoiceReceivedEvent(invoiceEvent)
 
@@ -499,14 +629,28 @@ func (bot *TipBot) satdressProxyRelayPaymentHandler(event Event) {
 		)
 	}
 	if err != nil {
-		log.Errorln(err.Error())
+		log.WithFields(log.Fields{
+			"module":    "satdress",
+			"func":      "satdressProxyRelayPaymentHandler",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID,
+			"backend":   user.Settings.Node.NodeType},
+		).Errorln(err.Error())
 		bot.tryEditMessage(check_message, gettingInvoiceErrorMessage)
 		return
 	}
 
 	// bot.trySendMessage(user.Telegram, fmt.Sprintf("PR: `%s`\n\nHash: `%s`\n\nStatus: `%s`", getInvoiceParams.PR, string(getInvoiceParams.Hash), getInvoiceParams.Status))
 
-	log.Infof("[node:proxy] Retrieved invoice for payment of user %s backend %s. Paying...", GetUserStr(user.Telegram), user.Settings.Node.NodeType)
+	log.WithFields(log.Fields{
+		"module":    "satdress",
+		"func":      "satdressProxyRelayPaymentHandler",
+		"user":      GetUserStr(user.Telegram),
+		"user_id":   user.ID,
+		"wallet_id": user.Wallet.ID,
+		"backend":   user.Settings.Node.NodeType},
+	).Infof("Retrieved invoice for payment. Paying...")
 
 	// pay invoice
 	invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: getInvoiceParams.PR}, bot.Client)
@@ -519,7 +663,14 @@ func (bot *TipBot) satdressProxyRelayPaymentHandler(event Event) {
 		// 	err = fmt.Errorf(i18n.Translate(payData.LanguageCode, "invoiceUndefinedErrorMessage"))
 		// }
 		// bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(payData.LanguageCode, "invoicePaymentFailedMessage"), str.MarkdownEscape(err.Error())), &tb.ReplyMarkup{})
-		log.Errorln(errmsg)
+		log.WithFields(log.Fields{
+			"module":    "satdress",
+			"func":      "satdressProxyRelayPaymentHandler",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID,
+			"backend":   user.Settings.Node.NodeType},
+		).Errorln(errmsg)
 		bot.tryEditMessage(check_message, payingInvoiceErrorMessage)
 		return
 	}
@@ -544,12 +695,28 @@ func (bot *TipBot) satdressProxyRelayPaymentHandler(event Event) {
 
 	getInvoiceParams, err = satdress.CheckInvoice(getInvoiceParams)
 	if err != nil {
-		log.Errorln(err.Error())
+		log.WithFields(log.Fields{
+			"module":    "satdress",
+			"func":      "satdressProxyRelayPaymentHandler",
+			"user":      GetUserStr(user.Telegram),
+			"user_id":   user.ID,
+			"wallet_id": user.Wallet.ID,
+			"backend":   user.Settings.Node.NodeType,
+			"invoice":   invoice.PaymentRequest},
+		).Errorln(err.Error())
 		return
 	}
 	bot.tryEditMessage(check_message, invoiceRoutedMessage)
 
-	log.Infof("[node:proxy] Proxy paid for user %s backend %s.", GetUserStr(user.Telegram), user.Settings.Node.NodeType)
+	log.WithFields(log.Fields{
+		"module":    "satdress",
+		"func":      "satdressProxyRelayPaymentHandler",
+		"user":      GetUserStr(user.Telegram),
+		"user_id":   user.ID,
+		"wallet_id": user.Wallet.ID,
+		"backend":   user.Settings.Node.NodeType,
+		"invoice":   invoice.PaymentRequest},
+	).Infof("Proxy paid invoice")
 	// bot.trySendMessage(user.Telegram, fmt.Sprintf("PR: `%s`\n\nHash: `%s`\n\nStatus: `%s`", getInvoiceParams.PR, string(getInvoiceParams.Hash), getInvoiceParams.Status))
 
 	return
