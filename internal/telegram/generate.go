@@ -177,7 +177,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 					return
 
 				} else if t.Status == dalle.StatusRejected {
-					log.Errorf("[DALLE-%d] rejected: %s\n", workerId, t.ID)
+					log.Errorf("[DALLE-%d] rejected: %s", workerId, t.ID)
 					bot.dalleRefundUser(user, "Your prompt has been rejected by OpenAI. Do not use celebrity names, sexual expressions, or any other harmful content as prompt.")
 					return
 				}
