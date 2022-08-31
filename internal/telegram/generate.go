@@ -166,7 +166,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 					return
 				}
 				if t.Status == dalle.StatusSucceeded {
-					fmt.Printf("[DALLE-%d] task succeeded for user %s\n", workerId, GetUserStr(user.Telegram))
+					log.Printf("[DALLE-%d] task succeeded for user %s\n", workerId, GetUserStr(user.Telegram))
 					// download the first generated image
 					for _, data := range t.Generations.Data {
 						err = bot.downloadAndSendImages(ctx, dalleClient, data, invoiceEvent)
