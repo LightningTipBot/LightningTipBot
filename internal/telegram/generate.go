@@ -117,7 +117,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 	invoiceEvent := event.(*InvoiceEvent)
 	user := invoiceEvent.Payer
 	if user == nil || user.Wallet == nil {
-		log.Errorf("[generateDalleImages] invalid user")
+		log.Errorf("[generateDalleImages] invalid user\n")
 		return
 	}
 	bot.trySendMessage(user.Telegram, "🔄 Your images are being generated. Please wait a few moments.")
@@ -126,8 +126,8 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		dalleClient, err := dalle.NewHTTPClient(internal.Configuration.Generate.DalleKey)
 		// handle err
 		if err != nil {
-			log.Errorf("[NewHTTPClient-%d] %v", workerId, err.Error())
-			bot.dalleRefundUser(user,"")
+			log.Errorf("[NewHTTPClient-%d] %v\n", workerId, err.Error())
+			bot.dalleRefundUser(user, "")
 			return
 		}
 
@@ -136,8 +136,8 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		// generate a task to create an image with a prompt
 		task, err := dalleClient.Generate(ctx, invoiceEvent.CallbackData)
 		if err != nil {
-			log.Errorf("[Generate-%d] %v", workerId, err.Error())
-			bot.dalleRefundUser(user,"")
+			log.Errorf("[Generate-%d] %v\n", workerId, err.Error())
+			bot.dalleRefundUser(user, "")
 			return
 		}
 		// poll the task.ID until status is succeeded
@@ -148,40 +148,40 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		for {
 			select {
 			case <-ctx.Done():
-				bot.dalleRefundUser(user,"")
-				log.Errorf("[DALLE-%d] ctx done", workerId)
+				bot.dalleRefundUser(user, "")
+				log.Errorf("[DALLE-%d] ctx done\n", workerId)
 				return
 			// Got a timeout! fail with a timeout error
 			case <-timeout:
-				bot.dalleRefundUser(user,"Timeout. Please try again later.")
-				log.Errorf("[DALLE-%d] timeout", workerId)
+				bot.dalleRefundUser(user, "Timeout. Please try again later.")
+				log.Errorf("[DALLE-%d] timeout\n", workerId)
 				return
 			// Got a tick, we should check on checkSomething()
 			case <-ticker:
 				t, err = dalleClient.GetTask(ctx, task.ID)
 				// handle err
 				if err != nil {
-					log.Errorf("[GetTask] %v", err.Error())
-					bot.dalleRefundUser(user,"")
+					log.Errorf("[GetTask-%d] %v\n", workerId, err.Error())
+					bot.dalleRefundUser(user, "")
 					return
 				}
 				if t.Status == dalle.StatusSucceeded {
-					fmt.Printf("[DALLE-%d] task succeeded for user %s", worker, GetUserStr(user.Telegram))
+					fmt.Printf("[DALLE-%d] task succeeded for user %s\n", workerId, GetUserStr(user.Telegram))
 					// download the first generated image
 					for _, data := range t.Generations.Data {
 						err = bot.downloadAndSendImages(ctx, dalleClient, data, invoiceEvent)
 						if err != nil {
-							log.Errorf("[downloadAndSendImages-%d] %v", worker, err.Error())
+							log.Errorf("[downloadAndSendImages-%d] %v\n", workerId, err.Error())
 						}
 					}
 					return
 
 				} else if t.Status == dalle.StatusRejected {
-					log.Errorf("[DALLE-%d] rejected: %s", workerId, t.ID)
-					bot.dalleRefundUser(user,"Your prompt has been rejected by OpenAI. Do not use celebrity names, sexual expressions, or any other harmful content as prompt.")
+					log.Errorf("[DALLE-%d] rejected: %s\n", workerId, t.ID)
+					bot.dalleRefundUser(user, "Your prompt has been rejected by OpenAI. Do not use celebrity names, sexual expressions, or any other harmful content as prompt.")
 					return
 				}
-				log.Debugf("[DALLE-%d] pending for user %s", worker, GetUserStr(user.Telegram))
+				log.Debugf("[DALLE-%d] pending for user %s\n", workerId, GetUserStr(user.Telegram))
 			}
 		}
 	}
