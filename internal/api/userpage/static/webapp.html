@@ -243,7 +243,7 @@
         <div class="wrapper">
             <label class="sr-only" for="inlineFormInputGroup">Username</label>
             <div class="input-group">
-                <input type="number" class="form-control" min="1" inputmode="numeric" pattern="[0-9]*" id="invoiceAmount" placeholder="amount">
+                <input type="number" class="form-control" min="1" inputmode="decimal" step="any" pattern="\d+(\.\d*)?" id="invoiceAmount" placeholder="amount">
                 <div class="input-group-append">
                     <div class="input-group-text" id="inputCurrency"></div>
                 </div>
