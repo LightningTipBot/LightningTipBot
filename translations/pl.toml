@@ -1,0 +1,405 @@
+# COMMANDS
+
+helpCommandStr = """pomoc"""
+basicsCommandStr = """podstawy"""
+tipCommandStr = """tip"""
+balanceCommandStr = """saldo"""
+sendCommandStr = """wyślij"""
+invoiceCommandStr = """faktura"""
+payCommandStr = """pay"""
+donateCommandStr = """donate"""
+advancedCommandStr = """advanced"""
+transactionsCommandStr = """transactions"""
+logCommandStr = """log"""
+listCommandStr = """list"""
+
+linkCommandStr = """link"""
+lnurlCommandStr = """lnurl"""
+faucetCommandStr = """faucet"""
+
+tipjarCommandStr = """tipjar"""
+receiveCommandStr = """receive"""
+hideCommandStr = """hide"""
+volcanoCommandStr = """volcano"""
+showCommandStr = """show"""
+optionsCommandStr = """options"""
+settingsCommandStr = """settings"""
+saveCommandStr = """save"""
+deleteCommandStr = """delete"""
+infoCommandStr = """info"""
+
+# NOTIFICATIONS
+
+cantDoThatMessage = """Nie możesz tego zrobić."""
+cantClickMessage = """Nie możesz kliknąć tego przycisku."""
+balanceTooLowMessage = """Twoje saldo jest za niskie."""
+
+# BUTTONS
+
+sendButtonMessage = """✅ Wyślij"""
+payButtonMessage = """✅ Zapłać"""
+payReceiveButtonMessage = """💸 Zapłać"""
+receiveButtonMessage = """✅ Otrzymaj"""
+withdrawButtonMessage = """✅ Wypłać"""
+cancelButtonMessage = """🚫 Anuluj"""
+collectButtonMessage = """✅ Odbierz"""
+nextButtonMessage = """Dalej"""
+backButtonMessage = """Cofnij"""
+acceptButtonMessage = """Potwierdź"""
+denyButtonMessage = """Odmów"""
+tipButtonMessage = """Tip"""
+revealButtonMessage = """Ujawnij"""
+showButtonMessage = """Pokaż"""
+hideButtonMessage = """Ukryj"""
+joinButtonMessage = """Dołącz"""
+optionsButtonMessage = """Opcje"""
+settingsButtonMessage = """Ustawienia"""
+saveButtonMessage = """Zapisz"""
+deleteButtonMessage = """Skasuj"""
+infoButtonMessage = """Informacje"""
+
+cancelButtonEmoji = """🚫"""
+payButtonEmoji = """💸"""
+
+# HELP
+
+helpMessage = """⚡️ *Portfel*
+_Ten bot jest portfelem Bitcoin Lightning, który potrafi wysyłać napiwki na Telegramie. Aby zacząć dodaj tego bota do chatu grupowego. Podstawową jednostką dla napiwków są Satoshi (sat). 100 000 000 sat = 1 Bitcoin. Napisz 📚 /basics aby uzyskać więcej informacji._
+
+❤️ *Wsparcie*
+_Ten bot nie pobiera opłat, ale jego funkcjonowanie kosztuje. Jeśli podoba Ci się, rozważ proszę wsparcie tego projektu darowizną. Aby to zrobić użyj `/donate 1000`
+
+%s
+
+⚙️ *Komendy*
+*/tip* 🏅 Odpowiedz na wiadomość aby dać napiwek: `/tip <kwota> [<notatka>]`
+*/balance* 👑 Sprawdź swoje saldo: `/balance`
+*/send* 💸 Wyślij środki do użytkownika: `/send <kwota> @użytkownik lub użytkownik@ln.tips [<notatka>]`
+*/invoice* ⚡️ Otrzymaj przy pomocy Lightning: `/invoice <kwota> [<notatka>]`
+*/pay* ⚡️ Zapłać przy pomocy Lightning: `/pay <faktura>`
+*/donate* ❤️ Wesprzyj projekt darowizną: `/donate 1000`
+*/advanced* 🤖 Funkcje zaawansowane.
+*/help* 📖 Przeczytaj tę stronę o pomocy."""
+
+infoHelpMessage = """ℹ️ *Informacje*"""
+infoYourLightningAddress = """Twój adres Lightning to `%s`"""
+
+basicsMessage = """🧡 *Bitcoin*
+_Bitcoin jest walutą internetu. Nie wymaga pozwolenia, jest zdecentralizowany i nie ma władców ani kontrolujących go instytucji. Bitcoin jest twardym pieniądzem, który jest szybszy, bezpieczniejszy i inkluzywny niż dotychczasowy system finansowy._
+
+🧮 *Ekonomia*
+_Najmniejszą jednostką Bitcoina są Satoshi (sat) a 100 00 00 sat = 1 Bitcoin. Zawsze będzie tylko 21 milionów Bitcoinów. Ich cena w walucie fiducjarnego może zmieniać się codziennie. Jednak jeśli żyjesz na standardziej Bitcoina 1 sat zawsze będzie równy 1 sat._
+
+⚡️ *Sieć Lightning*
+_Sieć Lightning jest protokołem, który umożliwia szybkie i tanie płatności w Bitcoinie, nie potrzebujące do tego prawie żadnej energii. Dzięki temu umożliwia dotarcie do miliardów ludzi na całym świecie._
+
+📲 *Portfele Lightning*
+_Twoje środki na tym bocie mogą być wysłane na inne portfele Lightning i vice versa. Rekomendowane portfele dla Twojego telefonu to_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (niepowierniczy), lub_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(łatwy)_.
+
+📄 *Open Source*
+_Ten bot to wolne oprogramowanie [open source](https://github.com/LightningTipBot/LightningTipBot)_. Możesz go uruchomić na własnym komputerze i używać we własnej społeczności._
+
+✈️ *Telegram*
+_Dodaj tego bota do swojego chatu grupowego na Telegramie aby dawać napiwki za wiadomości. Jeśli uczynisz bota adminem grupy będzie czyścił komendy aby chat był uporządkowany._
+
+🏛 *Warunki*
+_Nie jesteśmy powiernikiem Twoich środków. Będziemy działać w Twoim najlepszym interesie ale jesteśmy świadomi tego, że sytuacja bez KYC jest trudna dopóki czegoś nie wymyślimy. 
+Jakakolwiek kwota, którą załadujesz na portfel będzie traktowana jako darowizna. Nie dawaj nam wszystkich swoich pieniędzy.  Wiedz, że ten bota jest w fazie rozwoju beta. Używaj go na własne ryzko._
+
+❤️ *Wesprzyj darowizną*
+_Ten bot nie pobiera opłat, ale jego funkcjonowanie kosztuje. Jeśli podoba Ci się, rozważ proszę wsparcie tego projektu darowizną. Aby to zrobić użyj `/donate 1000`"""
+
+helpNoUsernameMessage = """👋 Podaj proszę nazwę swojego użytkownika w Telegramie."""
+
+advancedMessage = """%s
+
+👉 *Komendy inline*
+*send* 💸 Wysyła sats na chat: `%s send <kwota> [<użytkownik>] [<notatka>]`
+*receive* 🏅 Prosi o płatność: `... receive <kwota> [<użytkownik>] [<notatka>]`
+*faucet* 🚰 Tworzy kranik (_faucet_): `... faucet <pojemność> <na_użytkownika> [<notatka>]`
+*tipjar* 🍯 Tworzy słoik na napiwki (_tipjar_): `... tipjar <pojemność> <na_użytkownika> [<notatka>]`
+
+📖 You can use inline commands in every chat, even in private conversations. Wait a second after entering an inline command and *click* the result, don't press enter.
+
+⚙️ *Komendy zaawansowane*
+*/transactions* 📊 Lista transakcji
+*/link* 🔗 Połączenie Twojego portfela z [BlueWallet](https://bluewallet.io/) lub [Zeus](https://zeusln.app/)
+*/lnurl* ⚡️ Przyjmij płatność lub zapłać za pomocą Lnurl: `/lnurl` lub `/lnurl <lnurl>`
+*/faucet* 🚰 Stwórz kranik (_faucet_): `/faucet <pojemność> <na_użytkownika>`
+*/tipjar* 🍯 Stwórz słoik na napiwki (_tipjar_): `/tipjar <pojemność> <na_użytkownika>`
+*/group* 🎟 Stwórz bilety na wejście do grupy: `/group add <mojagrupa> [<cena_biletu>]`
+*/shop* 🛍 Przeglądaj sklepy: `/shop` lub `/shop <użytkownik/id_sklepu>`
+*/generate* 🎆 Generuj obrazy przy użyciu DALLE-2: `/generate <podpowiedź>`"""
+
+
+# GENERIC
+enterAmountRangeMessage        = """💯 Wprowadź kwotę między %d a %d sat."""
+enterAmountMessage             = """💯 Wprowadź kwotę."""
+enterUserMessage               = """👤 Podaj użytkownika."""
+enterTextMessage               = """⌨️ Wprowadź tekst."""
+errorReasonMessage             = """🚫 Błąd: %s"""
+
+# START
+
+startSettingWalletMessage = """🧮 Tworzę Twój portfel..."""
+startWalletCreatedMessage = """🧮 Portfel utworzony."""
+startWalletReadyMessage   = """✅ *Twój portfel jest gotowy.*"""
+startWalletErrorMessage   = """🚫 Błąd przy inicjowaniu Twojego portfela. Spróbuj ponownie później."""
+startNoUsernameMessage    = """☝️ Wygląda na to, że nie masz jeszcze nazwy @użytkownika w Telegramie. Nic nie szkodzi, nie potrzebujesz jej by używać tego bota. Jednak aby lepiej go wykorzystać, ustaw nazwę w ustawieniach aplikacji Telegram. Następnie napisz /balance aby bot mógł zaktualizować swoje dane o Tobie."""
+
+# BALANCE
+
+balanceMessage      = """👑 *Twoje saldo:* %d sat"""
+balanceErrorMessage = """🚫 Pobranie Twojego salda nie powiodło się. Spróbuj ponownie później."""
+
+# TIP
+
+tipDidYouReplyMessage = """Czy odpowiadasz na wiadomość aby dać napiwek? Aby odpowiedzieć na jakąkolwiek wiadomość na komputerze, naciśnij prawy przycisk myszy i wybierz Odpowiedz, a na telefonie przesuń palcem. Jeśli chcesz wysłać bezpośrednio do innego użytkownika użyj komendy /send."""
+tipInviteGroupMessage = """ℹ️ Przy okazji, możesz zaprosić tego bota do dowolnej grupy aby zacząć dawać napiwki tam."""
+tipEnterAmountMessage = """Czy wprowadzono kwotę?"""
+tipValidAmountMessage = """Czy wprowadzono poprawną kwotę?"""
+tipYourselfMessage    = """📖 Nie możesz dać sobie napiwku."""
+tipSentMessage        = """💸 %d sat wysłano do %s."""
+tipReceivedMessage    = """🏅 %s daje Ci napiwek w wysokości %d sat."""
+tipErrorMessage       = """🚫 Napiwek się nie powiódł."""
+tipUndefinedErrorMsg  = """spróbuj proszę później."""
+tipHelpText           = """📖 Ojej, to nie zadziałało. %s
+
+*Użycie:* `/tip <kwota> [<notatka>]`
+*Przykład:* `/tip 1000 pojechany mem!`"""
+
+# SEND
+
+sendValidAmountMessage     = """Czy podano poprawną kwotę?"""
+sendUserHasNoWalletMessage = """🚫 Użytkownik %s jeszcze nie utworzył portfela."""
+sendSentMessage            = """💸 %d sat wysłano do %s."""
+sendPublicSentMessage      = """💸 %d sat wysłano od %s do %s."""
+sendReceivedMessage        = """🏅 %s przysyła Ci %d sat."""
+sendErrorMessage           = """🚫 Wysłanie nie powiodło się."""
+confirmSendMessage         = """Czy chcesz zapłacić %s?\n\n💸 Kwota: %d sat"""
+confirmSendAppendMemo      = """\n✉️ %s"""
+sendCancelledMessage       = """🚫 Wysłanie anulowane."""
+errorTryLaterMessage       = """🚫 Błąd. Spróbuj ponownie później."""
+sendSyntaxErrorMessage     = """Czy wpropwadzono kwotę i odbiorcę? Możesz użyć komendy /send albo żeby wysłać do użytkownika takiego jak %s lub pod adres Lightning taki jak LightningTipBot@ln.tips."""
+sendHelpText               = """📖 Ojej, to nie zadziałało. %s
+
+*Użycie:* `/send <kwota> <użytkownik> [<notatka>]`
+*Przykład:* `/send 1000 @LightningTipBot Po prostu lubię tego bota ❤️`
+*Przykład:* `/send 1234 LightningTipBot@ln.tips`"""
+
+# INVOICE
+
+invoiceReceivedMessage    = """⚡️ Otrzymujesz %d sat."""
+invoiceEnterAmountMessage = """Czy wprowadzono kwotę?"""
+invoiceValidAmountMessage = """Czy wprowadzono poprawną kwotę?"""
+invoiceHelpText           = """📖 Ojej, to nie zadziałało. %s
+
+*Użycie:* `/invoice <kwota> [<notatka>]`
+*Przykład:* `/invoice 1000 Dziękuję!`"""
+invoicePaidText           = """✅ Faktura załacona.""" 
+
+# PAY
+
+paymentCancelledMessage     = """🚫 Płatność anulowana."""
+invoicePaidMessage          = """⚡️ Płatność wysłana."""
+invoicePublicPaidMessage    = """⚡️ Płatność wysłana przez %s."""
+invalidInvoiceHelpMessage    = """Czy podajesz poprawną fakturę Lightning? Spróbuj /send jeśli chcesz wysłać do użytkownika na Telegramie lub pod adres Lightning."""
+invoiceNoAmountMessage       = """🚫 Nie można opłacić faktury bez kwoty."""
+insufficientFundsMessage     = """🚫 Niewystarczające środki. Masz %d sat a potrzebujesz conajmniej %d sat."""
+feeReserveMessage            = """⚠️ Wysyłanie swojego całkowitego salda może się nie powieść z powodu opłat sieciowych. Zarezerwuj conajmniej 1% na opłaty."""
+invoicePaymentFailedMessage  = """🚫 Płatność nie powiodła się: %s"""
+invoiceUndefinedErrorMessage = """Nie można było zapłacić faktury."""
+confirmPayInvoiceMessage     = """Czy chcesz wysłać tę płatność?\n\n💸 Kwota: %d sat"""
+confirmPayAppendMemo         = """\n✉️ %s"""
+payHelpText                  = """📖 Ojej, to nie zadziałało. %s
+
+*Użycie:* `/pay <faktura>`
+*Przykład:* `/pay lnbc20n1psscehd...`"""
+
+# DONATE
+
+donationSuccess          = """🙏 Dziękuję za twoją darowiznę."""
+donationErrorMessage     = """🚫 O nie! Darowizna nie powiodła się."""
+donationProgressMessage  = """🧮 Przygotowuję Twoją darowiznę..."""
+donationFailedMessage    = """🚫 Darowizna nie powiodła się: %s"""
+donateEnterAmountMessage = """Czy podano kwotę?"""
+donateValidAmountMessage = """Czy podano poprawną kwotę?"""
+donateHelpText           = """📖 Ojej, to nie zadziałało. %s
+
+*Użycie:* `/donate <kwota>`
+*Przykład:* `/donate 1000`"""
+
+# PHOTO
+
+photoQrNotRecognizedMessage = """🚫 Nie udało się rozpoznać faktury Lightning ani LNURL. Wypośrodkuj kod QR, przytnij zdjęcie lub powiększ."""
+photoQrRecognizedMessage = """✅ Kod QR:
+`%s`"""
+
+# LNURL
+
+lnurlReceiveInfoText           = """👇 Możesz użyć teego statycznego kodu LNRUL aby otrzymywać płatności."""
+lnurlResolvingUrlMessage       = """🧮 Rozwiązuje adres..."""
+lnurlGettingUserMessage        = """🧮 Przygotowuję płatność..."""
+lnurlPaymentFailed             = """🚫 Płatność się nie powiodła: %s"""
+lnurlInvalidAmountMessage      = """🚫 Nieprawidłowa kwota."""
+lnurlInvalidAmountRangeMessage = """🚫 Kwota musi być między %d a %d sat."""
+lnurlNoUsernameMessage         = """🚫 Musisz ustawić nazwę użytkownika na Telegramie aby otrzymywać płatności poprzez LNURL."""
+lnurlHelpText                  = """📖 Ojej, to nie zadziałało. %s
+
+*Użycie:* `/lnurl [kwota] <lnurl>`
+*Przykład:* `/lnurl LNURL1DP68GUR...`"""
+
+# LNURL LOGIN
+
+confirmLnurlAuthMessager        = """Czy chcesz się zalogować do %s?"""
+lnurlSuccessfulLogin            = """✅ Logowanie udało się."""
+loginButtonMessage              = """✅ Zaloguj się"""
+loginCancelledMessage           = """🚫 Logowanie anulowane."""
+
+# LNURL WITHDRAW
+
+confirmLnurlWithdrawMessage     = """Czy chcesz dokonąć tej wypłaty?\n\n💸 Kwota: %d sat"""
+lnurlPreparingWithdraw        = """🧮 Przygotowywanie wypłaty..."""
+lnurlWithdrawFailed             = """🚫 Wypłata nie powiodła się."""
+lnurlWithdrawCancelled             = """🚫 Wypłata anulowana."""
+lnurlWithdrawSuccess             = """✅ Zażądano wypłaty."""
+
+# LINK
+
+walletConnectMessage = """🔗 *Połącz swój portfel*
+
+⚠️ Nigdy nie ujawniaj adresu URL lub kodu QR nikomu, gdyż będą w stanie uzyskać dostęp do Twoich środków. Użyj /api aby uzyskać dostęp do swoich kluczy API.
+
+- *BlueWallet:* Naciśnij *Dodaj porfel*, *Import portfela*, *Skanuj lub importuj plik*, i przeskanuj kod QR.
+- *Zeus:* Skopiuj poniższy adres URL, naciśnij *Dodaj nowy węzeł*, wybierz *LNDHub* jako interfejs węzła, wprowadź adres URL, *Zapisz konfigurację węzła*."""
+couldNotLinkMessage             = """🚫 Nie udało się połączyć Twojego portfela. Spróbuj ponownie później."""
+linkHiddenMessage               = """🔍 Połączenie ukryto. Napisz /link aby zobaczyć je ponownie."""
+
+# API
+
+apiConnectMessage = """🔗 *Twoje klucze API*
+
+⚠️ Nigdy nie ujawniaj tych kluczy nikomu, gdyż będą w stanie uzyskać dostęp do Twoich środków. Użyj /link aby połączyć swój portfel.
+
+- *Klucz Admin:* `%s`
+- *Klucz Invoice:* `%s`"""
+apiHiddenMessage               = """🔍 Klucze ukryte. Napisz /api aby zobaczyć je ponownie."""
+
+# FAUCET
+
+inlineQueryFaucetTitle        = """🚰 Utwórz kranik (_faucet_)."""
+inlineQueryFaucetDescription  = """Użycie: @%s faucet <pojemność> <na_użytkownika>"""
+inlineResultFaucetTitle       = """🚰 Tworzenie kranika o pojemności %d sat."""
+inlineResultFaucetDescription = """👉 Kliknij tu aby utworzyć kranik w tym chacie."""
+
+inlineFaucetMessage                     = """Naciśnij ✅ aby zebrać %d sat z kranika %s.
+
+🚰 Pozostało: %d/%d sat (rozdanych %d użytkownikom z %d)
+%s"""
+inlineFaucetEndedMessage                = """🚰 Kranik pusty 🍺\n\n🏅 %d sat rozdano do %d użytkowników."""
+inlineFaucetAppendMemo                  = """\n✉️ %s"""
+inlineFaucetCreateWalletMessage         = """Chatuj z %s 👈 aby zarządzać swoim portfelem."""
+inlineFaucetCancelledMessage            = """🚫 Kranik anulowany."""
+inlineFaucetInvalidPeruserAmountMessage = """🚫 Wartość na_użytkownika nie jest dzielnikiem pojemności lub jest za mała (min 5 sat)."""
+inlineFaucetInvalidAmountMessage        = """🚫 Nieprawidłowa kwota."""
+inlineFaucetSentMessage                 = """🚰 %d sat wysłano do %s."""
+inlineFaucetReceivedMessage             = """🚰 %s wysyła Ci %d sat."""
+inlineFaucetHelpFaucetInGroup           = """Utwórz w grupie z botem kranik (_facuet_) lub użyj 👉 komendy inline (zobacz /advanced aby uzyskać więcej informacji)."""
+inlineFaucetAlreadyTookMessage          = """🚫 Już brałeś z tego kranika."""
+inlineFaucetHelpText                    = """📖 Ojej, to nie zadziałało. %s
+
+*Użycie:* `/faucet <pojemność> <na_użytkownika>`
+*Przykład:* `/faucet 210 21`"""
+
+# INLINE SEND
+
+inlineQuerySendTitle            = """💸 Wyślij płatność do tego chatu."""
+inlineQuerySendDescription      = """Użycie: @%s send <kwota> [<użytkownik>] [<notatka>]"""
+inlineResultSendTitle           = """💸 Wysłano %d sat."""
+inlineResultSendDescription     = """👉 Kliknij aby wysłać %d sat do tego chatu."""
+
+inlineSendMessage              = """Naciśnij ✅ aby otrzymać płatność od %s.\n\n💸 Kwota: %d sat"""
+inlineSendAppendMemo           = """\n✉️ %s"""
+inlineSendUpdateMessageAccept  = """💸 %d sat wysłano od %s do %s."""
+inlineSendCreateWalletMessage  = """Chatuj z %s 👈 aby zarządzać swoim portfelem."""
+sendYourselfMessage            = """📖 Nie możesz zapłacić sobie."""
+inlineSendFailedMessage        = """🚫 Wysłanie nie powiodło się."""
+inlineSendInvalidAmountMessage = """🚫 Kwota musi być większa niż 0."""
+inlineSendBalanceLowMessage    = """🚫 Twoje saldo jest za niskie."""
+
+# INLINE RECEIVE
+
+inlineQueryReceiveTitle        = """🏅 Poproś o płatność na chacie."""
+inlineQueryReceiveDescription  = """Użycie: @%s receive <kwota> [<użytkownik>] [<notatka>]"""
+inlineResultReceiveTitle       = """🏅 Otrzymaj %d sat."""
+inlineResultReceiveDescription = """👉 Kliknij aby poprosić o płatność %d sat."""
+
+inlineReceiveMessage             = """Naciśnij 💸 aby zapłacić %s.\n\n💸 Kwota: %d sat"""
+inlineReceiveAppendMemo          = """\n✉️ %s"""
+inlineReceiveUpdateMessageAccept = """💸 %d sat wysłano od %s do %s."""
+inlineReceiveCreateWalletMessage = """Chatuj z %s 👈 aby zarządzać swoim portfelem."""
+inlineReceiveYourselfMessage     = """📖 Nie możesz zapłacić sobie."""
+inlineReceiveFailedMessage       = """🚫 Przyjmowanie środków nie powiodło się."""
+inlineReceiveCancelledMessage    = """🚫 Przyjmowanie środków anulowane."""
+
+# TIPJAR
+
+inlineQueryTipjarTitle        = """🍯 Utwórz słoik na napiwki (_tipjar_)."""
+inlineQueryTipjarDescription  = """Użycie: @%s tipjar <pojemność> <na_użytkownika>"""
+inlineResultTipjarTitle       = """🍯 Tworzenie słoika na napiwki (_tipjar_) o pojemności %d sat."""
+inlineResultTipjarDescription = """👉 Kliknij tu aby utworzyć w tym chacie słoik na napiwki (_tipjar_)."""
+
+inlineTipjarMessage                     = """Naciśnij 💸 aby *wpłacić %d sat* do tego słoika na napiwki (_tipjar_) przez %s.
+
+🙏 Przekazano: *%d*/%d sat (przez %d użytkowników)
+%s"""
+inlineTipjarEndedMessage                = """🍯 Słoik na napiwki %s jest pełen ⭐️\n\n🏅 %d sat przekazanych przez %d użytkowników."""
+inlineTipjarAppendMemo                  = """\n✉️ %s"""
+inlineTipjarCancelledMessage            = """🚫 Słoik na napiwki anulowany."""
+inlineTipjarInvalidPeruserAmountMessage = """🚫 Kwota na_użytkownika nie jest dzielnikiem pojemności."""
+inlineTipjarInvalidAmountMessage        = """🚫 Nieprawidłowa kwota."""
+inlineTipjarSentMessage                 = """🍯 %d sat wysłano do %s."""
+inlineTipjarReceivedMessage             = """🍯 %s wysyła Ci %d sat."""
+inlineTipjarHelpTipjarInGroup           = """Stwórz w grupie z tym botem słoik na napiwki (_tipjar_) lub użyj 👉 komendy inline (zobacz /advanced aby uzyskać więcej informacji)."""
+inlineTipjarHelpText                    = """📖 Ojej, to nie zadziałało. %s
+
+*Użycie:* `/tipjar <capacity> <na_użytkownika>`
+*Przykład:* `/tipjar 210 21`"""
+
+# GROUP TICKETS
+groupAddGroupHelpMessage            = """📖 Ojej, to nie zadziałało. Ta komenda działa tylko w chacie grupowym. Tylko właściciele grupy mogą użyć tej komendy.\nUżycie: `/group add <nazwa_grupy> [<kwota>]`\nPrzykład: `/group add NajlepszaGrupaBitcoinowa 1000`"""
+groupJoinGroupHelpMessage           = """📖 Ojej, to nie zadziałało. Spróbuj ponownie później.\nUżycie: `/join <nazwa_grupy>`\nPrzykład: `/join NajlepszaGrupaBitcoinowa`"""
+groupClickToJoinMessage             = """🎟 [Kliknij tu](%s) 👈 aby dołączyć do `%s`."""
+groupTicketIssuedGroupMessage       = """🎟 Użytkownik %s otrzymuje bilet do tej grupy."""
+groupPayInvoiceMessage              = """🎟 Aby dołączyć do grupy %s, opłać powyższą fakturę."""
+groupBotIsNotAdminMessage           = """🚫 Ojej, to nie zadziałało. Musisz uczynić mnie administratorem i nadać prawo do zapraszania użytkowników."""
+groupNameExists                     = """🚫 Grupa o tej nazwie już istnieje. Wybierz inną nazwę."""
+groupAddedMessage                   = """🎟 Bilety dla grupy `%s` dodane.\nAlias: `%s` Cena: %d sat\n\nAby poprosić o bilet na tę grupę, rozpocznij prywatny czat z %s i napisz `/join %s`."""
+groupNotFoundMessage                = """🚫 Nie znaleziono grupy o tej nazwie."""
+groupReceiveTicketInvoiceCommission = """🎟 Otrzymujesz *%d sat* (wyłączając. %d sat prowizji) za bilet na grupę `%s` zapłacony przez %s."""
+groupReceiveTicketInvoice           = """🎟 Otrzymujesz *%d sat* za bilet na grupę `%s` zapłacony przez %s."""
+commandPrivateMessage               = """Użyj proszę tej komendy na czacie prywatnym z %s."""
+groupHelpMessage                    = """🎟 Bilety na prywatne grupy 🎟
+
+Sprzedawaj bilety na swoją _prywatną grupę_ i pozbądź się spamujących botów. 
+
+*Instrukcje dla administratorów grup:*
+
+1) Zaproś %s do swojej grupy i nadaj uprawnienia administratora.
+2) Uczyń swoją grupę prywatną.
+3) W grupie, napisz (będąc właścicielem grupy) napisz `/group add <mojagrupa> [<cena_biletu>]`.
+
+_Opłaty: Bot bierze prowizję w wysokości 10%% + 10 sat za tanie bilety. Jeśli cena bilety >= 1000 sat, prowizja wynosi 2%% + 100 sat._
+
+*Instrukcje dla członków grupy:*
+
+Aby dołączyć do grupy, napisz do %s i napisz w prywatnej wiadomości `/join <mojagrupa>`.
+
+📖 *Użycie:*
+*Dla adminów (w czacie grupowym):* `/group add <nazwa_grupy> [<cena_biletu>]`\nPrzykład: `/group add NajlepszaGrupaBitcoinowa 1000`
+*Dla użytkowników (w czacie prywatnym):* `/join <nazwa_grupy>`\nPrzykład: `/join NajlepszaGrupaBitcoinowa`"""
+
+# DALLE GENERATE
+generateDalleHelpMessage        = """Generuj obrazy przy użyciu OpenAI DALLE 2.\nUżycie: `/generate <podpowiedź>`\nCena: 1000 sat"""
+generateDallePayInvoiceMessage  = """Opłać tę fakturę by wygenerować 4 obrazy 👇"""
+generateDalleGeneratingMessage  = """Twoje obrazy są generowane. Proszę czekaj..."""
