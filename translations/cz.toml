@@ -30,9 +30,9 @@ infoCommandStr = """info"""
 
 # NOTIFICATIONS
 
-cantDoThatMessage = """You can't do that."""
-cantClickMessage = """You can't click this button."""
-balanceTooLowMessage = """Your balance is too low."""
+cantDoThatMessage = """To nelze udělat."""
+cantClickMessage = """Toto tlačítko nejde zmáčkout."""
+balanceTooLowMessage = """Tvůj zůstatek je příliš malý."""
 
 # BUTTONS
 
