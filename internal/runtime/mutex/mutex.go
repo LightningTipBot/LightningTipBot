@@ -3,8 +3,10 @@ package mutex
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gorilla/mux"
 
@@ -118,8 +120,14 @@ func Lock(s string) {
 	} else {
 		m := &sync.Mutex{}
 		m.Lock()
+		tick := runtime.NewResettableFunctionTicker(s, runtime.WithDuration(time.Hour))
+		tick.Do(
+			func() {
+				Unlock(s)
+			})
 		// write into mutex map
 		mutexMapSync.Lock()
+		mutexMap.Set(fmt.Sprintf("ticker_%s", s), tick)
 		mutexMap.Set(s, m)
 		mutexMapSync.Unlock()
 	}
@@ -131,6 +139,11 @@ func Unlock(s string) {
 	mutexMapSync.Lock()
 	if m, ok := mutexMap.Get(s); ok {
 		mutexMap.Remove(s)
+		tickerKey := fmt.Sprintf("ticker_%s", s)
+		if tick, ok := mutexMap.Get(tickerKey); ok {
+			tick.(*runtime.ResettableFunctionTicker).StopChan <- struct{}{}
+			mutexMap.Remove(tickerKey)
+		}
 		m.(*sync.Mutex).Unlock()
 		log.Tracef("[Mutex] Unlocked %s", s)
 	} else {
