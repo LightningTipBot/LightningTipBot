@@ -132,11 +132,11 @@ advancedMessage = """%s
 
 
 # GENERIC
-enterAmountRangeMessage        = """💯 Enter an amount between %d and %d sat."""
-enterAmountMessage             = """💯 Enter an amount."""
-enterUserMessage               = """👤 Enter a user."""
-enterTextMessage               = """⌨️ Enter text."""
-errorReasonMessage             = """🚫 Error: %s"""
+enterAmountRangeMessage        = """💯 Zadej částku mezi %d a %d sats."""
+enterAmountMessage             = """💯 Zadej částku."""
+enterUserMessage               = """👤 Zadej uživatele."""
+enterTextMessage               = """⌨️ Zadej text."""
+errorReasonMessage             = """🚫 Chyba: %s"""
 
 # START
 
