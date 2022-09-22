@@ -140,11 +140,11 @@ errorReasonMessage             = """🚫 Chyba: %s"""
 
 # START
 
-startSettingWalletMessage = """🧮 Setting up your wallet..."""
-startWalletCreatedMessage = """🧮 Wallet created."""
-startWalletReadyMessage   = """✅ *Your wallet is ready.*"""
-startWalletErrorMessage   = """🚫 Error initializing your wallet. Try again later."""
-startNoUsernameMessage    = """☝️ It looks like you don't have a Telegram @username yet. That's ok, you don't need one to use this bot. However, to make better use of your wallet, set up a username in the Telegram settings. Then, enter /balance so the bot can update its record of you."""
+startSettingWalletMessage = """🧮 Nastavování peněženky..."""
+startWalletCreatedMessage = """🧮 Peněženka vytvořena."""
+startWalletReadyMessage   = """✅ *Tvá peněženka je připravena.*"""
+startWalletErrorMessage   = """🚫 Chyba při vytváření peněženky. Zkus to později znovu."""
+startNoUsernameMessage    = """☝️ Vypadá to, že na Telegramu nemáš ještě uživatelské jméno (@username). Nevadí, pro používání tohoto bota ho nepotřebuješ. Nicméně, pro snazší používání peněženky si nastav uživatelské jméno v nastavení Telegramu. Poté zadej příkaz /balance a bot si zaktualizuje své záznamy."""
 
 # BALANCE
 
