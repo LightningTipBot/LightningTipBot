@@ -236,32 +236,32 @@ photoQrRecognizedMessage = """✅ QR kód:
 
 # LNURL
 
-lnurlReceiveInfoText           = """👇 You can use this static LNURL to receive payments."""
-lnurlResolvingUrlMessage       = """🧮 Resolving address..."""
-lnurlGettingUserMessage        = """🧮 Preparing payment..."""
-lnurlPaymentFailed             = """🚫 Payment failed: %s"""
-lnurlInvalidAmountMessage      = """🚫 Invalid amount."""
-lnurlInvalidAmountRangeMessage = """🚫 Amount must be between %d and %d sat."""
-lnurlNoUsernameMessage         = """🚫 You need to set a Telegram username to receive payments via LNURL."""
-lnurlHelpText                  = """📖 Oops, that didn't work. %s
+lnurlReceiveInfoText           = """👇 Pro příjem plateb můžeš používat tuto statickou LNURL."""
+lnurlResolvingUrlMessage       = """🧮 Zpracovávám adresu..."""
+lnurlGettingUserMessage        = """🧮 Připravuji platbu..."""
+lnurlPaymentFailed             = """🚫 Platba selhala: %s"""
+lnurlInvalidAmountMessage      = """🚫 Neplatná částka."""
+lnurlInvalidAmountRangeMessage = """🚫 Částka musí být mezi %d a %d sats."""
+lnurlNoUsernameMessage         = """🚫 Pro příjem plateb pomocí LNURL potřebuješ na Telegramu uživatelské jméno."""
+lnurlHelpText                  = """📖 Ou, tohle se nezdařilo. %s
 
 *Usage:* `/lnurl [amount] <lnurl>`
 *Example:* `/lnurl LNURL1DP68GUR...`"""
 
 # LNURL LOGIN
 
-confirmLnurlAuthMessager        = """Do you want to login to %s?"""
-lnurlSuccessfulLogin            = """✅ Login successful."""
-loginButtonMessage              = """✅ Login"""
-loginCancelledMessage           = """🚫 Login cancelled."""
+confirmLnurlAuthMessager        = """Chceš se přihlásit do %s?"""
+lnurlSuccessfulLogin            = """✅ Přihlášení úspěšné."""
+loginButtonMessage              = """✅ Přihlásit"""
+loginCancelledMessage           = """🚫 Přihlášení zrušeno."""
 
 # LNURL WITHDRAW
 
-confirmLnurlWithdrawMessage     = """Do you want to make this withdrawal?\n\n💸 Amount: %d sat"""
-lnurlPreparingWithdraw        = """🧮 Preparing withdrawal..."""
-lnurlWithdrawFailed             = """🚫 Withdrawal failed."""
-lnurlWithdrawCancelled             = """🚫 Withdrawal cancelled."""
-lnurlWithdrawSuccess             = """✅ Withdrawal requested."""
+confirmLnurlWithdrawMessage     = """Chceš provést tento výběr?\n\n💸 Částka: %d sats"""
+lnurlPreparingWithdraw        = """🧮 Příprava výběru..."""
+lnurlWithdrawFailed             = """🚫 Výběr selhal."""
+lnurlWithdrawCancelled             = """🚫 Výběr zrušen."""
+lnurlWithdrawSuccess             = """✅ Výběr vyžádán."""
 
 # LINK
 
