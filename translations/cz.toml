@@ -155,7 +155,7 @@ balanceErrorMessage = """🚫 Nepodařilo se získat info o zůstatku. Zkus to p
 
 tipDidYouReplyMessage = """Odpověděl jsi na zprávu kvůli platbě? Pro odpověď na jakoukoli zprávu na PC klikni pravým myšítkem a vyber Odpovědět nebo na mobilu přes zprávu přejeď do strany. Pokud chceš poslat platbu jinému uživateli přímo, použij příkaz /send"""
 tipInviteGroupMessage = """ℹ️ Mimochodem, tohoto bota můžeš přizvat do jakékoli skupiny a posílat v ní platby."""
-tipEnterAmountMessage = """Zadall jsi částku?"""
+tipEnterAmountMessage = """Zadal jsi částku?"""
 tipValidAmountMessage = """Zadal jsi platnou částku?"""
 tipYourselfMessage    = """📖 Nemůžeš poslat tip sobě."""
 tipSentMessage        = """💸 %d sats posláno pro %s."""
@@ -188,14 +188,14 @@ sendHelpText               = """📖 Oops, that didn't work. %s
 
 # INVOICE
 
-invoiceReceivedMessage    = """⚡️ You received %d sat."""
-invoiceEnterAmountMessage = """Did you enter an amount?"""
-invoiceValidAmountMessage = """Did you enter a valid amount?"""
+invoiceReceivedMessage    = """⚡️ Obdržel jsi %d sats."""
+invoiceEnterAmountMessage = """Zadal jsi částku?"""
+invoiceValidAmountMessage = """Zadal jsi platnou částku?"""
 invoiceHelpText           = """📖 Ou, tohle se nezdařilo. %s
 
-*Usage:* `/invoice <amount> [<memo>]`
-*Example:* `/invoice 1000 Thank you!`"""
-invoicePaidText           = """✅ Invoice paid.""" 
+*Použití:* `/invoice <částka> [<zpráva>]`
+*Příklad:* `/invoice 1000 Thank you!`"""
+invoicePaidText           = """✅ Invoice zaplacena.""" 
 
 # PAY
 
@@ -221,8 +221,8 @@ donationSuccess          = """🙏 Thank you for your donation."""
 donationErrorMessage     = """🚫 Oh no. Donation failed."""
 donationProgressMessage  = """🧮 Preparing your donation..."""
 donationFailedMessage    = """🚫 Donation failed: %s"""
-donateEnterAmountMessage = """Did you enter an amount?"""
-donateValidAmountMessage = """Did you enter a valid amount?"""
+donateEnterAmountMessage = """Zadal jsi částku?"""
+donateValidAmountMessage = """Zadal jsi platnou částku?"""
 donateHelpText           = """📖 Ou, tohle se nezdařilo. %s
 
 *Usage:* `/donate <amount>`
