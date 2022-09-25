@@ -1,31 +1,31 @@
 # COMMANDS
 
-helpCommandStr = """help"""
-basicsCommandStr = """basics"""
+helpCommandStr = """pomoc"""
+basicsCommandStr = """základy"""
 tipCommandStr = """tip"""
-balanceCommandStr = """balance"""
-sendCommandStr = """send"""
+balanceCommandStr = """zůstatek"""
+sendCommandStr = """poslat"""
 invoiceCommandStr = """invoice"""
-payCommandStr = """pay"""
-donateCommandStr = """donate"""
-advancedCommandStr = """advanced"""
-transactionsCommandStr = """transactions"""
+payCommandStr = """zaplatit"""
+donateCommandStr = """darovat"""
+advancedCommandStr = """pokročilé"""
+transactionsCommandStr = """transakce"""
 logCommandStr = """log"""
 listCommandStr = """list"""
 
-linkCommandStr = """link"""
+linkCommandStr = """odkaz"""
 lnurlCommandStr = """lnurl"""
 faucetCommandStr = """faucet"""
 
 tipjarCommandStr = """tipjar"""
-receiveCommandStr = """receive"""
-hideCommandStr = """hide"""
-volcanoCommandStr = """volcano"""
-showCommandStr = """show"""
-optionsCommandStr = """options"""
-settingsCommandStr = """settings"""
-saveCommandStr = """save"""
-deleteCommandStr = """delete"""
+receiveCommandStr = """přijmout"""
+hideCommandStr = """skrýt"""
+volcanoCommandStr = """sopka"""
+showCommandStr = """ukázat"""
+optionsCommandStr = """možnosti"""
+settingsCommandStr = """nastavení"""
+saveCommandStr = """uložit"""
+deleteCommandStr = """smazat"""
 infoCommandStr = """info"""
 
 # NOTIFICATIONS
@@ -36,26 +36,26 @@ balanceTooLowMessage = """Tvůj zůstatek je příliš malý."""
 
 # BUTTONS
 
-sendButtonMessage = """✅ Send"""
-payButtonMessage = """✅ Pay"""
-payReceiveButtonMessage = """💸 Pay"""
-receiveButtonMessage = """✅ Receive"""
-withdrawButtonMessage = """✅ Withdraw"""
-cancelButtonMessage = """🚫 Cancel"""
-collectButtonMessage = """✅ Collect"""
-nextButtonMessage = """Next"""
-backButtonMessage = """Back"""
-acceptButtonMessage = """Accept"""
-denyButtonMessage = """Deny"""
-tipButtonMessage = """Tip"""
-revealButtonMessage = """Reveal"""
-showButtonMessage = """Show"""
-hideButtonMessage = """Hide"""
-joinButtonMessage = """Join"""
-optionsButtonMessage = """Options"""
-settingsButtonMessage = """Settings"""
-saveButtonMessage = """Save"""
-deleteButtonMessage = """Delete"""
+sendButtonMessage = """✅ Odeslat"""
+payButtonMessage = """✅ Zaplatit"""
+payReceiveButtonMessage = """💸 Zaplatit"""
+receiveButtonMessage = """✅ Přijmout"""
+withdrawButtonMessage = """✅ Vybrat"""
+cancelButtonMessage = """🚫 Zrušit"""
+collectButtonMessage = """✅ Vybrat"""
+nextButtonMessage = """Dále"""
+backButtonMessage = """Zpět"""
+acceptButtonMessage = """Potvrdit"""
+denyButtonMessage = """Odmítnout"""
+tipButtonMessage = """Platba"""
+revealButtonMessage = """Odhalit"""
+showButtonMessage = """Ukázat"""
+hideButtonMessage = """Skrýt"""
+joinButtonMessage = """Připojit se"""
+optionsButtonMessage = """Možnosti"""
+settingsButtonMessage = """Nastavení"""
+saveButtonMessage = """Uložit"""
+deleteButtonMessage = """Smazat"""
 infoButtonMessage = """Info"""
 
 cancelButtonEmoji = """🚫"""
@@ -153,80 +153,80 @@ balanceErrorMessage = """🚫 Nepodařilo se získat info o zůstatku. Zkus to p
 
 # TIP
 
-tipDidYouReplyMessage = """Did you reply to a message to tip? To reply to any message, right-click -> Reply on your computer or swipe the message on your phone. If you want to send directly to another user, use the /send command."""
-tipInviteGroupMessage = """ℹ️ By the way, you can invite this bot to any group to start tipping there."""
-tipEnterAmountMessage = """Did you enter an amount?"""
-tipValidAmountMessage = """Did you enter a valid amount?"""
-tipYourselfMessage    = """📖 You can't tip yourself."""
-tipSentMessage        = """💸 %d sat sent to %s."""
-tipReceivedMessage    = """🏅 %s has tipped you %d sat."""
-tipErrorMessage       = """🚫 Tip failed."""
-tipUndefinedErrorMsg  = """please try again later."""
-tipHelpText           = """📖 Oops, that didn't work. %s
+tipDidYouReplyMessage = """Odpověděl jsi na zprávu kvůli platbě? Pro odpověď na jakoukoli zprávu na PC klikni pravým myšítkem a vyber Odpovědět nebo na mobilu přes zprávu přejeď do strany. Pokud chceš poslat platbu jinému uživateli přímo, použij příkaz /send"""
+tipInviteGroupMessage = """ℹ️ Mimochodem, tohoto bota můžeš přizvat do jakékoli skupiny a posílat v ní platby."""
+tipEnterAmountMessage = """Zadal jsi částku?"""
+tipValidAmountMessage = """Zadal jsi platnou částku?"""
+tipYourselfMessage    = """📖 Nemůžeš poslat platbu sobě."""
+tipSentMessage        = """💸 %d sats posláno pro %s."""
+tipReceivedMessage    = """🏅 %s ti poslal %d sats."""
+tipErrorMessage       = """🚫 Platba selhala."""
+tipUndefinedErrorMsg  = """Prosím, zkus to později znovu."""
+tipHelpText           = """📖 Ou, tohle se nezdařilo. %s
 
-*Usage:* `/tip <amount> [<memo>]`
-*Example:* `/tip 1000 Dank meme!`"""
+*Použití:* `/tip <částka> [<zpráva>]`
+*Příklad:* `/tip 1000 Díky moc!`"""
 
 # SEND
 
-sendValidAmountMessage     = """Did you enter a valid amount?"""
-sendUserHasNoWalletMessage = """🚫 User %s hasn't created a wallet yet."""
-sendSentMessage            = """💸 %d sat sent to %s."""
-sendPublicSentMessage      = """💸 %d sat sent from %s to %s."""
-sendReceivedMessage        = """🏅 %s sent you %d sat."""
-sendErrorMessage           = """🚫 Send failed."""
-confirmSendMessage         = """Do you want to pay to %s?\n\n💸 Amount: %d sat"""
+sendValidAmountMessage     = """Zadal jsi platnou částku?"""
+sendUserHasNoWalletMessage = """🚫 Uživatel %s si ještě nevytvořil peněženku."""
+sendSentMessage            = """💸 %d sats posláno uživateli %s."""
+sendPublicSentMessage      = """💸 %d sats posláno od %s uživateli %s."""
+sendReceivedMessage        = """🏅 %s ti poslal %d sats."""
+sendErrorMessage           = """🚫 Odeslání selhalo."""
+confirmSendMessage         = """Chceš zaplatit uživateli %s?\n\n💸 Částka: %d sat"""
 confirmSendAppendMemo      = """\n✉️ %s"""
-sendCancelledMessage       = """🚫 Send cancelled."""
-errorTryLaterMessage       = """🚫 Error. Please try again later."""
-sendSyntaxErrorMessage     = """Did you enter an amount and a recipient? You can use the /send command to either send to Telegram users like %s or to a Lightning address like LightningTipBot@ln.tips."""
-sendHelpText               = """📖 Oops, that didn't work. %s
+sendCancelledMessage       = """🚫 Odeslání zrušeno."""
+errorTryLaterMessage       = """🚫 Chyba. Prosím, zkus to později znovu."""
+sendSyntaxErrorMessage     = """Zadal jsi částku a příjemce? Můžeš použít příkaz /send k poslání platby buď uživateli Telegramu jako %s nebo na lightning adresu jako LightningTipBot@ln.tips."""
+sendHelpText               = """📖 Ou, tohle se nezdařilo. %s
 
-*Usage:* `/send <amount> <user> [<memo>]`
-*Example:* `/send 1000 @LightningTipBot I just like the bot ❤️`
-*Example:* `/send 1234 LightningTipBot@ln.tips`"""
+*Použití:* `/send <částka> <uživatel> [<zpráva>]`
+*Příklad:* `/send 1000 @LightningTipBot Všichni jsme Satoshi ❤️`
+*Příklad:* `/send 1234 LightningTipBot@ln.tips`"""
 
 # INVOICE
 
-invoiceReceivedMessage    = """⚡️ You received %d sat."""
-invoiceEnterAmountMessage = """Did you enter an amount?"""
-invoiceValidAmountMessage = """Did you enter a valid amount?"""
-invoiceHelpText           = """📖 Oops, that didn't work. %s
+invoiceReceivedMessage    = """⚡️ Obdržel jsi %d sats."""
+invoiceEnterAmountMessage = """Zadal jsi částku?"""
+invoiceValidAmountMessage = """Zadal jsi platnou částku?"""
+invoiceHelpText           = """📖 Ou, tohle se nezdařilo. %s
 
-*Usage:* `/invoice <amount> [<memo>]`
-*Example:* `/invoice 1000 Thank you!`"""
-invoicePaidText           = """✅ Invoice paid.""" 
+*Použití:* `/invoice <částka> [<zpráva>]`
+*Příklad:* `/invoice 1000 Děkuji!`"""
+invoicePaidText           = """✅ Invoice zaplacena.""" 
 
 # PAY
 
-paymentCancelledMessage     = """🚫 Payment cancelled."""
-invoicePaidMessage          = """⚡️ Payment sent."""
-invoicePublicPaidMessage    = """⚡️ Payment sent by %s."""
-invalidInvoiceHelpMessage    = """Did you enter a valid Lightning invoice? Try /send if you want to send to a Telegram user or to a Lightning address."""
-invoiceNoAmountMessage       = """🚫 Can't pay invoices without an amount."""
-insufficientFundsMessage     = """🚫 Insufficient funds. You have %d sat but you need at least %d sat."""
-feeReserveMessage            = """⚠️ Sending your entire balance might fail because of network fees. Reserve at least 1% for fees."""
-invoicePaymentFailedMessage  = """🚫 Payment failed: %s"""
-invoiceUndefinedErrorMessage = """Could not pay invoice."""
-confirmPayInvoiceMessage     = """Do you want to send this payment?\n\n💸 Amount: %d sat"""
+paymentCancelledMessage     = """🚫 Platba zrušena."""
+invoicePaidMessage          = """⚡️ Platba odeslána."""
+invoicePublicPaidMessage    = """⚡️ Platba od %s odeslána."""
+invalidInvoiceHelpMessage    = """Máš platnou lightning invoice? Zkus příkaz /send k poslání platby uživateli Telegramu nebo na lightning adresu."""
+invoiceNoAmountMessage       = """🚫 Nemůžu zaplatit invoice bez částky."""
+insufficientFundsMessage     = """🚫 Nedostatek prostředků. Máš %d sats, ale potřebuješ alespoň %d sats."""
+feeReserveMessage            = """⚠️ Odeslání celého zůstatku se nemusí zdařit kvůli poplatkům v síti. Nechej rezervu aspoň 1% na poplatky."""
+invoicePaymentFailedMessage  = """🚫 Platba selhala: %s"""
+invoiceUndefinedErrorMessage = """Nemohl jsem zaplatit invoice."""
+confirmPayInvoiceMessage     = """Chceš poslat tuto platbu?\n\n💸 Částka: %d sats"""
 confirmPayAppendMemo         = """\n✉️ %s"""
-payHelpText                  = """📖 Oops, that didn't work. %s
+payHelpText                  = """📖 Ou, tohle se nezdařilo. %s
 
-*Usage:* `/pay <invoice>`
-*Example:* `/pay lnbc20n1psscehd...`"""
+*Použití:* `/pay <invoice>`
+*Příklad:* `/pay lnbc20n1psscehd...`"""
 
 # DONATE
 
-donationSuccess          = """🙏 Thank you for your donation."""
-donationErrorMessage     = """🚫 Oh no. Donation failed."""
-donationProgressMessage  = """🧮 Preparing your donation..."""
-donationFailedMessage    = """🚫 Donation failed: %s"""
-donateEnterAmountMessage = """Did you enter an amount?"""
-donateValidAmountMessage = """Did you enter a valid amount?"""
-donateHelpText           = """📖 Oops, that didn't work. %s
+donationSuccess          = """🙏 Díky za tvůj příspěvek."""
+donationErrorMessage     = """🚫 Ale ne, odeslání přspěvku selhalo."""
+donationProgressMessage  = """🧮 Příprava odeslání příspěvku..."""
+donationFailedMessage    = """🚫 Příspěvek selhal: %s"""
+donateEnterAmountMessage = """Zadal jsi částku?"""
+donateValidAmountMessage = """Zadal jsi platnou částku?"""
+donateHelpText           = """📖 Ou, tohle se nezdařilo. %s
 
-*Usage:* `/donate <amount>`
-*Example:* `/donate 1000`"""
+*Použití:* `/donate <částka>`
+*Příklad:* `/donate 1000`"""
 
 # PHOTO
 
