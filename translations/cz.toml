@@ -245,8 +245,8 @@ lnurlInvalidAmountRangeMessage = """🚫 Částka musí být mezi %d a %d sats."
 lnurlNoUsernameMessage         = """🚫 Pro příjem plateb pomocí LNURL potřebuješ na Telegramu uživatelské jméno."""
 lnurlHelpText                  = """📖 Ou, tohle se nezdařilo. %s
 
-*Usage:* `/lnurl [amount] <lnurl>`
-*Example:* `/lnurl LNURL1DP68GUR...`"""
+*Použití:* `/lnurl [částka] <lnurl>`
+*Příklad:* `/lnurl LNURL1DP68GUR...`"""
 
 # LNURL LOGIN
 
@@ -265,24 +265,24 @@ lnurlWithdrawSuccess             = """✅ Výběr vyžádán."""
 
 # LINK
 
-walletConnectMessage = """🔗 *Link your wallet*
+walletConnectMessage = """🔗 *Propojit vlastní peněženku*
 
-⚠️ Never share the URL or the QR code with anyone or they will be able to access your funds. Use /api for your API keys.
+⚠️ Nikdy s nikým nesdílej URL nebo QR kód, jinak bude mít přístup k tvým prostředkům. Použij příkaz /api pro své API klíče.
 
-- *BlueWallet:* Press *New wallet*, *Import wallet*, *Scan or import a file*, and scan the QR code.
-- *Zeus:* Copy the URL below, press *Add a new node*, select *LNDHub* as Node interface, enter the URL, *Save Node Config*."""
-couldNotLinkMessage             = """🚫 Couldn't link your wallet. Please try again later."""
-linkHiddenMessage               = """🔍 Link hidden. Enter /link to see it again."""
+- *BlueWallet:* Vyber *Nová peněženka*, *Importovat peněženku*, *Scanovat nebo importovat ze souboru* a nascanuj QR kód.
+- *Zeus:* Zkopíruj URL níže, vyber *Add a new node/Přidat novou nodu*, zvol *LNDHub* jako Node interface/Rozhraní nody, vlož URL a ulož nastavení *Save Node Config*."""
+couldNotLinkMessage             = """🚫 Propojení s peněženkou se nezdařilo. Prosím, zkus to později znovu."""
+linkHiddenMessage               = """🔍 Propojení je skryto. Abys ho znovu viděl, zadej /link příkaz."""
 
 # API
 
-apiConnectMessage = """🔗 *Your API keys*
+apiConnectMessage = """🔗 *Tvé API klíče*
 
-⚠️ Never share these keys with anyone or they will be able to access your funds. Use /link to link your wallet.
+⚠️ Nikdy s nikým tyto klíče nesdílej, jinak bude mít přístup k tvým prostředkům. Použij příkaz /link k propojení své peněženky.
 
-- *Admin key:* `%s`
-- *Invoice key:* `%s`"""
-apiHiddenMessage               = """🔍 Keys hidden. Enter /api to see them again."""
+- *Admin klíč:* `%s`
+- *Invoice klíč:* `%s`"""
+apiHiddenMessage               = """🔍 Klíče jsou skryty. Abys je znovu viděl, zadej /api příkaz."""
 
 # FAUCET
 
