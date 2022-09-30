@@ -286,29 +286,29 @@ apiHiddenMessage               = """🔍 Klíče jsou skryty. Abys je znovu vid�
 
 # FAUCET
 
-inlineQueryFaucetTitle        = """🚰 Create a faucet."""
-inlineQueryFaucetDescription  = """Usage: @%s faucet <capacity> <per_user>"""
-inlineResultFaucetTitle       = """🚰 Create a %d sat faucet."""
-inlineResultFaucetDescription = """👉 Click here to create a faucet in this chat."""
+inlineQueryFaucetTitle        = """🚰 Vytvořit faucet."""
+inlineQueryFaucetDescription  = """Použití: @%s faucet <kapacita> <částka_na_uživatele>"""
+inlineResultFaucetTitle       = """🚰 Vytvořit faucet s %d sats."""
+inlineResultFaucetDescription = """👉 Klikni zde pro vytvoření faucetu v tomto chatu."""
 
-inlineFaucetMessage                     = """Press ✅ to collect %d sat from %s's faucet.
+inlineFaucetMessage                     = """Zmáčkni ✅ pro výběr %d sats z faucetu od %s.
 
-🚰 Remaining: %d/%d sat (given to %d/%d users)
+🚰 Zbývá: %d/%d sats (rozdáno %d/%d uživatelům)
 %s"""
-inlineFaucetEndedMessage                = """🚰 Faucet empty 🍺\n\n🏅 %d sat given to %d users."""
+inlineFaucetEndedMessage                = """🚰 Faucet je prázdný 🍺\n\n🏅 %d sats rozdáno %d uživatelům."""
 inlineFaucetAppendMemo                  = """\n✉️ %s"""
-inlineFaucetCreateWalletMessage         = """Chat with %s 👈 to manage your wallet."""
-inlineFaucetCancelledMessage            = """🚫 Faucet cancelled."""
-inlineFaucetInvalidPeruserAmountMessage = """🚫 Peruser amount not divisor of capacity or too low (min 5 sat)."""
-inlineFaucetInvalidAmountMessage        = """🚫 Invalid amount."""
-inlineFaucetSentMessage                 = """🚰 %d sat sent to %s."""
-inlineFaucetReceivedMessage             = """🚰 %s sent you %d sat."""
-inlineFaucetHelpFaucetInGroup           = """Create a faucet in a group with the bot inside or use 👉 inline command (/advanced for more)."""
-inlineFaucetAlreadyTookMessage          = """🚫 You already took from this faucet."""
-inlineFaucetHelpText                    = """📖 Oops, that didn't work. %s
+inlineFaucetCreateWalletMessage         = """Komunikuj s %s 👈 pro správu své peněženky."""
+inlineFaucetCancelledMessage            = """🚫 Faucet zrušen."""
+inlineFaucetInvalidPeruserAmountMessage = """🚫 Částka na uživatele musí dělit kapacitu faucetu beze zbytku nebo je příliš malá (min 5 sats)."""
+inlineFaucetInvalidAmountMessage        = """🚫 Neplatná částka."""
+inlineFaucetSentMessage                 = """🚰 %d sats posláno %s."""
+inlineFaucetReceivedMessage             = """🚰 %s ti poslal %d sats."""
+inlineFaucetHelpFaucetInGroup           = """Vytvoř faucet ve skupině s botem nebo použij 👉 inline příkaz (/advanced pro víc info)."""
+inlineFaucetAlreadyTookMessage          = """🚫 Z tohoto faucetu už jsi čerpal."""
+inlineFaucetHelpText                    = """📖 Ou, tohle se nezdařilo. %s
 
-*Usage:* `/faucet <capacity> <per_user>`
-*Example:* `/faucet 210 21`"""
+*Použití:* `/faucet <kapacita> <částka_na_uživatele>`
+*Příklad:* `/faucet 210 21`"""
 
 # INLINE SEND
 
