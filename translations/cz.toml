@@ -343,27 +343,27 @@ inlineReceiveCancelledMessage    = """🚫 Receive cancelled."""
 
 # TIPJAR
 
-inlineQueryTipjarTitle        = """🍯 Create a tipjar."""
-inlineQueryTipjarDescription  = """Usage: @%s tipjar <capacity> <per_user>"""
-inlineResultTipjarTitle       = """🍯 Create a %d sat tipjar."""
-inlineResultTipjarDescription = """👉 Click here to create a tipjar in this chat."""
+inlineQueryTipjarTitle        = """🍯 Vytvořit tipjar."""
+inlineQueryTipjarDescription  = """Použití: @%s tipjar <kapacita> <částka_od_uživatele>"""
+inlineResultTipjarTitle       = """🍯 Vytvořit tipjar na %d sats."""
+inlineResultTipjarDescription = """👉 Klikni zde pro vytvoření tipjar v tomto chatu."""
 
-inlineTipjarMessage                     = """Press 💸 to *pay %d sat* to this tipjar by %s.
+inlineTipjarMessage                     = """Zmáčkni 💸 pro *platbu %d sats* do tohoto tipjar od %s.
 
-🙏 Given: *%d*/%d sat (by %d users)
+🙏 Věnováno: *%d*/%d sats (od %d uživatelů)
 %s"""
-inlineTipjarEndedMessage                = """🍯 %s's tipjar is full ⭐️\n\n🏅 %d sat given by %d users."""
+inlineTipjarEndedMessage                = """🍯 Tipjar od %s je plný ⭐️\n\n🏅 Věnováno %d sats od %d uživatelů."""
 inlineTipjarAppendMemo                  = """\n✉️ %s"""
-inlineTipjarCancelledMessage            = """🚫 Tipjar cancelled."""
-inlineTipjarInvalidPeruserAmountMessage = """🚫 Peruser amount not divisor of capacity."""
-inlineTipjarInvalidAmountMessage        = """🚫 Invalid amount."""
-inlineTipjarSentMessage                 = """🍯 %d sat sent to %s."""
-inlineTipjarReceivedMessage             = """🍯 %s sent you %d sat."""
-inlineTipjarHelpTipjarInGroup           = """Create a tipjar in a group with the bot inside or use 👉 inline command (/advanced for more)."""
-inlineTipjarHelpText                    = """📖 Oops, that didn't work. %s
+inlineTipjarCancelledMessage            = """🚫 Tipjar zrušen."""
+inlineTipjarInvalidPeruserAmountMessage = """🚫 Částka od jednoho uživatele musí dělit kapacitu tipjar beze zbytku."""
+inlineTipjarInvalidAmountMessage        = """🚫 Neplatná částka."""
+inlineTipjarSentMessage                 = """🍯 %d sats posláno pro %s."""
+inlineTipjarReceivedMessage             = """🍯 %s ti poslal %d sats."""
+inlineTipjarHelpTipjarInGroup           = """Vytvoř tipjar ve skupině s botem nebo použij 👉 inline příkaz (/advanced pro víc info)."""
+inlineTipjarHelpText                    = """📖 Ou, tohle se nezdařilo. %s
 
-*Usage:* `/tipjar <capacity> <per_user>`
-*Example:* `/tipjar 210 21`"""
+*Použití:* `/tipjar <kapacita> <částka_od_uživatele>`
+*Příklad:* `/tipjar 210 21`"""
 
 # GROUP TICKETS
 groupAddGroupHelpMessage            = """📖 Oops, that didn't work. This command only works in a group chat. Only group owners can use this command.\nUsage: `/group add <group_name> [<amount>]`\nExample: `/group add TheBestBitcoinGroup 1000`"""
