@@ -399,6 +399,6 @@ To join a group, talk to %s and write in a private message `/join <mygroup>`.
 *For users (in private chat):* `/join <group_name>`\nExample: `/join TheBestBitcoinGroup`"""
 
 # DALLE GENERATE
-generateDalleHelpMessage        = """Generate images using OpenAI DALLE 2.\nUsage: `/generate <prompt>`\nPrice: 1000 sat"""
-generateDallePayInvoiceMessage  = """Pay this invoice to generate four images 👇"""
-generateDalleGeneratingMessage  = """Your images are being generated. Please wait..."""
+generateDalleHelpMessage        = """Vytvořit obrázky pomocí OpenAI DALLE 2.\nPoužití: `/generate <prompt>`\nCena: 1000 sat"""
+generateDallePayInvoiceMessage  = """Zaplať tuto invoice pro vytvoření 4 obrázků 👇"""
+generateDalleGeneratingMessage  = """Tvé obrázky se generují. Chvilku strpení..."""
