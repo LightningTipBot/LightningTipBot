@@ -312,34 +312,34 @@ inlineFaucetHelpText                    = """📖 Ou, tohle se nezdařilo. %s
 
 # INLINE SEND
 
-inlineQuerySendTitle            = """💸 Send payment to a chat."""
-inlineQuerySendDescription      = """Usage: @%s send <amount> [<user>] [<memo>]"""
-inlineResultSendTitle           = """💸 Send %d sat."""
-inlineResultSendDescription     = """👉 Click to send %d sat to this chat."""
+inlineQuerySendTitle            = """💸 Poslat platbu do chatu."""
+inlineQuerySendDescription      = """Použití: @%s send <částka> [<uživatel>] [<zpráva>]"""
+inlineResultSendTitle           = """💸 Poslat %d sats."""
+inlineResultSendDescription     = """👉 Klikni pro poslání %d sats do tohoto chatu."""
 
-inlineSendMessage              = """Press ✅ to receive payment from %s.\n\n💸 Amount: %d sat"""
+inlineSendMessage              = """Zmáčkni ✅ pro obdržení platby od %s.\n\n💸 Částka: %d sats"""
 inlineSendAppendMemo           = """\n✉️ %s"""
-inlineSendUpdateMessageAccept  = """💸 %d sat sent from %s to %s."""
-inlineSendCreateWalletMessage  = """Chat with %s 👈 to manage your wallet."""
-sendYourselfMessage            = """📖 You can't pay to yourself."""
-inlineSendFailedMessage        = """🚫 Send failed."""
-inlineSendInvalidAmountMessage = """🚫 Amount must be larger than 0."""
-inlineSendBalanceLowMessage    = """🚫 Your balance is too low."""
+inlineSendUpdateMessageAccept  = """💸 %d sats posláno od %s uživateli %s."""
+inlineSendCreateWalletMessage  = """Chatuj s %s 👈 pro správu své peněženky."""
+sendYourselfMessage            = """📖 Nemůžeš platit sám sobě."""
+inlineSendFailedMessage        = """🚫 Platba selhala."""
+inlineSendInvalidAmountMessage = """🚫 Částka musí být větší než 0."""
+inlineSendBalanceLowMessage    = """🚫 Tvůj zůstatek je příliš malý."""
 
 # INLINE RECEIVE
 
-inlineQueryReceiveTitle        = """🏅 Request a payment in a chat."""
-inlineQueryReceiveDescription  = """Usage: @%s receive <amount> [<user>] [<memo>]"""
-inlineResultReceiveTitle       = """🏅 Receive %d sat."""
-inlineResultReceiveDescription = """👉 Click to request a payment of %d sat."""
+inlineQueryReceiveTitle        = """🏅 Vyžádat platbu v chatu."""
+inlineQueryReceiveDescription  = """Použití: @%s receive <částka> [<uživatel>] [<zpráva>]"""
+inlineResultReceiveTitle       = """🏅 Dostat %d sats."""
+inlineResultReceiveDescription = """👉 Klikni pro vyžádání platby %d sats."""
 
-inlineReceiveMessage             = """Press 💸 to pay to %s.\n\n💸 Amount: %d sat"""
+inlineReceiveMessage             = """Zmáčkni 💸 pro zaplacení uživateli %s.\n\n💸 Částka: %d sats"""
 inlineReceiveAppendMemo          = """\n✉️ %s"""
-inlineReceiveUpdateMessageAccept = """💸 %d sat sent from %s to %s."""
-inlineReceiveCreateWalletMessage = """Chat with %s 👈 to manage your wallet."""
-inlineReceiveYourselfMessage     = """📖 You can't pay to yourself."""
-inlineReceiveFailedMessage       = """🚫 Receive failed."""
-inlineReceiveCancelledMessage    = """🚫 Receive cancelled."""
+inlineReceiveUpdateMessageAccept = """💸 %d sats posláno od %s uživateli %s."""
+inlineReceiveCreateWalletMessage = """Chatuj s %s 👈 pro správu své peněženky."""
+inlineReceiveYourselfMessage     = """📖 Nemůžeš platit sám sobě."""
+inlineReceiveFailedMessage       = """🚫 Platba selhala."""
+inlineReceiveCancelledMessage    = """🚫 Platba zrušena."""
 
 # TIPJAR
 
@@ -366,37 +366,37 @@ inlineTipjarHelpText                    = """📖 Ou, tohle se nezdařilo. %s
 *Příklad:* `/tipjar 210 21`"""
 
 # GROUP TICKETS
-groupAddGroupHelpMessage            = """📖 Oops, that didn't work. This command only works in a group chat. Only group owners can use this command.\nUsage: `/group add <group_name> [<amount>]`\nExample: `/group add TheBestBitcoinGroup 1000`"""
-groupJoinGroupHelpMessage           = """📖 Oops, that didn't work. Please try again.\nUsage: `/join <group_name>`\nExample: `/join TheBestBitcoinGroup`"""
-groupClickToJoinMessage             = """🎟 [Click here](%s) 👈 to join `%s`."""
-groupTicketIssuedGroupMessage       = """🎟 User %s has received a ticket for this group."""
-groupPayInvoiceMessage              = """🎟 To join the group %s, pay the invoice above."""
-groupBotIsNotAdminMessage           = """🚫 Oops, that didn't work. You must make me admin and grant me rights to invite users."""
-groupNameExists                     = """🚫 A group with this name already exists. Please choose a different name."""
-groupAddedMessage                   = """🎟 Tickets for group `%s` added.\nAlias: `%s` Price: %d sat\n\nTo request a ticket for this group, start a private chat with %s and write `/join %s`."""
-groupNotFoundMessage                = """🚫 Could not find a group with this name."""
-groupReceiveTicketInvoiceCommission = """🎟 You received *%d sat* (excl. %d sat commission) for a ticket for group `%s` paid by user %s."""
-groupReceiveTicketInvoice           = """🎟 You received *%d sat* for a ticket for group `%s` paid by user %s."""
-commandPrivateMessage               = """Please use this command in a private chat with %s."""
-groupHelpMessage                    = """🎟 Private group tickets 🎟
+groupAddGroupHelpMessage            = """📖 Ou, tohle se nezdařilo. Tento příkaz funguje pouze ve skupinovém chatu. Mohou ho použít pouze vlastníci skupin.\nPoužití: `/group add <název_skupiny> [<částka>]`\nPříklad: `/group add NejvícHustáSkupina 1000`"""
+groupJoinGroupHelpMessage           = """📖 Ou, tohle se nezdařilo. Prosím, zkus to znovu.\nPoužití: `/join <název_skupiny>`\nPříklad: `/join NejvícHustáSkupina`"""
+groupClickToJoinMessage             = """🎟 [Klikni zde](%s) 👈 pro připojení `%s`."""
+groupTicketIssuedGroupMessage       = """🎟 Uživatel %s obdržel vstupenku do této skupiny."""
+groupPayInvoiceMessage              = """🎟 Pro připojení se ke skupině %s, zaplať výše uvedenou invoice."""
+groupBotIsNotAdminMessage           = """🚫 Ou, tohle se nezdařilo. Musíš mě jmenovat adminem a dát mi práva zvát uživatele."""
+groupNameExists                     = """🚫 Skupina s tímto názvem už existuje. Prosím, vyber jiný název."""
+groupAddedMessage                   = """🎟 Vstupenky pro skupinu `%s` přidány.\nAlias: `%s` Cena: %d sats\n\nPro vyžádání vstupenky do této skupiny začni soukromý chat s %s a napiš `/join %s`."""
+groupNotFoundMessage                = """🚫 Skupinu s tímto názvem se nepodařilo najít."""
+groupReceiveTicketInvoiceCommission = """🎟 Obdržel jsi *%d sats* (bez provize %d sats) za vstupenku do skupiny `%s` od uživatele %s."""
+groupReceiveTicketInvoice           = """🎟 Obdržel jsi *%d sats* za vstupenku do skupiny `%s` od uživatele %s."""
+commandPrivateMessage               = """Prosím, použij tento příkaz v soukromém chatu s %s."""
+groupHelpMessage                    = """🎟 Vstupenky do soukromých skupin 🎟
 
-Sell tickets for your _private Group_ and get rid of spam bots. 
+Prodej vstupenky do své _soukromé skupiny_ a zbavíš se spam botů. 
 
-*Instructions for group admins:*
+*Pokyny pro skupinové adminy:*
 
-1) Invite %s to your group and make it admin.
-2) Make your group private.
-3) In your group, you (the group owner) write `/group add <mygroup> [<ticket_price>]`.
+1) Pozvi %s do své skupiny a udělej ho adminem.
+2) Skupinu změň na soukromou.
+3) Ve své skupině, jako její majitel, napiš `/group add <název_skupiny> [<cena_vstupenky>]`.
 
-_Fees: The bot takes a 10%% +10 sat commission for cheap tickets. If the ticket is >= 1000 sat, the commission is 2%% + 100 sat._
+_Poplatky: Bot si bere provizi 10%% +10 sats za levn0 vstupenky. Je-li cena vstupenky >= 1000 sats, je provize 2%% + 100 sats._
 
-*Instructions for group members:*
+*Pokyny pro členy skupin:*
 
-To join a group, talk to %s and write in a private message `/join <mygroup>`.
+Pro připojení ke skupině si promluv s %s a v soukromé zprávě napiš `/join <název_skupiny>`.
 
-📖 *Usage:*
-*For admins (in group chat):* `/group add <group_name> [<ticket_price>]`\nExample: `/group add TheBestBitcoinGroup 1000`
-*For users (in private chat):* `/join <group_name>`\nExample: `/join TheBestBitcoinGroup`"""
+📖 *Použití:*
+*Pro adminy (ve skupinovém chatu):* `/group add <název_skupiny> [<cena_vstupenky>]`\nPříklad: `/group add NejvícHustáSkupina 1000`
+*Pro uživatele (v soukromém chatu):* `/join <název_skupiny>`\nPříklad: `/join NejvícHustáSkupina`"""
 
 # DALLE GENERATE
 generateDalleHelpMessage        = """Vytvořit obrázky pomocí OpenAI DALLE 2.\nPoužití: `/generate <prompt>`\nCena: 1000 sat"""
