@@ -312,34 +312,34 @@ inlineFaucetHelpText                    = """📖 Ou, tohle se nezdařilo. %s
 
 # INLINE SEND
 
-inlineQuerySendTitle            = """💸 Send payment to a chat."""
-inlineQuerySendDescription      = """Usage: @%s send <amount> [<user>] [<memo>]"""
-inlineResultSendTitle           = """💸 Send %d sat."""
-inlineResultSendDescription     = """👉 Click to send %d sat to this chat."""
+inlineQuerySendTitle            = """💸 Poslat platbu do chatu."""
+inlineQuerySendDescription      = """Použití: @%s send <částka> [<uživatel>] [<zpráva>]"""
+inlineResultSendTitle           = """💸 Poslat %d sats."""
+inlineResultSendDescription     = """👉 Klikni pro poslání %d sats do tohoto chatu."""
 
-inlineSendMessage              = """Press ✅ to receive payment from %s.\n\n💸 Amount: %d sat"""
+inlineSendMessage              = """Zmáčkni ✅ pro obdržení platby od %s.\n\n💸 Částka: %d sats"""
 inlineSendAppendMemo           = """\n✉️ %s"""
-inlineSendUpdateMessageAccept  = """💸 %d sat sent from %s to %s."""
-inlineSendCreateWalletMessage  = """Chat with %s 👈 to manage your wallet."""
-sendYourselfMessage            = """📖 You can't pay to yourself."""
-inlineSendFailedMessage        = """🚫 Send failed."""
-inlineSendInvalidAmountMessage = """🚫 Amount must be larger than 0."""
-inlineSendBalanceLowMessage    = """🚫 Your balance is too low."""
+inlineSendUpdateMessageAccept  = """💸 %d sats posláno od %s uživateli %s."""
+inlineSendCreateWalletMessage  = """Chatuj s %s 👈 pro správu své peněženky."""
+sendYourselfMessage            = """📖 Nemůžeš platit sám sobě."""
+inlineSendFailedMessage        = """🚫 Platba selhala."""
+inlineSendInvalidAmountMessage = """🚫 Částka musí být větší než 0."""
+inlineSendBalanceLowMessage    = """🚫 Tvůj zůstatek je příliš malý."""
 
 # INLINE RECEIVE
 
-inlineQueryReceiveTitle        = """🏅 Request a payment in a chat."""
-inlineQueryReceiveDescription  = """Usage: @%s receive <amount> [<user>] [<memo>]"""
-inlineResultReceiveTitle       = """🏅 Receive %d sat."""
-inlineResultReceiveDescription = """👉 Click to request a payment of %d sat."""
+inlineQueryReceiveTitle        = """🏅 Vyžádat platbu v chatu."""
+inlineQueryReceiveDescription  = """Použití: @%s receive <částka> [<uživatel>] [<zpráva>]"""
+inlineResultReceiveTitle       = """🏅 Dostat %d sats."""
+inlineResultReceiveDescription = """👉 Klikni pro vyžádání platby %d sats."""
 
-inlineReceiveMessage             = """Press 💸 to pay to %s.\n\n💸 Amount: %d sat"""
+inlineReceiveMessage             = """Zmáčkni 💸 pro zaplacení uživateli %s.\n\n💸 Částka: %d sats"""
 inlineReceiveAppendMemo          = """\n✉️ %s"""
-inlineReceiveUpdateMessageAccept = """💸 %d sat sent from %s to %s."""
-inlineReceiveCreateWalletMessage = """Chat with %s 👈 to manage your wallet."""
-inlineReceiveYourselfMessage     = """📖 You can't pay to yourself."""
-inlineReceiveFailedMessage       = """🚫 Receive failed."""
-inlineReceiveCancelledMessage    = """🚫 Receive cancelled."""
+inlineReceiveUpdateMessageAccept = """💸 %d sats posláno od %s uživateli %s."""
+inlineReceiveCreateWalletMessage = """Chatuj s %s 👈 pro správu své peněženky."""
+inlineReceiveYourselfMessage     = """📖 Nemůžeš platit sám sobě."""
+inlineReceiveFailedMessage       = """🚫 Platba selhala."""
+inlineReceiveCancelledMessage    = """🚫 Platba zrušena."""
 
 # TIPJAR
 
