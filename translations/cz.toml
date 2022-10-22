@@ -63,72 +63,72 @@ payButtonEmoji = """💸"""
 
 # HELP
 
-helpMessage = """⚡️ *Wallet*
-_This bot is a Bitcoin Lightning wallet that can sends tips on Telegram. To tip, add the bot to a group chat. The basic unit of tips are Satoshis (sat). 100,000,000 sat = 1 Bitcoin. Type 📚 /basics for more._
+helpMessage = """⚡️ *Peněženka*
+_Tento bot je bitcoinová lightning peněženka, která umožňuje posílat platby na Telegramu. Pro použití přidejte bota do chatu. Základní jednotkou je 1 sat. 100,000,000 sats = 1 bitcoin. Napiš 📚 /basics pro víc info._
 
-❤️ *Donate*
-_This bot charges no fees but costs Satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/donate 1000`
+❤️ *Podpořit*
+_Tento bot si neúčtuje žádné poplatky, ale jeho provoz stojí nějaké sats. Pokud se Ti líbí, zvaž prosím podporu tohoto projektu. Pro podporu napiš_ `/donate 1000`
 
 %s
 
-⚙️ *Commands*
-*/tip* 🏅 Reply to a message to tip: `/tip <amount> [<memo>]`
-*/balance* 👑 Check your balance: `/balance`
-*/send* 💸 Send funds to a user: `/send <amount> @user or user@ln.tips [<memo>]`
-*/invoice* ⚡️ Receive with Lightning: `/invoice <amount> [<memo>]`
-*/pay* ⚡️ Pay with Lightning: `/pay <invoice>`
-*/donate* ❤️ Donate to the project: `/donate 1000`
-*/advanced* 🤖 Advanced features.
-*/help* 📖 Read this help."""
+⚙️ *Příkazy*
+*/tip* 🏅 Odpověz na zprávu pro poslání tipu: `/tip <částka> [<zpráva>]`
+*/balance* 👑 Zkontroluj svůj zůstatek: `/balance`
+*/send* 💸 Poslat platbu uživateli: `/send <částka> @uživatel nebo uživatel@ln.tips [<zpráva>]`
+*/invoice* ⚡️ Obdržet přes lightning (invoice): `/invoice <částka> [<zpráva>]`
+*/pay* ⚡️ Zaplatit lightning invoice: `/pay <invoice>`
+*/donate* ❤️ Podpořit projekt: `/donate 1000`
+*/advanced* 🤖 Pokročilé fičury.
+*/help* 📖 Tato nápověda."""
 
 infoHelpMessage = """ℹ️ *Info*"""
-infoYourLightningAddress = """Your Lightning address is `%s`"""
+infoYourLightningAddress = """Tvoje lightning adresa je `%s`"""
 
 basicsMessage = """🧡 *Bitcoin*
-_Bitcoin is the currency of the internet. It is permissionless and decentralized and has no masters and no controling authority. Bitcoin is sound money that is faster, more secure, and more inclusive than the legacy financial system._
+_Bitcoin jsou internetové peníze. Je decentralizovaný, k jeho použití nepotřebuješ povolení a nemá žádnou centrální autoritu, která by ho řídila. Bitcoin jsou zdravé peníze, které jsou na rozdíl od starého finančního systému rychlejší, bezpečnější a pro každého._
 
-🧮 *Economnics*
-_The smallest unit of Bitcoin are Satoshis (sat) and 100,000,000 sat = 1 Bitcoin. There will only ever be 21 Million Bitcoin. The fiat currency value of Bitcoin can change daily. However, if you live on a Bitcoin standard 1 sat will always equal 1 sat._
+🧮 *Economnika*
+_Nejmenší jednotkou bitcoinu je sat. 100,000,000 sats = 1 bitcoin. Nikdy nebude existovat víc než 21 milionů bitcoinů. Kurz bitcoinu vůči státním měnám se může často a náhle měnit. Nicméně, pokud žijete na bitcoinovém standardu, 1 sat se bude pořád rovnat 1 satu._
 
-⚡️ *The Lightning Network*
-_The Lightning Network is a payment protocol that enables fast and cheap Bitcoin payments that require almost no energy. It is what scales Bitcoin to the billions of people around the world._
+⚡️ *Lightning Network*
+_Lightning Network je platební protokol který umožňuje rychlé a levné bitcoinové platby nevyžadující téměř žádnou energii. Tato síť škáluje bitcoin pro miliardy lidí na celém světě._
 
-📲 *Lightning Wallets*
-_Your funds on this bot can be sent to any other Lightning wallet and vice versa. Recommended Lightning wallets for your phone are_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), or_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(easy)_.
+📲 *Lightning peněženky*
+_Tvoje prostředky z této lightning peněženky můžeš poslat na jakoukoliv jinou a naopak. Doporučené lightning peněženky pro mobil jsou_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (držíte své klíče), nebo_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(jednoduchá, ale klíče od sats nedržíte)_.
 
 📄 *Open Source*
-_This bot is free and_ [open source](https://github.com/LightningTipBot/LightningTipBot) _software. You can run it on your own computer and use it in your own community._
+_Tento bot je volný a otevřený_ [open source](https://github.com/LightningTipBot/LightningTipBot) _software. Můžeš ho běžet na vlastním počítači a používat ho ve vlastní komunitě._
 
 ✈️ *Telegram*
-_Add this bot to your Telegram group chat to /tip posts. If you make the bot admin of the group it will also clean up commands to keep the chat tidy._
+_Přidej tohoto bota do své chatovací skupiny na Telegramu a můžeš posílat /tip za zprávy. Pokud uděláš bota adminem skupiny, bude odstraňovat příkazy, aby zůstal chat přehlednější._
 
-🏛 *Terms*
-_We are not custodian of your funds. We will act in your best interest but we're also aware that the situation without KYC is tricky until we figure something out. Any amount you load onto your wallet will be considered a donation. Do not give us all your money.  Be aware that this bot is in beta development. Use at your own risk._
+🏛 *Podmínky*
+_Nejsme správci Tvých prostředků. Budeme konat v Tvém nejlepším zájmu, ale také jsme si vědomi nejisté situace bez KYC dokud nepřijdeme na něco jiného. Jakákoli částka, kterou si pošleš do peněženky je považována za příspěvek podpory. Neposílej nám všechny svoje peníze.  Vezmi v potaz, že bot je ve fázi beta vývoje. Používáš ho na vlastní riziko._
 
-❤️ *Donate*
-_This bot charges no fees but costs satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/donate 1000`"""
+❤️ *Podpora*
+_Tento bot si neúčtuje žádné poplatky, ale jeho provoz stojí nějaké sats. Pokud se Ti líbí, zvaž prosím podporu tohoto projektu. Pro podporu napiš_ `/donate 1000`"""
 
-helpNoUsernameMessage = """👋 Please, set a Telegram username."""
+helpNoUsernameMessage = """👋 Prosím, nastav si uživatelské jméno na Telegramu."""
 
 advancedMessage = """%s
 
-👉 *Inline commands*
-*send* 💸 Send sats to chat: `%s send <amount> [<user>] [<memo>]`
-*receive* 🏅 Request a payment: `... receive <amount> [<user>] [<memo>]`
-*faucet* 🚰 Create a faucet: `... faucet <capacity> <per_user> [<memo>]`
-*tipjar* 🍯 Create a tipjar: `... tipjar <capacity> <per_user> [<memo>]`
+👉 *Inline příkazy*
+*send* 💸 Poslat sats do chatu: `%s send <částka> [<uživatel>] [<zpráva>]`
+*receive* 🏅 Vyžádat platbu: `... receive <částka> [<uživatel>] [<zpráva>]`
+*faucet* 🚰 Vytvořit faucet: `... faucet <kapacita> <částka_na_uživatele> [<zpráva>]`
+*tipjar* 🍯 Vytvořit tipjar: `... tipjar <kapacita> <částka_na_uživatele> [<zpráva>]`
 
-📖 You can use inline commands in every chat, even in private conversations. Wait a second after entering an inline command and *click* the result, don't press enter.
+📖 V každém chatu můžeš používat inline příkazy, dokonce i v soukromých konverzacích. Po zadání inline příkazu chvilku vyčkej a *klikni* na výsledek, nemačkej enter.
 
-⚙️ *Advanced commands*
-*/transactions* 📊 List transactions
-*/link* 🔗 Link your wallet to [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)
-*/lnurl* ⚡️ Lnurl receive or pay: `/lnurl` or `/lnurl <lnurl>`
-*/faucet* 🚰 Create a faucet: `/faucet <capacity> <per_user>`
-*/tipjar* 🍯 Create a tipjar: `/tipjar <capacity> <per_user>`
-*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`
-*/shop* 🛍 Browse shops: `/shop` or `/shop <user/shop_id>`
-*/generate* 🎆 Generate DALLE-2 images: `/generate <prompt>`"""
+⚙️ *Pokročilé příkazy*
+*/transactions* 📊 Seznam transakcí
+*/link* 🔗 Propojit peněženku s [BlueWallet](https://bluewallet.io/) nebo [Zeus](https://zeusln.app/)
+*/lnurl* ⚡️ LNURL obdržet nebo zaplatit: `/lnurl` nebo `/lnurl <lnurl>`
+*/faucet* 🚰 Vytvořit faucet: `/faucet <kapacita> <částka_na_uživatele>`
+*/tipjar* 🍯 Vytvořit tipjar: `/tipjar <kapacita> <částka_na_uživatele>`
+*/group* 🎟 Vytvořit vstupenky do skupiny: `/group add <název_skupiny> [<cena_vstupenky>]`
+*/shop* 🛍 Prohlížet obchody: `/shop` nebo `/shop <uživatel/id_obchodu>`
+*/generate* 🎆 Vytvořit obrázky od DALLE 2: `/generate <prompt>`"""
 
 
 # GENERIC
@@ -388,7 +388,7 @@ Prodej vstupenky do své _soukromé skupiny_ a zbavíš se spam botů.
 2) Skupinu změň na soukromou.
 3) Ve své skupině, jako její majitel, napiš `/group add <název_skupiny> [<cena_vstupenky>]`.
 
-_Poplatky: Bot si bere provizi 10%% +10 sats za levn0 vstupenky. Je-li cena vstupenky >= 1000 sats, je provize 2%% + 100 sats._
+_Poplatky: Bot si bere provizi 10%% +10 sats za levné vstupenky. Je-li cena vstupenky >= 1000 sats, je provize 2%% + 100 sats._
 
 *Pokyny pro členy skupin:*
 
