@@ -7,14 +7,14 @@ balanceCommandStr = """zůstatek"""
 sendCommandStr = """poslat"""
 invoiceCommandStr = """invoice"""
 payCommandStr = """zaplatit"""
-donateCommandStr = """darovat"""
+donateCommandStr = """podpořit"""
 advancedCommandStr = """pokročilé"""
 transactionsCommandStr = """transakce"""
 logCommandStr = """log"""
 listCommandStr = """list"""
 
 linkCommandStr = """odkaz"""
-lnurlCommandStr = """lnurl"""
+lnurlCommandStr = """LNURL"""
 faucetCommandStr = """faucet"""
 
 tipjarCommandStr = """tipjar"""
@@ -64,7 +64,7 @@ payButtonEmoji = """💸"""
 # HELP
 
 helpMessage = """⚡️ *Peněženka*
-_Tento bot je bitcoinová lightning peněženka, která umožňuje posílat platby na Telegramu. Pro použití přidejte bota do chatu. Základní jednotkou je 1 sat. 100,000,000 sats = 1 bitcoin. Napiš 📚 /basics pro víc info._
+_Tento bot je bitcoinová lightning peněženka, která umožňuje posílat platby na Telegramu. Pro použití přidejte bota do chatu. Základní jednotkou je 1 sat. 100 000 000 sats = 1 bitcoin. Napiš 📚 /basics pro víc info._
 
 ❤️ *Podpořit*
 _Tento bot si neúčtuje žádné poplatky, ale jeho provoz stojí nějaké sats. Pokud se Ti líbí, zvaž prosím podporu tohoto projektu. Pro podporu napiš_ `/donate 1000`
@@ -72,38 +72,38 @@ _Tento bot si neúčtuje žádné poplatky, ale jeho provoz stojí nějaké sats
 %s
 
 ⚙️ *Příkazy*
-*/tip* 🏅 Odpověz na zprávu pro poslání tipu: `/tip <částka> [<zpráva>]`
+*/tip* 🏅 Odpověz na zprávu, abys poslal tip: `/tip <částka> [<zpráva>]`
 */balance* 👑 Zkontroluj svůj zůstatek: `/balance`
 */send* 💸 Poslat platbu uživateli: `/send <částka> @uživatel nebo uživatel@ln.tips [<zpráva>]`
-*/invoice* ⚡️ Obdržet přes lightning (invoice): `/invoice <částka> [<zpráva>]`
+*/invoice* ⚡️ Vytvořit lightning (invoice): `/invoice <částka> [<zpráva>]`
 */pay* ⚡️ Zaplatit lightning invoice: `/pay <invoice>`
 */donate* ❤️ Podpořit projekt: `/donate 1000`
-*/advanced* 🤖 Pokročilé fičury.
+*/advanced* 🤖 Pokročilé funkce.
 */help* 📖 Tato nápověda."""
 
 infoHelpMessage = """ℹ️ *Info*"""
 infoYourLightningAddress = """Tvoje lightning adresa je `%s`"""
 
 basicsMessage = """🧡 *Bitcoin*
-_Bitcoin jsou internetové peníze. Je decentralizovaný, k jeho použití nepotřebuješ povolení a nemá žádnou centrální autoritu, která by ho řídila. Bitcoin jsou zdravé peníze, které jsou na rozdíl od starého finančního systému rychlejší, bezpečnější a pro každého._
+_Bitcoin jsou internetové peníze. Jsou decentralizované, k jejich použití nepotřebuješ povolení a nemají žádnou centrální autoritu, která by je řídila. Bitcoin jsou zdravé peníze, které jsou na rozdíl od starého finančního systému rychlejší, bezpečnější a pro každého._
 
-🧮 *Economnika*
-_Nejmenší jednotkou bitcoinu je sat. 100,000,000 sats = 1 bitcoin. Nikdy nebude existovat víc než 21 milionů bitcoinů. Kurz bitcoinu vůči státním měnám se může často a náhle měnit. Nicméně, pokud žijete na bitcoinovém standardu, 1 sat se bude pořád rovnat 1 satu._
+🧮 *Ekonomnika*
+_Nejmenší jednotkou bitcoinu je 1 sat. 100 000 000 sats = 1 bitcoin. Nikdy nebude existovat víc než 21 milionů bitcoinů. Kurz bitcoinu vůči státním měnám se může často a náhle měnit. Nicméně, pokud žijete na bitcoinovém standardu, 1 sat se bude pořád rovnat 1 satu._
 
 ⚡️ *Lightning Network*
-_Lightning Network je platební protokol který umožňuje rychlé a levné bitcoinové platby nevyžadující téměř žádnou energii. Tato síť škáluje bitcoin pro miliardy lidí na celém světě._
+_Lightningová síť je platební protokol který umožňuje rychlé a levné bitcoinové platby nevyžadující téměř žádnou energii. Tato síť škáluje bitcoin pro miliardy lidí na celém světě._
 
 📲 *Lightning peněženky*
 _Tvoje prostředky z této lightning peněženky můžeš poslat na jakoukoliv jinou a naopak. Doporučené lightning peněženky pro mobil jsou_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (držíte své klíče), nebo_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(jednoduchá, ale klíče od sats nedržíte)_.
 
 📄 *Open Source*
-_Tento bot je volný a otevřený_ [open source](https://github.com/LightningTipBot/LightningTipBot) _software. Můžeš ho běžet na vlastním počítači a používat ho ve vlastní komunitě._
+_Tento bot je volný a otevřený_ [open source](https://github.com/LightningTipBot/LightningTipBot) _software. Můžeš ho běžet na vlastním počítači a používat jej ve vlastní komunitě._
 
 ✈️ *Telegram*
-_Přidej tohoto bota do své chatovací skupiny na Telegramu a můžeš posílat /tip za zprávy. Pokud uděláš bota adminem skupiny, bude odstraňovat příkazy, aby zůstal chat přehlednější._
+_Přidej tohoto bota do své skupiny na Telegramu a můžeš posílat /tip za zprávy. Pokud uděláš bota adminem skupiny, bude odstraňovat příkazy, aby zůstal chat přehlednější._
 
 🏛 *Podmínky*
-_Nejsme správci Tvých prostředků. Budeme konat v Tvém nejlepším zájmu, ale také jsme si vědomi nejisté situace bez KYC dokud nepřijdeme na něco jiného. Jakákoli částka, kterou si pošleš do peněženky je považována za příspěvek podpory. Neposílej nám všechny svoje peníze.  Vezmi v potaz, že bot je ve fázi beta vývoje. Používáš ho na vlastní riziko._
+_Nejsme správci Tvých prostředků. Budeme konat v Tvém nejlepším zájmu, ale také jsme si vědomi nejisté situace bez KYC, dokud nepřijdeme na něco jiného. Jakákoli částka, kterou si pošleš do peněženky, je proto považována za příspěvek podpory. Neposílej nám všechny svoje peníze.  Vezmi v potaz, že bot je v beta fázi vývoje. Používáš ho na vlastní riziko._
 
 ❤️ *Podpora*
 _Tento bot si neúčtuje žádné poplatky, ale jeho provoz stojí nějaké sats. Pokud se Ti líbí, zvaž prosím podporu tohoto projektu. Pro podporu napiš_ `/donate 1000`"""
@@ -153,8 +153,8 @@ balanceErrorMessage = """🚫 Nepodařilo se získat info o zůstatku. Zkus to p
 
 # TIP
 
-tipDidYouReplyMessage = """Odpověděl jsi na zprávu kvůli platbě? Pro odpověď na jakoukoli zprávu na PC klikni pravým myšítkem a vyber Odpovědět nebo na mobilu přes zprávu přejeď do strany. Pokud chceš poslat platbu jinému uživateli přímo, použij příkaz /send"""
-tipInviteGroupMessage = """ℹ️ Mimochodem, tohoto bota můžeš přizvat do jakékoli skupiny a posílat v ní platby."""
+tipDidYouReplyMessage = """Odpověděl jsi na zprávu kvůli platbě? Pro odpověď na jakoukoli zprávu na PC klikni pravým myšítkem a vyber ´Odpovědět´ nebo na mobilu přes zprávu přejeď do strany. Pokud chceš poslat platbu jinému uživateli přímo, použij příkaz /send"""
+tipInviteGroupMessage = """ℹ️ Tohoto bota můžeš přizvat do jakékoli skupiny a posílat v ní platby."""
 tipEnterAmountMessage = """Zadal jsi částku?"""
 tipValidAmountMessage = """Zadal jsi platnou částku?"""
 tipYourselfMessage    = """📖 Nemůžeš poslat platbu sobě."""
@@ -175,7 +175,7 @@ sendSentMessage            = """💸 %d sats posláno uživateli %s."""
 sendPublicSentMessage      = """💸 %d sats posláno od %s uživateli %s."""
 sendReceivedMessage        = """🏅 %s ti poslal %d sats."""
 sendErrorMessage           = """🚫 Odeslání selhalo."""
-confirmSendMessage         = """Chceš zaplatit uživateli %s?\n\n💸 Částka: %d sat"""
+confirmSendMessage         = """Chceš zaplatit uživateli %s?\n\n💸 Částka: %d sats"""
 confirmSendAppendMemo      = """\n✉️ %s"""
 sendCancelledMessage       = """🚫 Odeslání zrušeno."""
 errorTryLaterMessage       = """🚫 Chyba. Prosím, zkus to později znovu."""
@@ -303,7 +303,7 @@ inlineFaucetInvalidPeruserAmountMessage = """🚫 Částka na uživatele musí d
 inlineFaucetInvalidAmountMessage        = """🚫 Neplatná částka."""
 inlineFaucetSentMessage                 = """🚰 %d sats posláno %s."""
 inlineFaucetReceivedMessage             = """🚰 %s ti poslal %d sats."""
-inlineFaucetHelpFaucetInGroup           = """Vytvoř faucet ve skupině s botem nebo použij 👉 inline příkaz (/advanced pro víc info)."""
+inlineFaucetHelpFaucetInGroup           = """Vytvoř faucet ve skupině s botem nebo použij 👉 inline příkaz (napiš /advanced pro víc info)."""
 inlineFaucetAlreadyTookMessage          = """🚫 Z tohoto faucetu už jsi čerpal."""
 inlineFaucetHelpText                    = """📖 Ou, tohle se nezdařilo. %s
 
