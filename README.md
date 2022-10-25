@@ -18,7 +18,7 @@ To build the bot from source, clone the repository and compile the source code.
 git clone https://github.com/LightningTipBot/LightningTipBot.git
 cd LightningTipBot
 go build .
-cp config.yaml-example config.yaml
+cp config.yaml.example config.yaml
 ```
 
 After the configuration (see below), start it using the command
