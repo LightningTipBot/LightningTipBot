@@ -158,9 +158,10 @@ func (bot *TipBot) stopJoinTicketTimer(event Event) {
 		}
 		invoice, err := me.Wallet.Invoice(
 			lnbits.InvoiceParams{
-				Out:    false,
-				Amount: commission,
-				Memo:   fmt.Sprintf("Ticket for group %d", ticket.Message.Chat.ID)},
+				Out:     false,
+				Amount:  commission,
+				Memo:    "🎟 Ticket commission",
+				Webhook: internal.Configuration.Lnbits.WebhookServer},
 			bot.Client)
 		if err != nil {
 			log.Errorf("[stopJoinTicketTimer] %v", err)
