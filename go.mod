@@ -1,11 +1,10 @@
 module github.com/LightningTipBot/LightningTipBot
 
-go 1.17
+go 1.18
 
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/PuerkitoBio/goquery v1.8.0
-	github.com/PullRequestInc/go-gpt3 v1.1.10
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0
 	github.com/eko/gocache v1.2.0
 	github.com/fiatjaf/go-lnurl v1.11.3-0.20220819192234-5c5819dd0aa7
@@ -14,10 +13,12 @@ require (
 	github.com/imroc/req v0.3.0
 	github.com/jinzhu/configor v1.2.1
 	github.com/makiuchi-d/gozxing v0.0.2
+	github.com/nbd-wtf/go-nostr v0.13.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/nicksnyder/go-i18n/v2 v2.1.2
 	github.com/orcaman/concurrent-map v1.0.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/prometheus/common v0.26.0
 	github.com/r3labs/sse v0.0.0-20210224172625-26fe804710bc
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.7.0
@@ -37,6 +38,8 @@ require (
 	github.com/SaveTheRbtz/generic-sync-map-go v0.0.0-20220414055132-a37292614db8 // indirect
 	github.com/XiaoMi/pegasus-go-client v0.0.0-20210427083443-f3b6b08bc4c2 // indirect
 	github.com/aead/siphash v1.0.1 // indirect
+	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
+	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/bradfitz/gomemcache v0.0.0-20190913173617-a41fca850d0b // indirect
 	github.com/btcsuite/btcd v0.23.1 // indirect
@@ -75,7 +78,6 @@ require (
 	github.com/lightningnetwork/lnd/tor v1.0.1 // indirect
 	github.com/mattn/go-sqlite3 v1.14.5 // indirect
 	github.com/miekg/dns v1.1.43 // indirect
-	github.com/nbd-wtf/go-nostr v0.13.0 // indirect
 	github.com/nbd-wtf/ln-decodepay v1.5.1 // indirect
 	github.com/pegasus-kv/thrift v0.13.0 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
@@ -95,6 +97,7 @@ require (
 	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	gopkg.in/alecthomas/kingpin.v2 v2.2.6 // indirect
 	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637 // indirect

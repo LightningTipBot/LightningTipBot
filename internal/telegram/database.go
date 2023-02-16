@@ -11,12 +11,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/database"
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 
 	"github.com/eko/gocache/store"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
-	"github.com/LightningTipBot/LightningTipBot/internal/database"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	"github.com/tidwall/buntdb"
 

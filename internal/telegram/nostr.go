@@ -166,16 +166,15 @@ func (bot *TipBot) getNostrHandler(ctx intercept.Context) (intercept.Context, er
 
 	if user.Settings == nil {
 		bot.trySendMessage(m.Sender, nosterRegisterMessage+"\n\n"+nostrHelpMessage)
-		return ctx, fmt.Errorf("no node registered")
+		return ctx, fmt.Errorf("no nostr pubkey registered")
+	} else if len(user.Settings.Nostr.PubKey) > 0 {
+		pubkeyBech32, err := nip19.EncodePublicKey(user.Settings.Nostr.PubKey)
+		if err != nil {
+			log.Infof("Could not decode user nostr pubkey %s", GetUserStr(user.Telegram))
+			return ctx, err
+		}
+		bot.trySendMessage(m.Sender, nosterRegisterMessage+"\n\n"+nostrHelpMessage+"\n\n"+fmt.Sprintf("Your nostr pubkey: `%s`", pubkeyBech32))
 	}
-
-	node_info_str, err := nodeInfoString(&user.Settings.Node)
-	if err != nil {
-		log.Infof("Could not get node info for user %s", GetUserStr(user.Telegram))
-		bot.trySendMessage(m.Sender, nosterRegisterMessage+"\n\n"+nostrHelpMessage)
-		return ctx, err
-	}
-	bot.trySendMessage(m.Sender, node_info_str)
 
 	return ctx, nil
 }

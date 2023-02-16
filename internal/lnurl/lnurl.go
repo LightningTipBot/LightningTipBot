@@ -19,6 +19,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	"gorm.io/gorm"
 
+	db "github.com/LightningTipBot/LightningTipBot/internal/database"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
@@ -180,7 +181,7 @@ func (w Lnurl) getMetaDataCached(username string) lnurl.Metadata {
 	// load the user profile picture
 	if internal.Configuration.Bot.LNURLSendImage {
 		// get the user from the database
-		user, tx := findUser(w.database, username)
+		user, tx := db.FindUser(w.database, username)
 		if tx.Error == nil && user.Telegram != nil {
 			addImageToMetaData(w.telegram, &metadata, username, user.Telegram)
 		}
@@ -222,9 +223,12 @@ func (w Lnurl) serveLNURLpFirst(username string) (*LNURLPayParamsCustom, error) 
 	// check if the user has added a nostr key for nip57
 	var allowNostr bool = false
 	var nostrPubkey string = ""
-	user, tx := findUser(w.database, username)
+	user, tx := db.FindUser(w.database, username)
 	if tx.Error == nil && user.Telegram != nil {
-		user, err = findUserSettings(user, w.bot)
+		user, err = db.FindUserSettings(user, w.bot.DB.Users.Preload("Settings"))
+		if err != nil {
+			return &LNURLPayParamsCustom{}, err
+		}
 		if user.Settings.Nostr.PubKey != "" {
 			allowNostr = true
 			nostrPubkey = user.Settings.Nostr.PubKey
@@ -270,7 +274,7 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 				Reason: fmt.Sprintf("Comment too long (max: %d characters).", CommentAllowed)},
 		}, fmt.Errorf("comment too long")
 	}
-	user, tx := findUser(w.database, username)
+	user, tx := db.FindUser(w.database, username)
 	if tx.Error != nil {
 		return &lnurl.LNURLPayValues{
 			LNURLResponse: lnurl.LNURLResponse{
@@ -314,11 +318,13 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 		if len(fmt.Sprintf("%s", nip57ReceiptRelaysTags)) > 0 {
 			nip57ReceiptRelays = strings.Split(fmt.Sprintf("%s", nip57ReceiptRelaysTags), " ")
 			// this tirty method returns slice [ "[relays", "wss...", "wss...", "wss...]" ] – we need to clean it up
-			// remove the first entry
-			nip57ReceiptRelays = nip57ReceiptRelays[1:]
-			// clean up the last entry
-			len_last_entry := len(nip57ReceiptRelays[len(nip57ReceiptRelays)-1])
-			nip57ReceiptRelays[len(nip57ReceiptRelays)-1] = nip57ReceiptRelays[len(nip57ReceiptRelays)-1][:len_last_entry-1]
+			if len(nip57ReceiptRelays) > 1 {
+				// remove the first entry
+				nip57ReceiptRelays = nip57ReceiptRelays[1:]
+				// clean up the last entry
+				len_last_entry := len(nip57ReceiptRelays[len(nip57ReceiptRelays)-1])
+				nip57ReceiptRelays[len(nip57ReceiptRelays)-1] = nip57ReceiptRelays[len(nip57ReceiptRelays)-1][:len_last_entry-1]
+			}
 			// now the relay list is clean!
 		}
 		// calculate description hash from the serialized nostr event
@@ -437,7 +443,7 @@ func (w Lnurl) metaData(username string) lnurl.Metadata {
 	// we actually want to find the users username so it looks nicer in the
 	// metadata description
 	if strings.HasPrefix(username, "1x") {
-		user, _ := findUser(w.database, username)
+		user, _ := db.FindUser(w.database, username)
 		if user.Telegram.Username != "" {
 			username = user.Telegram.Username
 		}
@@ -476,38 +482,6 @@ func isAnonUsername(username string) bool {
 	} else {
 		return strings.HasPrefix(username, "0x")
 	}
-}
-
-func findUser(database *gorm.DB, username string) (*lnbits.User, *gorm.DB) {
-	// now check for the user
-	user := &lnbits.User{}
-	// check if "username" is actually the user ID
-	tx := database
-	if _, err := strconv.ParseInt(username, 10, 64); err == nil {
-		// asume it's anon_id
-		tx = database.Where("anon_id = ?", username).First(user)
-	} else if strings.HasPrefix(username, "0x") {
-		// asume it's anon_id_sha256
-		tx = database.Where("anon_id_sha256 = ?", username).First(user)
-	} else if strings.HasPrefix(username, "1x") {
-		// asume it's uuid
-		tx = database.Where("uuid = ?", username).First(user)
-	} else {
-		// assume it's a string @username
-		tx = database.Where("telegram_username = ? COLLATE NOCASE", username).First(user)
-	}
-	return user, tx
-}
-
-func findUserSettings(user *lnbits.User, bot *telegram.TipBot) (*lnbits.User, error) {
-	tx := bot.DB.Users.Preload("Settings").First(user)
-	if tx.Error != nil {
-		return user, tx.Error
-	}
-	if user.Settings == nil {
-		user.Settings = &lnbits.Settings{ID: user.ID}
-	}
-	return user, nil
 }
 
 func extractSenderFromPayerdata(payer lnurl.PayerDataValues) string {

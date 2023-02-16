@@ -10,6 +10,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/api/userpage"
 	"github.com/LightningTipBot/LightningTipBot/internal/lndhub"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
+	"github.com/LightningTipBot/LightningTipBot/internal/nostr"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 
 	_ "net/http/pprof"
@@ -58,6 +59,10 @@ func startApiServer(bot *telegram.TipBot) {
 	userpage := userpage.New(bot)
 	s.AppendRoute("/@{username}", userpage.UserPageHandler, http.MethodGet)
 	s.AppendRoute("/app/@{username}", userpage.UserWebAppHandler, http.MethodGet)
+
+	// nostr nip05 identifier
+	nostr := nostr.New(bot)
+	s.AppendRoute("/.well-known/nostr.json", nostr.Handle, http.MethodGet)
 
 	// append lndhub ctx functions
 	hub := lndhub.New(bot)
