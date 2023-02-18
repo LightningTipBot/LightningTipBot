@@ -231,8 +231,8 @@ func (lnurlInvoice LNURLInvoice) Key() string {
 
 func (bot *TipBot) lnurlReceiveEvent(event Event) {
 	invoiceEvent := event.(*InvoiceEvent)
-
 	bot.notifyInvoiceReceivedEvent(invoiceEvent)
+
 	tx := &LNURLInvoice{Invoice: &Invoice{PaymentHash: invoiceEvent.PaymentHash}}
 	err := bot.Bunt.Get(tx)
 	log.Debugf("[lnurl-p] Received invoice for %s of %d sat.", GetUserStr(invoiceEvent.User.Telegram), tx.Amount)
