@@ -224,12 +224,14 @@ func (w Lnurl) serveLNURLpFirst(username string) (*LNURLPayParamsCustom, error) 
 	var allowNostr bool = false
 	var nostrPubkey string = ""
 	user, tx := db.FindUser(w.database, username)
+	// if the bot has a nostr private key
 	if len(internal.Configuration.Nostr.PrivateKey) > 0 &&
 		tx.Error == nil && user.Telegram != nil {
 		user, err = db.FindUserSettings(user, w.bot.DB.Users.Preload("Settings"))
 		if err != nil {
 			return &LNURLPayParamsCustom{}, err
 		}
+		// if the user has a nostr public key
 		if user.Settings.Nostr.PubKey != "" {
 			allowNostr = true
 			pk := internal.Configuration.Nostr.PrivateKey
@@ -299,11 +301,13 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 	var descriptionHash string
 
 	// NIP57 ZAPs
+	// TODO: refactor all this into nip57.go
 	var nip57Receipt nostr.Event
 	var zapEventSerializedStr string
 	var nip57ReceiptRelays []string
-	// for nip57 use only the nostr event as the descriptionHash:
+	// for nip57 use the nostr event as the descriptionHash
 	if zapEvent.Sig != "" {
+		log.Infof("[LNURL] nostr zap for user %s", username)
 		// we calculate the descriptionHash here, create an invoice with it
 		// and store the invoice in the zap receipt later down the line
 		zapEventSerialized, err := json.Marshal(zapEvent)
@@ -333,7 +337,7 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 		// calculate description hash from the serialized nostr event
 		descriptionHash = w.Nip57DescriptionHash(zapEventSerializedStr)
 	} else {
-		// normal LNURL descriptionhash
+		// calculate normal LNURL descriptionhash
 		// the same description_hash needs to be built in the second request
 		metadata := w.getMetaDataCached(username)
 

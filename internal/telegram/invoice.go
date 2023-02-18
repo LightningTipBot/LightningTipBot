@@ -250,7 +250,7 @@ func (bot *TipBot) lnurlReceiveEvent(event Event) {
 		// send out NIP57 zap receipt
 		if len(tx.Nip57Receipt.Sig) > 0 {
 			// zapEventSerialized, _ := json.Marshal(tx.Nip57Receipt)
-			bot.trySendMessage(tx.User.Telegram, "💜 This was a zap on nostr.")
+			bot.trySendMessage(tx.User.Telegram, "💜 This was a zap on nostr.", tb.Silent)
 			go bot.publishNostrEvent(tx.Nip57Receipt, tx.Nip57ReceiptRelays)
 		}
 	}

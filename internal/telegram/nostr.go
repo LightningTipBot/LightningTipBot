@@ -17,7 +17,7 @@ var (
 	nosterRegisterMessage       = "📖 Add your nostr pubkey for zap receipts"
 	nostrInfoMessage            = "💜 *Your nostr information*\n\nYour pubkey: `%s`"
 	nostrInfoLNAddrMessage      = "Your Lightning address: `%s`"
-	nostrHelpMessage            = "⚙️ *Nostr commands:*\n`/nostr add <pubkey>` ✅ Add your nostr pubkeyt.\n`/nostr help` 📖 Show help."
+	nostrHelpMessage            = "⚙️ *Nostr commands:*\n`/nostr add <pubkey>` ✅ Add your nostr pubkey.\n`/nostr help` 📖 Show help."
 	nostrAddedMessage           = "✅ *Nostr pubkey added.*"
 	nostrPrivateKeyErrorMessage = "🚫 This is not your public key but your private key! Very dangerous! Try again with your npub..."
 	nostrPublicKeyErrorMessage  = "🚫 There was an error decoding your public key."
@@ -62,10 +62,10 @@ func (bot *TipBot) publishNostrEvent(ev nostr.Event, relays []string) {
 
 	// calling Sign sets the event ID field and the event Sig field
 	ev.Sign(pk)
-	log.Debugf("[NOSTR] publishing event %s", ev.ID)
+	log.Debugf("[NOSTR] 🟣 publishing nostr event %s", ev.ID)
 
 	// more relays
-	relays = append(relays, "wss://nostr.btcmp.com", "wss://nostr.relayer.se", "wss://relay.current.fyi", "wss://nos.lol", "wss://nostr.mom", "wss://relay.nostr.info", "wss://nostr.zebedee.cloud", "wss://nostr-pub.wellorder.net", "wss://relay.snort.social/", "wss://relay.damus.io/", "wss://nostr.oxtr.dev/", "wss://nostr.fmt.wiz.biz/")
+	relays = append(relays, "wss://relay.nostr.ch", "wss://eden.nostr.land", "wss://nostr.btcmp.com", "wss://nostr.relayer.se", "wss://relay.current.fyi", "wss://nos.lol", "wss://nostr.mom", "wss://relay.nostr.info", "wss://nostr.zebedee.cloud", "wss://nostr-pub.wellorder.net", "wss://relay.snort.social/", "wss://relay.damus.io/", "wss://nostr.oxtr.dev/", "wss://nostr.fmt.wiz.biz/", "wss://brb.io")
 
 	// remove trailing /
 	relays = cleanUrls(relays)
