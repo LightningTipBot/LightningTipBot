@@ -1,0 +1,124 @@
+version: '3.3'
+services:
+  bot:
+    container_name: "bot"
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - "./data:/app/data"
+      - "./config.yaml:/app/config.yaml"
+      - "./translations:/app/translations"
+    ports:
+      - "5588:5588" # Webhook server
+      - "6060:6060" # Admin api
+      - "80:80" # LNURL
+    networks:
+      lightning-bridge:
+        aliases:
+          - lightning.local
+  lnbits:
+    image: lnbitsdocker/lnbits-legend:latest
+    container_name: "lnbits"
+    restart: always
+    volumes:
+      - "./data:/app/data"
+      - "./polar/volumes/lnd/alice/tls.cert:/app/lnd/alice/tls.cert"
+      - "./.env:/app/.env"
+    ports:
+      - "5050:5000"
+    networks:
+      lightning-bridge:
+        aliases:
+          - lightning.local
+  polar-n3-backend1:
+    image: polarlightning/bitcoind:23.0
+    container_name: bitcoind
+    environment:
+      USERID: ${USERID:-1000}
+      GROUPID: ${GROUPID:-1000}
+    command: >-
+      bitcoind -server=1 -regtest=1
+      -rpcauth=polaruser:5e5e98c21f5c814568f8b55d83b23c1c$$066b03f92df30b11de8e4b1b1cd5b1b4281aa25205bd57df9be82caf97a05526
+      -debug=1 -zmqpubrawblock=tcp://0.0.0.0:28334
+      -zmqpubrawtx=tcp://0.0.0.0:28335 -zmqpubhashblock=tcp://0.0.0.0:28336
+      -txindex=1 -dnsseed=0 -upnp=0 -rpcbind=0.0.0.0 -rpcallowip=0.0.0.0/0
+      -rpcport=18443 -rest -listen=1 -listenonion=0 -fallbackfee=0.0002
+    volumes:
+      - ./polar/volumes/bitcoind/backend1:/home/bitcoin/.bitcoin
+    expose:
+      - '18443'
+      - '18444'
+      - '28334'
+      - '28335'
+    ports:
+      - '18443:18443'
+      - '19444:18444'
+      - '28334:28334'
+      - '29335:28335'
+    networks:
+      lightning-bridge:
+        aliases:
+          - lightning.local
+  alice:
+    image: polarlightning/lnd:0.15.1-beta
+    container_name: alice
+    environment:
+      USERID: ${USERID:-1000}
+      GROUPID: ${GROUPID:-1000}
+    command: >-
+      lnd --noseedbackup --trickledelay=5000 --alias=alice --externalip=alice
+      --tlsextradomain=alice --tlsextradomain=polar-n3-alice
+      --listen=0.0.0.0:9735 --rpclisten=0.0.0.0:10009 --restlisten=0.0.0.0:8080
+      --bitcoin.active --bitcoin.regtest --bitcoin.node=bitcoind
+      --bitcoind.rpchost=polar-n3-backend1 --bitcoind.rpcuser=polaruser
+      --bitcoind.rpcpass=polarpass
+      --bitcoind.zmqpubrawblock=tcp://polar-n3-backend1:28334
+      --bitcoind.zmqpubrawtx=tcp://polar-n3-backend1:28335
+    restart: always
+    volumes:
+      - ./polar/volumes/lnd/alice:/home/lnd/.lnd
+    expose:
+      - '8080'
+      - '10009'
+      - '9735'
+    ports:
+      - '8081:8080'
+      - '10001:10009'
+      - '9735:9735'
+    networks:
+      lightning-bridge:
+        aliases:
+          - lightning.local
+  bob:
+    image: polarlightning/clightning:0.12.0
+    container_name: bob
+    environment:
+      USERID: ${USERID:-1000}
+      GROUPID: ${GROUPID:-1000}
+    command: >-
+      lightningd --alias=bob --addr=bob --network=regtest
+      --bitcoin-rpcuser=polaruser --bitcoin-rpcpassword=polarpass
+      --bitcoin-rpcconnect=polar-n3-backend1 --bitcoin-rpcport=18443
+      --log-level=debug --dev-bitcoind-poll=2 --dev-fast-gossip
+      --grpc-port=11001 --plugin=/opt/c-lightning-rest/plugin.js
+      --rest-port=8080 --rest-protocol=http
+    restart: always
+    volumes:
+      - ./polar/volumes/c-lightning/bob/lightningd:/home/clightning/.lightning
+      - ./polar/volumes/c-lightning/bob/rest-api:/opt/c-lightning-rest/certs
+    expose:
+      - '8080'
+      - '11001'
+      - '9735'
+    ports:
+      - '8182:8080'
+      - '11002:11001'
+      - '9836:9735'
+    networks:
+      lightning-bridge:
+        aliases:
+          - lightning.local
+networks:
+  lightning-bridge:
