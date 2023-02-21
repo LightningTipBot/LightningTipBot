@@ -136,8 +136,7 @@ func (w Lnurl) Handle(writer http.ResponseWriter, request *http.Request) {
 					log.Errorf("[handleLnUrl] Nostr NIP-57 zap event signature invalid: %v", err)
 					return
 				}
-				if len(zapEvent.Tags) == 0 || zapEvent.Tags.GetFirst([]string{"p"}) == nil ||
-					zapEvent.Tags.GetFirst([]string{"relays"}) == nil {
+				if len(zapEvent.Tags) == 0 || zapEvent.Tags.GetFirst([]string{"p"}) == nil {
 					// zapEvent.Tags.GetFirst([]string{"e"}) == nil {
 					log.Errorf("[handleLnUrl] Nostr NIP-57 zap event validation error")
 					return
@@ -223,23 +222,12 @@ func (w Lnurl) serveLNURLpFirst(username string) (*LNURLPayParamsCustom, error) 
 	// check if the user has added a nostr key for nip57
 	var allowNostr bool = false
 	var nostrPubkey string = ""
-	user, tx := db.FindUser(w.database, username)
 	// if the bot has a nostr private key
-	if len(internal.Configuration.Nostr.PrivateKey) > 0 &&
-		tx.Error == nil && user.Telegram != nil {
-		user, err = db.FindUserSettings(user, w.bot.DB.Users.Preload("Settings"))
-		if err != nil {
-			return &LNURLPayParamsCustom{}, err
-		}
-		// if the user has a nostr public key
-		if user.Settings.Nostr.PubKey != "" {
-			allowNostr = true
-			pk := internal.Configuration.Nostr.PrivateKey
-			pub, _ := nostr.GetPublicKey(pk)
-			nostrPubkey = pub
-		}
-	} else {
-		log.Errorf("[serveLNURLpFirst] user not found")
+	if len(internal.Configuration.Nostr.PrivateKey) > 0 {
+		allowNostr = true
+		pk := internal.Configuration.Nostr.PrivateKey
+		pub, _ := nostr.GetPublicKey(pk)
+		nostrPubkey = pub
 	}
 
 	return &LNURLPayParamsCustom{
