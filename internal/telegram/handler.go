@@ -116,7 +116,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			},
 		},
 		{
-			Endpoints: []interface{}{"/tip", "/t", "/honk"},
+			Endpoints: []interface{}{"/tip", "/t", "/honk", "/zap"},
 			Handler:   bot.tipHandler,
 			Interceptor: &Interceptor{
 				Before: []intercept.Func{
