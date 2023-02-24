@@ -1,0 +1,411 @@
+# COMMANDS
+
+helpCommandStr = """ohje"""
+basicsCommandStr = """peruskomennot"""
+tipCommandStr = """tippi"""
+balanceCommandStr = """saldo"""
+sendCommandStr = """lähetä"""
+invoiceCommandStr = """laskuta"""
+payCommandStr = """maksa"""
+donateCommandStr = """lahjoita"""
+advancedCommandStr = """lisäkomennot"""
+transactionsCommandStr = """tapahtumat"""
+logCommandStr = """loki"""
+listCommandStr = """lista"""
+
+linkCommandStr = """linkki"""
+lnurlCommandStr = """lnurl"""
+faucetCommandStr = """hana"""
+
+tipjarCommandStr = """tippikulho"""
+receiveCommandStr = """vastaanota"""
+hideCommandStr = """piilota"""
+volcanoCommandStr = """tulivuori"""
+showCommandStr = """näytä"""
+optionsCommandStr = """valinnat"""
+settingsCommandStr = """asetukset"""
+saveCommandStr = """tallenna"""
+deleteCommandStr = """poista"""
+infoCommandStr = """tiedot"""
+
+# NOTIFICATIONS
+
+cantDoThatMessage = """Et voi tehdä tuota."""
+cantClickMessage = """Et voi painaa tätä nappia."""
+balanceTooLowMessage = """Saldosi on liian pieni."""
+
+# BUTTONS
+
+sendButtonMessage = """✅ Lähetä"""
+payButtonMessage = """✅ Maksa"""
+payReceiveButtonMessage = """💸 Maksa"""
+receiveButtonMessage = """✅ Vastaanota"""
+withdrawButtonMessage = """✅ Nosta"""
+cancelButtonMessage = """🚫 Peruuta"""
+collectButtonMessage = """✅ Kerää"""
+nextButtonMessage = """Seuraava"""
+backButtonMessage = """Edellinen"""
+acceptButtonMessage = """Hyväksy"""
+denyButtonMessage = """Hylkää"""
+tipButtonMessage = """Tippi"""
+revealButtonMessage = """Paljasta"""
+showButtonMessage = """Näytä"""
+hideButtonMessage = """Piilota"""
+joinButtonMessage = """Liity"""
+optionsButtonMessage = """Valinnat"""
+settingsButtonMessage = """Asetukset"""
+saveButtonMessage = """Tallenna"""
+deleteButtonMessage = """Poista"""
+infoButtonMessage = """Tiedot"""
+
+cancelButtonEmoji = """🚫"""
+payButtonEmoji = """💸"""
+
+# HELP
+
+helpMessage = """⚡️ *Lompakko*
+_Tämä botti on Bitcoin Lightning -lompakko ja sitä käytetään Telegram:in sisällä tippien lähettämiseen. Botti on lisättävä jäseneksi ryhmäkeskusteluun, jotta se voi toimia. Tippien rahayksikkö on satoshi (sat). 100,000,000 sat = 1 Bitcoin. Kirjoita 📚 /basics lukeaksesi lisää._
+
+❤️ *Lahjoitus*
+_Tämä botti ei veloita kuluja, mutta sen ylläpidosta aiheutuu kuluja. Jos tykkäät botista, niin harkitsethan lahjoituksen tekemistä projektille. Lahjoituksen voit tehdä komennolla_ `/donate 1000`
+
+%s
+
+⚙️ *Komennot*
+*/tip* 🏅 Lähetä tippi liittämällä vastausviestiin: `/tip <amount> [<memo>]`
+*/balance* 👑 Tarkista saldosi: `/balance`
+*/send* 💸 Lähetä varoja käyttäjälle: `/send <amount> @user or user@ln.tips [<memo>]`
+*/invoice* ⚡️ Vastaanota Lightning-maksu: `/invoice <amount> [<memo>]`
+*/pay* ⚡️ Lähetä Lightning-maksu: `/pay <invoice>`
+*/donate* ❤️ Lahjoitus LightningTipBot-tiimille: `/donate 1000`
+*/advanced* 🤖 Lisäasetukset.
+*/help* 📖 Lue tämä ohje."""
+
+infoHelpMessage = """ℹ️ *Tiedot*"""
+infoYourLightningAddress = """Lightning Address -osoitteesi on `%s`"""
+
+basicsMessage = """🧡 *Bitcoin*
+_Bitcoin on internetin raha. Se on hajautettu ja vapaa, eikä sillä ole johtajia tai hallinnoijia. Bitcoin on kovaa rahaa. Se on myös nopeampi, turvallisempi ja laajemmin toimiva kuin perinteiset pankkijärjestelmät tai valuutat._
+
+🧮 *Ekonomia*
+_Bitcoinin pienin yksikkö on satoshi (sat) ja 100.000.000 sat = 1 Bitcoin. Bitcoineja tulee kostkaan olemaan enintään 21 miljoonaa kappaletta. Bitcoinin päivittäinen valuuttavaihtokurssi vaihtelee päivittän, mutta jos elät Bitcoin standardin mukaisesti on kuitenkin 1 sat aina 1 sat._
+
+⚡️ *Lightning-verkko*
+_Lightning-verkko on maksuprotokolla, joka mahdollistaa nopeat ja edulliset bitcoin-siirrot, eikä se juurikaan kuluta energiaa. Sen avulla miljardit ihmiset ympäri maailmaa pystyvät käyttämään Bitcoinia._
+
+📲 *Lightning-lompakot*
+_Tämän botin lompakosta voit lähettää, tai vastaanottaa siihen, varoja kenen tahansa omistaman Lightning-lompakon välillä. Suositeltuja muita lompakkoja mobiililaitteisiin ovat_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), tai_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(helppo)_.
+
+📄 *Open Source*
+_Tämä bottiohjelmisto on vapaa ja_ [open source](https://github.com/LightningTipBot/LightningTipBot) _ohjelmisto. Voit ajaa bottia omassa tietokoneessasi ja käyttää sitä yhdessä lähipiirisi kanssa._
+
+✈️ *Telegram*
+_Lisää tämä botti Telegram-ryhmäkeskusteluun, ja /tip -komennolla voit tipata kuita keskustelijoita. Kun määrität botin ryhmän pääkäyttäjäksi (admin), niin se myös siivoaa myös bottikomennot pois keskustelusta ja ryhmäsi sisältö pysyy siistinä._
+
+🏛 *Ehdot*
+_Me emme pidä varojasi hallussa. Toimimme sinun parhaaksesi ja tiedämme KYC-henkilötunnistautumisen vaatimukset. Ne ovat aika mutkikkaita, kunnes keksimme asiaan ratkaisun. Käsittelemme kaikkia lompakossasi olevia varoja lahjoituksina. Älä siis lahjoita meille kaikkia varojasi. Huomioi myös että tämä botti on ns beta-kehitysvaiheessa ja huomioit riskit botin mahdollisesti tekemistä virheistä._
+
+❤️ *Lahjoitus*
+_Tämä botti ei veloita kuluja, mutta sen ylläpidosta aiheutuu kuluja. Jos tykkäät botista, niin harkitsethan lahjoituksen tekemistä projektille. Lahjoituksen voit tehdä komennolla_ `/donate 1000`"""
+
+helpNoUsernameMessage = """👋 Ole hyvä ja määritä Telegram-käyttäjänimesi."""
+
+advancedMessage = """%s
+
+👉 *Keskustelun komennot*
+*send* 💸 Lähetä satteja keskusteluun: `%s send <amount> [<user>] [<memo>]`
+*receive* 🏅 Pyydä maksua: `... receive <amount> [<user>] [<memo>]`
+*faucet* 🚰 Luo hana: `... faucet <capacity> <per_user> [<memo>]`
+*tipjar* 🍯 Luo tippikulho: `... tipjar <capacity> <per_user> [<memo>]`
+
+📖 Keskustelu komennot ovat käytettävissä kaikissa keskusteluissa, jopa kahdenkeskisissä. Kun olet kirjoittanut keskustelussa komennon, niin odota hetkinen vaihtoehtoja - älä paina Enteriä.
+
+⚙️ *Edistyneemmät komennot*
+*/transactions* 📊 Maksutapahtumien listaus
+*/link* 🔗 Linkitä lompakkosi [BlueWallet](https://bluewallet.io/) tai [Zeus](https://zeusln.app/)
+*/lnurl* ⚡️ Vastaanota tai maksa Lnurl: `/lnurl` or `/lnurl <lnurl> [memo]`
+*/nostr* 💜 Yhdistä nostr: `/nostr`
+*/faucet* 🚰 Luo hana: `/faucet <capacity> <per_user>`
+*/tipjar* 🍯 Luo tippikulho: `/tipjar <capacity> <per_user>`
+*/group* 🎟 Ryhmäkeskustelun toiminnot: `/group`
+*/shop* 🛍 Selaa kauppoja: `/shop` or `/shop <user/shop_id>`
+*/generate* 🎆 Luo DALLE-2 kuvia: `/generate <prompt>`"""
+
+# GENERIC
+enterAmountRangeMessage        = """💯 Syötä määrä %d ja %d sat väliltä."""
+enterAmountMessage             = """💯 Syötä määrä."""
+enterUserMessage               = """👤 Syötä käyttäjä."""
+enterTextMessage               = """⌨️ Syötä teksti."""
+errorReasonMessage             = """🚫 Virhe: %s"""
+
+# START
+
+startSettingWalletMessage = """🧮 Lompakkoasi määritetään..."""
+startWalletCreatedMessage = """🧮 Lompakkosi on luotu."""
+startWalletReadyMessage   = """✅ *Lompakkosi on valmis.*"""
+startWalletErrorMessage   = """🚫 Lompakon määritys tai avaus epäonnistui. Yritä myöhemmin uudelleen."""
+startNoUsernameMessage    = """☝️ Näyttäisi että sinulla ei ole vielä Telegram @username -käyttäjätunnusta. Se ei haittaa, voit kuitenkin käyttää tätä bottia. Saat kuitenkin botin käytöstä enemmän irti, kun asetat itsellesi käyttäjänimen Telegram-asetuksista. Sen tehtyäsi syötä komento /balance ja botti päivittää tietosi."""
+
+# BALANCE
+
+balanceMessage      = """👑 *Saldosi on:* %d sat"""
+balanceErrorMessage = """🚫 Saldosi hakeminen epäonnistui. Yritä myöhemmin uudelleen."""
+
+# TIP
+
+tipDidYouReplyMessage = """Lähetitkö vastauksen siihen viestiin, mitä halusit tipata? Vastaa mihintahansa viestiin tietokoneella klikkaamalla oikealla hiiren napilla viestiä, ja valitse Vastaa tai Reply, mobiililaitteella voit pyyhkäistä viestiä. Jos haluat lähettää suoraan varoja toiselle käyttäjälle, niin se onnistuu /send -komennolla."""
+tipInviteGroupMessage = """ℹ️ Muuten, voit kutsua tämän botin mihin tahansa ryhmään ja käyttää bottia siellä tippien lähettämiseen."""
+tipEnterAmountMessage = """Syötithän määrän?"""
+tipValidAmountMessage = """Syötithän määrän oikein?"""
+tipYourselfMessage    = """📖 Et voi lähettää tippiä itsellesi."""
+tipSentMessage        = """💸 %d sat läheteettiin %s:lle."""
+tipReceivedMessage    = """🏅 %s lähetti sinulle %d sat tipin."""
+tipErrorMessage       = """🚫 Tippi epäonnistui."""
+tipUndefinedErrorMsg  = """yritä myöhemmin uudelleen."""
+tipHelpText           = """📖 Hups, sepä ei toiminutkaan. %s
+
+*Muoto:* `/tip <amount> [<memo>]`
+*Esimerkki:* `/tip 1000 Kiitti meemistä!`"""
+
+# SEND
+
+sendValidAmountMessage     = """Syötithän määrän oikein?"""
+sendUserHasNoWalletMessage = """🚫 Käyttäjällä %s ei ole lompakkoa."""
+sendSentMessage            = """💸 %d sat lähetettiin %s:lle."""
+sendPublicSentMessage      = """💸 %d sat lähetettiin %s:ltä to %s:lle."""
+sendReceivedMessage        = """🏅 %s lähetti sinulle %d sat."""
+sendErrorMessage           = """🚫 Lähetys epäonnistu."""
+confirmSendMessage         = """Haluatko lähettää vastaanottajalle %s?\n\n💸 Määrä: %d sat"""
+confirmSendAppendMemo      = """\n✉️ %s"""
+sendCancelledMessage       = """🚫 Lähetys peruutettu."""
+errorTryLaterMessage       = """🚫 Virhe. Yritä myöhemmin uudelleen."""
+sendSyntaxErrorMessage     = """Annoithan määrän ja vastaanottajan? Lähetä /send komennolla joko Telegram-käyttäjänimelle (kuten %s) tai Lightning Address -osoitteeseen muotoa LightningTipBot@ln.tips."""
+sendHelpText               = """📖 Hups, sepä ei toiminutkaan. %s
+
+*Muoto:* `/send <amount> <user> [<memo>]`
+*Esimerkki:* `/send 1000 @LightningTipBot Rakastan bottia ❤️`
+*Esimerkki:* `/send 1234 LightningTipBot@ln.tips`"""
+
+# INVOICE
+
+invoiceReceivedMessage    = """⚡️ Vastaanotit %d sat."""
+invoiceEnterAmountMessage = """Syötithän määrän?"""
+invoiceValidAmountMessage = """Syötithän määrän oikein?"""
+invoiceHelpText           = """📖 Hups, sepä ei toiminutkaan. %s
+
+*Muoto:* `/invoice <amount> [<memo>]`
+*Esimerkki:* `/invoice 1000 Kiitos!`"""
+invoicePaidText           = """✅ Lasku maksettu.""" 
+
+# PAY
+
+paymentCancelledMessage     = """🚫 Maksu peruutettu."""
+invoicePaidMessage          = """⚡️ Maksu lähetettiin."""
+invoicePublicPaidMessage    = """⚡️ Maksun lähetti %s."""
+invalidInvoiceHelpMessage    = """Syötithän Lightning-laskun oikein? Käytä /send -komentoa jos haluat lähettää Telegram-käyttäjälle tai Lightning Address -osoitteeseen."""
+invoiceNoAmountMessage       = """🚫 Laskua ei voi maksaa ilman määrää."""
+insufficientFundsMessage     = """🚫 Varat eivät riitä. Sinulla on %d sat mutta tarvitset vähintään %d sat."""
+feeReserveMessage            = """⚠️ Koko saldosi lähettäminen ei todennäköisesti onnistu, koska maksun käsittelystä menee kuluja. Varaa vähintään 1% kuluihin."""
+invoicePaymentFailedMessage  = """🚫 Maksu epäonnistui: %s"""
+invoiceUndefinedErrorMessage = """Laskun maksu epäonnistui."""
+confirmPayInvoiceMessage     = """Vahvista maksun lähetys?\n\n💸 Määrä: %d sat"""
+confirmPayAppendMemo         = """\n✉️ %s"""
+payHelpText                  = """📖 Hups, sepä ei toiminutkaan. %s
+
+*Muoto:* `/pay <invoice>`
+*Esimerkki:* `/pay lnbc20n1psscehd...`"""
+
+# DONATE
+
+donationSuccess          = """🙏 Kiitoksia lahjoituksesta."""
+donationErrorMessage     = """🚫 Oi ei! Lahjoitus epäonnistui."""
+donationProgressMessage  = """🧮 Valmistellaan lahjoitusta..."""
+donationFailedMessage    = """🚫 Lahjoitus epäonnistui: %s"""
+donateEnterAmountMessage = """Syötithän määrän?"""
+donateValidAmountMessage = """Syötithän määrän oikein?"""
+donateHelpText           = """📖 Hups, sepä ei toiminutkaan. %s
+
+*Muoto:* `/donate <amount>`
+*Esimerkki:* `/donate 1000`"""
+
+# PHOTO
+
+photoQrNotRecognizedMessage = """🚫 Lightning- tai LNURL -laskun tunnistus epäonnistui. Koeta keskittää QR-koodi, leikkaa kuvaa tai zoomaa tarkemmaksi."""
+photoQrRecognizedMessage = """✅ QR-koodi:
+`%s`"""
+
+# LNURL
+
+lnurlReceiveInfoText           = """👇 Voit ottaa maksuja vastaan tämän kiinteän LNURL:in avulla."""
+lnurlResolvingUrlMessage       = """🧮 Selvitetään osoitetta..."""
+lnurlGettingUserMessage        = """🧮 Valmistellaan maksua..."""
+lnurlPaymentFailed             = """🚫 Maksu epäonnistui: %s"""
+lnurlInvalidAmountMessage      = """🚫 Virheellinen määrä."""
+lnurlInvalidAmountRangeMessage = """🚫 Määrän tulee olla %d ja %d sat väliltä."""
+lnurlNoUsernameMessage         = """🚫 LNURL:in avulla maksujen vastaanotto edellyttää että, sinulla on Telegram-käyttäjätunnus määriteltynä."""
+lnurlHelpText                  = """📖 Hups, sepä ei toiminutkaan. %s
+
+*Muoto:* `/lnurl [amount] <lnurl>`
+*Esimerkki:* `/lnurl LNURL1DP68GUR...`"""
+
+# LNURL LOGIN
+
+confirmLnurlAuthMessager        = """Haluatko kirjautua %s?"""
+lnurlSuccessfulLogin            = """✅ Kirjautuminen onnistui."""
+loginButtonMessage              = """✅ Kirjautuminen"""
+loginCancelledMessage           = """🚫 Kirjautuminen peruutettiin."""
+
+# LNURL WITHDRAW
+
+confirmLnurlWithdrawMessage     = """Haluatko toteuttaa noston?\n\n💸 Määrä: %d sat"""
+lnurlPreparingWithdraw        = """🧮 Valmistellaan nostoa..."""
+lnurlWithdrawFailed             = """🚫 Nosto epäonnistui."""
+lnurlWithdrawCancelled             = """🚫 Nosto peruutettiin."""
+lnurlWithdrawSuccess             = """✅ Nosto käsitelty."""
+
+# LINK
+
+walletConnectMessage = """🔗 *Linkitä lompakkosi*
+
+⚠️ Älä koskaan paljasta seuraavia URL-osoitetta tai QR-koodia kenellekään. Niiden avulla pääsee käsiksi botissa oleviin varoihisi. jos tarvitse API-avaimia, käytä /api -komentoa.
+
+- *BlueWallet:* Paina *New wallet*, *Import wallet*, *Scan or import a file*, ja lue QR-koodi.
+- *Zeus:* Kopioi alla oleva URL, valitse *Add a new node* ja Node interface kohdasta *LNDHub*, syötä URL ja paina *Save Node Config*."""
+couldNotLinkMessage             = """🚫 Lompakon linkitys epäonnistui. Yritä myöhemmin uudelleen."""
+linkHiddenMessage               = """🔍 Linkki on piilotettu. Käytä /link -komentoa nähdäksesi sen uudelleen."""
+
+# API
+
+apiConnectMessage = """🔗 *Sinun API avaimet*
+
+⚠️ Älä koskaan paljasta API-avaimia kenellekään. Niiden avulla pääsee käsiksi botissa oleviin varoihisi. Käytä /link -komentoa yhdistääksesi ulkoiseen lompakkoon.
+
+- *Admin key:* `%s`
+- *Invoice key:* `%s`"""
+apiHiddenMessage               = """🔍 Avaimet on piilotettu. Käytä /api -komentoa nähdäksesi ne uudelleen."""
+
+# FAUCET
+
+inlineQueryFaucetTitle        = """🚰 Luo hana."""
+inlineQueryFaucetDescription  = """Muoto: @%s faucet <capacity> <per_user>"""
+inlineResultFaucetTitle       = """🚰 Luo hana %d sat kapasiteetilla."""
+inlineResultFaucetDescription = """👉 Paina tästä luodaksesi hanan tähän keskusteluun."""
+
+inlineFaucetMessage                     = """Painamalla ✅ nostat %d sat %s:n tekemästä hanasta.
+
+🚰 Jäljellä: %d/%d sat (nostettu %d/%d käyttäjälle)
+%s"""
+inlineFaucetEndedMessage                = """🚰 Hana on tyhjä 🍺\n\n🏅 %d sat annettiin %d käyttäjälle."""
+inlineFaucetAppendMemo                  = """\n✉️ %s"""
+inlineFaucetCreateWalletMessage         = """Hallinnoi lompakkoasti viestillä %s:lle 👈 ."""
+inlineFaucetCancelledMessage            = """🚫 Hana suljettu."""
+inlineFaucetInvalidPeruserAmountMessage = """🚫 Hanan käyttäjäkohtainen kapasiteetti ei jakaudu tasan tai se on liian pieni (min 5 sat)."""
+inlineFaucetInvalidAmountMessage        = """🚫 Virheellinen määrä."""
+inlineFaucetSentMessage                 = """🚰 %d sat lähetetty %s."""
+inlineFaucetReceivedMessage             = """🚰 %s lähetti sinulle %d sat."""
+inlineFaucetHelpFaucetInGroup           = """Luo botin avulla ryhmäkeskusteluun hana tai käytä 👉 keskustelun komentoja (/advanced lisätoimintoja)."""
+inlineFaucetAlreadyTookMessage          = """🚫 Olet jo nostanut varoja tästä hanasta."""
+inlineFaucetHelpText                    = """📖 Hups, sepä ei toiminutkaan. %s
+
+*Muoto:* `/faucet <capacity> <per_user>`
+*Esimerkki:* `/faucet 210 21`"""
+
+# INLINE SEND
+
+inlineQuerySendTitle            = """💸 Lähetä maksu keskusteluun."""
+inlineQuerySendDescription      = """Muoto: @%s send <amount> [<user>] [<memo>]"""
+inlineResultSendTitle           = """💸 Lähetä %d sat."""
+inlineResultSendDescription     = """👉 Paina tästä lähettääksesi %d sat tähän keskusteluun."""
+
+inlineSendMessage              = """Paina ✅ vastaanottaaksesi maksun %s:ltä.\n\n💸 Määrä: %d sat"""
+inlineSendAppendMemo           = """\n✉️ %s"""
+inlineSendUpdateMessageAccept  = """💸 %d sat lähetty %s:ltä %s:lle."""
+inlineSendCreateWalletMessage  = """Avaa keskustelu %s :lle 👈 ja hallinnoi lompakkoasi."""
+sendYourselfMessage            = """📖 Et voi maksaa itsellesi."""
+inlineSendFailedMessage        = """🚫 Lähetys epäonnistui."""
+inlineSendInvalidAmountMessage = """🚫 Määrän pitää olla nollaa suurempi."""
+inlineSendBalanceLowMessage    = """🚫 Saldosi on liian pieni."""
+
+# INLINE RECEIVE
+
+inlineQueryReceiveTitle        = """🏅 Pyydä maksua keskustelussa."""
+inlineQueryReceiveDescription  = """Muoto: @%s receive <amount> [<user>] [<memo>]"""
+inlineResultReceiveTitle       = """🏅 Vastaanota %d sat."""
+inlineResultReceiveDescription = """👉 Paina tästä vastaanottaaksesi %d sat."""
+
+inlineReceiveMessage             = """Paina 💸 maksaaksesi %s:lle.\n\n💸 Määrä: %d sat"""
+inlineReceiveAppendMemo          = """\n✉️ %s"""
+inlineReceiveUpdateMessageAccept = """💸 %d sat lähetetty %s:ltä %s:lle."""
+inlineReceiveCreateWalletMessage = """Avaa keskustelu %s :lle 👈 ja hallinnoi lompakkoasi."""
+inlineReceiveYourselfMessage     = """📖 Et voi maksaa itsellesi."""
+inlineReceiveFailedMessage       = """🚫 Vastaanotto epäonnistui."""
+inlineReceiveCancelledMessage    = """🚫 Vastaanotto peruutettu."""
+
+# TIPJAR
+
+inlineQueryTipjarTitle        = """🍯 Luo tippikulho."""
+inlineQueryTipjarDescription  = """Muoto: @%s tipjar <capacity> <per_user>"""
+inlineResultTipjarTitle       = """🍯 Luo %d sat tippikulho."""
+inlineResultTipjarDescription = """👉 Paina tästä luodaksesi tippikulhon tähän keskusteluun."""
+
+inlineTipjarMessage                     = """Paina 💸 *maksaaksesi %d sat* %s:n luomaan tippikulhoon.
+
+🙏 Tippikulhossa: *%d*/%d sat (%d käyttäjältä)
+%s"""
+inlineTipjarEndedMessage                = """🍯 %s:n tippikulho on täynnä⭐️\n\n🏅 %d sat saatin %d käyttäjältä."""
+inlineTipjarAppendMemo                  = """\n✉️ %s"""
+inlineTipjarCancelledMessage            = """🚫 Tippikulho poistettu."""
+inlineTipjarInvalidPeruserAmountMessage = """🚫 Käyttäjäkohtainen määrä ei ole jaollinen kapasiteetilla."""
+inlineTipjarInvalidAmountMessage        = """🚫 Virheellinen määrä."""
+inlineTipjarSentMessage                 = """🍯 %d sat lähetty %s:lle."""
+inlineTipjarReceivedMessage             = """🍯 %s lähetti sinulle %d sat."""
+inlineTipjarHelpTipjarInGroup           = """Luo tippikulho ryhmään, jossa botti on jäsenenä tai käytä 👉 keskustelun komentoa (/advanced lisätoimintoja)."""
+inlineTipjarHelpText                    = """📖 Hups, sepä ei toiminutkaan. %s
+
+*Muoto:* `/tipjar <capacity> <per_user>`
+*Esimerkki:* `/tipjar 210 21`"""
+
+# GROUP TICKETS
+groupAddGroupHelpMessage            = """📖 Hups, sepä ei toiminutkaan. Tämä toiminto on käytettävissä vain ryhmäkeskusteluissa ja sitä voi käyttää ainoastaan ryhmän omistaja.\nMuoto: `/group add <group_name> [<amount>]`\nExample: `/group add TheBestBitcoinGroup 1000`"""
+groupJoinGroupHelpMessage           = """📖 Hups, sepä ei toiminutkaan. Yritä uudelleen.\nMuoto: `/join <group_name>`\nExample: `/join TheBestBitcoinGroup`"""
+groupClickToJoinMessage             = """🎟 [Paina tästä](%s) 👈 liittyäksesi `%s`."""
+groupTicketIssuedGroupMessage       = """🎟 Käyttäjä %s on saanut pääsyn tähän ryhmään."""
+groupPayInvoiceMessage              = """🎟 Maksa yllä oleva lasku, jotta voit liittyä ryhmään %s."""
+groupBotIsNotAdminMessage           = """🚫 Hups, sepä ei toiminutkaan. Sinun pitää lisätä minut ryhmän pääkäyttäjäksi ja antaa minulle oikeudet lisätä ja bannata käyttäjiä."""
+groupNameExists                     = """🚫 Tämän niminen ryhmä on jo olemassa. Valitse ryhmälle uusi nimi."""
+groupAddedMessagePrivate            = """🎟 Ryhmään `%s` on lisätty pääsymaksut.\n\nAlias: `%s` Hinta: %d sat\n\nKun haluat pääsyn tähän ryhmään, aloita keskustelu %s:n kanssa ja anna komento `/join %s`."""
+groupAddedMessagePublic             = """🎟 Pääsymaksut otettu käyttöön."""
+groupNotFoundMessage                = """🚫 Tämän nimistä ryhmää ei löydy."""
+groupReceiveTicketInvoiceCommission = """🎟 Vastaanotit *%d sat* (mistä on vähennetty %d sat komissio) käyttäjän %s pääsymaksuna ryhmään `%s` ."""
+groupReceiveTicketInvoice           = """🎟 Vastaanotit *%d sat* käyttäjän %s pääsymaksuna ryhmään `%s`."""
+commandPrivateMessage               = """Käytä tätä komentoa %s:n kanssa kahdenkeskisessä keskustelussa."""
+groupHelpMessage                    = """👥 *Ryhmäkomennot*
+
+🎟 *Julkiset pääsymaksut*
+
+Pääkäyttäjille (ryhmäkeskustelussa): `/group ticket <ticket_price>`\nExample: `/group ticket 1000`
+
+🎟 *Yksityiset pääsymaksut*
+
+Veloita pääsymaksuja sinun _yksityiseen ryhmään_ ja pidät spammibotit poissa. 
+
+*Ohjeet ryhmän pääkäyttäjille:*
+
+1) Kutsu ryhmääsi jäseneksi %s ja anna sille pääkäyttäjä (admin) oikeudet.
+2) Muuta ryhmäsi yksityiseksi (private).
+3) Ryhmässä, sinun (ryhmän omistaja) pitää antaa komento `/group add <mygroup> [<ticket_price>]`.
+
+_Kulut: botti veloittaa 10%% +10 sat komission edullisista pääsymaksuista. Jos pääsymaksu on >= 1000 sat, niin komissio on 2%% + 100 sat._
+
+*Ohjeet ryhmän jäsenille:*
+
+Liittyäksesi ryhmään, aloita keskustelu %s:n kanssa ja kirjoita kahdenkeskiseen keskusteluun viesti `/join <mygroup>`.
+
+📖 *Muoto:*
+Pääkäyttäjille (ryhmissä): `/group add <group_name> [<ticket_price>]`\nEsimerkki: `/group add TheBestBitcoinGroup 1000`
+Käyttäjille (yksityskeskusteluissa): `/join <group_name>`\nEsimerkki: `/join TheBestBitcoinGroup`"""
+
+# DALLE GENERATE
+generateDalleHelpMessage        = """Luo OpenAI DALLE 2. -kuvia\nUsage: `/generate <prompt>`\nPrice: 1000 sat"""
+generateDallePayInvoiceMessage  = """Maksa tämä lasku ja neljä kuvaa luotaan 👇"""
+generateDalleGeneratingMessage  = """Kuvia luodaan. Odota hetkinen..."""
