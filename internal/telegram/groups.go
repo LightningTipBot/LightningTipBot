@@ -429,7 +429,7 @@ func (bot TipBot) removeJoinTicketPayWallHandler(ctx intercept.Context) (interce
 	if tx.Error != nil {
 		return ctx, tx.Error
 	}
-
+	bot.trySendMessage(ctx.Message().Chat, "🎟 Ticket removed.")
 	return ctx, nil
 }
 
