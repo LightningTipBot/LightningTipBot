@@ -167,7 +167,7 @@ func (bot *TipBot) getNostrHandler(ctx intercept.Context) (intercept.Context, er
 	}
 	var dynamicHelpMessage string
 	dynamicHelpMessage += nostrHelpMessage
-	if user.Settings == nil {
+	if user.Settings.Nostr.PubKey == "" {
 		bot.trySendMessage(m.Sender, dynamicHelpMessage)
 		return ctx, fmt.Errorf("no nostr pubkey registered")
 	} else if len(user.Settings.Nostr.PubKey) > 0 {
