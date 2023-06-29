@@ -34,7 +34,7 @@ const (
 	Endpoint       = ".well-known/lnurlp"
 	MinSendable    = 1000 // mSat
 	MaxSendable    = 1_000_000_000
-	CommentAllowed = 500
+	CommentAllowed = 2000
 )
 
 type Invoice struct {
