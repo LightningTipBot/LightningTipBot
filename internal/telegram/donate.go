@@ -6,6 +6,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
@@ -55,7 +57,20 @@ func (bot TipBot) donationHandler(ctx intercept.Context) (intercept.Context, err
 	// command is valid
 	msg := bot.trySendMessageEditable(m.Chat, Translate(ctx, "donationProgressMessage"))
 	// get invoice
-	resp, err := http.Get(fmt.Sprintf(donationEndpoint, amount, GetUserStr(user.Telegram), GetUserStr(bot.Telegram.Me)))
+	r, err := http.NewRequest(http.MethodGet, donationEndpoint, nil)
+	if err != nil {
+		log.Errorln(err)
+		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
+		return ctx, err
+	}
+	// Create query parameters
+	params := url.Values{}
+	params.Set("amount", strconv.FormatInt(amount, 10))
+	params.Set("comment", fmt.Sprintf("from %s bot %s", GetUserStr(user.Telegram), GetUserStr(bot.Telegram.Me)))
+	// Set the query parameters in the URL
+	r.URL.RawQuery = params.Encode()
+
+	resp, err := http.DefaultClient.Do(r)
 	if err != nil {
 		log.Errorln(err)
 		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
@@ -89,7 +104,7 @@ func (bot TipBot) donationHandler(ctx intercept.Context) (intercept.Context, err
 
 func init() {
 	var sb strings.Builder
-	_, err := io.Copy(&sb, rot13Reader{strings.NewReader("uggcf://ya.gvcf/qbangr/%q?sebz=%f&obg=%f")})
+	_, err := io.Copy(&sb, rot13Reader{strings.NewReader("uggcf://ya.gvcf/.jryy-xabja/yaheyc/YvtugavatGvcObg")})
 	if err != nil {
 		panic(err)
 	}
