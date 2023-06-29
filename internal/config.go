@@ -72,10 +72,6 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	webhookServerUrl := Configuration.Lnbits.WebhookServer
-	if strings.Contains(webhookServerUrl, "host.docker.internal") {
-		webhookServerUrl = strings.Replace(webhookServerUrl, "host.docker.internal", "0.0.0.0", 1)
-	}
 	webhookUrl, err := url.Parse(Configuration.Lnbits.WebhookServer)
 	if err != nil {
 		panic(err)
