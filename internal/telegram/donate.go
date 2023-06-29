@@ -2,7 +2,9 @@ package telegram
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/fiatjaf/go-lnurl"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -53,7 +55,7 @@ func (bot TipBot) donationHandler(ctx intercept.Context) (intercept.Context, err
 		_, err = bot.askForAmount(ctx, "", "CreateDonationState", 0, 0, m.Text)
 		return ctx, err
 	}
-
+	amount = amount * 1000
 	// command is valid
 	msg := bot.trySendMessageEditable(m.Chat, Translate(ctx, "donationProgressMessage"))
 	// get invoice
@@ -82,11 +84,23 @@ func (bot TipBot) donationHandler(ctx intercept.Context) (intercept.Context, err
 		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
 		return ctx, err
 	}
+	pv := lnurl.LNURLPayValues{}
+	err = json.Unmarshal(body, &pv)
+	if err != nil {
+		log.Errorln(err)
+		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
+		return ctx, err
+	}
+	if pv.Status == "ERROR" || len(pv.PR) < 1 {
+		log.Errorln(err)
+		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
+		return ctx, err
+	}
 
 	// send donation invoice
 	// user := LoadUser(ctx)
 	// bot.trySendMessage(user.Telegram, string(body))
-	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: string(body)}, bot.Client)
+	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: string(pv.PR)}, bot.Client)
 	if err != nil {
 		userStr := GetUserStr(user.Telegram)
 		errmsg := fmt.Sprintf("[/donate] Donation failed for user %s: %s", userStr, err)
