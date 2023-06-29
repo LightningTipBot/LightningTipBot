@@ -42,17 +42,23 @@ const (
 )
 
 func createBunt(file string) *storage.DB {
+	t1 := time.Now()
 	// create bunt database
 	bunt := storage.NewBunt(file)
+	log.Infof("[blunt] loaded file in %s", time.Since(t1))
 	// create bunt database index for ascending (searching) TipTooltips
 	err := bunt.CreateIndex(MessageOrderedByReplyToFrom, TipTooltipKeyPattern, buntdb.IndexJSON(MessageOrderedByReplyToFrom))
+	log.Infof("[blunt] index 1 created in %s", time.Since(t1))
+
 	if err != nil {
 		panic(err)
 	}
 	err = bunt.CreateIndex("join-ticket", JoinTicketIndex, buntdb.IndexString)
+	log.Infof("[blunt] index 2 created in %s", time.Since(t1))
 	if err != nil {
 		panic(err)
 	}
+	log.Infof("[blunt] total time: %s", time.Since(t1))
 	return bunt
 }
 
