@@ -21,6 +21,12 @@ import (
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
+// amountsMap maps string to int64 amounts
+var amountsMap = map[string]int64{
+	"🍌": 777,
+	"🥜": 69,
+}
+
 func getArgumentFromCommand(input string, which int) (output string, err error) {
 	if len(strings.Split(input, " ")) < which+1 {
 		return "", fmt.Errorf("message doesn't contain enough arguments")
@@ -42,6 +48,14 @@ func decodeAmountFromCommand(input string) (amount int64, err error) {
 // GetAmount parses an amount from a string like 1.2k or 3.50€
 // and returns the value in satoshis
 func GetAmount(input string) (amount int64, err error) {
+	// replace occurances of comma with dot
+	input = strings.Replace(input, ",", ".", -1)
+
+	// replace strings in amountsMap with their integer values
+	for k, v := range amountsMap {
+		input = strings.Replace(input, k, strconv.FormatInt(v, 10), -1)
+	}
+
 	// convert something like 1.2k into 1200
 	if strings.HasSuffix(strings.ToLower(input), "k") {
 		fmount, err := strconv.ParseFloat(strings.TrimSpace(input[:len(input)-1]), 64)
