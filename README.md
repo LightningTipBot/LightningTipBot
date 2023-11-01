@@ -3,6 +3,7 @@
 </p>
 
 # @LightningTipBot 🏅
+[![Twitter](https://img.shields.io/twitter/follow/LightningTipB0t.svg?style=social)](https://twitter.com/intent/follow?screen_name=LightningTipB0t)
 
 A Telegram Lightning ⚡️ Bitcoin wallet and tip bot for group chats.
 
