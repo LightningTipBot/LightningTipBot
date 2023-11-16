@@ -237,6 +237,14 @@ func (bot *TipBot) lnurlReceiveEvent(event Event) {
 	err := bot.Bunt.Get(tx)
 	log.Debugf("[lnurl-p] Received invoice for %s of %d sat.", GetUserStr(invoiceEvent.User.Telegram), tx.Amount)
 	if err == nil {
+		// filter: if tx.Comment includes a URL, return if tx.Amount is less than 100 sat
+		if len(tx.Comment) > 0 && tx.Amount < 100 {
+			if strings.Contains(tx.Comment, "http") {
+				log.Debugf("[lnurl-p] Filtered LNURL comment for %s of %d sat.", GetUserStr(invoiceEvent.User.Telegram), tx.Amount)
+				return
+			}
+		}
+
 		// notify user with LNURL comment and sender Information
 		if len(tx.Comment) > 0 {
 			if len(tx.From) == 0 {
