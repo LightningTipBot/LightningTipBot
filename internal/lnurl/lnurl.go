@@ -267,6 +267,10 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 				Reason: fmt.Sprintf("Comment too long (max: %d characters).", CommentAllowed)},
 		}, fmt.Errorf("comment too long")
 	}
+	// get rid of LNURL spam
+	if amount_msat < 21_000 {
+		comment = ""
+	}
 	user, tx := db.FindUser(w.database, username)
 	if tx.Error != nil {
 		return &lnurl.LNURLPayValues{
