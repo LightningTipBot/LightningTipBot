@@ -2,3 +2,5 @@ config.yaml
 config.yaml*
 data/*
 !data/.placeholder
+LightningTipBot
+LightningTipBot.exe
