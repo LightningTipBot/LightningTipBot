@@ -1,12 +1,12 @@
 <p align="center">
-  	<img alt="logo" width="150" src="resources/logo_round.png" >
+  	<img alt="logo" width="150" src="https://i.imgur.com/VB3zep8.png" >
 </p>
 
-# @LightningTipBot 🏅
+# @BitcoinDeepaBot 🏅
 
 A Telegram Lightning ⚡️ Bitcoin wallet and tip bot for group chats.
 
-This repository contains everything you need to set up and run your own tip bot. If you simply want to use this bot in your group chat without having to install anything just start a conversation with [@LightningTipBot](https://t.me/LightningTipBot) and invite it into your group chat.
+This repository contains everything you need to set up and run your own tip bot. If you simply want to use this bot in your group chat without having to install anything just start a conversation with [@](https://t.me/BitcoinDeepaBot) and invite it into your group chat.
 
 ## Setting up the bot
 
@@ -15,8 +15,8 @@ This repository contains everything you need to set up and run your own tip bot.
 To build the bot from source, clone the repository and compile the source code.
 
 ```
-git clone https://github.com/LightningTipBot/LightningTipBot.git
-cd LightningTipBot
+git clone https://github.com/BitcoinDeepaBot/BitcoinDeepaBot.git
+cd BitcoinDeepaBot
 go build .
 cp config.yaml.example config.yaml
 ```
@@ -24,7 +24,7 @@ cp config.yaml.example config.yaml
 After the configuration (see below), start it using the command
 
 ```
-./LightningTipBot
+./BitcoinDeepaBot
 ```
 
 ### Configuration
@@ -86,14 +86,14 @@ You can either use your own LNbits instance (recommended) or create an account a
 
 ### Inline commands
 ```
-send 💸 Send sats to chat: @LightningTipBot send <amount> [<memo>]
+send 💸 Send sats to chat: @BitcoinDeepaBot send <amount> [<memo>]
 ```
 
 📖 You can use inline commands in every chat, even in private conversations. Wait a second after entering an inline command and click the result, don't press enter.
 
 ### Inline send
 
-You can use inline commands to send payments to anyone who can read your messages, even inside private chats and group chat in which the bot isn't part of. For that, you need to trigger an [inline command](https://core.telegram.org/bots/inline). Here is how it works: Enter the name of the bot (`@LightningTipBot`) and the command you want to trigger (`send 13 Hi friend!`). When the result pops up above the text field, click it to send it to the chat. Do not press enter. 
+You can use inline commands to send payments to anyone who can read your messages, even inside private chats and group chat in which the bot isn't part of. For that, you need to trigger an [inline command](https://core.telegram.org/bots/inline). Here is how it works: Enter the name of the bot (`@BitcoinDeepaBot`) and the command you want to trigger (`send 13 Hi friend!`). When the result pops up above the text field, click it to send it to the chat. Do not press enter. 
 
 <p align="center">
   	<img alt="Send sats inside any chat, including private conversations and groups." src="resources/inline_send.png" >
@@ -138,7 +138,7 @@ To minimize the clutter all the heavy tipping can cause in a group chat, the bot
 
 ## Full Guide to Install and run on a VPS
 
-A complete guide to install and run LightningTipBot + LNBITS (on docker with PostgreSQL) on the same VPS with an external LND funding source has been prepared by Massimo Musumeci (@massmux) and it is available: [LightningTipBot full install](https://www.massmux.com/howto-complete-lightningtipbot-lnbits-setup-vps/)
+A complete guide to install and run BitcoinDeepaBot + LNBITS (on docker with PostgreSQL) on the same VPS with an external LND funding source has been prepared by Massimo Musumeci (@massmux) and it is available: [BitcoinDeepaBot full install](https://www.massmux.com/howto-complete-lightningtipbot-lnbits-setup-vps/)
 
 ## Made with
 
