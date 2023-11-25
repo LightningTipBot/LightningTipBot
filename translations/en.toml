@@ -63,11 +63,8 @@ payButtonEmoji = """💸"""
 
 # HELP
 
-helpMessage = """⚡️ *Wallet*
+helpMessage = """⚡️ *BitcoinDeepa Wallet*
 _This bot is a Bitcoin Lightning wallet that can sends tips on Telegram. To tip, add the bot to a group chat. The basic unit of tips are Satoshis (sat). 100,000,000 sat = 1 Bitcoin. Type 📚 /basics for more._
-
-❤️ *Donate*
-_This bot charges no fees but costs Satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/donate 1000`
 
 %s
 
@@ -77,7 +74,6 @@ _This bot charges no fees but costs Satoshis to operate. If you like the bot, pl
 */send* 💸 Send funds to a user: `/send <amount> @user or user@ln.tips [<memo>]`
 */invoice* ⚡️ Receive with Lightning: `/invoice <amount> [<memo>]`
 */pay* ⚡️ Pay with Lightning: `/pay <invoice>`
-*/donate* ❤️ Donate to the project: `/donate 1000`
 */advanced* 🤖 Advanced features.
 */help* 📖 Read this help."""
 
@@ -104,9 +100,6 @@ _Add this bot to your Telegram group chat to /tip posts. If you make the bot adm
 
 🏛 *Terms*
 _We are not custodian of your funds. We will act in your best interest but we're also aware that the situation without KYC is tricky until we figure something out. Any amount you load onto your wallet will be considered a donation. Do not give us all your money.  Be aware that this bot is in beta development. Use at your own risk._
-
-❤️ *Donate*
-_This bot charges no fees but costs satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/donate 1000`"""
 
 helpNoUsernameMessage = """👋 Please, set a Telegram username."""
 

@@ -19,7 +19,7 @@ const (
 	// MainMenuCommandHelp    = "📖 Help"
 	// MainMenuCommandSend    = "⤴️ Send"
 	// SendMenuCommandEnter   = "👤 Enter"
-	MainMenuCommandWebApp  = "🗳️ App"
+	MainMenuCommandWebApp  = "🤝 Community"
 	MainMenuCommandBalance = "Balance"
 	MainMenuCommandInvoice = "⚡️ Invoice"
 	MainMenuCommandHelp    = "📖 Help"
@@ -81,7 +81,9 @@ func (bot *TipBot) appendWebAppLinkToButton(btn *tb.Btn, user *lnbits.User) {
 	if strings.HasPrefix(url, "https://") {
 		// prevent adding a link if not https is used, otherwise
 		// Telegram returns an error and does not show the keyboard
-		btn.WebApp = &tb.WebAppInfo{Url: url}
+		// btn.WebApp = &tb.WebAppInfo{Url: url}
+		btn.URL = "https://t.me/c/1869805823"
+
 	}
 }
 
