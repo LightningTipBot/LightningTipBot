@@ -99,7 +99,7 @@ _This bot is free and_ [open source](https://github.com/LightningTipBot/Lightnin
 _Add this bot to your Telegram group chat to /tip posts. If you make the bot admin of the group it will also clean up commands to keep the chat tidy._
 
 🏛 *Terms*
-_We are not custodian of your funds. We will act in your best interest but we're also aware that the situation without KYC is tricky until we figure something out. Any amount you load onto your wallet will be considered a donation. Do not give us all your money.  Be aware that this bot is in beta development. Use at your own risk._
+_We are not custodian of your funds. We will act in your best interest but we're also aware that the situation without KYC is tricky until we figure something out. Any amount you load onto your wallet will be considered a donation. Do not give us all your money.  Be aware that this bot is in beta development. Use at your own risk._"""
 
 helpNoUsernameMessage = """👋 Please, set a Telegram username."""
 
