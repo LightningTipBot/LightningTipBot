@@ -79,10 +79,12 @@ func (bot *TipBot) appendWebAppLinkToButton(btn *tb.Btn, user *lnbits.User) {
 		url = fmt.Sprintf("%s/app/@%s", internal.Configuration.Bot.LNURLHostName, user.AnonIDSha256)
 	}
 	if strings.HasPrefix(url, "https://") {
+		// commented by Buddhi Thilakshana
 		// prevent adding a link if not https is used, otherwise
 		// Telegram returns an error and does not show the keyboard
 		// btn.WebApp = &tb.WebAppInfo{Url: url}
-		btn.URL = "https://t.me/c/1869805823"
+		//open url
+		btn.WebApp = &tb.WebAppInfo{Url: "https://t.me/BitcoinDeepa"}
 
 	}
 }
