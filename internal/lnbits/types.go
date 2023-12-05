@@ -46,7 +46,7 @@ type Settings struct {
 }
 
 type DisplaySettings struct {
-	FiatCurrency string `json:"fiatcurrency"`
+	DisplayCurrency string `json:"displaycurrency"`
 }
 type NostrSettings struct {
 	PubKey string `json:"pubkey"`

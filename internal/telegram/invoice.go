@@ -151,7 +151,7 @@ func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, err
 	creatingMsg := bot.trySendMessageEditable(m.Sender, Translate(ctx, "lnurlGettingUserMessage"))
 	log.Debugf("[/invoice] Creating invoice for %s of %d sat.", userStr, amount)
 
-	currency := user.Settings.Display.FiatCurrency
+	currency := user.Settings.Display.DisplayCurrency
 	if currency == "" {
 		currency = "BTC"
 	}

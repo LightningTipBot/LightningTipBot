@@ -286,6 +286,13 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 				Reason: fmt.Sprintf("Invalid user.")},
 		}, fmt.Errorf("[serveLNURLpSecond] user %s not found", username)
 	}
+	// get user settings
+	user2, err := db.FindUserSettings(user, w.bot.DB.Users.Preload("Settings"))
+	if err != nil {
+		fmt.Errorf("[serveLNURLpSecond] Couldn't fetch user settings from database: %v", err)
+	} else {
+		user = user2
+	}
 	// user is ok now create invoice
 	// set wallet lnbits client
 
@@ -407,9 +414,10 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 	// save the invoice Event that will be loaded when the invoice is paid and trigger the comment display callback
 	runtime.IgnoreError(w.buntdb.Set(
 		telegram.InvoiceEvent{
-			Invoice:  invoiceStruct,
-			User:     user,
-			Callback: telegram.InvoiceCallbackLNURLPayReceive,
+			Invoice:      invoiceStruct,
+			User:         user,
+			Callback:     telegram.InvoiceCallbackLNURLPayReceive,
+			UserCurrency: user.Settings.Display.DisplayCurrency,
 		}))
 
 	return &lnurl.LNURLPayValues{
