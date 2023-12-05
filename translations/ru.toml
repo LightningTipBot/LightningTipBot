@@ -187,6 +187,7 @@ sendHelpText               = """📖 Упс, это не сработало. %s
 # INVOICE
 
 invoiceReceivedMessage    = """⚡️ Вы получили %d sat."""
+invoiceReceivedCurrencyMessage    = """⚡️ Вы получили %d sat (%.2f %s)."""
 invoiceEnterAmountMessage = """Ввели ли вы сумму?"""
 invoiceValidAmountMessage = """Ввели ли вы правильную сумму?"""
 invoiceHelpText           = """📖 Упс, это не сработало. %s

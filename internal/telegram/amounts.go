@@ -98,6 +98,14 @@ func GetAmount(input string) (amount int64, err error) {
 	return amount, err
 }
 
+func SatoshisToFiat(amount int64, currency string) (fiat float64, err error) {
+	if !(price.Price[currency] > 0) {
+		return 0, fmt.Errorf("price is zero")
+	}
+	fiat = float64(amount) / 100_000_000 * price.Price[currency]
+	return fiat, nil
+}
+
 type EnterAmountStateData struct {
 	ID              string `json:"ID"`              // holds the ID of the tx object in bunt db
 	Type            string `json:"Type"`            // holds type of the tx in bunt db (needed for type checking)

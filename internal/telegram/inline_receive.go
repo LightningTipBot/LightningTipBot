@@ -274,7 +274,7 @@ func (bot *TipBot) inlineReceiveInvoice(ctx intercept.Context, inlineReceive *In
 		log.Errorf("[acceptInlineReceiveHandler] inline receive not active anymore")
 		return
 	}
-	invoice, err := bot.createInvoiceWithEvent(ctx, inlineReceive.To, inlineReceive.Amount, fmt.Sprintf("Pay to %s", GetUserStr(inlineReceive.To.Telegram)), InvoiceCallbackInlineReceive, inlineReceive.ID)
+	invoice, err := bot.createInvoiceWithEvent(ctx, inlineReceive.To, inlineReceive.Amount, fmt.Sprintf("Pay to %s", GetUserStr(inlineReceive.To.Telegram)), "", InvoiceCallbackInlineReceive, inlineReceive.ID)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
 		bot.tryEditMessage(inlineReceive.Message, Translate(ctx, "errorTryLaterMessage"))

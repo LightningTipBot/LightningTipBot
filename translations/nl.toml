@@ -184,6 +184,7 @@ sendHelpText               = """📖 Oeps, dat werkte niet. %s
 # INVOICE
 
 invoiceReceivedMessage    = """⚡️ Je hebt %d sat ontvangen ."""
+invoiceReceivedCurrencyMessage    = """⚡️ Je hebt %d sat (%.2f %s) ontvangen."""
 invoiceEnterAmountMessage = """Heb je een bedrag ingevoerd?"""
 invoiceValidAmountMessage = """Heeft u een geldig bedrag ingevoerd?"""
 invoiceHelpText           = """📖 Oeps, dat werkte niet. %s

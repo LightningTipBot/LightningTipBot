@@ -431,7 +431,7 @@ func (bot *TipBot) satdressProxyHandler(ctx intercept.Context) (intercept.Contex
 	}
 
 	memo := "🔀 Payment proxy in."
-	invoice, err := bot.createInvoiceWithEvent(ctx, user, amount, memo, InvoiceCallbackSatdressProxy, "")
+	invoice, err := bot.createInvoiceWithEvent(ctx, user, amount, memo, "", InvoiceCallbackSatdressProxy, "")
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
 		bot.trySendMessage(user.Telegram, Translate(ctx, "errorTryLaterMessage"))

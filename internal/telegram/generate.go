@@ -65,7 +65,7 @@ func (bot *TipBot) confirmGenerateImages(ctx intercept.Context) (intercept.Conte
 	if err != nil {
 		return ctx, err
 	}
-	invoice, err := bot.createInvoiceWithEvent(ctx, me, internal.Configuration.Generate.DallePrice, fmt.Sprintf("DALLE2 %s", GetUserStr(user.Telegram)), InvoiceCallbackGenerateDalle, prompt)
+	invoice, err := bot.createInvoiceWithEvent(ctx, me, internal.Configuration.Generate.DallePrice, fmt.Sprintf("DALLE2 %s", GetUserStr(user.Telegram)), "", InvoiceCallbackGenerateDalle, prompt)
 	invoice.Payer = user
 	if err != nil {
 		return ctx, err

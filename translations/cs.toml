@@ -188,7 +188,8 @@ sendHelpText               = """📖 Ou, tohle se nezdařilo. %s
 
 # INVOICE
 
-invoiceReceivedMessage    = """⚡️ Obdržel jsi %d sats."""
+invoiceReceivedMessage    = """⚡️ Obdržel jsi %d sat."""
+invoiceReceivedCurrencyMessage    = """⚡️ Obdržel jsi %d sat (%.2f %s)."""
 invoiceEnterAmountMessage = """Zadal jsi částku?"""
 invoiceValidAmountMessage = """Zadal jsi platnou částku?"""
 invoiceHelpText           = """📖 Ou, tohle se nezdařilo. %s

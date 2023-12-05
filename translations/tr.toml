@@ -183,6 +183,7 @@ sendHelpText = """📖 Hoppalaa… olmadı. %s
 # INVOICE
 
 invoiceReceivedMessage    = """⚡️ %d sat sana geldi."""
+invoiceReceivedCurrencyMessage    = """⚡️ %d sat (%.2f %s) sana geldi."""
 invoiceEnterAmountMessage = """Miktar girdin mi?"""
 invoiceValidAmountMessage = """Geçerli bir miktar girdin mi?"""
 invoiceHelpText           = """📖 Hoppalaa… olmadı. %s

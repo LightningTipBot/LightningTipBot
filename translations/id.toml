@@ -184,6 +184,7 @@ sendHelpText               = """📖 Waduh, itu tidak berhasil. %s
 # INVOICE
 
 invoiceReceivedMessage    = """⚡️ Kamu menerima %d sat."""
+invoiceReceivedCurrencyMessage    = """⚡️ Kamu menerima %d sat (%.2f %s)."""
 invoiceEnterAmountMessage = """Apakah kamu sudah memasukkan jumlah?"""
 invoiceValidAmountMessage = """Apakah kamu memasukkan jumlah yang benar?"""
 invoiceHelpText           = """📖 Waduh, itu tidak berhasil. %s

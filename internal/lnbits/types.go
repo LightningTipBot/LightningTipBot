@@ -39,11 +39,15 @@ type User struct {
 }
 
 type Settings struct {
-	ID    string        `json:"id" gorm:"primarykey"`
-	Node  NodeSettings  `gorm:"embedded;embeddedPrefix:node_"`
-	Nostr NostrSettings `gorm:"embedded;embeddedPrefix:nostr_"`
+	ID      string          `json:"id" gorm:"primarykey"`
+	Display DisplaySettings `gorm:"embedded;embeddedPrefix:display_"`
+	Node    NodeSettings    `gorm:"embedded;embeddedPrefix:node_"`
+	Nostr   NostrSettings   `gorm:"embedded;embeddedPrefix:nostr_"`
 }
 
+type DisplaySettings struct {
+	FiatCurrency string `json:"fiatcurrency"`
+}
 type NostrSettings struct {
 	PubKey string `json:"pubkey"`
 }
