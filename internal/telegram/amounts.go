@@ -25,6 +25,10 @@ import (
 var amountsMap = map[string]int64{
 	"🍌": 777,
 	"🥜": 69,
+	"🔧": 5,
+	"❤️": 100,
+	"⚡": 21,
+	"👾": 500,
 }
 
 func getArgumentFromCommand(input string, which int) (output string, err error) {
