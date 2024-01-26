@@ -1,0 +1,20 @@
+# Start on boot service for Lightning Tip Bot
+#
+# HOW TO INSTALL
+# replace below <PATH-TO-INTALLATION> with you build path prefix
+# by command: sudo pico /etc/systemd/system/lightningtipbot.service
+# 
+[Unit]
+Description=Lightning Tip Bot
+
+[Service]
+WorkingDirectory=<PATH-TO-INSTALLATION>/LightningTipBot
+ExecStart=<PATH-TO-INSTALLATION>/LightningTipBot/LightningTipBot
+Type=simple
+KillMode=control-group
+TimeoutSec=180
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target

@@ -21,12 +21,6 @@ go build .
 cp config.yaml.example config.yaml
 ```
 
-After the configuration (see below), start it using the command
-
-```
-./LightningTipBot
-```
-
 ### Configuration
 
 You need to edit `config.yaml` before you can start the bot.
@@ -60,6 +54,30 @@ You can either use your own LNbits instance (recommended) or create an account a
 - `http_proxy` uses a proxy for all LNURL-related outbound requests (optional).
 - `lnurl_public_host_name` is the public URL of your lnbits/LndHub (for BlueWallet/Zeus support, optional).
 - `lnurl_server` is the public URL for inbound LNURL payments and your lightning address host (optional).
+
+### Start 
+
+Run following command after the configuration
+
+```
+./LightningTipBot
+```
+
+### Alternative way to Start
+
+Install as a service
+
+ sudo cp lightningtipbot.service.example /etc/systemd/system/lightningtipbot.service
+
+Configure PATH-TO-INSTALLATION
+ sudo pico /etc/systemd/system/lightningtipbot.service
+
+ ENABLE SERVICE
+- sudo systemctl enable --now lightningtipbot.service
+ RUN
+- sudo systemctl start lightningtipbot.service
+ VERIFY
+- sudo systemctl status lightningtipbot.service
 
 ## Features
 
